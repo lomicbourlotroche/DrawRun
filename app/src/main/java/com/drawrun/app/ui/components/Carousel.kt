@@ -97,8 +97,8 @@ fun <T> AppCarousel(
                             this.alpha = alpha
                             this.cameraDistance = 12f * density
                             
-                            // Removed artificial borders/frames here to blend in
-                            shadowElevation = if (scale > 0.9f) 20.dp.toPx() else 0f
+                            // Reduced shadow to blend in with background
+                            shadowElevation = if (scale > 0.95f) 12.dp.toPx() else 0f
                             shape = RoundedCornerShape(40.dp)
                             clip = true
                         }
