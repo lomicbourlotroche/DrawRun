@@ -21,6 +21,7 @@ import com.drawrun.app.AppState
 import com.drawrun.app.Screen
 import com.drawrun.app.ui.theme.AppTheme
 import androidx.health.connect.client.PermissionController
+import androidx.compose.animation.core.*
 
 import com.drawrun.app.logic.DataSyncManager
 import kotlinx.coroutines.launch
