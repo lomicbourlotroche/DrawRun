@@ -9,7 +9,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.filled.Waves
 import androidx.compose.material.icons.filled.SelfImprovement
 import androidx.compose.material.icons.filled.Straighten
-import androidx.compose.material.icons.filled.Zap
+import androidx.compose.material.icons.filled.ElectricBolt
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -166,7 +166,7 @@ fun PlanningScreen(state: AppState) {
                                                             contentAlignment = Alignment.Center
                                                         ) {
                                                             Icon(
-                                                                imageVector = if (day.isQuality) Icons.Default.Zap else if (day.type == "L") Icons.Default.Straighten else Icons.Default.DirectionsRun,
+                                                                imageVector = if (day.isQuality) Icons.Default.ElectricBolt else if (day.type == "L") Icons.Default.Straighten else Icons.Default.DirectionsRun,
                                                                 contentDescription = null,
                                                                 modifier = Modifier.size(16.dp),
                                                                 tint = if (day.isQuality) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)

@@ -355,7 +355,7 @@ object PerformanceAnalyzer {
     /**
      * Analyse complète d'une séance (Court Terme)
      */
-    fun analyzeActivity(type: String, streams: ActivityStreams): ActivityAnalysis {
+    fun analyzeActivity(type: String, streams: ActivityStreams, zones: TrainingZones? = null): ActivityAnalysis {
         val time = streams.time
         val hr = streams.heartRate
         val pace = streams.pace
@@ -381,7 +381,7 @@ object PerformanceAnalyzer {
 
         // 3. Normalized Power / Pace & IF/TSS
         val avgSpeed = pace?.average() ?: 0.0 // m/s
-        val thresholdSpeed = runZones?.vma?.let { it / 3.6 } ?: 4.0 // Default or VMA/3.6 to get m/s
+        val thresholdSpeed = zones?.runZones?.vma?.let { it / 3.6 } ?: 4.0 // Default or VMA/3.6 to get m/s
         
         // Intensity Factor (IF)
         val intensityFactor = if (type == "run") {
@@ -389,7 +389,7 @@ object PerformanceAnalyzer {
             avgSpeed / thresholdSpeed
         } else {
             // Bike IF: Normalized Power / FTP (Simplified using average if NP logic not fully here)
-            (power?.average() ?: 0.0) / (bikeZones?.ftp?.toDouble() ?: 250.0)
+            (power?.average() ?: 0.0) / (zones?.bikeZones?.ftp?.toDouble() ?: 250.0)
         }.coerceIn(0.5, 1.5)
 
         // Training Stress Score (TSS)

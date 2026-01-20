@@ -500,7 +500,7 @@ class DataSyncManager(val context: Context, val state: AppState) {
                     } else null
                 )
                 
-                val analysis = PerformanceAnalyzer.analyzeActivity(type, streams)
+                val analysis = PerformanceAnalyzer.analyzeActivity(type, streams, state.zones)
                 
                 withContext(Dispatchers.Main) {
                     state.selectedActivityStreams = streams
