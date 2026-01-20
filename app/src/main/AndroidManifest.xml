@@ -32,7 +32,10 @@
             android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.DrawRun">
-            <!-- Launcher filters moved to aliases for dynamic icon switching -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
             
             <!-- Strava OAuth Callback -->
             <intent-filter>
@@ -52,7 +55,7 @@
 
         <activity-alias
             android:name=".MainActivityOnyx"
-            android:enabled="true"
+            android:enabled="false"
             android:exported="true"
             android:icon="@drawable/ic_launcher_onyx"
             android:label="DrawRun"

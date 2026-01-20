@@ -178,7 +178,12 @@ fun ProfileScreen(state: AppState, syncManager: DataSyncManager) {
                 ) {
                     Column {
                         Text(text = "Health Connect", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-                        Text(text = if (state.healthConnectConnected) "Connecté" else "Déconnecté", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
+                        Text(
+                            text = if (state.healthConnectConnected) "ACTIVE & SYNCHRONISÉ" else "DÉCONNECTÉ",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (state.healthConnectConnected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                            fontWeight = if (state.healthConnectConnected) FontWeight.Black else FontWeight.Normal
+                        )
                     }
                     Switch(
                         checked = state.healthConnectConnected,
@@ -213,13 +218,13 @@ fun ProfileScreen(state: AppState, syncManager: DataSyncManager) {
                 scope.launch {
                     state.isSyncing = true
                     // Artificial delay for UX visibility if sync is too fast
-                    val minTime = System.currentTimeMillis() + 1000 
+                    val minTime = System.currentTimeMillis() + 2000 
                     
                     if (state.stravaConnected) syncManager.syncStravaActivities()
                     if (state.healthConnectConnected) syncManager.syncHealthData()
                     
-                    // UX: Ensure at least 1500ms spinner so user sees it happened
-                    val remaining = 1500 - (System.currentTimeMillis() - minTime + 1000)
+                    // UX: Ensure at least 2000ms animation so user sees the runner
+                    val remaining = 2000 - (System.currentTimeMillis() - minTime + 2000)
                     if (remaining > 0) kotlinx.coroutines.delay(remaining)
                     
                     state.isSyncing = false
@@ -236,13 +241,9 @@ fun ProfileScreen(state: AppState, syncManager: DataSyncManager) {
             )
         ) {
             if (state.isSyncing) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    strokeWidth = 2.dp
-                )
+                RunningLoader(color = MaterialTheme.colorScheme.onPrimaryContainer)
                 Spacer(modifier = Modifier.width(12.dp))
-                Text(text = "SYNCHRONISATION...", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
+                Text(text = "RÉCUPÉRATION...", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
             } else {
                 Icon(imageVector = Icons.Default.Sync, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(8.dp))
@@ -361,13 +362,44 @@ fun ThemeCircle(theme: AppTheme, color: Color, selected: Boolean, onClick: () ->
     )
 }
 
+@Composable
+fun RunningLoader(modifier: Modifier = Modifier, color: Color) {
+    val infiniteTransition = rememberInfiniteTransition(label = "runner")
+    val xOffset by infiniteTransition.animateFloat(
+        initialValue = -10f,
+        targetValue = 10f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(600, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "runner_x"
+    )
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 0.5f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(300, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "runner_alpha"
+    )
+    
+    Icon(
+        imageVector = Icons.Default.DirectionsRun, 
+        contentDescription = "Running...", 
+        size = 24.dp, 
+        tint = color.copy(alpha = alpha),
+        modifier = modifier.offset(x = xOffset.dp)
+    )
+}
+
 // Helper for Icon with size
 @Composable
-fun Icon(imageVector: ImageVector, contentDescription: String?, size: androidx.compose.ui.unit.Dp, tint: Color) {
+fun Icon(imageVector: ImageVector, contentDescription: String?, size: androidx.compose.ui.unit.Dp, tint: Color, modifier: Modifier = Modifier) {
     androidx.compose.material3.Icon(
         imageVector = imageVector,
         contentDescription = contentDescription,
         tint = tint,
-        modifier = Modifier.size(size)
+        modifier = modifier.size(size)
     )
 }

@@ -86,20 +86,32 @@ fun PlanningScreen(state: AppState) {
                     // Paces Display (Always Visible)
                     // Paces Display (Always Visible)
                     val runZones = state.zones?.runZones
-                    val paces = runZones?.pace?.let { allure ->
-                        val list = mutableListOf<Pair<String, String>>()
-                        allure.getOrNull(1)?.let { list.add("Easy (Z2)" to "${formatPace(it.first)}-${formatPace(it.second)}") }
-                        allure.getOrNull(2)?.let { list.add("Marathon (Z3)" to formatPace(it.first)) }
-                        allure.getOrNull(3)?.let { list.add("Seuil (Z4)" to formatPace(it.first)) }
-                        allure.getOrNull(4)?.let { list.add("Interval (Z5)" to formatPace(it.first)) }
-                        allure.getOrNull(5)?.let { list.add("Répétition (R)" to formatPace(it.first)) }
-                        list
+                    val paces = try {
+                         runZones?.pace?.let { allure ->
+                            val list = mutableListOf<Pair<String, String>>()
+                            // Safe access for all 5 zones (Indices 0-4)
+                            allure.getOrNull(0)?.let { list.add("Recup (Z1)" to "${formatPace(it.first)}-${formatPace(it.second)}") }
+                            allure.getOrNull(1)?.let { list.add("Easy (Z2)" to "${formatPace(it.first)}-${formatPace(it.second)}") }
+                            allure.getOrNull(2)?.let { list.add("Marathon (Z3)" to formatPace(it.first)) }
+                            allure.getOrNull(3)?.let { list.add("Seuil (Z4)" to formatPace(it.first)) }
+                            allure.getOrNull(4)?.let { list.add("Interval (Z5)" to formatPace(it.first)) }
+                            // Only add R-Pace if it exists (Index 5) - PerformanceAnalyzer currently returns 5 items (0-4)
+                            if (allure.size > 5) {
+                                allure.getOrNull(5)?.let { list.add("Répétition (R)" to formatPace(it.first)) }
+                            } else {
+                                // Fallback for R pace if not in list but needed for consistency
+                                allure.lastOrNull()?.let { list.add("Répétition (R)" to formatPace(it.first * 1.1)) } // Approx
+                            }
+                            list
+                        }
+                    } catch (e: Exception) {
+                        null
                     } ?: listOf(
                         "Easy (E)" to "5:30 - 6:00",
                         "Marathon (M)" to "4:45",
                         "Seuil (T)" to "4:15",
                         "Interval (I)" to "3:55",
-                        "Répétition (R)" to "3:30" // Added R-Pace
+                        "Répétition (R)" to "3:30"
                     )
 
                     paces.forEach { (label, pace) ->

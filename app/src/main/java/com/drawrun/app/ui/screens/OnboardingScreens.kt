@@ -375,26 +375,46 @@ fun SyncButton(
     onClick: () -> Unit
 ) {
     val borderColor = if (connected) iconColor else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
-    val bgColor = if (connected) iconColor.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface
-
+    // Dynamic background: Colored if connected, Surface if not
+    val bgColor = if (connected) iconColor.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface
+    
+    // Pulse animation (subtle) if connected? No, keep it clean.
+    
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(32.dp))
             .background(bgColor)
-            .border(1.dp, borderColor, RoundedCornerShape(32.dp))
-            .clickable { onClick() }
+            .border(if (connected) 2.dp else 1.dp, borderColor, RoundedCornerShape(32.dp))
+            .clickable(enabled = !connected) { onClick() } // Disable click if already connected
             .padding(24.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(imageVector = icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(24.dp))
+        Icon(
+            imageVector = if (connected) Icons.Default.CheckCircle else icon, 
+            contentDescription = null, 
+            tint = if (connected) iconColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), 
+            modifier = Modifier.size(24.dp)
+        )
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground)
-            Text(text = subtitle, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f))
+            Text(
+                text = title, 
+                style = MaterialTheme.typography.titleLarge, 
+                color = MaterialTheme.colorScheme.onBackground,
+                fontWeight = if (connected) FontWeight.Bold else FontWeight.Normal
+            )
+            Text(
+                text = if (connected) "ENREGISTRÉ & ACTIF" else subtitle, 
+                style = MaterialTheme.typography.labelSmall, 
+                color = if (connected) iconColor else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                fontWeight = if (connected) FontWeight.Black else FontWeight.Normal
+            )
         }
         if (connected) {
-            Icon(imageVector = Icons.Default.CheckCircle, contentDescription = null, tint = iconColor, modifier = Modifier.size(20.dp))
+            Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = iconColor, modifier = Modifier.size(24.dp))
+        } else {
+            Icon(imageVector = Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), modifier = Modifier.size(24.dp))
         }
     }
 }
