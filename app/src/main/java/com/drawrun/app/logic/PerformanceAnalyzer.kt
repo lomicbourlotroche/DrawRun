@@ -381,7 +381,11 @@ object PerformanceAnalyzer {
 
         // 3. Normalized Power / Pace & IF/TSS
         val avgSpeed = pace?.average() ?: 0.0 // m/s
-        val thresholdSpeed = zones?.runZones?.vma?.let { it / 3.6 } ?: 4.0 // Default or VMA/3.6 to get m/s
+        
+        // Intensity Factor (IF)
+        // Scientifically, IF = normalized speed / threshold speed
+        // Running Threshold Speed (T-Pace) is typically ~88-92% of VMA. Using 90%.
+        val thresholdSpeed = zones?.runZones?.vma?.let { (it * 0.9) / 3.6 } ?: 4.0 // Threshold in m/s
         
         // Intensity Factor (IF)
         val intensityFactor = if (type == "run") {
