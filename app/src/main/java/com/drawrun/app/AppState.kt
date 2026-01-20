@@ -77,6 +77,9 @@ class AppState {
     var tsb by mutableStateOf("--")
     var sleepScore by mutableStateOf("--")
     var sleepDuration by mutableStateOf("--")
+    
+    // Training Plan Completion Tracking
+    var workoutCompletions by mutableStateOf<Map<String, WorkoutCompletion>>(emptyMap())
 
     // Derived Scientific Metrics
     val userProfileComplete by derivedStateOf {
@@ -262,4 +265,20 @@ data class SwimSession(
     val id: Long = System.currentTimeMillis(),
     val content: String,
     val date: String = java.time.LocalDate.now().toString()
+)
+
+enum class CompletionStatus {
+    PENDING,      // Not yet done
+    COMPLETED,    // Done as planned
+    PARTIAL,      // Done but not matching plan (wrong distance/intensity)
+    SKIPPED       // Intentionally skipped or missed
+}
+
+data class WorkoutCompletion(
+    val planWeek: Int,
+    val planDay: Int,
+    val plannedDate: String,
+    val completedDate: String?,
+    val actualActivity: ActivityItem?,
+    val status: CompletionStatus
 )

@@ -224,6 +224,9 @@ fun ProfileScreen(state: AppState, syncManager: DataSyncManager) {
                     if (state.stravaConnected) syncManager.syncStravaActivities()
                     if (state.healthConnectConnected) syncManager.syncHealthData()
                     
+                    // Update workout completion tracking after sync
+                    com.drawrun.app.logic.WorkoutMatcher.updateWorkoutCompletions(state)
+                    
                     // UX: Ensure at least 2000ms animation so user sees the runner
                     val remaining = 2000 - (System.currentTimeMillis() - minTime + 2000)
                     if (remaining > 0) kotlinx.coroutines.delay(remaining)

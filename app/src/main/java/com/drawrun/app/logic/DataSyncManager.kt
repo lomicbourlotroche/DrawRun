@@ -181,7 +181,8 @@ class DataSyncManager(val context: Context, val state: AppState) {
         try {
             val granted = healthConnectClient.permissionController.getGrantedPermissions()
             if (!granted.containsAll(permissions)) {
-                 // Permissions missing
+                 android.util.Log.w("DrawRun", "Health Connect: Missing permissions")
+                 return@withContext
             }
 
             val endTime = Instant.now()
@@ -200,8 +201,13 @@ class DataSyncManager(val context: Context, val state: AppState) {
                     withContext(Dispatchers.Main) {
                         state.restingHR = latestResting.beatsPerMinute.toString()
                     }
+                    android.util.Log.d("DrawRun", "Health Connect: Synced RHR = ${latestResting.beatsPerMinute}")
+                } else {
+                    android.util.Log.w("DrawRun", "Health Connect: No RHR data found")
                 }
-            } catch (e: Exception) { }
+            } catch (e: Exception) { 
+                android.util.Log.e("DrawRun", "Health Connect: RHR sync failed", e)
+            }
 
             try {
                 val sleepResponse = healthConnectClient.readRecords(
@@ -217,9 +223,12 @@ class DataSyncManager(val context: Context, val state: AppState) {
                     if (totalSleepMinutes > 0) {
                         state.sleepDuration = "%dh%02d".format(totalSleepMinutes / 60, totalSleepMinutes % 60)
                         state.sleepScore = (totalSleepMinutes.toFloat() / 480f * 100).coerceAtMost(100f).toInt().toString()
+                        android.util.Log.d("DrawRun", "Health Connect: Synced Sleep = ${totalSleepMinutes}min")
                     }
                 }
-            } catch (e: Exception) { }
+            } catch (e: Exception) { 
+                android.util.Log.e("DrawRun", "Health Connect: Sleep sync failed", e)
+            }
 
             try {
                 val hrvResponse = healthConnectClient.readRecords(
@@ -233,8 +242,11 @@ class DataSyncManager(val context: Context, val state: AppState) {
                     withContext(Dispatchers.Main) {
                         state.hrv = "%.0f".format(latestHRV.heartRateVariabilityMillis)
                     }
+                    android.util.Log.d("DrawRun", "Health Connect: Synced HRV = ${latestHRV.heartRateVariabilityMillis}")
                 }
-            } catch (e: Exception) { }
+            } catch (e: Exception) { 
+                android.util.Log.e("DrawRun", "Health Connect: HRV sync failed", e)
+            }
 
             // 1.5 Calculate Advanced Readiness
             withContext(Dispatchers.Main) {
@@ -260,6 +272,8 @@ class DataSyncManager(val context: Context, val state: AppState) {
                         timeRangeFilter = TimeRangeFilter.between(startTime, endTime)
                     )
                 )
+                
+                android.util.Log.d("DrawRun", "Health Connect: Found ${sessionResponse.records.size} exercise sessions")
                 
                 val hcActivities = sessionResponse.records.map { session ->
                     val typeStr = when(session.exerciseType) {
@@ -314,14 +328,17 @@ class DataSyncManager(val context: Context, val state: AppState) {
                     state.activities = currentList.distinctBy { it.id }
                 }
             }
+            
+            android.util.Log.i("DrawRun", "Health Connect: Sync completed successfully")
 
         } catch (e: Exception) {
+            android.util.Log.e("DrawRun", "Health Connect: Sync failed", e)
             e.printStackTrace()
         }
     }
 
     /**
-     * Fetches real activities from Strava.
+     * Fetches real activities from Strava with unlimited pagination.
      */
     suspend fun syncStravaActivities(token: String? = null) {
         withContext(Dispatchers.Main) { state.isSyncing = true }
@@ -332,23 +349,29 @@ class DataSyncManager(val context: Context, val state: AppState) {
                  return
             }
 
-            val request = Request.Builder()
-                .url("https://www.strava.com/api/v3/athlete/activities?per_page=200")
-                .header("Authorization", "Bearer $currentToken")
-                .build()
+            val allActivities = mutableListOf<ActivityItem>()
+            var page = 1
+            var totalLoadWeek = 0
+            
+            // Pagination loop to fetch ALL activities
+            while (true) {
+                val request = Request.Builder()
+                    .url("https://www.strava.com/api/v3/athlete/activities?per_page=200&page=$page")
+                    .header("Authorization", "Bearer $currentToken")
+                    .build()
 
-            val response = client.newCall(request).execute()
-            if (response.code == 401) {
-                if (refreshStravaToken()) {
-                    syncStravaActivities(stravaAccessToken) // Retry once
+                val response = client.newCall(request).execute()
+                if (response.code == 401) {
+                    if (refreshStravaToken()) {
+                        syncStravaActivities(stravaAccessToken) // Retry once
+                    }
+                    return
                 }
-                return
-            }
 
-            if (response.isSuccessful) {
+                if (!response.isSuccessful) break
+
                 val json = JSONArray(response.body?.string() ?: "[]")
-                val newActivities = mutableListOf<ActivityItem>()
-                var totalLoadWeek = 0
+                if (json.length() == 0) break // No more activities
                 
                 for (i in 0 until json.length()) {
                     val obj = json.getJSONObject(i)
@@ -373,12 +396,13 @@ class DataSyncManager(val context: Context, val state: AppState) {
                     val hrStr = if (avgHr > 0) "%.0f bpm".format(avgHr) else "--"
                     
                     val sufferScore = obj.optInt("suffer_score", 0)
-                    if (i < 7) totalLoadWeek += sufferScore
+                    // Only count first 7 activities for weekly load (most recent)
+                    if (allActivities.size < 7) totalLoadWeek += sufferScore
                     
                     val mapObj = obj.optJSONObject("map")
                     val polyline = mapObj?.optString("summary_polyline")
 
-                    newActivities.add(ActivityItem(
+                    allActivities.add(ActivityItem(
                         id = obj.getInt("id"),
                         type = type,
                         title = obj.getString("name"),
@@ -402,20 +426,22 @@ class DataSyncManager(val context: Context, val state: AppState) {
                     ))
                 }
                 
-                withContext(Dispatchers.Main) {
-                    state.activities = newActivities
-                    state.stravaConnected = true
-                    
-                    if (state.readiness == "--" || state.readiness.isBlank()) {
-                        val proxyReadiness = (100 - (totalLoadWeek / 20)).coerceIn(10, 100)
-                        state.readiness = proxyReadiness.toString()
-                        state.ctl = (totalLoadWeek / 7).toString()
-                        state.tsb = "0"
-                    }
-                }
-                syncStravaProfile()
-                syncStravaZones()
+                page++
             }
+            
+            withContext(Dispatchers.Main) {
+                state.activities = allActivities
+                state.stravaConnected = true
+                
+                if (state.readiness == "--" || state.readiness.isBlank()) {
+                    val proxyReadiness = (100 - (totalLoadWeek / 20)).coerceIn(10, 100)
+                    state.readiness = proxyReadiness.toString()
+                    state.ctl = (totalLoadWeek / 7).toString()
+                    state.tsb = "0"
+                }
+            }
+            syncStravaProfile()
+            syncStravaZones()
         } catch (e: Exception) {
             e.printStackTrace()
         } finally {

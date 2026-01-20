@@ -58,19 +58,73 @@ object CoachAI {
         val dayOfWeek = date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.FRENCH)
         val readinessValue = state.readiness.toIntOrNull() ?: 50
         
-        // Logical decision based on readiness and day of week
+        // Check if user already trained today
+        val today = date.toString()
+        val todaysWorkouts = state.activities.filter { it.date == today }
+        
+        if (todaysWorkouts.isNotEmpty()) {
+            // User already trained today
+            val totalTSS = todaysWorkouts.mapNotNull { 
+                it.load.removePrefix("TSS ").toIntOrNull() 
+            }.sum()
+            
+            return when {
+                totalTSS > 150 -> TrainingRecommendation(
+                    title = "Séance Intense Effectuée ✓",
+                    type = "REST",
+                    subtitle = "Charge: $totalTSS TSS",
+                    description = "Vous avez déjà effectué une séance intense aujourd'hui (${todaysWorkouts.size} activité${if (todaysWorkouts.size > 1) "s" else ""}).",
+                    advice = "Repos recommandé. Votre corps a besoin de récupérer pour progresser. Hydratez-vous bien.",
+                    isFromPlan = false
+                )
+                totalTSS > 80 -> TrainingRecommendation(
+                    title = "Séance Effectuée ✓",
+                    type = "E",
+                    subtitle = "Charge: $totalTSS TSS",
+                    description = "Séance modérée effectuée aujourd'hui.",
+                    advice = "Si vous vous sentez très bien, vous pouvez ajouter une courte récupération active (20-30min très facile), sinon repos.",
+                    isFromPlan = false
+                )
+                else -> TrainingRecommendation(
+                    title = "Séance Légère Effectuée ✓",
+                    type = "E",
+                    subtitle = "Charge: $totalTSS TSS",
+                    description = "Séance légère effectuée.",
+                    advice = "Vous pouvez ajouter une séance complémentaire si vous vous sentez en forme, mais ce n'est pas obligatoire.",
+                    isFromPlan = false
+                )
+            }
+        }
+        
+        // Check recent training load (last 7 days)
+        val sevenDaysAgo = date.minusDays(7).toString()
+        val recentWorkouts = state.activities.filter { 
+            it.date >= sevenDaysAgo && it.date < today
+        }
+        val weeklyTSS = recentWorkouts.mapNotNull { 
+            it.load.removePrefix("TSS ").toIntOrNull() 
+        }.sum()
+        
+        // Adjust suggestions based on weekly load
+        val isHighLoad = weeklyTSS > 500
+        
+        // Logical decision based on readiness, day of week, and recent load
         return when {
-            readinessValue < 40 -> TrainingRecommendation(
+            readinessValue < 40 || isHighLoad -> TrainingRecommendation(
                 title = "Repos Récupérateur",
                 type = "REST",
                 subtitle = "Récupération nécessaire",
-                description = "Votre score de disponibilité est bas ($readinessValue/100).",
+                description = if (isHighLoad) {
+                    "Charge hebdomadaire élevée ($weeklyTSS TSS). Votre score de disponibilité est à $readinessValue/100."
+                } else {
+                    "Votre score de disponibilité est bas ($readinessValue/100)."
+                },
                 advice = "Le repos fait partie de l'entraînement. Laissez votre corps assimiler la charge passée.",
                 isFromPlan = false
             )
             
             date.dayOfWeek.value == 7 -> { // Sunday
-                val dist = if (readinessValue > 70) 12 else 8
+                val dist = if (readinessValue > 70 && !isHighLoad) 12 else 8
                 TrainingRecommendation(
                     title = "Sortie Longue (E)",
                     type = "E",
@@ -82,14 +136,25 @@ object CoachAI {
             }
             
             date.dayOfWeek.value == 2 || date.dayOfWeek.value == 4 -> { // Tue or Thu - Quality days
-                TrainingRecommendation(
-                    title = "Fartlek Ludique",
-                    type = "I",
-                    subtitle = "30-45 min avec accélérations",
-                    description = "6-8 sprints courts (30s) pendant votre footing habituel.",
-                    advice = "Votre forme est bonne ($readinessValue/100). Un peu d'intensité réveillera vos fibres rapides.",
-                    isFromPlan = false
-                )
+                if (readinessValue > 60 && !isHighLoad) {
+                    TrainingRecommendation(
+                        title = "Fartlek Ludique",
+                        type = "I",
+                        subtitle = "30-45 min avec accélérations",
+                        description = "6-8 sprints courts (30s) pendant votre footing habituel.",
+                        advice = "Votre forme est bonne ($readinessValue/100). Un peu d'intensité réveillera vos fibres rapides.",
+                        isFromPlan = false
+                    )
+                } else {
+                    TrainingRecommendation(
+                        title = "Footing de Base",
+                        type = "E",
+                        subtitle = "6-8km allure facile",
+                        description = "Maintien de la condition physique sans fatigue excessive.",
+                        advice = "Votre forme ne permet pas d'intensité aujourd'hui. Restez en endurance.",
+                        isFromPlan = false
+                    )
+                }
             }
             
             else -> TrainingRecommendation(
