@@ -487,7 +487,12 @@ class DataSyncManager(val context: Context, val state: AppState) {
      * Fetches detailed streams and analyzes an activity
      */
     suspend fun syncActivityDetail(activityId: Int, type: String) = withContext(Dispatchers.IO) {
-        val token = stravaAccessToken ?: return@withContext
+        android.util.Log.d("DrawRun", "syncActivityDetail: Starting for activity $activityId")
+        val token = stravaAccessToken ?: run {
+            android.util.Log.w("DrawRun", "syncActivityDetail: No Strava token available")
+            return@withContext
+        }
+        
         val request = Request.Builder()
             .url("https://www.strava.com/api/v3/activities/$activityId/streams?keys=time,distance,altitude,heartrate,cadence,watts,velocity_smooth,grade_smooth&key_by_type=true")
             .header("Authorization", "Bearer $token")
@@ -495,6 +500,8 @@ class DataSyncManager(val context: Context, val state: AppState) {
             
         try {
             val response = client.newCall(request).execute()
+            android.util.Log.d("DrawRun", "syncActivityDetail: API response code = ${response.code}")
+            
             if (response.isSuccessful) {
                 val json = JSONObject(response.body?.string() ?: "{}")
                 
@@ -505,6 +512,8 @@ class DataSyncManager(val context: Context, val state: AppState) {
                 val cadStream = json.optJSONObject("cadence")?.optJSONArray("data")?.let { arr -> List(arr.length()) { arr.getInt(it) } }
                 val pwrStream = json.optJSONObject("watts")?.optJSONArray("data")?.let { arr -> List(arr.length()) { arr.getInt(it) } }
                 val velStream = json.optJSONObject("velocity_smooth")?.optJSONArray("data")?.let { arr -> List(arr.length()) { arr.getDouble(it) } }
+                
+                android.util.Log.d("DrawRun", "syncActivityDetail: Streams fetched - time:${timeStream.size}, hr:${hrStream?.size}, vel:${velStream?.size}")
                 
                 val streams = com.drawrun.app.ActivityStreams(
                     time = timeStream,
@@ -521,14 +530,20 @@ class DataSyncManager(val context: Context, val state: AppState) {
                     } else null
                 )
                 
+                android.util.Log.d("DrawRun", "syncActivityDetail: Running analysis with zones = ${state.zones != null}")
                 val analysis = PerformanceAnalyzer.analyzeActivity(type, streams, state.zones)
+                android.util.Log.d("DrawRun", "syncActivityDetail: Analysis complete - IF=${analysis.intensityFactor}, TSS=${analysis.tss}")
                 
                 withContext(Dispatchers.Main) {
                     state.selectedActivityStreams = streams
                     state.selectedActivityAnalysis = analysis
+                    android.util.Log.d("DrawRun", "syncActivityDetail: State updated successfully")
                 }
+            } else {
+                android.util.Log.w("DrawRun", "syncActivityDetail: API call failed with code ${response.code}")
             }
         } catch (e: Exception) {
+            android.util.Log.e("DrawRun", "syncActivityDetail: Exception occurred", e)
             e.printStackTrace()
         }
     }

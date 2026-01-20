@@ -169,10 +169,13 @@ fun PlanningScreen(state: AppState) {
                                     Spacer(modifier = Modifier.height(16.dp))
                                     
                                     Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.verticalScroll(rememberScrollState())) {
-                                        for (day in weekPlan.days) {
+                                        weekPlan.days.forEachIndexed { dayIndex, day ->
+                                            val completionKey = "week${weekPlan.weekNum - 1}_day$dayIndex"
+                                            val completion = state.workoutCompletions[completionKey]
+                                            
                                             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.weight(1f)) {
                                                         Box(
                                                             modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)).background(if (day.isQuality) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)),
                                                             contentAlignment = Alignment.Center
@@ -184,11 +187,45 @@ fun PlanningScreen(state: AppState) {
                                                                 tint = if (day.isQuality) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                                                             )
                                                         }
-                                                        Column {
-                                                            Text(text = day.title, style = MaterialTheme.typography.labelSmall, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
+                                                        Column(modifier = Modifier.weight(1f)) {
+                                                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                                                Text(text = day.title, style = MaterialTheme.typography.labelSmall, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
+                                                                
+                                                                // Completion indicator
+                                                                when(completion?.status) {
+                                                                    com.drawrun.app.CompletionStatus.COMPLETED -> {
+                                                                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF22C55E), modifier = Modifier.size(14.dp))
+                                                                    }
+                                                                    com.drawrun.app.CompletionStatus.PARTIAL -> {
+                                                                        Icon(Icons.Default.Warning, contentDescription = null, tint = Color(0xFFF59E0B), modifier = Modifier.size(14.dp))
+                                                                    }
+                                                                    com.drawrun.app.CompletionStatus.SKIPPED -> {
+                                                                        Icon(Icons.Default.Cancel, contentDescription = null, tint = Color(0xFFEF4444), modifier = Modifier.size(14.dp))
+                                                                    }
+                                                                    com.drawrun.app.CompletionStatus.PENDING -> {
+                                                                        Icon(Icons.Default.RadioButtonUnchecked, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), modifier = Modifier.size(14.dp))
+                                                                    }
+                                                                    null -> {}
+                                                                }
+                                                            }
                                                             val workoutSummary = day.details.find { det: TrainingPlanGenerator.Detail -> det.label == "Cœur" || det.label == "Objectif" }?.content ?: ""
                                                             if (workoutSummary.isNotBlank()) {
                                                                 Text(text = workoutSummary, style = MaterialTheme.typography.labelSmall, fontSize = 9.sp, color = if (day.isQuality) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                                                            }
+                                                            
+                                                            // Show actual completed distance if available
+                                                            completion?.actualActivity?.let { activity ->
+                                                                Text(
+                                                                    text = "✓ ${activity.dist} effectué le ${activity.date}",
+                                                                    style = MaterialTheme.typography.labelSmall,
+                                                                    fontSize = 9.sp,
+                                                                    color = when(completion.status) {
+                                                                        com.drawrun.app.CompletionStatus.COMPLETED -> Color(0xFF22C55E)
+                                                                        com.drawrun.app.CompletionStatus.PARTIAL -> Color(0xFFF59E0B)
+                                                                        else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                                                    },
+                                                                    fontWeight = FontWeight.Bold
+                                                                )
                                                             }
                                                         }
                                                     }

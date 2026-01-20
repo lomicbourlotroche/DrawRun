@@ -41,24 +41,46 @@ fun ActivityDetailScreen(state: AppState, syncManager: com.drawrun.app.logic.Dat
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(act) {
+        android.util.Log.d("DrawRun", "ActivityDetail: Opening activity ${act.id} - ${act.title}")
+        
         if (state.selectedActivityStreams == null || (state.selectedActivity?.id != act.id)) { // Re-sync if new activity
              // Clear previous
              state.selectedActivityStreams = null
              state.selectedActivityAnalysis = null
              
+             android.util.Log.d("DrawRun", "ActivityDetail: Fetching streams for activity ${act.id}")
+             
              if (act.load == "HC" && act.startTime != null && act.endTime != null) {
                  // Health Connect Detail Sync
+                 android.util.Log.d("DrawRun", "ActivityDetail: Using Health Connect sync (${act.startTime} to ${act.endTime})")
                  try {
                      syncManager.syncHealthConnectDetail(
                          java.time.Instant.parse(act.startTime),
                          java.time.Instant.parse(act.endTime),
                          act.type
                      )
-                 } catch (e: Exception) { e.printStackTrace() }
+                     android.util.Log.d("DrawRun", "ActivityDetail: HC sync completed")
+                 } catch (e: Exception) { 
+                     android.util.Log.e("DrawRun", "ActivityDetail: HC sync failed", e)
+                     e.printStackTrace() 
+                 }
              } else {
                  // Strava Detail Sync
-                 syncManager.syncActivityDetail(act.id, act.type)
+                 android.util.Log.d("DrawRun", "ActivityDetail: Using Strava sync for activity ${act.id}")
+                 try {
+                     syncManager.syncActivityDetail(act.id, act.type)
+                     android.util.Log.d("DrawRun", "ActivityDetail: Strava sync completed")
+                 } catch (e: Exception) {
+                     android.util.Log.e("DrawRun", "ActivityDetail: Strava sync failed", e)
+                     e.printStackTrace()
+                 }
              }
+             
+             // Log result
+             kotlinx.coroutines.delay(500) // Give time for state to update
+             android.util.Log.d("DrawRun", "ActivityDetail: Streams = ${state.selectedActivityStreams != null}, Analysis = ${state.selectedActivityAnalysis != null}")
+        } else {
+            android.util.Log.d("DrawRun", "ActivityDetail: Using cached data for activity ${act.id}")
         }
     }
 
