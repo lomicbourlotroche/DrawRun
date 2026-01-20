@@ -302,7 +302,9 @@ class DataSyncManager(val context: Context, val state: AppState) {
                             "run" -> Icons.Default.DirectionsRun
                             "swim" -> Icons.Default.Pool
                             else -> Icons.Default.DirectionsBike
-                        }
+                        },
+                        startTime = session.startTime.toString(),
+                        endTime = session.endTime.toString()
                     )
                 }
                 
@@ -618,6 +620,73 @@ class DataSyncManager(val context: Context, val state: AppState) {
                     state.athleteZones = com.drawrun.app.AthleteZones(hrZones, pwrZones)
                 }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+    /**
+     * Fetches detailed streams (HR, Speed) from Health Connect for a specific time range.
+     */
+    suspend fun syncHealthConnectDetail(startTime: Instant, endTime: Instant, type: String) = withContext(Dispatchers.IO) {
+        try {
+             // 1. Fetch Heart Rate Series
+            val hrResponse = healthConnectClient.readRecords(
+                ReadRecordsRequest(
+                    recordType = HeartRateRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(startTime, endTime)
+                )
+            )
+            // Flatten HR samples. Each record has multiple samples.
+            val hrSamples = hrResponse.records.flatMap { it.samples }
+            
+            // 2. Fetch Speed Series (if running)
+            val speedSamples = if (type == "run") {
+                val speedResponse = healthConnectClient.readRecords(
+                    ReadRecordsRequest(
+                        recordType = SpeedRecord::class,
+                        timeRangeFilter = TimeRangeFilter.between(startTime, endTime)
+                    )
+                )
+                speedResponse.records.flatMap { it.samples }
+            } else emptyList()
+
+            // 3. Construct Streams
+            // We need to align them to a common time axis (e.g. seconds from start) if possible, 
+            // or just provide raw lists. For analysis, let's normalize to 1-second ticks ideally, 
+            // but for now, we'll just extract values in order.
+            
+            // Simplified: Just take values. Analysis might need timestamps for proper correlation, 
+            // but ActivityStreams structure expects List<Int/Double>.
+            
+            // Create a rough time stream based on HR samples (assuming they are frequent)
+            // or generate one 0..duration
+            val durationSec = ChronoUnit.SECONDS.between(startTime, endTime).toInt()
+            val timeStream = if (hrSamples.isNotEmpty()) {
+                hrSamples.map { ChronoUnit.SECONDS.between(startTime, it.time).toInt() }
+            } else {
+                List(durationSec) { it }
+            }
+
+            val streams = com.drawrun.app.ActivityStreams(
+                time = timeStream,
+                distance = null, // HC distance is often total, not time-series unless using DistanceRecord per segment
+                heartRate = hrSamples.map { it.beatsPerMinute.toInt() },
+                pace = speedSamples.map { it.speed.inMetersPerSecond },
+                altitude = null,
+                cadence = null,
+                power = null, 
+                vam = null,
+                hrDerivative = null,
+                gradAdjustedPace = null
+            )
+
+            val analysis = PerformanceAnalyzer.analyzeActivity(type, streams, state.zones)
+
+            withContext(Dispatchers.Main) {
+                state.selectedActivityStreams = streams
+                state.selectedActivityAnalysis = analysis
+            }
+
         } catch (e: Exception) {
             e.printStackTrace()
         }

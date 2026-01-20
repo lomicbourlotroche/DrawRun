@@ -142,23 +142,13 @@ fun MainScaffold(state: AppState, syncManager: DataSyncManager) {
         }
     }
 
-    // Activity Detail Synchronization
-    androidx.compose.runtime.LaunchedEffect(state.selectedActivity) {
-        state.selectedActivity?.let { act ->
-            syncManager.syncActivityDetail(act.id, act.type)
-        } ?: run {
-            state.selectedActivityStreams = null
-            state.selectedActivityAnalysis = null
-        }
-    }
-
     // Activity Detail Overlay
     AnimatedVisibility(
         visible = state.selectedActivity != null,
         enter = slideInHorizontally(initialOffsetX = { it }) + fadeIn(),
         exit = slideOutHorizontally(targetOffsetX = { it }) + fadeOut()
     ) {
-        ActivityDetailScreen(state)
+        ActivityDetailScreen(state, syncManager)
     }
 
     // Metric Explanation Overlay

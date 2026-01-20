@@ -183,7 +183,9 @@ data class ActivityItem(
     val avgHr: String,
     val mapPolyline: String?,
     val color: Color,
-    val icon: ImageVector
+    val icon: ImageVector,
+    val startTime: String? = null, // ISO-8601 for Health Connect retrieval
+    val endTime: String? = null
 )
 
 data class ActivityStreams(

@@ -36,8 +36,31 @@ import androidx.compose.ui.graphics.StrokeCap
 import kotlin.math.abs
 
 @Composable
-fun ActivityDetailScreen(state: AppState) {
+fun ActivityDetailScreen(state: AppState, syncManager: com.drawrun.app.logic.DataSyncManager) {
     val act = state.selectedActivity ?: return
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(act) {
+        if (state.selectedActivityStreams == null || (state.selectedActivity?.id != act.id)) { // Re-sync if new activity
+             // Clear previous
+             state.selectedActivityStreams = null
+             state.selectedActivityAnalysis = null
+             
+             if (act.load == "HC" && act.startTime != null && act.endTime != null) {
+                 // Health Connect Detail Sync
+                 try {
+                     syncManager.syncHealthConnectDetail(
+                         java.time.Instant.parse(act.startTime),
+                         java.time.Instant.parse(act.endTime),
+                         act.type
+                     )
+                 } catch (e: Exception) { e.printStackTrace() }
+             } else {
+                 // Strava Detail Sync
+                 syncManager.syncActivityDetail(act.id, act.type)
+             }
+        }
+    }
 
     Box(
         modifier = Modifier
