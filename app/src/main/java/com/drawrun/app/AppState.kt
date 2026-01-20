@@ -280,5 +280,6 @@ data class WorkoutCompletion(
     val plannedDate: String,
     val completedDate: String?,
     val actualActivity: ActivityItem?,
-    val status: CompletionStatus
+    val status: CompletionStatus,
+    val completionScore: Int // 0-100% match quality
 )
