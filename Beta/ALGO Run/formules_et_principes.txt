@@ -1,0 +1,72 @@
+Voici une liste des formules et principes scientifiques extraits de votre code :
+
+== Fréquence Cardiaque Maximale (FCM) ==
+
+*   **Formule de Gellish et coll.**:
+    *   Principe : Calcul de la FCM basé sur une formule quadratique liée à l'âge.
+    *   Formule : `FCM = 191.5 - 0.007 * age²`
+
+*   **Formule de Inbar et al.**:
+    *   Principe : Calcul de la FCM basé sur une formule linéaire liée à l'âge.
+    *   Formule : `FCM = 205.8 - 0.685 * age`
+
+*   **Formule de Robergs et Lanwehr**:
+    *   Principe : Calcul de la FCM basé sur une formule linéaire liée à l'âge.
+    *   Formule : `FCM = 208.754 - 0.734 * age`
+
+*   **Formule de Sally Edwards**:
+    *   Principe : Calcul de la FCM qui prend en compte l'âge, le sexe et le poids.
+    *   Formules :
+        *   Homme : `FCM = 214 - 0.5 * age - 0.11 * poids`
+        *   Femme : `FCM = 210 - 0.5 * age - 0.11 * poids`
+
+*   **Formule de Winfried Spanaus**:
+    *   Principe : Calcul de la FCM qui prend en compte l'âge et le sexe.
+    *   Formules :
+        *   Homme : `FCM = 223 - 0.9 * age`
+        *   Femme : `FCM = 226 - 0.9 * age`
+
+*   **Méthode d'Astrand**:
+    *   Principe : Une des premières et plus simples méthodes de calcul de la FCM, différenciée par sexe.
+    *   Formules :
+        *   Homme : `FCM = 220 - age`
+        *   Femme : `FCM = 226 - age`
+
+== Vitesse Maximale Aérobie (VMA) ==
+
+*   **Formule de Leger et Mercier**:
+    *   Principe : Estime la VMA à partir du VO2max.
+    *   Formule : `VMA = (VO2max - 2.209) / 3.163`
+
+== Volume d'Oxygène Maximal (VO2max) ==
+
+*   **Formule de Niels Uth**:
+    *   Principe : Estime le VO2max en utilisant un coefficient K, la FCM et la fréquence cardiaque au repos (FCRepos).
+    *   Formule : `VO2max = K * (FCM / FCRepos)`
+
+*   **Équation de régression de Ari Voutilainen**:
+    *   Principe : Calcule le coefficient K dynamique utilisé dans la formule de Niels Uth.
+    *   Formule : `K = 9.2 + (1.9 * (FCM / FCRepos))`
+
+== Zones d'Entraînement et Planification ==
+
+*   **Méthode de Karvonen (Zones de Fréquence Cardiaque)**:
+    *   Principe : Calcule les zones de fréquence cardiaque cibles en se basant sur la fréquence cardiaque de réserve (différence entre FCM et FC au repos). C'est une méthode plus personnalisée que le simple pourcentage de la FCM.
+    *   Formule générale : `FC Cible = FCRepos + (% Intensité * (FCM - FCRepos))`
+    *   Le code applique cette formule pour définir 5 zones d'intensité (Z1 à Z5).
+
+*   **Répartition du Volume (Principe 80/20)**:
+    *   **Origine**: Ce principe est issu du modèle d'**entraînement polarisé**, dont les recherches ont été menées et popularisées par le **Dr. Stephen Seiler**.
+    *   **Principe**: Le volume d'entraînement hebdomadaire est réparti en 80% d'Endurance Fondamentale (basse intensité) et 20% de travail de Qualité (haute intensité). L'objectif est de maximiser le développement de la base aérobie tout en permettant une récupération suffisante pour que les séances de haute intensité soient réellement efficaces.
+    *   **Application dans le code**:
+        *   `VolumeEndurance = VolumeTotal * 0.8`
+        *   `VolumeQualite = VolumeTotal * 0.2`
+
+*   **Modèle de Planification Personnalisé (non attribué)**:
+    *   **Origine**: Les formules suivantes ne semblent pas provenir d'une méthodologie scientifique publiée et constituent probablement un **modèle interne spécifique à cette application**.
+    *   **Principe**: Le code utilise ces formules pour créer une structure de plan d'entraînement personnalisée.
+    *   **Formules utilisées**:
+        *   **Nombre de Séances**: Le nombre de séances par semaine est estimé en fonction du volume total.
+            *   `NombreSéances = round(2 + VolumeTotal / 23)`
+        *   **Durée des Phases**: La durée totale du programme est divisée en trois phases (générale, spécifique, affûtage) selon des formules internes.
+        *   **Volume PIC**: Le volume d'entraînement maximal sur une semaine est calculé via deux approches, une sécuritaire (basée sur une progression de 10% par semaine) et une de performance (basée sur l'objectif).

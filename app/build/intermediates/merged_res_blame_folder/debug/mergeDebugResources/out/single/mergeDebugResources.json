@@ -1,0 +1,30 @@
+[
+    {
+        "merged": "com.drawrun.app-debug-52:/drawable_ic_launcher_background.xml.flat",
+        "source": "com.drawrun.app-main-54:/drawable/ic_launcher_background.xml"
+    },
+    {
+        "merged": "com.drawrun.app-debug-52:/drawable_ic_launcher_onyx.xml.flat",
+        "source": "com.drawrun.app-main-54:/drawable/ic_launcher_onyx.xml"
+    },
+    {
+        "merged": "com.drawrun.app-debug-52:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "com.drawrun.app-main-54:/mipmap-xxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.drawrun.app-debug-52:/drawable_ic_launcher_emerald.xml.flat",
+        "source": "com.drawrun.app-main-54:/drawable/ic_launcher_emerald.xml"
+    },
+    {
+        "merged": "com.drawrun.app-debug-52:/drawable_ic_launcher_vector.xml.flat",
+        "source": "com.drawrun.app-main-54:/drawable/ic_launcher_vector.xml"
+    },
+    {
+        "merged": "com.drawrun.app-debug-52:/drawable_ic_launcher_ruby.xml.flat",
+        "source": "com.drawrun.app-main-54:/drawable/ic_launcher_ruby.xml"
+    },
+    {
+        "merged": "com.drawrun.app-debug-52:/drawable_ic_launcher_light.xml.flat",
+        "source": "com.drawrun.app-main-54:/drawable/ic_launcher_light.xml"
+    }
+]

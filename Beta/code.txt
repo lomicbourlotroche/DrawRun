@@ -1,0 +1,383 @@
+import React, { useState, useMemo } from 'react';
+import { 
+  Activity, 
+  Calendar, 
+  TrendingUp, 
+  Clock, 
+  AlertTriangle,
+  Zap,
+  ChevronLeft,
+  ChevronRight,
+  Target,
+  BarChart3,
+  CheckCircle2,
+  Info,
+  ArrowUpRight,
+  Moon,
+  HeartPulse,
+  History,
+  ShieldAlert,
+  Dumbbell,
+  Settings2,
+  RefreshCcw,
+  Footprints,
+  Timer,
+  XCircle,
+  Clock3,
+  Waves,
+  Heart
+} from 'lucide-react';
+
+/**
+ * APPLICATION: VDOT COACH ELITE (V6.4)
+ * - Correction du sélecteur de distance de référence
+ * - Moteur VDOT Jack Daniels complet
+ * - Double Méthode : Allure (Pace) & Cardio (FC)
+ * - Périodisation 3:1 (Step-Loading)
+ */
+
+const DISTANCES = [
+  { label: '5 km', value: 5000 },
+  { label: '10 km', value: 10000 },
+  { label: 'Semi-Marathon', value: 21097 },
+  { label: 'Marathon', value: 42195 },
+];
+
+const App = () => {
+  // --- ÉTAT : PARAMÈTRES D'ENTRÉE POUR LA GÉNÉRATION ---
+  const [method, setMethod] = useState('vdot'); 
+  const [raceDistance, setRaceDistance] = useState(10000);
+  const [minutes, setMinutes] = useState(45);
+  const [seconds, setSeconds] = useState(0);
+  const [peakWeeklyKm, setPeakWeeklyKm] = useState(50);
+  const [programWeeks, setProgramWeeks] = useState(12);
+  const [currentWeek, setCurrentWeek] = useState(1);
+
+  // --- ÉTAT : PARAMÈTRES CARDIO (Pour méthode FC) ---
+  const [maxHR, setMaxHR] = useState(185);
+  const [restHR, setRestHR] = useState(55);
+
+  // --- 1. MOTEUR VDOT (Calcul de la performance brute) ---
+  const vdot = useMemo(() => {
+    const totalMinutes = minutes + seconds / 60;
+    if (totalMinutes === 0) return 0;
+    const velocity = raceDistance / totalMinutes; 
+    const vo2 = -4.60 + 0.182258 * velocity + 0.000104 * Math.pow(velocity, 2);
+    const dropOff = 0.8 + 0.189439 * Math.exp(-0.012778 * totalMinutes) + 0.298956 * Math.exp(-0.193261 * totalMinutes);
+    return (vo2 / dropOff).toFixed(1);
+  }, [raceDistance, minutes, seconds]);
+
+  // --- 2. FACTEUR D'AJUSTEMENT (Ajustements IA désactivés par défaut) ---
+  const adjustment = useMemo(() => {
+    return { factor: 1.0, offset: 0, reasons: [] };
+  }, []);
+
+  // --- 3. CALCUL DES ZONES (Pace ou BPM) ---
+  const zones = useMemo(() => {
+    const getPace = (targetVO2) => {
+      const v = parseFloat(vdot);
+      if (!v) return "--:--";
+      const a = 0.000104;
+      const b = 0.182258;
+      const c = -(4.60 + targetVO2);
+      const velocity = (-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a);
+      const paceMinPerKm = 1000 / velocity;
+      let totalSecs = paceMinPerKm * 60;
+      const mins = Math.floor(totalSecs / 60);
+      const secs = Math.round(totalSecs % 60);
+      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    };
+
+    const getHR = (minPct, maxPct) => {
+      const reserve = maxHR - restHR;
+      const minBPM = Math.round(reserve * minPct + restHR);
+      const maxBPM = Math.round(reserve * maxPct + restHR);
+      return `${minBPM}-${maxBPM} bpm`;
+    };
+
+    if (method === 'vdot') {
+      const v = parseFloat(vdot);
+      return {
+        E: getPace(v * 0.70), 
+        M: getPace(v * 0.80), 
+        T: getPace(v * 0.88), 
+        I: getPace(v * 0.98), 
+        R: getPace(v * 1.10), 
+        unit: "/km"
+      };
+    } else {
+      return {
+        E: getHR(0.59, 0.74), 
+        M: getHR(0.75, 0.84), 
+        T: getHR(0.83, 0.88), 
+        I: getHR(0.95, 1.00), 
+        R: "Effort Max",     
+        unit: "BPM"
+      };
+    }
+  }, [vdot, method, maxHR, restHR]);
+
+  // --- 4. GÉNÉRATEUR DE PROGRAMME (Step-Loading 3:1) ---
+  const program = useMemo(() => {
+    if (!zones) return [];
+
+    const workoutsLib = {
+      R: [{ main: "20 x 200m R", rec: "Repos 200m trot" }, { main: "10 x 400m R", rec: "Repos 400m trot" }],
+      I: [{ main: "6 x 800m I", rec: "Repos 3' statique" }, { main: "5 x 1000m I", rec: "Repos 3'30 statique" }],
+      T: [{ main: "3 x 2km T", rec: "Repos 2' trot" }, { main: "Tempo 20 min T", rec: "N/A" }]
+    };
+
+    const weeks = [];
+    for (let w = 1; w <= programWeeks; w++) {
+      let phaseIdx = Math.min(3, Math.floor((w - 1) / (programWeeks / 4)));
+      let isDecharge = w % 4 === 0 && w < programWeeks - 1;
+
+      let volMult = (w === 1) ? 0.6 : (w === 2) ? 0.8 : (isDecharge) ? 0.8 : (w === programWeeks) ? 0.5 : 1.0;
+      const weeklyKm = peakWeeklyKm * volMult * adjustment.factor;
+      const limitQ = Math.min(weeklyKm * 0.1, 12);
+
+      const generateDetails = (type, dist, workout = null) => {
+        const targetValue = zones[type];
+        if (workout) return [
+          { label: "Préparation", content: "15 min progressif + gammes" },
+          { label: "Cœur", content: `${workout.main} @ ${targetValue} ${method === 'vdot' ? zones.unit : ''}`, highlight: true },
+          { label: "Récupération", content: workout.rec },
+          { label: "Cooldown", content: "10 min retour calme" },
+        ];
+        return [
+          { label: "Objectif", content: `${dist}km en endurance @ ${targetValue}${method === 'vdot' ? zones.unit : ''}`, highlight: true },
+          { label: "Note Coach", content: "Maintenir une posture droite et des bras relâchés." },
+        ];
+      };
+
+      const days = [
+        { name: "Lun", type: 'E', title: "Récupération", dist: (weeklyKm * 0.12).toFixed(1), target: zones.E, details: generateDetails('E', (weeklyKm * 0.12).toFixed(1)) },
+        { name: "Mar", type: 'Q1', title: `Qualité (${phaseIdx <= 1 ? 'Vitesse' : 'Puissance'})`, dist: limitQ.toFixed(1), target: zones[phaseIdx <= 1 ? 'R' : 'I'], isQuality: true, details: generateDetails(phaseIdx <= 1 ? 'R' : 'I', limitQ.toFixed(1), workoutsLib[phaseIdx <= 1 ? 'R' : 'I'][w % 2]) },
+        { name: "Mer", type: 'E', title: "Endurance", dist: (weeklyKm * 0.15).toFixed(1), target: zones.E, details: generateDetails('E', (weeklyKm * 0.15).toFixed(1)) },
+        { name: "Jeu", type: 'E', title: "Maintien", dist: (weeklyKm * 0.12).toFixed(1), target: zones.E, details: generateDetails('E', (weeklyKm * 0.12).toFixed(1)) },
+        { name: "Ven", type: 'Q2', title: `Seuil (T)`, dist: limitQ.toFixed(1), target: zones.T, isQuality: true, details: generateDetails('T', limitQ.toFixed(1), workoutsLib.T[w % 2]) },
+        { name: "Sam", type: 'R', title: "Repos", dist: "0", target: "-", details: [{ label: "Repos", content: "Assimilation physiologique." }] },
+        { name: "Dim", type: 'L', title: "Sortie Longue", dist: (weeklyKm * 0.25).toFixed(1), target: zones.E, details: generateDetails('E', (weeklyKm * 0.25).toFixed(1)) }
+      ];
+      weeks.push({ weekNum: w, phase: phaseIdx + 1, km: weeklyKm.toFixed(1), days, isDecharge });
+    }
+    return weeks;
+  }, [zones, method, programWeeks, peakWeeklyKm, adjustment.factor]);
+
+  const currentWeekData = program[currentWeek - 1];
+
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-24">
+      {/* Navbar Premium */}
+      <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 px-6 py-4 shadow-sm">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="bg-indigo-600 p-2 rounded-xl shadow-lg shadow-indigo-100"><Zap className="text-white" size={20} /></div>
+            <h1 className="text-lg font-black tracking-tight uppercase">VDOT <span className="text-indigo-600">Elite</span></h1>
+          </div>
+          
+          <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200">
+            <button 
+              onClick={() => setMethod('vdot')}
+              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 ${method === 'vdot' ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500'}`}
+            >
+              <Timer size={14}/> Allure (Pace)
+            </button>
+            <button 
+              onClick={() => setMethod('hr')}
+              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2 ${method === 'hr' ? 'bg-white text-rose-600 shadow-md' : 'text-slate-500'}`}
+            >
+              <Heart size={14}/> Cardio (BPM)
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <main className="max-w-7xl mx-auto mt-8 px-6 grid grid-cols-1 lg:grid-cols-12 gap-10">
+        
+        {/* Sidebar : Paramètres de Génération */}
+        <div className="lg:col-span-4 space-y-8">
+          
+          <section className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40">
+             <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-2">
+                <Settings2 size={16} className="text-indigo-600" /> Configuration du Plan
+             </h2>
+              
+              <div className="space-y-6">
+                {/* Entrées Performance */}
+                {method === 'vdot' && (
+                   <div className="space-y-4">
+                      <div>
+                        <label className="text-[10px] font-black text-slate-500 uppercase block mb-2">Distance de référence</label>
+                        <select 
+                          className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 font-bold text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                          value={raceDistance}
+                          onChange={(e) => setRaceDistance(Number(e.target.value))}
+                        >
+                          {DISTANCES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+                        </select>
+                      </div>
+                      
+                      <label className="text-[10px] font-black text-slate-500 uppercase block">Temps réalisé</label>
+                      <div className="grid grid-cols-2 gap-2">
+                         <div className="space-y-1">
+                            <span className="text-[9px] text-slate-400 font-bold ml-1">Minutes</span>
+                            <input type="number" className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-center font-black" value={minutes} onChange={e => setMinutes(Number(e.target.value))} />
+                         </div>
+                         <div className="space-y-1">
+                            <span className="text-[9px] text-slate-400 font-bold ml-1">Secondes</span>
+                            <input type="number" className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-center font-black" value={seconds} onChange={e => setSeconds(Number(e.target.value))} />
+                         </div>
+                      </div>
+                   </div>
+                )}
+
+                {/* Entrées Cardio */}
+                {method === 'hr' && (
+                   <div className="space-y-6 bg-rose-50/30 p-6 rounded-3xl border border-rose-100">
+                      <div>
+                        <div className="flex justify-between mb-2">
+                           <label className="text-[10px] font-black text-rose-500 uppercase">FC Maximale</label>
+                           <span className="text-xs font-black text-rose-600">{maxHR}</span>
+                        </div>
+                        <input type="range" min="150" max="210" className="w-full accent-rose-600" value={maxHR} onChange={e => setMaxHR(Number(e.target.value))} />
+                      </div>
+                      <div>
+                        <div className="flex justify-between mb-2">
+                           <label className="text-[10px] font-black text-slate-500 uppercase">FC Repos</label>
+                           <span className="text-xs font-black text-slate-400">{restHR}</span>
+                        </div>
+                        <input type="range" min="35" max="90" className="w-full accent-slate-400" value={restHR} onChange={e => setRestHR(Number(e.target.value))} />
+                      </div>
+                   </div>
+                )}
+
+                {/* Entrées Volume */}
+                <div className="pt-4 border-t border-slate-50">
+                   <div className="flex justify-between mb-2">
+                      <label className="text-[10px] font-black text-slate-500 uppercase">Volume Peak (KM/Sem)</label>
+                      <span className="text-xs font-black text-indigo-600">{peakWeeklyKm} KM</span>
+                   </div>
+                   <input type="range" min="20" max="150" step="5" className="w-full accent-indigo-600" value={peakWeeklyKm} onChange={e => setPeakWeeklyKm(Number(e.target.value))} />
+                </div>
+
+                <div>
+                   <label className="text-[10px] font-black text-slate-500 uppercase block mb-3">Durée du Programme</label>
+                   <select className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 font-black text-sm outline-none" value={programWeeks} onChange={e => setProgramWeeks(Number(e.target.value))}>
+                      <option value={8}>8 Semaines</option>
+                      <option value={12}>12 Semaines</option>
+                      <option value={16}>16 Semaines</option>
+                   </select>
+                </div>
+              </div>
+          </section>
+
+          {/* Zones Daniels Display */}
+          <section className={`p-10 rounded-[40px] shadow-2xl relative overflow-hidden transition-all duration-500 ${method === 'vdot' ? 'bg-slate-900 text-white' : 'bg-rose-950 text-white'}`}>
+            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-8 border-b border-white/10 pb-4">
+              {method === 'vdot' ? 'Allures VDOT' : 'Fréquences Cardio'}
+            </h2>
+            <div className="space-y-4">
+              {[
+                { label: 'Endurance (E)', val: zones?.E, color: method === 'vdot' ? 'text-white' : 'text-emerald-400' },
+                { label: 'Marathon (M)', val: zones?.M, color: method === 'vdot' ? 'text-indigo-400' : 'text-indigo-300' },
+                { label: 'Seuil (T)', val: zones?.T, color: method === 'vdot' ? 'text-orange-400' : 'text-orange-300' },
+                { label: 'Intervalle (I)', val: zones?.I, color: method === 'vdot' ? 'text-red-400' : 'text-rose-400' },
+                { label: 'Répétition (R)', val: zones?.R, color: method === 'vdot' ? 'text-purple-400' : 'text-purple-300' },
+              ].map(p => (
+                <div key={p.label} className="flex justify-between items-center relative z-10">
+                  <span className="text-[10px] font-black uppercase opacity-60 tracking-tight">{p.label}</span>
+                  <span className={`text-lg font-mono font-black ${p.color}`}>{p.val}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        {/* Calendar Column */}
+        <div className="lg:col-span-8 space-y-8">
+          
+          {/* Timeline de Charge */}
+          <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm flex items-end gap-2 h-32 overflow-hidden">
+             {program.map((w) => (
+                <div key={w.weekNum} onClick={() => setCurrentWeek(w.weekNum)} className={`flex-1 min-w-[14px] rounded-t-xl transition-all cursor-pointer relative group ${currentWeek === w.weekNum ? (method === 'vdot' ? 'bg-indigo-600' : 'bg-rose-600') : w.isDecharge ? 'bg-emerald-100' : 'bg-slate-100'}`} style={{ height: `${(w.km / 160) * 100}%` }}></div>
+             ))}
+          </div>
+
+          {currentWeekData && (
+            <div className="space-y-8">
+               {/* Week Header */}
+               <div className={`bg-white p-10 rounded-[50px] border border-slate-100 shadow-sm flex flex-col md:flex-row justify-between items-center gap-10 border-l-[12px] ${method === 'vdot' ? 'border-l-indigo-600 shadow-indigo-50' : 'border-l-rose-600 shadow-rose-50'}`}>
+                  <div>
+                    <div className="flex items-center gap-4 justify-center md:justify-start mb-2">
+                       <span className={`px-5 py-1.5 rounded-full text-[10px] font-black text-white uppercase tracking-widest ${currentWeekData.isDecharge ? 'bg-emerald-500' : (method === 'vdot' ? 'bg-indigo-600' : 'bg-rose-600')}`}>
+                          {currentWeekData.isDecharge ? 'Récupération' : `Semaine Active`}
+                       </span>
+                       <h2 className="text-5xl font-black text-slate-900 tracking-tighter">W{currentWeekData.weekNum}</h2>
+                    </div>
+                    <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.4em] ml-1">Volume Hebdo : {currentWeekData.km} KM</p>
+                  </div>
+                  <div className="text-center">
+                    <span className="block text-[10px] font-black text-slate-400 uppercase mb-1">Cible de Phase</span>
+                    <span className="text-2xl font-black text-slate-900 uppercase">{method}</span>
+                  </div>
+               </div>
+
+               {/* Jours List */}
+               <div className="space-y-6">
+                  {currentWeekData.days.map((day, idx) => (
+                    <div key={idx} className={`bg-white rounded-[40px] border-2 transition-all ${day.isQuality ? (method === 'vdot' ? 'border-indigo-100 shadow-xl' : 'border-rose-100 shadow-xl') : 'border-slate-50 shadow-sm'}`}>
+                       <div className="p-8 border-b border-slate-50 flex items-center justify-between">
+                          <div className="flex items-center gap-6">
+                             <div className={`w-16 h-16 rounded-[24px] flex flex-col items-center justify-center font-black ${day.isQuality ? (method === 'vdot' ? 'bg-indigo-600 shadow-indigo-200' : 'bg-rose-600 shadow-rose-200') : 'bg-slate-100 text-slate-400'} text-white shadow-lg`}>
+                                <span className="text-[10px] opacity-60 uppercase">{day.name}</span>
+                                <span className="text-xl leading-none">{idx + 1}</span>
+                             </div>
+                             <div>
+                                <h3 className={`text-2xl font-black tracking-tight ${day.isQuality ? (method === 'vdot' ? 'text-indigo-600' : 'text-rose-600') : 'text-slate-800'}`}>{day.title}</h3>
+                                <div className="flex items-center gap-3 mt-1 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                                   <div className="flex items-center gap-1.5 font-bold"><BarChart3 size={14}/> {day.dist} KM</div>
+                                   {day.target !== '-' && (
+                                      <>
+                                        <div className="w-1 h-1 rounded-full bg-slate-200"></div>
+                                        <div className={`flex items-center gap-1.5 font-bold ${method === 'vdot' ? 'text-indigo-600' : 'text-rose-600'}`}>
+                                          {method === 'vdot' ? <Timer size={14}/> : <HeartPulse size={14}/>} 
+                                          {day.target}{method === 'vdot' ? zones.unit : ''}
+                                        </div>
+                                      </>
+                                   )}
+                                </div>
+                             </div>
+                          </div>
+                          <div className="hidden sm:block">
+                             <CheckCircle2 size={36} className="text-slate-100 hover:text-emerald-500 transition-all cursor-pointer" />
+                          </div>
+                       </div>
+
+                       <div className="p-10 space-y-5">
+                          {day.details.map((detail, dIdx) => (
+                             <div key={dIdx} className="flex gap-6">
+                                <div className="flex flex-col items-center">
+                                   <div className={`w-2 h-2 rounded-full mt-2 ${detail.highlight ? (method === 'vdot' ? 'bg-indigo-500 shadow-[0_0_12px_indigo]' : 'bg-rose-500 shadow-[0_0_12px_rose]') : 'bg-slate-200'}`}></div>
+                                   {dIdx !== day.details.length - 1 && <div className="w-px flex-1 bg-slate-100 my-2"></div>}
+                                </div>
+                                <div className="pb-4">
+                                   <span className="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">{detail.label}</span>
+                                   <p className={`text-base font-medium leading-relaxed ${detail.highlight ? 'text-slate-900 font-black' : 'text-slate-500'}`}>{detail.content}</p>
+                                </div>
+                             </div>
+                          ))}
+                       </div>
+                    </div>
+                  ))}
+               </div>
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default App;
+
