@@ -7,5 +7,4 @@ drawable ic_launcher_light
 drawable ic_launcher_onyx
 drawable ic_launcher_ruby
 drawable ic_launcher_vector
-mipmap ic_launcher
 style Theme.DrawRun

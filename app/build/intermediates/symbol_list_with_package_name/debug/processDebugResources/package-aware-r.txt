@@ -192,7 +192,6 @@ layout notification_template_custom_big
 layout notification_template_icon_group
 layout notification_template_part_chronometer
 layout notification_template_part_time
-mipmap ic_launcher
 string androidx_startup
 string bottom_sheet_collapse_description
 string bottom_sheet_dismiss_description
