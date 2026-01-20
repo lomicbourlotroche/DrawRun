@@ -58,4 +58,3 @@ L'application utilise une identité visuelle "Onyx Premium", privilégiant les c
 > **DrawRun** est en phase active de développement bêta. Les calculs de VDOT sont basés sur les tables officielles de Jack Daniels mais nécessitent une validation par test de terrain (ex: 5km ou 10km à fond) pour une précision optimale.
 
 ---
-*Ce projet est maintenu par l'IA Antigravity pour garantir une cohérence logicielle et documentaire de pointe.*
