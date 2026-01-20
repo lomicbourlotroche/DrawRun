@@ -242,22 +242,15 @@ class DataSyncManager(val context: Context, val state: AppState) {
                 val hScore = (state.hrv.toIntOrNull() ?: 40).let { (it.toFloat() / 60f * 100f).coerceIn(40f, 100f).toInt() }
                 val rScore = (state.restingHR.toIntOrNull() ?: 60).let { (100 - (it - 40) * 2).coerceIn(40, 100) }
                 
-                // Weighted average
-                val finalReadiness = (sScore * 0.4 + hScore * 0.4 + rScore * 0.2).toInt().coerceIn(0, 100)
+                // Final Readiness calculation
+                val finalReadiness = (sScore * 0.4 + hScore * 0.4 + rScore * 0.2).toInt().coerceIn(10, 100)
                 state.readiness = finalReadiness.toString()
+                
+                // If we don't have RHR or HRV, use a neutral baseline for CTL/TSB
+                if (state.ctl == "0") {
+                    state.ctl = "30"
+                }
             }
-
-            try {
-                val stepsResponse = healthConnectClient.readRecords(
-                    ReadRecordsRequest(
-                        recordType = StepsRecord::class,
-                        timeRangeFilter = TimeRangeFilter.between(Instant.now().minus(7, ChronoUnit.DAYS), endTime)
-                    )
-                )
-
-                val totalSteps = stepsResponse.records.sumOf { it.count }
-                // Steps don't overwrite the advanced readiness but are kept for reference if needed
-            } catch (e: Exception) { }
 
             // 2. Sync Activities
             if (!state.stravaConnected || state.activities.isEmpty()) {
