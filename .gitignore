@@ -1,0 +1,26 @@
+# DrawRun Project Git Ignore
+# -------------------------
+
+# User specific request
+Beta/
+
+# Android/Common
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+*.ap_
+*.apk
+*.dex
+
+# VS Code
+.vscode/
+
+# Node/Website
+website/node_modules/
+website/dist/
+
+# OS Specific
+Thumbs.db
+.DS_Store
