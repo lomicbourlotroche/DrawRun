@@ -728,40 +728,59 @@ fun PlanningScreen(state: AppState) {
                                 Surface(color = Color(0xFF0EA5E9).copy(alpha = 0.15f), shape = RoundedCornerShape(8.dp)) {
                                     Text(text = session.focus.uppercase(), color = Color(0xFF0EA5E9), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black, modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp))
                                 }
-                                Text(text = "${session.dist}m • ${session.duration} min", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
+                                Text(text = "${session.totalDistance}m • ${session.estimatedDuration} min", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
                             }
 
-                            // Warmup
-                            SwimPartCard(title = "ÉCHAUFFEMENT", content = session.warmup, icon = Icons.Default.Waves, color = Color(0xFF0EA5E9).copy(alpha = 0.4f))
-                            
-                            // Main Set
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(24.dp))
-                                    .background(Color(0xFF0EA5E9).copy(alpha = 0.05f))
-                                    .border(1.dp, Color(0xFF0EA5E9).copy(alpha = 0.1f), RoundedCornerShape(24.dp))
-                                    .padding(20.dp),
-                                verticalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Icon(Icons.Default.Timer, contentDescription = null, tint = Color(0xFF0EA5E9), modifier = Modifier.size(16.dp))
-                                    Text("CORPS DE SÉANCE", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black, color = Color(0xFF0EA5E9))
-                                }
-                                session.mainSet.forEach { item ->
-                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Text("•", color = Color(0xFF0EA5E9), fontWeight = FontWeight.Black)
-                                        Text(text = item, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                            // Display all exercises
+                            session.exercises.forEach { exercise ->
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(24.dp))
+                                        .background(Color(0xFF0EA5E9).copy(alpha = 0.05f))
+                                        .border(1.dp, Color(0xFF0EA5E9).copy(alpha = 0.1f), RoundedCornerShape(24.dp))
+                                        .padding(20.dp),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Icon(Icons.Default.Waves, contentDescription = null, tint = Color(0xFF0EA5E9), modifier = Modifier.size(16.dp))
+                                        Text(exercise.type.uppercase(), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black, color = Color(0xFF0EA5E9))
+                                        Text("${exercise.distance}m", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                                    }
+                                    
+                                    Text(
+                                        text = exercise.description,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    
+                                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                        Surface(color = Color(0xFF0EA5E9).copy(alpha = 0.1f), shape = RoundedCornerShape(8.dp)) {
+                                            Text(
+                                                text = exercise.intensity,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = Color(0xFF0EA5E9)
+                                            )
+                                        }
+                                        exercise.restTime?.let { rest ->
+                                            Surface(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f), shape = RoundedCornerShape(8.dp)) {
+                                                Text(
+                                                    text = "Récup: $rest",
+                                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
 
-                            // Cooldown
-                            SwimPartCard(title = "RETOUR AU CALME", content = session.cooldown, icon = Icons.Default.SelfImprovement, color = Color(0xFF10B981).copy(alpha = 0.4f))
-
                             Button(
                                 onClick = {
-                                    val newSession = SwimSession(content = "${session.focus}: ${session.dist}m - ${session.mainSet.joinToString(" | ")}")
+                                    val summary = session.exercises.joinToString(" | ") { "${it.type}: ${it.distance}m" }
+                                    val newSession = SwimSession(content = "${session.focus}: ${session.totalDistance}m - $summary")
                                     state.savedSwimSessions = state.savedSwimSessions + newSession
                                     state.generatedSwimSession = null
                                 },

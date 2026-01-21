@@ -428,10 +428,11 @@ class DataSyncManager(val context: Context, val state: AppState) {
             val athlete = stravaClient.api.getAuthenticatedAthlete()
             
             withContext(Dispatchers.Main) {
-                state.athleteName = "${athlete.firstname ?: ""} ${athlete.lastname ?: ""}".trim()
-                state.athleteCity = athlete.city ?: ""
-                state.athleteCountry = athlete.country ?: ""
-                state.athleteFtp = athlete.ftp ?: 0
+                // TODO: Add these properties to AppState if needed
+                // state.athleteName = "${athlete.firstname ?: ""} ${athlete.lastname ?: ""}".trim()
+                // state.athleteCity = athlete.city ?: ""
+                // state.athleteCountry = athlete.country ?: ""
+                // state.athleteFtp = athlete.ftp ?: 0
                 
                 if (athlete.firstname?.isNotBlank() == true) {
                     state.firstName = athlete.firstname
@@ -442,9 +443,10 @@ class DataSyncManager(val context: Context, val state: AppState) {
             }
             
             // Sync stats if we have athlete ID
-            if (athlete.id > 0) {
-                state.stravaAthleteId = athlete.id.toInt()
-                syncStravaStats(athlete.id)
+            val athleteId = athlete.id
+            if (athleteId != null && athleteId > 0) {
+                state.stravaAthleteId = athleteId.toInt()
+                syncStravaStats(athleteId)
             }
         } catch (e: Exception) {
             Log.e("DataSyncManager", "Error syncing profile", e)
