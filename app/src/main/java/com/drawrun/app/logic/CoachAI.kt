@@ -8,14 +8,90 @@ import java.util.Locale
 
 object CoachAI {
 
+    // Training zones based on VDOT percentage
+    object TrainingZones {
+        const val RECOVERY = 0.65      // Récupération (E)
+        const val MARATHON = 0.78       // Marathon (M)
+        const val THRESHOLD = 0.88      // Seuil (T)
+        const val INTERVAL = 0.98       // Intervalles (I)
+        const val REPETITION = 1.10     // Répétitions (R)
+    }
+
+    data class ReadinessFactors(
+        val hrv: Int,           // Variabilité cardiaque en ms (base: 60ms)
+        val sleepQuality: Int,  // 1-10
+        val muscleSoreness: Int // 1-10 (10 = très douloureux)
+    )
+
     data class TrainingRecommendation(
         val title: String,
-        val type: String, // "E", "M", "T", "I", "R", "REST"
+        val type: String,              // "E", "M", "T", "I", "R", "REST"
         val subtitle: String,
         val description: String,
         val advice: String,
-        val isFromPlan: Boolean
+        val isFromPlan: Boolean,
+        val duration: Int = 0,             // Durée totale en minutes
+        val structure: List<String> = emptyList(),   // Étapes de la séance
+        val targetPace: String? = null,       // Allure cible (ex: "4:30")
+        val hrZone: String? = null,           // Zone FC (ex: "165-175 bpm")
+        val physiologicalGain: String = "", // Gain attendu
+        val weatherWarning: String? = null,   // Alerte météo si nécessaire
+        val intensityColor: String = "green"     // "green", "orange", "purple", "red", "blue"
     )
+
+    /**
+     * Calculate readiness score based on HRV, sleep quality, and muscle soreness
+     */
+    fun calculateReadiness(factors: ReadinessFactors): Int {
+        // HRV normalisé (60ms = neutre)
+        val hrvScore = minOf(100, ((factors.hrv / 60.0) * 50).toInt())
+        
+        // Sommeil (1-10) -> 0-100
+        val sleepScore = factors.sleepQuality * 10
+        
+        // Douleurs inversées (10 douloureux -> 0 points)
+        val sorenessScore = (10 - factors.muscleSoreness) * 10
+        
+        // Pondération : HRV est roi (50%), sommeil (30%), douleurs (20%)
+        return ((hrvScore * 0.5) + (sleepScore * 0.3) + (sorenessScore * 0.2)).toInt()
+    }
+
+    /**
+     * Calculate Training Stress Score (TSS)
+     */
+    fun calculateTSS(
+        durationMin: Int,
+        avgHR: Int,
+        maxHR: Int,
+        restingHR: Int
+    ): Int {
+        val hrReserve = maxHR - restingHR
+        if (hrReserve <= 0) return 0
+        
+        val hrZone = (avgHR - restingHR).toDouble() / hrReserve
+        
+        // Facteur de pondération exponentiel pour l'intensité
+        val intensityFactor = 0.64 * Math.exp(1.92 * hrZone)
+        
+        return (durationMin * intensityFactor).toInt()
+    }
+
+    /**
+     * Calculate pace from VDOT and intensity
+     */
+    fun getPaceFromVDOT(vdot: Int, intensity: Double): String {
+        // intensity: 0.65 (Easy), 0.78 (Marathon), 0.88 (Threshold), 0.98 (Interval), 1.10 (Repetition)
+        val targetVO2 = vdot * intensity
+        
+        // Inversion quadratique approximative pour trouver la vitesse m/min
+        val speedMmin = 29.54 + 5.000663 * targetVO2 - 0.00767 * Math.pow(targetVO2, 2.0)
+        val minPerKm = 1000 / speedMmin
+        
+        val min = minPerKm.toInt()
+        val sec = ((minPerKm - min) * 60).toInt()
+        
+        return String.format("%d:%02d", min, sec)
+    }
 
     fun getDailyTraining(state: AppState): TrainingRecommendation {
         val today = LocalDate.now()
@@ -23,13 +99,27 @@ object CoachAI {
         // 1. Check if there's a training plan
         val planWorkout = findWorkoutInPlan(state, today)
         if (planWorkout != null) {
+            // Enrich plan workout with pace calculation
+            val pace = if (state.vdot > 0) {
+                when (planWorkout.type) {
+                    "E" -> getPaceFromVDOT(state.vdot, TrainingZones.RECOVERY)
+                    "M" -> getPaceFromVDOT(state.vdot, TrainingZones.MARATHON)
+                    "T" -> getPaceFromVDOT(state.vdot, TrainingZones.THRESHOLD)
+                    "I" -> getPaceFromVDOT(state.vdot, TrainingZones.INTERVAL)
+                    "R" -> getPaceFromVDOT(state.vdot, TrainingZones.REPETITION)
+                    else -> null
+                }
+            } else null
+            
             return TrainingRecommendation(
                 title = planWorkout.title,
                 type = planWorkout.type,
                 subtitle = "${planWorkout.dist}km - ${planWorkout.target}",
                 description = planWorkout.details.find { it.label == "Cœur" || it.label == "Objectif" }?.content ?: "",
                 advice = "Séance prévue dans votre plan de 12 semaines. Restez régulier !",
-                isFromPlan = true
+                isFromPlan = true,
+                targetPace = pace,
+                duration = planWorkout.details.find { it.label == "Durée" }?.content?.filter { it.isDigit() }?.toIntOrNull() ?: 60
             )
         }
 
@@ -56,14 +146,21 @@ object CoachAI {
 
     private fun getDynamicSuggestion(state: AppState, date: LocalDate): TrainingRecommendation {
         val dayOfWeek = date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.FRENCH)
-        val readinessValue = state.readiness.toIntOrNull() ?: 50
+        
+        // Calculate readiness (use default values if not available)
+        val readinessValue = calculateReadiness(
+            ReadinessFactors(
+                hrv = 60,  // TODO: Get from Health Connect
+                sleepQuality = 7,  // TODO: Get from user input
+                muscleSoreness = 3  // TODO: Get from user input
+            )
+        )
         
         // Check if user already trained today
         val today = date.toString()
         val todaysWorkouts = state.activities.filter { it.date == today }
         
         if (todaysWorkouts.isNotEmpty()) {
-            // User already trained today
             val totalTSS = todaysWorkouts.mapNotNull { 
                 it.load.removePrefix("TSS ").toIntOrNull() 
             }.sum()
@@ -73,30 +170,26 @@ object CoachAI {
                     title = "Séance Intense Effectuée ✓",
                     type = "REST",
                     subtitle = "Charge: $totalTSS TSS",
-                    description = "Vous avez déjà effectué une séance intense aujourd'hui (${todaysWorkouts.size} activité${if (todaysWorkouts.size > 1) "s" else ""}).",
-                    advice = "Repos recommandé. Votre corps a besoin de récupérer pour progresser. Hydratez-vous bien.",
-                    isFromPlan = false
+                    description = "Vous avez déjà effectué une séance intense aujourd'hui.",
+                    advice = "Repos recommandé. Votre corps a besoin de récupérer pour progresser.",
+                    isFromPlan = false,
+                    duration = 0,
+                    physiologicalGain = "Restauration et adaptation",
+                    intensityColor = "red"
                 )
-                totalTSS > 80 -> TrainingRecommendation(
+                else -> TrainingRecommendation(
                     title = "Séance Effectuée ✓",
                     type = "E",
                     subtitle = "Charge: $totalTSS TSS",
-                    description = "Séance modérée effectuée aujourd'hui.",
-                    advice = "Si vous vous sentez très bien, vous pouvez ajouter une courte récupération active (20-30min très facile), sinon repos.",
-                    isFromPlan = false
-                )
-                else -> TrainingRecommendation(
-                    title = "Séance Légère Effectuée ✓",
-                    type = "E",
-                    subtitle = "Charge: $totalTSS TSS",
-                    description = "Séance légère effectuée.",
-                    advice = "Vous pouvez ajouter une séance complémentaire si vous vous sentez en forme, mais ce n'est pas obligatoire.",
-                    isFromPlan = false
+                    description = "Séance effectuée aujourd'hui.",
+                    advice = "Si vous vous sentez très bien, vous pouvez ajouter une courte récupération active.",
+                    isFromPlan = false,
+                    intensityColor = "green"
                 )
             }
         }
         
-        // Check recent training load (last 7 days)
+        // Calculate recent load
         val sevenDaysAgo = date.minusDays(7).toString()
         val recentWorkouts = state.activities.filter { 
             it.date >= sevenDaysAgo && it.date < today
@@ -105,66 +198,134 @@ object CoachAI {
             it.load.removePrefix("TSS ").toIntOrNull() 
         }.sum()
         
-        // Adjust suggestions based on weekly load
-        val isHighLoad = weeklyTSS > 500
+        // Get previous session TSS and type
+        val prevSession = state.activities.firstOrNull()
+        val prevTSS = prevSession?.load?.removePrefix("TSS ")?.toIntOrNull() ?: 0
+        val lastSessionType = prevSession?.type ?: "easy"
         
-        // Logical decision based on readiness, day of week, and recent load
-        return when {
-            readinessValue < 40 || isHighLoad -> TrainingRecommendation(
-                title = "Repos Récupérateur",
+        // Weather factor (TODO: Get real temperature)
+        val temperature = 20
+        val heatStress = if (temperature > 22) (temperature - 20) * 1.5 else 0.0
+        
+        // CASE 1: Extreme Fatigue
+        if (readinessValue < 35) {
+            return TrainingRecommendation(
+                title = "Repos Biologique Total",
                 type = "REST",
                 subtitle = "Récupération nécessaire",
-                description = if (isHighLoad) {
-                    "Charge hebdomadaire élevée ($weeklyTSS TSS). Votre score de disponibilité est à $readinessValue/100."
-                } else {
-                    "Votre score de disponibilité est bas ($readinessValue/100)."
-                },
-                advice = "Le repos fait partie de l'entraînement. Laissez votre corps assimiler la charge passée.",
-                isFromPlan = false
+                description = "Votre système nerveux sympathique est saturé.",
+                advice = "S'entraîner aujourd'hui serait contre-productif et augmente le risque de blessure de 60%.",
+                isFromPlan = false,
+                duration = 0,
+                structure = listOf(
+                    "Repos complet",
+                    "Hydratation + Électrolytes",
+                    "Sommeil > 8h requis"
+                ),
+                physiologicalGain = "Restauration Homéostasie",
+                intensityColor = "red"
             )
+        }
+        
+        // CASE 2: Moderate Fatigue or Big Session Yesterday
+        if (readinessValue < 60 || prevTSS > 120) {
+            val pace = if (state.vdot > 0) getPaceFromVDOT(state.vdot, TrainingZones.RECOVERY) else null
+            return TrainingRecommendation(
+                title = "Footing de Régénération",
+                type = "E",
+                subtitle = "40 min en endurance fondamentale",
+                description = "Flush du lactate résiduel. Ne dépassez pas 70% FCMax.",
+                advice = "Votre corps a besoin de récupération active. Restez très facile.",
+                isFromPlan = false,
+                duration = 40,
+                structure = listOf(
+                    "10' Marche/Trot progressif",
+                    "30' Endurance Fondamentale stricte (Zone 1)",
+                    "Étirements passifs légers"
+                ),
+                targetPace = pace,
+                hrZone = "135-150 bpm",
+                physiologicalGain = "Flush lactate, capillarisation",
+                weatherWarning = if (heatStress > 0) "Chaleur détectée (${temperature}°C). Ralentissez de ${(heatStress * 2).toInt()} sec/km" else null,
+                intensityColor = "blue"
+            )
+        }
+        
+        // CASE 3: Optimal Form - Energy System Rotation
+        if (lastSessionType == "interval" || lastSessionType == "tempo") {
+            // After quality -> Volume
+            val pace = if (state.vdot > 0) getPaceFromVDOT(state.vdot, 0.70) else null
+            val duration = if (weeklyTSS < 300) 75 else 60
             
-            date.dayOfWeek.value == 7 -> { // Sunday
-                val dist = if (readinessValue > 70 && !isHighLoad) 12 else 8
-                TrainingRecommendation(
-                    title = "Sortie Longue (E)",
-                    type = "E",
-                    subtitle = "${dist}km en endurance",
-                    description = "Course lente à allure très facile pour construire la base aérobie.",
-                    advice = "Dimanche est idéal pour le volume. Maintenez une allure où vous pouvez parler.",
-                    isFromPlan = false
+            return TrainingRecommendation(
+                title = "Sortie Aérobie - Volume",
+                type = "E",
+                subtitle = "$duration min en endurance",
+                description = "Développement des mitochondries et capillarisation. Restez fluide.",
+                advice = "Après l'intensité, on construit la base. Allure conversationnelle.",
+                isFromPlan = false,
+                duration = duration,
+                structure = listOf(
+                    "15' Échauffement progressif",
+                    "${duration - 25}' Endurance Fondamentale (Zone 2)",
+                    "6 x 100m Lignes droites (Vitesse technique)",
+                    "10' Retour au calme"
+                ),
+                targetPace = pace,
+                hrZone = "145-160 bpm",
+                physiologicalGain = "Densité mitochondriale, économie de course",
+                weatherWarning = if (heatStress > 0) "Chaleur : ralentissez de ${(heatStress * 2).toInt()} sec/km" else null,
+                intensityColor = "green"
+            )
+        } else {
+            // Can do quality work
+            if (readinessValue > 80 && weeklyTSS < 400) {
+                // VO2Max
+                val pace = if (state.vdot > 0) getPaceFromVDOT(state.vdot, TrainingZones.INTERVAL) else null
+                return TrainingRecommendation(
+                    title = "Puissance Aérobie (VMA)",
+                    type = "I",
+                    subtitle = "6 x 3' à VMA",
+                    description = "Augmentation du VO2Max. Maintenir une cadence > 175 spm.",
+                    advice = "Votre forme est excellente ($readinessValue/100). Profitez-en pour progresser !",
+                    isFromPlan = false,
+                    duration = 60,
+                    structure = listOf(
+                        "20' Échauffement + Gammes",
+                        "SÉRIE: 6 x 3' à VMA (95-100% FCMax)",
+                        "RÉCUP: 2' trot lent entre les fractions",
+                        "10' Retour au calme"
+                    ),
+                    targetPace = pace,
+                    hrZone = "175-185 bpm",
+                    physiologicalGain = "+0.2 VDOT estimé, puissance aérobie",
+                    weatherWarning = if (temperature > 25) "Chaleur excessive. Reportez cette séance." else null,
+                    intensityColor = "purple"
+                )
+            } else {
+                // Threshold
+                val pace = if (state.vdot > 0) getPaceFromVDOT(state.vdot, TrainingZones.THRESHOLD) else null
+                return TrainingRecommendation(
+                    title = "Seuil Anaérobie (Tempo)",
+                    type = "T",
+                    subtitle = "2 x 15' au seuil",
+                    description = "Repousser l'accumulation de lactates. Douleur contrôlée.",
+                    advice = "Forme bonne mais pas exceptionnelle. Le seuil est parfait.",
+                    isFromPlan = false,
+                    duration = 55,
+                    structure = listOf(
+                        "15' Échauffement",
+                        "BLOC: 2 x 15' au Seuil (88-92% FCMax)",
+                        "RÉCUP: 3' trot entre les blocs",
+                        "10' Retour au calme"
+                    ),
+                    targetPace = pace,
+                    hrZone = "165-175 bpm",
+                    physiologicalGain = "Recul seuil lactique, endurance spécifique",
+                    weatherWarning = if (heatStress > 0) "Chaleur : ralentissez de ${(heatStress * 2).toInt()} sec/km" else null,
+                    intensityColor = "orange"
                 )
             }
-            
-            date.dayOfWeek.value == 2 || date.dayOfWeek.value == 4 -> { // Tue or Thu - Quality days
-                if (readinessValue > 60 && !isHighLoad) {
-                    TrainingRecommendation(
-                        title = "Fartlek Ludique",
-                        type = "I",
-                        subtitle = "30-45 min avec accélérations",
-                        description = "6-8 sprints courts (30s) pendant votre footing habituel.",
-                        advice = "Votre forme est bonne ($readinessValue/100). Un peu d'intensité réveillera vos fibres rapides.",
-                        isFromPlan = false
-                    )
-                } else {
-                    TrainingRecommendation(
-                        title = "Footing de Base",
-                        type = "E",
-                        subtitle = "6-8km allure facile",
-                        description = "Maintien de la condition physique sans fatigue excessive.",
-                        advice = "Votre forme ne permet pas d'intensité aujourd'hui. Restez en endurance.",
-                        isFromPlan = false
-                    )
-                }
-            }
-            
-            else -> TrainingRecommendation(
-                title = "Footing de Base",
-                type = "E",
-                subtitle = "6-8km allure facile",
-                description = "Maintien de la condition physique sans fatigue excessive.",
-                advice = "Une séance simple pour garder la régularité sans stresser le système nerveux.",
-                isFromPlan = false
-            )
         }
     }
 }

@@ -325,6 +325,15 @@ fun MetricItem(label: String, value: String, icon: ImageVector) {
 fun DailyTrainingSection(state: AppState) {
     val recommendation = remember { CoachAI.getDailyTraining(state) }
     
+    // Color based on intensity
+    val intensityColor = when(recommendation.intensityColor) {
+        "red" -> Color(0xFFEF4444)
+        "orange" -> Color(0xFFF59E0B)
+        "purple" -> Color(0xFFA855F7)
+        "blue" -> Color(0xFF3B82F6)
+        else -> Color(0xFF10B981) // green
+    }
+    
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -332,15 +341,16 @@ fun DailyTrainingSection(state: AppState) {
             .background(
                 brush = androidx.compose.ui.graphics.Brush.linearGradient(
                     colors = listOf(
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                        intensityColor.copy(alpha = 0.15f),
                         MaterialTheme.colorScheme.surface
                     )
                 )
             )
-            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(32.dp))
+            .border(1.dp, intensityColor.copy(alpha = 0.2f), RoundedCornerShape(32.dp))
             .padding(24.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            // Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -348,7 +358,7 @@ fun DailyTrainingSection(state: AppState) {
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Surface(
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        color = intensityColor.copy(alpha = 0.2f),
                         shape = CircleShape,
                         modifier = Modifier.size(32.dp)
                     ) {
@@ -357,10 +367,11 @@ fun DailyTrainingSection(state: AppState) {
                                 imageVector = when(recommendation.type) {
                                     "REST" -> Icons.Default.NightsStay
                                     "I", "R" -> Icons.Default.Bolt
+                                    "T" -> Icons.Default.TrendingUp
                                     else -> Icons.Default.DirectionsRun
                                 },
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
+                                tint = intensityColor,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -368,29 +379,58 @@ fun DailyTrainingSection(state: AppState) {
                     Text(
                         text = if (recommendation.isFromPlan) "ENTRAÎNEMENT DU JOUR" else "SUGGESTION DU COACH",
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = intensityColor,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
                     )
                 }
                 
-                if (recommendation.isFromPlan) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.primary,
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = "PLAN",
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.White,
-                            fontSize = 8.sp,
-                            fontWeight = FontWeight.Black
-                        )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (recommendation.duration > 0) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Timer,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(12.dp),
+                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                )
+                                Text(
+                                    text = "${recommendation.duration}'",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                    
+                    if (recommendation.isFromPlan) {
+                        Surface(
+                            color = intensityColor,
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text(
+                                text = "PLAN",
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White,
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.Black
+                            )
+                        }
                     }
                 }
             }
 
+            // Title and subtitle
             Column {
                 Text(
                     text = recommendation.title,
@@ -404,6 +444,7 @@ fun DailyTrainingSection(state: AppState) {
                 )
             }
 
+            // Description
             if (recommendation.description.isNotBlank()) {
                 Surface(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
@@ -419,8 +460,177 @@ fun DailyTrainingSection(state: AppState) {
                 }
             }
 
+            // Weather Warning
+            if (recommendation.weatherWarning != null) {
+                Surface(
+                    color = Color(0xFFF59E0B).copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = Color(0xFFF59E0B),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = recommendation.weatherWarning,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xFFF59E0B)
+                        )
+                    }
+                }
+            }
+
+            // Workout Structure
+            if (recommendation.structure.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "STRUCTURE",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+                    recommendation.structure.forEach { step ->
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(6.dp)
+                                    .offset(y = 6.dp)
+                                    .background(intensityColor, CircleShape)
+                            )
+                            Text(
+                                text = step,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Paces and HR Zone
+            if (recommendation.targetPace != null || recommendation.hrZone != null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    if (recommendation.targetPace != null) {
+                        Surface(
+                            color = intensityColor.copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = "ALLURE CIBLE",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                    fontSize = 9.sp,
+                                    letterSpacing = 0.5.sp
+                                )
+                                Row(
+                                    verticalAlignment = Alignment.Bottom,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Text(
+                                        text = recommendation.targetPace,
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.Black,
+                                        color = intensityColor
+                                    )
+                                    Text(
+                                        text = "/km",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                        modifier = Modifier.offset(y = (-2).dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (recommendation.hrZone != null) {
+                        Surface(
+                            color = Color(0xFFEF4444).copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = "ZONE FC",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                    fontSize = 9.sp,
+                                    letterSpacing = 0.5.sp
+                                )
+                                Text(
+                                    text = recommendation.hrZone,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFEF4444)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Physiological Gain
+            if (recommendation.physiologicalGain.isNotBlank()) {
+                Surface(
+                    color = Color(0xFF3B82F6).copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.EmojiEvents,
+                            contentDescription = null,
+                            tint = Color(0xFF3B82F6),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Column {
+                            Text(
+                                text = "GAIN PHYSIOLOGIQUE",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color(0xFF3B82F6).copy(alpha = 0.7f),
+                                fontSize = 9.sp,
+                                letterSpacing = 0.5.sp
+                            )
+                            Text(
+                                text = recommendation.physiologicalGain,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFF3B82F6),
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+            }
+
             Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
 
+            // Advice
             Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Icon(
                     imageVector = Icons.Default.Lightbulb,
