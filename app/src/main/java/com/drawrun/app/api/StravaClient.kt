@@ -28,7 +28,7 @@ class StravaClient(
     init {
         // Logging interceptor for debugging
         val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.HEADERS
+            level = HttpLoggingInterceptor.Level.BODY
         }
         
         // Create a temporary service for the authenticator
@@ -64,12 +64,15 @@ class StravaClient(
      */
     fun getAuthorizationUrl(redirectUri: String): String {
         val scopes = "read,read_all,profile:read_all,activity:read,activity:read_all"
-        return "https://www.strava.com/oauth/authorize" +
-                "?client_id=$clientId" +
-                "&redirect_uri=$redirectUri" +
-                "&response_type=code" +
-                "&approval_prompt=auto" +
-                "&scope=$scopes"
+        return android.net.Uri.parse("https://www.strava.com/oauth/authorize")
+            .buildUpon()
+            .appendQueryParameter("client_id", clientId.toString())
+            .appendQueryParameter("redirect_uri", redirectUri)
+            .appendQueryParameter("response_type", "code")
+            .appendQueryParameter("approval_prompt", "auto")
+            .appendQueryParameter("scope", scopes)
+            .build()
+            .toString()
     }
     
     /**
@@ -77,11 +80,14 @@ class StravaClient(
      */
     fun getMobileAuthorizationUrl(redirectUri: String): String {
         val scopes = "read,read_all,profile:read_all,activity:read,activity:read_all"
-        return "https://www.strava.com/oauth/mobile/authorize" +
-                "?client_id=$clientId" +
-                "&redirect_uri=$redirectUri" +
-                "&response_type=code" +
-                "&approval_prompt=auto" +
-                "&scope=$scopes"
+        return android.net.Uri.parse("https://www.strava.com/oauth/mobile/authorize")
+            .buildUpon()
+            .appendQueryParameter("client_id", clientId.toString())
+            .appendQueryParameter("redirect_uri", redirectUri)
+            .appendQueryParameter("response_type", "code")
+            .appendQueryParameter("approval_prompt", "auto")
+            .appendQueryParameter("scope", scopes)
+            .build()
+            .toString()
     }
 }

@@ -90,28 +90,55 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        
+        // Handle callback if app was started by the intent
+        handleIntent(intent)
     }
     
     override fun onNewIntent(intent: android.content.Intent?) {
         super.onNewIntent(intent)
-        setIntent(intent) // Good practice
-        
-        // Handle OAuth Callback
+        setIntent(intent) 
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: android.content.Intent?) {
         val uri = intent?.data
-        if (uri != null && (uri.toString().startsWith("drawrun://strava_callback") || uri.toString().startsWith("http://localhost/strava_callback"))) {
-            val code = uri.getQueryParameter("code")
-            if (code != null) {
-                android.widget.Toast.makeText(this, "Connexion Strava en cours...", android.widget.Toast.LENGTH_SHORT).show()
+        val action = intent?.action
+        android.util.Log.d("DrawRun", "MainActivity: handleIntent | Action: $action | URI: $uri")
+        
+        if (intent != null) {
+            val extras = intent.extras
+            if (extras != null) {
+                for (key in extras.keySet()) {
+                    android.util.Log.d("DrawRun", "MainActivity: Intent Extra: $key = ${extras.get(key)}")
+                }
+            }
+        }
+        
+        if (uri != null) {
+            val uriStr = uri.toString()
+            if (uriStr.contains("strava_callback")) {
+                android.util.Log.i("DrawRun", "Strava: Callback detected: $uriStr")
                 
-                // Launch coroutine to exchange token using the Activity's scope
-                lifecycleScope.launch {
-                    val success = syncManager.exchangeToken(code)
-                    if (success) {
-                        android.widget.Toast.makeText(this@MainActivity, "Strava Connecté !", android.widget.Toast.LENGTH_SHORT).show()
-                        appState.stravaConnected = true
-                    } else {
-                        android.widget.Toast.makeText(this@MainActivity, "Échec connexion Strava", android.widget.Toast.LENGTH_SHORT).show()
+                val code = uri.getQueryParameter("code")
+                val error = uri.getQueryParameter("error")
+                
+                if (code != null) {
+                    android.util.Log.d("DrawRun", "Strava: Auth code received: $code")
+                    android.widget.Toast.makeText(this, "Connexion Strava en cours...", android.widget.Toast.LENGTH_SHORT).show()
+                    
+                    lifecycleScope.launch {
+                        val success = syncManager.exchangeToken(code)
+                        if (success) {
+                            android.widget.Toast.makeText(this@MainActivity, "Strava Connecté !", android.widget.Toast.LENGTH_SHORT).show()
+                            appState.stravaConnected = true
+                        } else {
+                            android.widget.Toast.makeText(this@MainActivity, "Échec échange de code", android.widget.Toast.LENGTH_SHORT).show()
+                        }
                     }
+                } else if (error != null) {
+                    android.util.Log.e("DrawRun", "Strava: Auth error returned: $error")
+                    android.widget.Toast.makeText(this, "Strava Auth Error: $error", android.widget.Toast.LENGTH_LONG).show()
                 }
             }
         }

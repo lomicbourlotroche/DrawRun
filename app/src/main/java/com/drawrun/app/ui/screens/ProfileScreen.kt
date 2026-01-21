@@ -161,14 +161,15 @@ fun ProfileScreen(state: AppState, syncManager: DataSyncManager) {
                 val permissionLauncher = rememberLauncherForActivityResult(
                     PermissionController.createRequestPermissionResultContract()
                 ) { granted ->
-                    if (granted.containsAll(syncManager.permissions)) {
-                        state.healthConnectConnected = true
-                        val prefs = context.getSharedPreferences("drawrun_prefs", android.content.Context.MODE_PRIVATE)
-                        prefs.edit().putBoolean("health_connected", true).apply()
+                    val allGranted = granted.containsAll(syncManager.permissions)
+                    state.healthConnectPermissionsGranted = allGranted
+                    // We stay "connected" but show "Missing permissions" if not all granted
+                    state.healthConnectConnected = true
+                    val prefs = context.getSharedPreferences("drawrun_prefs", android.content.Context.MODE_PRIVATE)
+                    prefs.edit().putBoolean("health_connected", true).apply()
+                    
+                    if (allGranted) {
                         scope.launch { syncManager.syncHealthData() }
-                    } else {
-                        state.healthConnectConnected = false
-                         // Optional: Toast "Permissions required"
                     }
                 }
 
@@ -219,6 +220,7 @@ fun ProfileScreen(state: AppState, syncManager: DataSyncManager) {
                                     if (allGranted) {
                                         syncManager.syncHealthData()
                                     } else {
+                                        // Still launch if some missing, or if none missing but user wants to refresh
                                         permissionLauncher.launch(syncManager.permissions)
                                     }
                                 }

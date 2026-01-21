@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:2:1-132:12
-INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:2:1-132:12
-INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:2:1-132:12
-INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:2:1-132:12
+ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:2:1-133:12
+INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:2:1-133:12
+INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:2:1-133:12
+INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:2:1-133:12
 MERGED from [androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:17:1-35:12
 MERGED from [androidx.navigation:navigation-common:2.7.6] C:\Users\lomic\.gradle\caches\8.10.2\transforms\d09d2ba122e07c7ae5fa1677a155c727\transformed\navigation-common-2.7.6\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.navigation:navigation-runtime:2.7.6] C:\Users\lomic\.gradle\caches\8.10.2\transforms\b52e992ab85e47142d6ca8749c090629\transformed\navigation-runtime-2.7.6\AndroidManifest.xml:17:1-22:12
@@ -130,8 +130,8 @@ ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:21:9-
 	android:name
 		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:21:18-67
 application
-ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:24:5-130:19
-INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:24:5-130:19
+ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:24:5-131:19
+INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:24:5-131:19
 MERGED from [androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:23:5-33:19
 MERGED from [androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:23:5-33:19
 MERGED from [androidx.compose.ui:ui-tooling-android:1.5.4] C:\Users\lomic\.gradle\caches\8.10.2\transforms\34cb6146333b4979903ef89bb0c3fd9c\transformed\jetified-ui-tooling-release\AndroidManifest.xml:22:5-26:19
@@ -165,7 +165,7 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\lomic\.gradle\cach
 	android:theme
 		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:29:9-45
 activity#com.drawrun.app.MainActivity
-ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:30:9-54:20
+ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:30:9-55:20
 	android:launchMode
 		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:33:13-44
 	android:exported
@@ -206,98 +206,98 @@ ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:17
 		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:23-47
 	android:pathPrefix
 		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:52:70-107
-intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:host:localhost+data:pathPrefix:/strava_callback+data:scheme:http
-ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:48:13-53:29
+intent-filter#action:name:android.intent.action.VIEW+category:name:android.intent.category.BROWSABLE+category:name:android.intent.category.DEFAULT+data:host:localhost+data:host:localhost+data:pathPrefix:/strava_callback+data:pathPrefix:/strava_callback+data:scheme:http+data:scheme:https
+ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:48:13-54:29
 activity-alias#com.drawrun.app.MainActivityOnyx
-ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:56:9-67:26
+ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:57:9-68:26
 	android:enabled
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:58:13-36
-	android:label
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:61:13-36
-	android:exported
 		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:59:13-36
+	android:label
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:62:13-36
+	android:exported
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:60:13-36
 	android:targetActivity
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:62:13-51
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:63:13-51
 	android:icon
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:60:13-54
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:61:13-54
 	android:name
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:57:13-45
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:58:13-45
 activity-alias#com.drawrun.app.MainActivityEmerald
-ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:69:9-80:26
+ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:70:9-81:26
 	android:enabled
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:71:13-36
-	android:label
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:74:13-36
-	android:exported
 		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:72:13-36
+	android:label
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:75:13-36
+	android:exported
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:73:13-36
 	android:targetActivity
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:75:13-51
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:76:13-51
 	android:icon
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:73:13-57
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:74:13-57
 	android:name
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:70:13-48
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:71:13-48
 activity-alias#com.drawrun.app.MainActivityRuby
-ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:82:9-93:26
+ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:83:9-94:26
 	android:enabled
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:84:13-36
-	android:label
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:87:13-36
-	android:exported
 		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:85:13-36
+	android:label
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:88:13-36
+	android:exported
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:86:13-36
 	android:targetActivity
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:88:13-51
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:89:13-51
 	android:icon
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:86:13-54
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:87:13-54
 	android:name
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:83:13-45
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:84:13-45
 activity-alias#com.drawrun.app.MainActivityLight
-ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:95:9-106:26
+ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:96:9-107:26
 	android:enabled
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:97:13-36
-	android:label
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:100:13-36
-	android:exported
 		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:98:13-36
-	android:targetActivity
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:101:13-51
-	android:icon
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:99:13-55
-	android:name
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:96:13-46
-activity#com.drawrun.app.PermissionsRationaleActivity
-ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:110:9-117:20
 	android:label
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:113:13-57
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:101:13-36
 	android:exported
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:112:13-36
-	android:name
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:111:13-57
-intent-filter#action:name:androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE
-ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:114:13-116:29
-action#androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE
-ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:115:17-92
-	android:name
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:115:25-89
-activity-alias#com.drawrun.app.ViewPermissionUsageActivity
-ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:120:9-129:26
-	android:exported
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:122:13-36
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:99:13-36
 	android:targetActivity
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:123:13-67
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:102:13-51
+	android:icon
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:100:13-55
+	android:name
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:97:13-46
+activity#com.drawrun.app.PermissionsRationaleActivity
+ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:111:9-118:20
+	android:label
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:114:13-57
+	android:exported
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:113:13-36
+	android:name
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:112:13-57
+intent-filter#action:name:androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE
+ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:115:13-117:29
+action#androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE
+ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:116:17-92
+	android:name
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:116:25-89
+activity-alias#com.drawrun.app.ViewPermissionUsageActivity
+ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:121:9-130:26
+	android:exported
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:123:13-36
+	android:targetActivity
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:124:13-67
 	android:permission
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:124:13-80
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:125:13-80
 	android:name
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:121:13-55
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:122:13-55
 intent-filter#action:name:android.intent.action.VIEW_PERMISSION_USAGE+category:name:android.intent.category.HEALTH_PERMISSIONS
-ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:125:13-128:29
+ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:126:13-129:29
 action#android.intent.action.VIEW_PERMISSION_USAGE
-ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:126:17-86
+ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:127:17-86
 	android:name
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:126:25-83
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:127:25-83
 category#android.intent.category.HEALTH_PERMISSIONS
-ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:127:17-87
+ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:128:17-87
 	android:name
-		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:127:27-84
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:128:27-84
 uses-sdk
 INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml

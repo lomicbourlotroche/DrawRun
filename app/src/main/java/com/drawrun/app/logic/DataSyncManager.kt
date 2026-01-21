@@ -29,6 +29,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsBike
 import androidx.compose.material.icons.filled.DirectionsRun
@@ -62,17 +63,55 @@ class DataSyncManager(val context: Context, val state: AppState) {
     val permissions get() = healthConnectManager.allPermissions
 
     suspend fun restoreConnections() = withContext(Dispatchers.IO) {
-        // Check if we have valid tokens in the new TokenStorage
-        if (stravaClient.tokenStorage.hasTokens()) {
-            withContext(Dispatchers.Main) {
-                state.stravaConnected = true
+        val prefs = context.getSharedPreferences("drawrun_prefs", Context.MODE_PRIVATE)
+        
+        // 1. Restore Strava State
+        val hasStravaTokens = stravaClient.tokenStorage.hasTokens()
+        withContext(Dispatchers.Main) { 
+            state.stravaConnected = hasStravaTokens 
+        }
+        
+        if (hasStravaTokens) {
+            // Load cached activities while we sync
+            val cachedJson = prefs.getString("cached_activities", null)
+            if (cachedJson != null) {
+                try {
+                    val array = JSONArray(cachedJson)
+                    val cachedList = mutableListOf<ActivityItem>()
+                    for (i in 0 until array.length()) {
+                        val obj = array.getJSONObject(i)
+                        cachedList.add(ActivityItem(
+                            id = obj.getLong("id"),
+                            type = obj.getString("type"),
+                            title = obj.getString("title"),
+                            date = obj.getString("date"),
+                            dist = obj.getString("dist"),
+                            load = obj.getString("load"),
+                            duration = obj.getString("duration"),
+                            pace = obj.getString("pace"),
+                            avgHr = obj.getString("avgHr"),
+                            mapPolyline = if (obj.has("map")) obj.getString("map") else null,
+                            color = Color(obj.getInt("color")),
+                            icon = Icons.Default.DirectionsRun, // Placeholder, will be fixed on UI level
+                            startTime = if (obj.has("start")) obj.getString("start") else null,
+                            endTime = if (obj.has("end")) obj.getString("end") else null
+                        ))
+                    }
+                    withContext(Dispatchers.Main) { state.activities = cachedList }
+                } catch (e: Exception) { Log.e("DrawRun", "Cache Load Failed", e) }
             }
-            // Sync activities on restore
+            
             syncStravaActivities()
         }
-        val prefs = context.getSharedPreferences("drawrun_prefs", Context.MODE_PRIVATE)
+
+        // 2. Restore Health Connect State
         val healthConnected = prefs.getBoolean("health_connected", false)
-        val allGranted = if (healthConnected) healthConnectManager.hasPermissions(permissions as Set<String>) else false
+        // Check only CORE permissions for the "Granted" check to avoid frustration
+        val corePermissions = setOf(
+            HealthPermission.getReadPermission(HeartRateRecord::class),
+            HealthPermission.getReadPermission(ExerciseSessionRecord::class)
+        )
+        val allGranted = if (healthConnected) healthConnectManager.hasPermissions(corePermissions) else false
 
         withContext(Dispatchers.Main) {
             state.healthConnectConnected = healthConnected
@@ -94,15 +133,17 @@ class DataSyncManager(val context: Context, val state: AppState) {
      */
     fun startStravaAuth() {
         val authUrl = stravaClient.getMobileAuthorizationUrl(REDIRECT_URI)
+        android.util.Log.d("DrawRun", "Strava: Starting auth with URL: $authUrl")
         val intentUri = android.net.Uri.parse(authUrl)
             
         val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, intentUri)
         
         try {
             context.packageManager.getPackageInfo("com.strava", 0)
+            android.util.Log.d("DrawRun", "Strava: Strava app found, forcing package")
             intent.setPackage("com.strava")
         } catch (e: Exception) {
-            // Fallback to browser
+            android.util.Log.d("DrawRun", "Strava: Strava app not found, using default browser")
         }
         
         intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -144,7 +185,8 @@ class DataSyncManager(val context: Context, val state: AppState) {
                 syncStravaActivities()
                 true
             } else {
-                Log.e("DataSyncManager", "Token exchange failed: ${response.code()}")
+                val errorBody = response.errorBody()?.string()
+                android.util.Log.e("DrawRun", "Strava: Token exchange failed | Code: ${response.code()} | Error: $errorBody")
                 false
             }
         } catch (e: Exception) {
@@ -263,7 +305,7 @@ class DataSyncManager(val context: Context, val state: AppState) {
                     val routePolyline: String? = null // getRouteSchematic(session)
                     
                     ActivityItem(
-                        id = session.hashCode(),
+                        id = session.hashCode().toLong(),
                         type = typeStr,
                         title = session.title ?: "Activité Health Connect",
                         date = session.startTime.atZone(ZoneId.systemDefault()).toLocalDate().toString(),
@@ -318,8 +360,15 @@ class DataSyncManager(val context: Context, val state: AppState) {
             
             // Pagination loop to fetch ALL activities
             while (true) {
-                val activities = stravaClient.api.getActivities(page = page, perPage = 200)
+                android.util.Log.d("DrawRun", "Strava: Fetching page $page...")
+                val activities = try {
+                    stravaClient.api.getActivities(page = page, perPage = 200)
+                } catch (e: Exception) {
+                    android.util.Log.e("DrawRun", "Strava: Network error on page $page", e)
+                    break
+                }
                 
+                android.util.Log.d("DrawRun", "Strava: Received ${activities.size} activities on page $page")
                 if (activities.isEmpty()) break // No more activities
                 
                 // Convert ActivityDetailed to ActivityItem
@@ -345,7 +394,7 @@ class DataSyncManager(val context: Context, val state: AppState) {
                     if (allActivities.size < 7) totalLoadWeek += sufferScore
                     
                     allActivities.add(ActivityItem(
-                        id = activity.id.toInt(),
+                        id = activity.id,
                         type = type,
                         title = activity.name,
                         date = activity.startDateLocal.take(10),
@@ -374,6 +423,28 @@ class DataSyncManager(val context: Context, val state: AppState) {
             withContext(Dispatchers.Main) {
                 state.activities = allActivities
                 state.stravaConnected = true
+                
+                // Save to local cache
+                val prefs = context.getSharedPreferences("drawrun_prefs", Context.MODE_PRIVATE)
+                val array = JSONArray()
+                allActivities.take(50).forEach { item -> // Cache last 50
+                    val obj = JSONObject()
+                    obj.put("id", item.id)
+                    obj.put("type", item.type)
+                    obj.put("title", item.title)
+                    obj.put("date", item.date)
+                    obj.put("dist", item.dist)
+                    obj.put("load", item.load)
+                    obj.put("duration", item.duration)
+                    obj.put("pace", item.pace)
+                    obj.put("avgHr", item.avgHr)
+                    obj.put("map", item.mapPolyline)
+                    obj.put("color", item.color.toArgb())
+                    obj.put("start", item.startTime)
+                    obj.put("end", item.endTime)
+                    array.put(obj)
+                }
+                prefs.edit().putString("cached_activities", array.toString()).apply()
                 
                 // Calculate PMC (Banister Model)
                 val pmcData = PerformanceAnalyzer.calculatePMC(allActivities)
@@ -439,11 +510,11 @@ class DataSyncManager(val context: Context, val state: AppState) {
     /**
      * Fetches detailed streams and analyzes an activity
      */
-    suspend fun syncActivityDetail(activityId: Int, type: String) = withContext(Dispatchers.IO) {
+    suspend fun syncActivityDetail(activityId: Long, type: String) = withContext(Dispatchers.IO) {
         android.util.Log.d("DrawRun", "syncActivityDetail: Starting for activity $activityId")
         
         try {
-            val streams = stravaClient.api.getActivityStreams(activityId.toLong())
+            val streams = stravaClient.api.getActivityStreams(activityId)
             android.util.Log.d("DrawRun", "syncActivityDetail: Received streams data")
             
             // Extract stream data
@@ -472,9 +543,13 @@ class DataSyncManager(val context: Context, val state: AppState) {
                 } else null
             )
             
-            android.util.Log.d("DrawRun", "syncActivityDetail: Running analysis with zones = ${state.zones != null}")
+            android.util.Log.d("DrawRun", "syncActivityDetail: Running analysis. Zones available: ${state.zones != null}")
+            if (state.zones == null) {
+                android.util.Log.w("DrawRun", "syncActivityDetail: TrainingZones are MISSING. Analysis might be inaccurate or incomplete.")
+            }
+            
             val analysis = PerformanceAnalyzer.analyzeActivity(type, activityStreams, state.zones)
-            android.util.Log.d("DrawRun", "syncActivityDetail: Analysis complete - IF=${analysis.intensityFactor}, TSS=${analysis.tss}")
+            android.util.Log.d("DrawRun", "syncActivityDetail: Analysis complete - IF=${analysis.intensityFactor}, TSS=${analysis.tss}, HR Dist=${analysis.hrZoneDistribution != null}")
             
             withContext(Dispatchers.Main) {
                 state.selectedActivityStreams = activityStreams

@@ -179,7 +179,7 @@ class AppState {
 }
 
 data class ActivityItem(
-    val id: Int,
+    val id: Long,
     val type: String,
     val title: String,
     val date: String,

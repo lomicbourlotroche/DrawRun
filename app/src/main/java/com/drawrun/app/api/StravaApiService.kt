@@ -12,7 +12,7 @@ interface StravaApiService {
     /**
      * Exchange authorization code for access token
      */
-    @POST("oauth/token")
+    @POST("https://www.strava.com/oauth/token")
     @FormUrlEncoded
     fun exchangeToken(
         @Field("client_id") clientId: Int,
@@ -24,7 +24,7 @@ interface StravaApiService {
     /**
      * Refresh access token using refresh token
      */
-    @POST("oauth/token")
+    @POST("https://www.strava.com/oauth/token")
     @FormUrlEncoded
     fun refreshAccessToken(
         @Field("client_id") clientId: Int,

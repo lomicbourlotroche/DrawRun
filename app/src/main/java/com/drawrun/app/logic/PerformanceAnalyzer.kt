@@ -353,11 +353,50 @@ object PerformanceAnalyzer {
     }
 
     /**
+     * Calcule la Puissance Normalisée (NP) - Modèle Coggan
+     */
+    fun calculateNP(powerStream: List<Int>?): Double? {
+        if (powerStream == null || powerStream.isEmpty()) return null
+        
+        // 1. 30s rolling average
+        val rollingAvg = mutableListOf<Double>()
+        for (i in powerStream.indices) {
+            val window = powerStream.subList(kotlin.math.max(0, i - 29), i + 1)
+            rollingAvg.add(window.average())
+        }
+        
+        // 2. Raise values to 4th power, average, and take 4th root
+        val avgFourth = rollingAvg.map { it.pow(4.0) }.average()
+        return avgFourth.pow(0.25)
+    }
+
+    /**
+     * Calcule la distribution du temps passé dans chaque zone (en pourcentage)
+     */
+    fun calculateZoneDistribution(dataStream: List<Double>?, zones: List<Pair<Double, Double>>): List<Double> {
+        if (dataStream == null || dataStream.isEmpty() || zones.isEmpty()) return emptyList()
+        val counts = DoubleArray(zones.size)
+        
+        dataStream.forEach { value ->
+            for (i in zones.indices) {
+                if (value >= zones[i].first && value <= zones[i].second) {
+                    counts[i]++
+                    break
+                }
+            }
+        }
+        
+        val total = counts.sum()
+        if (total == 0.0) return List(zones.size) { 0.0 }
+        return counts.map { (it / total) * 100.0 }
+    }
+
+    /**
      * Analyse complète d'une séance (Court Terme)
      */
     fun analyzeActivity(type: String, streams: ActivityStreams, zones: TrainingZones? = null): ActivityAnalysis {
         val time = streams.time
-        val hr = streams.heartRate
+        val hr = streams.heartRate?.map { it.toDouble() }
         val pace = streams.pace
         val power = streams.power
         val distance = streams.distance ?: emptyList()
@@ -374,39 +413,41 @@ object PerformanceAnalyzer {
         val splitIndex = time.size / 2
         val hrHalf1 = hr?.subList(0, splitIndex)?.average() ?: 1.0
         val hrHalf2 = hr?.subList(splitIndex, time.size)?.average() ?: 1.0
-        val ef1 = if (type == "run") (pace?.subList(0, splitIndex)?.average() ?: 0.0) * 60.0 / hrHalf1 else (power?.subList(0, splitIndex)?.average() ?: 0.0) / hrHalf1
-        val ef2 = if (type == "run") (pace?.subList(splitIndex, time.size)?.average() ?: 0.0) * 60.0 / hrHalf2 else (power?.subList(splitIndex, time.size)?.average() ?: 0.0) / hrHalf2
+        val ef1 = if (type == "run") (pace?.subList(0, splitIndex)?.average() ?: 0.0) * 60.0 / hrHalf1 else (power?.subList(0, splitIndex)?.average()?.toDouble() ?: 0.0) / hrHalf1
+        val ef2 = if (type == "run") (pace?.subList(splitIndex, time.size)?.average() ?: 0.0) * 60.0 / hrHalf2 else (power?.subList(splitIndex, time.size)?.average()?.toDouble() ?: 0.0) / hrHalf2
         
         val decoupling = if (ef1 > 0) (ef1 - ef2) / ef1 else 0.0
 
-        // 3. Normalized Power / Pace & IF/TSS
-        val avgSpeed = pace?.average() ?: 0.0 // m/s
+        // 3. NP/IF/TSS logic
+        val normalizedPower = if (type == "bike") calculateNP(power) else null
+        val normalizedSpeed = if (type == "run") streams.gradAdjustedPace?.average() else null
         
-        // Intensity Factor (IF)
-        // Scientifically, IF = normalized speed / threshold speed
-        // Running Threshold Speed (T-Pace) is typically ~88-92% of VMA. Using 90%.
-        val thresholdSpeed = zones?.runZones?.vma?.let { (it * 0.9) / 3.6 } ?: 4.0 // Threshold in m/s
+        val thresholdBike = zones?.bikeZones?.ftp?.toDouble() ?: 250.0
+        val thresholdRun = zones?.runZones?.vma?.let { (it * 0.9) / 3.6 } ?: 4.0 // Threshold in m/s
         
-        // Intensity Factor (IF)
-        val intensityFactor = if (type == "run") {
-            // Simplified Run IF: Avg Pace / Threshold Pace (or Velocity / Threshold Velocity)
-            avgSpeed / thresholdSpeed
+        val intensityFactor = if (type == "bike") {
+            (normalizedPower ?: (power?.average()?.toDouble() ?: 0.0)) / thresholdBike
         } else {
-            // Bike IF: Normalized Power / FTP (Simplified using average if NP logic not fully here)
-            (power?.average() ?: 0.0) / (zones?.bikeZones?.ftp?.toDouble() ?: 250.0)
-        }.coerceIn(0.5, 1.5)
+            (normalizedSpeed ?: (pace?.average() ?: 0.0)) / thresholdRun
+        }.coerceIn(0.4, 1.4)
 
-        // Training Stress Score (TSS)
-        // RSS (Running) or TSS (Bike) = (sec * IF^2) / 36
         val durationSec = time.lastOrNull() ?: 0
-        val tss = (durationSec * intensityFactor * intensityFactor) / 36.0
+        val tss = (durationSec * intensityFactor * intensityFactor * 100.0) / 3600.0
 
-        // Variability Index (VI)
-        // Bike: NP / Avg Power. Run: GAP Avg / Pace Avg (approximation)
-        val gapAvg = streams.gradAdjustedPace?.average() ?: avgSpeed
-        val variabilityIndex = if (avgSpeed > 0) gapAvg / avgSpeed else 1.0
+        // 4. Distributions
+        val hrDist = hr?.let { calculateZoneDistribution(it, zones?.runZones?.fc?.map { it.first.toDouble() to it.second.toDouble() } ?: emptyList()) }
+        val pwrDist = power?.let { calculateZoneDistribution(it.map { it.toDouble() }, zones?.bikeZones?.power?.map { it.first.toDouble() to it.second.toDouble() } ?: emptyList()) }
+        val paceDist = pace?.let { calculateZoneDistribution(it, zones?.runZones?.pace ?: emptyList()) }
 
-        // 4. Lap Data (per km)
+        val gapAvg = streams.gradAdjustedPace?.average() ?: (pace?.average() ?: 0.0)
+        val variabilityIndex = if (type == "bike") {
+            val avgP = power?.average()?.toDouble() ?: 1.0
+            (normalizedPower ?: avgP) / avgP
+        } else {
+            gapAvg / (pace?.average() ?: 1.0)
+        }
+
+        // 5. Lap Data (per km)
         val laps = mutableListOf<LapInfo>()
         if (distance.isNotEmpty()) {
             var currentLap = 1
@@ -422,14 +463,15 @@ object PerformanceAnalyzer {
                         "%d:%02d".format((p / 60).toInt(), (p % 60).toInt())
                     } else "--:--"
                     
+                    val startIndex = distance.indexOfFirst { it >= lapStartDist }.coerceAtLeast(0)
                     laps.add(LapInfo(
                         lapNumber = currentLap,
                         distance = lapDist,
                         duration = lapDur,
                         avgPace = lapPace,
-                        avgHr = hr?.subList(distance.indexOfFirst { it >= lapStartDist }.coerceAtLeast(0), i + 1)?.average()?.toInt() ?: 0,
-                        avgPower = power?.subList(distance.indexOfFirst { it >= lapStartDist }.coerceAtLeast(0), i + 1)?.average()?.toInt(),
-                        elevationGain = (streams.altitude?.get(i) ?: 0.0) - (streams.altitude?.get(distance.indexOfFirst { it >= lapStartDist }.coerceAtLeast(0)) ?: 0.0)
+                        avgHr = streams.heartRate?.subList(startIndex, i + 1)?.average()?.toInt() ?: 0,
+                        avgPower = streams.power?.subList(startIndex, i + 1)?.average()?.toInt(),
+                        elevationGain = (streams.altitude?.get(i) ?: 0.0) - (streams.altitude?.get(startIndex) ?: 0.0)
                     ))
                     
                     lapStartDist = distance[i]
@@ -445,7 +487,16 @@ object PerformanceAnalyzer {
             intensityFactor = intensityFactor,
             tss = tss,
             variabilityIndex = variabilityIndex,
-            lapData = laps
+            lapData = laps,
+            normalizedPower = normalizedPower,
+            normalizedSpeed = normalizedSpeed,
+            trimp = calculateEdwardsTRIMP(durationSec, avgHR.toInt(), calculateFCM(30, "H", 70.0)), // Use FCM logic
+            vam = streams.vam?.average(),
+            hrZoneDistribution = hrDist,
+            powerZoneDistribution = pwrDist,
+            paceZoneDistribution = paceDist,
+            swolf = if (type == "swim") (60 / (pace?.average() ?: 1.0)).toInt() + 20 else null, // Placeholder Swolf
+            strokeRate = if (type == "swim") 32 else null
         )
     }
 
