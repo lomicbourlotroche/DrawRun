@@ -24,13 +24,32 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlanConfigurationDialog(
+    initialDistance: Double = 10000.0,
+    initialDurationSeconds: Int = 3000, // 50 min
+    insights: com.drawrun.app.logic.ActivityAnalyzer.ActivityInsights,
     onDismiss: () -> Unit,
     onGenerate: (distance: Double, timeH: Int, timeM: Int, timeS: Int, startDate: LocalDate) -> Unit
 ) {
-    var selectedDistance by remember { mutableStateOf(10.0) } // km
-    var targetH by remember { mutableStateOf("0") }
-    var targetM by remember { mutableStateOf("50") }
-    var targetS by remember { mutableStateOf("0") }
+    var selectedDistance by remember { mutableStateOf(initialDistance / 1000.0) } // stored in km for UI logic
+    
+    // Auto-fill logic based on insights
+    var targetH by remember { mutableStateOf((initialDurationSeconds / 3600).toString()) }
+    var targetM by remember { mutableStateOf(((initialDurationSeconds % 3600) / 60).toString()) }
+    var targetS by remember { mutableStateOf((initialDurationSeconds % 60).toString()) }
+    
+    // Update target if user selects a different distance
+    LaunchedEffect(selectedDistance) {
+        val distMetres = selectedDistance * 1000
+        val bestPerf = insights.bestTimes[distMetres]
+        if (bestPerf != null) {
+            // Propose slightly better than PB (e.g. 2% better)
+            val improvedSeconds = (bestPerf.timeSeconds * 0.98).toInt()
+            targetH = (improvedSeconds / 3600).toString()
+            targetM = ((improvedSeconds % 3600) / 60).toString()
+            targetS = (improvedSeconds % 60).toString()
+        }
+    }
+
     var showDatePicker by remember { mutableStateOf(false) }
     var startDate by remember { mutableStateOf(LocalDate.now()) }
 

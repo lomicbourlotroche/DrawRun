@@ -130,16 +130,18 @@ fun ActivityDetailScreen(state: AppState, syncManager: com.drawrun.app.logic.Dat
                                 .background(if (state.appTheme == com.drawrun.app.ui.theme.AppTheme.LIGHT) Color(0xFFF1F5F9) else Color(0xFF1C1C1E)),
                             contentAlignment = Alignment.Center
                         ) {
+                            val mapProgress = if (isLiveMode && streams != null && streams.time.isNotEmpty()) {
+                                currentIndex.toFloat() / (streams.time.size - 1)
+                            } else null
+
                             if (act.mapPolyline != null && act.mapPolyline.isNotEmpty()) {
                                 com.drawrun.app.ui.components.ActivityMap(
                                     polyline = act.mapPolyline,
                                     modifier = Modifier.fillMaxSize().padding(16.dp),
-                                    lineColor = if (act.type == "run") Color(0xFFFF3B30) else if (act.type == "bike") Color(0xFFF59E0B) else Color(0xFF007AFF)
+                                    lineColor = if (act.type == "run") Color(0xFFFF3B30) else if (act.type == "bike") Color(0xFFF59E0B) else Color(0xFF007AFF),
+                                    currentProgress = mapProgress
                                 )
-                            }
-                            
-                            // Watermark Icon if no map or purely decorative background
-                            if (act.mapPolyline.isNullOrEmpty()) {
+                            } else {
                                 Icon(
                                     imageVector = if (act.type == "swim") Icons.Default.Pool else if (act.type == "bike") Icons.Default.DirectionsBike else Icons.Default.Map,
                                     contentDescription = null,
@@ -147,16 +149,27 @@ fun ActivityDetailScreen(state: AppState, syncManager: com.drawrun.app.logic.Dat
                                     modifier = Modifier.size(64.dp)
                                 )
                             }
-                            
-                            // Live Replay Overlay
-                            if (isLiveMode && currentPoint != null) {
-                                Text(
-                                    text = currentPoint.timeStr,
-                                    modifier = Modifier.align(Alignment.TopStart).padding(16.dp),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                                    fontWeight = FontWeight.Bold
-                                )
+
+                            // Live Indicator Top-Right
+                            if (isLiveMode) {
+                                Row(
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .padding(16.dp)
+                                        .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Box(modifier = Modifier.size(8.dp).background(Color.Red, CircleShape))
+                                    Text(
+                                        text = currentPoint?.timeStr ?: "LIVE",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                    )
+                                }
                             }
                         }
 

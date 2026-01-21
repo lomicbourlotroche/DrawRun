@@ -26,8 +26,15 @@ import com.drawrun.app.logic.CoachAI
 import com.drawrun.app.logic.PerformanceAnalyzer
 import com.drawrun.app.PmcDataPoint
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import kotlin.math.abs
+import kotlin.math.roundToInt
+import kotlin.math.abs
+import kotlin.math.roundToInt
 
 @Composable
 fun HomeScreen(state: AppState) {
@@ -659,6 +666,9 @@ fun DailyTrainingSection(state: AppState) {
 
 @Composable
 fun PmcChart(data: List<PmcDataPoint>) {
+    var scrubX by remember { mutableStateOf<Float?>(null) }
+    var selectedIndex by remember { mutableStateOf<Int?>(null) }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -673,13 +683,24 @@ fun PmcChart(data: List<PmcDataPoint>) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "GESTION DE PERFORMANCE",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                letterSpacing = 2.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Column {
+                Text(
+                    text = "GESTION DE PERFORMANCE",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    letterSpacing = 2.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                if (selectedIndex != null && data.isNotEmpty()) {
+                    val pt = data[selectedIndex!!]
+                    Text(
+                        text = "${pt.date}: CTL ${pt.ctl.toInt()} / TSB ${pt.tsb.toInt()}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
             Icon(Icons.Default.Timeline, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
         }
 
@@ -687,33 +708,66 @@ fun PmcChart(data: List<PmcDataPoint>) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(180.dp)
+                .pointerInput(Unit) {
+                    detectDragGestures(
+                        onDragStart = { offset -> scrubX = offset.x },
+                        onDrag = { change, _ -> scrubX = change.position.x },
+                        onDragEnd = { scrubX = null; selectedIndex = null },
+                        onDragCancel = { scrubX = null; selectedIndex = null }
+                    )
+                }
+                .pointerInput(Unit) {
+                     detectTapGestures(onTap = { offset: Offset -> scrubX = offset.x })
+                }
         ) {
             Canvas(modifier = Modifier.fillMaxSize()) {
                 if (data.size < 2) return@Canvas
 
                 val width = size.width
                 val height = size.height
+                
+                // Determine ranges
                 val maxVal = data.flatMap { listOf(it.ctl, it.atl) }.maxOrNull()?.coerceAtLeast(10.0) ?: 10.0
-                val minTsb = data.map { it.tsb }.minOrNull() ?: -10.0
-                val maxTsb = data.map { it.tsb }.maxOrNull() ?: 10.0
-                val absMaxTsb = maxOf(abs(minTsb), abs(maxTsb)).coerceAtLeast(10.0)
-
+                val minTsb = data.map { it.tsb }.minOrNull() ?: -20.0
+                val maxTsb = data.map { it.tsb }.maxOrNull()?.coerceAtLeast(10.0) ?: 10.0
+                
+                // TSB Scale (Separate axis or shared? Typically shared but TSB centers on 0)
+                // Let's use a split view or just overlay. Overlay is cleaner for mobile.
+                // We'll map TSB 0 to center height.
+                
                 val stepX = width / (data.size - 1)
                 
-                // 1. Draw TSB Area
+                // Update selected index based on scrub
+                if (scrubX != null) {
+                    val idx = (scrubX!! / width * (data.size - 1)).roundToInt().coerceIn(0, data.size - 1)
+                    selectedIndex = idx
+                }
+
+                // 1. Draw TSB (Bars or Area) - Let's use Area centered on 0
+                val zeroY = height * 0.75f // TSB mostly below, Fitness above? No, let's put 0 at 80% height?
+                // Standard PMC: 
+                // CTL/ATL on Left Axis (0 to Max)
+                // TSB on Right Axis (-Min to +Max)
+                // For simplicity here:
+                // Plot CTL/ATL 0..Max on full height
+                // Plot TSB scaled to e.g. 50% height centered
+                
+                val tsbScale = (height * 0.4f) / maxOf(abs(minTsb), maxTsb)
+                
                 val tsbPath = Path()
-                val midY = height / 2
-                tsbPath.moveTo(0f, midY)
+                tsbPath.moveTo(0f, height/2)
+                
                 data.forEachIndexed { i, pt ->
                     val x = i * stepX
-                    val y = midY - (pt.tsb / absMaxTsb * (height / 2)).toFloat()
+                    val y = (height/2) - (pt.tsb * tsbScale).toFloat()
+                    if (i==0) tsbPath.moveTo(x, height/2)
                     tsbPath.lineTo(x, y)
                 }
-                tsbPath.lineTo(width, midY)
+                tsbPath.lineTo(width, height/2)
                 tsbPath.close()
-                drawPath(tsbPath, color = Color(0xFF22C55E).copy(alpha = 0.15f), style = Fill)
+                drawPath(tsbPath, color = Color(0xFFEAB308).copy(alpha = 0.2f), style = Fill) // Yellow for TSB
 
-                // 2. Draw CTL (Fitness) - Blue
+                // 2. Draw CTL (Fitness) - Blue Line
                 val ctlPath = Path()
                 data.forEachIndexed { i, pt ->
                     val x = i * stepX
@@ -722,7 +776,7 @@ fun PmcChart(data: List<PmcDataPoint>) {
                 }
                 drawPath(ctlPath, color = Color(0xFF3B82F6), style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round))
 
-                // 3. Draw ATL (Fatigue) - Red
+                // 3. Draw ATL (Fatigue) - Red Dashed
                 val atlPath = Path()
                 data.forEachIndexed { i, pt ->
                     val x = i * stepX
@@ -730,6 +784,22 @@ fun PmcChart(data: List<PmcDataPoint>) {
                     if (i == 0) atlPath.moveTo(x, y) else atlPath.lineTo(x, y)
                 }
                 drawPath(atlPath, color = Color(0xFFEF4444), style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round, pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)))
+
+                // 4. Scrubber Line
+                val idx = selectedIndex
+                if (idx != null) {
+                    val x = idx * stepX
+                    drawLine(
+                        color = Color.Black.copy(alpha = 0.5f),
+                        start = Offset(x, 0f),
+                        end = Offset(x, height),
+                        strokeWidth = 1.dp.toPx()
+                    )
+                    
+                    // Draw dots
+                    val ctlY = height - (data[idx].ctl / maxVal * height).toFloat()
+                    drawCircle(Color(0xFF3B82F6), 4.dp.toPx(), Offset(x, ctlY))
+                }
             }
         }
 

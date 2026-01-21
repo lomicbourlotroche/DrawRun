@@ -150,30 +150,8 @@ class AppState {
     }
 
     val zones by derivedStateOf {
-        if (userProfileComplete && restingHR.isNotBlank()) {
-            val vmaVal = vma
-            val fcmVal = fcm
-            val ftpVal = if (ftp.isNotBlank()) ftp.toInt() else 250
-            
-            // Swim CSS default or calc (placeholder 2:00/100m => 2.0 min)
-            val cssVal = 2.0 
-
-            TrainingZones(
-                runZones = RunZones(
-                    fc = PerformanceAnalyzer.calculateKarvonenZones(fcmVal, restingHR.toIntOrNull() ?: 60),
-                    pace = PerformanceAnalyzer.calculatePaceZones(vmaVal),
-                    vma = vmaVal
-                ),
-                bikeZones = BikeZones(
-                    power = PerformanceAnalyzer.calculateCogganPowerZones(ftpVal),
-                    hr = PerformanceAnalyzer.calculateKarvonenZones((fcmVal * 0.95).toInt(), restingHR.toIntOrNull() ?: 60), // Cycling HR is typically lower
-                    ftp = ftpVal
-                ),
-                swimZones = SwimZones(
-                    css = cssVal,
-                    pace = PerformanceAnalyzer.calculateSwimZones(cssVal)
-                )
-            )
+        if (userProfileComplete) {
+            PerformanceAnalyzer.getPersonalizedZones(this)
         } else null
     }
 }

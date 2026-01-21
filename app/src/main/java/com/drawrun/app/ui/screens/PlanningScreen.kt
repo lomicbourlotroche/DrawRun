@@ -272,8 +272,15 @@ fun PlanningScreen(state: AppState) {
                         // Update key to state.activities to ensure reactivity when activities change
                         val insights = remember(state.activities) { com.drawrun.app.logic.ActivityAnalyzer.analyzeActivities(state.activities) }
                         
+                        // Default values based on insights (e.g. improve 10k by 2%)
+                        val defaultDist = 10000.0
+                        val defaultTime = insights.bestTimes[defaultDist]?.timeSeconds?.times(0.98)?.toInt() ?: 3000
+
                         // New Plan Configuration Dialog
                         com.drawrun.app.ui.components.PlanConfigurationDialog(
+                            initialDistance = defaultDist,
+                            initialDurationSeconds = defaultTime,
+                            insights = insights,
                             onDismiss = { showPlanSetup = false },
                             onGenerate = { distance, h, m, s, startDate ->
                                 // Calculate total minutes
