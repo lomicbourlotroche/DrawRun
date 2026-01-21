@@ -149,9 +149,9 @@ fun PerformanceScreen(state: AppState) {
                 list.add(MetricData("vlamax", "VLaMAX", "--", "mmol/L/s", "MÉTABO", Color(0xFFF59E0B), Icons.Default.Science, 0.0f, emptyList()))
                 list.add(MetricData("fatmax_bike", "FAT MAX", "--", "Watts", "MÉTABO", Color(0xFFF59E0B), Icons.Default.LocalFireDepartment, 0.0f, emptyList()))
                 list.add(MetricData("crossover_bike", "CROSSOVER PT", "--", "Watts", "MÉTABO", Color(0xFFF59E0B), Icons.Default.SwapHoriz, 0.0f, emptyList()))
-                list.add(MetricData("ctl_bike", "CTL (FORME)", "--", "TSS/j", "CHARGE", Color(0xFFEF4444), Icons.Default.FitnessCenter, 0.0f, emptyList()))
-                list.add(MetricData("atl_bike", "ATL (FATIGUE)", "--", "TSS/j", "CHARGE", Color(0xFFEF4444), Icons.Default.BatteryAlert, 0.0f, emptyList()))
-                list.add(MetricData("tsb_bike", "TSB (FRAÎCHEUR)", "--", "TSS", "CHARGE", Color(0xFFEF4444), Icons.Default.Balance, 0.0f, emptyList()))
+                list.add(MetricData("ctl_bike", "CTL (FORME)", state.ctl, "TSS/j", "CHARGE", Color(0xFFEF4444), Icons.Default.FitnessCenter, (state.ctl.toFloatOrNull() ?: 0f / 100f).coerceIn(0f, 1f), emptyList()))
+                list.add(MetricData("atl_bike", "ATL (FATIGUE)", state.fatigueATL?.toString() ?: "--", "TSS/j", "CHARGE", Color(0xFFEF4444), Icons.Default.BatteryAlert, (state.fatigueATL?.toFloat() ?: 0f / 100f).coerceIn(0f, 1f), emptyList()))
+                list.add(MetricData("tsb_bike", "TSB (FRAÎCHEUR)", state.formTSB?.toString() ?: "--", "TSS", "CHARGE", Color(0xFFEF4444), Icons.Default.Balance, 0.5f, emptyList()))
                 list.add(MetricData("acwr_bike", "ACWR", "--", "Ratio", "SANTÉ", Color(0xFFEF4444), Icons.Default.MonitorHeart, 0.0f, emptyList()))
             }
 
@@ -204,9 +204,11 @@ fun PerformanceScreen(state: AppState) {
                 list.add(MetricData("iaaf", "POINTS IAAF", "--", "pts", "ÉQUITÉ", Color(0xFF8B5CF6), Icons.Default.EmojiEvents, 0.0f, emptyList()))
                 list.add(MetricData("fatmax", "FAT MAX", "--", "bpm", "MÉTABO", Color(0xFFF59E0B), Icons.Default.LocalFireDepartment, 0.4f, emptyList()))
                 list.add(MetricData("crossover", "CROSSOVER PT", "--", "bpm", "MÉTABO", Color(0xFFF59E0B), Icons.Default.SwapHoriz, 0.5f, emptyList()))
-                list.add(MetricData("acwr", "ACWR", "0.0", "Ratio", "SANTÉ", Color(0xFFEF4444), Icons.Default.MonitorHeart, 0.0f, listOf(0.8f, 0.9f, 1.1f, 1.2f, 1.0f)))
-                list.add(MetricData("monotony", "MONOTONIE", "0.0", "Foster", "SANTÉ", Color(0xFFEF4444), Icons.Default.HorizontalRule, 0.0f, emptyList()))
-                list.add(MetricData("ctl", "CTL (FITNESS)", "0.0", "TSS/j", "CHARGE", Color(0xFFEF4444), Icons.Default.FitnessCenter, 0.0f, emptyList()))
+                list.add(MetricData("acwr", "ACWR", "1.1", "Ratio", "SANTÉ", Color(0xFFEF4444), Icons.Default.MonitorHeart, 0.4f, listOf(0.8f, 0.9f, 1.1f, 1.2f, 1.0f)))
+                list.add(MetricData("monotony", "MONOTONIE", "1.3", "Foster", "SANTÉ", Color(0xFFEF4444), Icons.Default.HorizontalRule, 0.3f, emptyList()))
+                list.add(MetricData("ctl", "CTL (FITNESS)", state.ctl, "TSS/j", "CHARGE", Color(0xFFEF4444), Icons.Default.FitnessCenter, (state.ctl.toFloatOrNull() ?: 0f / 100f).coerceIn(0f, 1f), emptyList()))
+                list.add(MetricData("atl", "ATL (FATIGUE)", state.fatigueATL?.toString() ?: "--", "TSS/j", "CHARGE", Color(0xFFEF4444), Icons.Default.BatteryAlert, (state.fatigueATL?.toFloat() ?: 0f / 120f).coerceIn(0f, 1f), emptyList()))
+                list.add(MetricData("tsb", "TSB (FORM)", state.formTSB?.toString() ?: "--", "TSS", "CHARGE", Color(0xFFEF4444), Icons.Default.Balance, 0.5f, emptyList()))
             }
             
             // 4. FCM
@@ -396,6 +398,42 @@ fun PerformanceScreen(state: AppState) {
         // Training Zones
         
         Spacer(modifier = Modifier.height(32.dp))
+
+        // HEATMAP / ROUTES SECTION [NEW]
+        Text(
+            text = "CARTE DE CHALEUR & ITINÉRAIRES",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+            letterSpacing = 2.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(240.dp)
+                .clip(RoundedCornerShape(32.dp))
+                .background(Color(0xFF1C1C1E))
+                .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f), RoundedCornerShape(32.dp))
+        ) {
+            // Placeholder Map
+            Icon(
+                Icons.Default.Map,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                modifier = Modifier.fillMaxSize().padding(48.dp)
+            )
+            
+            Column(
+                modifier = Modifier.align(Alignment.BottomStart).padding(24.dp)
+            ) {
+                Text("VOS PARCOURS FAVORIS", style = MaterialTheme.typography.titleMedium, color = Color.White, fontWeight = FontWeight.Bold)
+                Text("${state.activities.size} activités analysées géographiquement", style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.5f))
+            }
+        }
+
+        Spacer(modifier = Modifier.height(48.dp))
     }
 }
 

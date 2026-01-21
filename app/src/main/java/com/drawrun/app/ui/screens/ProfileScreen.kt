@@ -191,8 +191,7 @@ fun ProfileScreen(state: AppState, syncManager: DataSyncManager) {
                         onCheckedChange = { isChecked ->
                             if (isChecked) {
                                 scope.launch {
-                                    val granted = syncManager.healthConnectClient.permissionController.getGrantedPermissions()
-                                    if (granted.containsAll(syncManager.permissions)) {
+                                    if (syncManager.healthConnectManager.hasPermissions(syncManager.permissions as Set<String>)) {
                                         state.healthConnectConnected = true
                                         val prefs = context.getSharedPreferences("drawrun_prefs", android.content.Context.MODE_PRIVATE)
                                         prefs.edit().putBoolean("health_connected", true).apply()

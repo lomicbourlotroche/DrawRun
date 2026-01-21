@@ -1,225 +1,175 @@
-import okhttp3.*
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.*
-import java.io.IOException
-
-// --- MODÈLES DE DONNÉES ---
-
-/**
- * Réponse lors de l'échange ou du rafraîchissement de jeton
- */
-data class StravaTokenResponse(
-    val token_type: String,
-    val access_token: String,
-    val expires_at: Long,
-    val expires_in: Int,
-    val refresh_token: String,
-    val athlete: AthleteProfile?
-)
+import android.content.Context
+import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.*
+import androidx.health.connect.client.request.ReadRecordsRequest
+import androidx.health.connect.client.time.TimeRangeFilter
+import java.time.Instant
+import java.time.ZonedDateTime
 
 /**
- * Profil complet de l'athlète
+ * Gestionnaire pour Health Connect
+ * Gère les permissions et la récupération de TOUTES les données de santé
  */
-data class AthleteProfile(
-    val id: Long,
-    val username: String?,
-    val firstname: String?,
-    val lastname: String?,
-    val city: String?,
-    val state: String?,
-    val country: String?,
-    val sex: String?,
-    val weight: Float?,
-    val bio: String?,
-    val follower_count: Int?,
-    val friend_count: Int?,
-    val ftp: Int?,
-    val shoes: List<Gear>?,
-    val bikes: List<Gear>?
-)
+class HealthConnectManager(private val context: Context) {
 
-data class Gear(
-    val id: String,
-    val name: String,
-    val distance: Float,
-    val primary: Boolean
-)
+    private val healthConnectClient by lazy { HealthConnectClient.getOrCreate(context) }
 
-/**
- * Activité détaillée
- */
-data class ActivityDetailed(
-    val id: Long,
-    val name: String,
-    val distance: Float,
-    val moving_time: Int,
-    val elapsed_time: Int,
-    val total_elevation_gain: Float,
-    val type: String,
-    val start_date: String,
-    val average_speed: Float,
-    val max_speed: Float,
-    val average_heartrate: Float?,
-    val max_heartrate: Float?,
-    val device_name: String?,
-    val calories: Float?
-)
+    /**
+     * Liste exhaustive des permissions pour "absolument toutes" les données courantes.
+     * Note : Vous devez déclarer ces permissions dans votre AndroidManifest.xml également.
+     */
+    val allPermissions = setOf(
+        // Activité
+        HealthPermission.getReadPermission(StepsRecord::class),
+        HealthPermission.getReadPermission(DistanceRecord::class),
+        HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
+        HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class),
+        HealthPermission.getReadPermission(ExerciseSessionRecord::class),
+        // Signes vitaux
+        HealthPermission.getReadPermission(HeartRateRecord::class),
+        HealthPermission.getReadPermission(RestingHeartRateRecord::class),
+        HealthPermission.getReadPermission(OxygenSaturationRecord::class),
+        HealthPermission.getReadPermission(BloodPressureRecord::class),
+        HealthPermission.getReadPermission(BodyTemperatureRecord::class),
+        // Sommeil et Nutrition
+        HealthPermission.getReadPermission(SleepSessionRecord::class),
+        HealthPermission.getReadPermission(HydrationRecord::class),
+        HealthPermission.getReadPermission(NutritionRecord::class),
+        // Mensurations
+        HealthPermission.getReadPermission(WeightRecord::class),
+        HealthPermission.getReadPermission(BodyFatRecord::class),
+        HealthPermission.getReadPermission(HeightRecord::class)
+    )
 
-// --- SERVICE API ---
-
-interface StravaApiService {
-
-    @POST("oauth/token")
-    fun refreshAccessToken(
-        @Query("client_id") clientId: Int,
-        @Query("client_secret") clientSecret: String,
-        @Query("refresh_token") refreshToken: String,
-        @Query("grant_type") grantType: String = "refresh_token"
-    ): retrofit2.Call<StravaTokenResponse>
-
-    @GET("athlete")
-    suspend fun getAuthenticatedAthlete(): AthleteProfile
-
-    @GET("athlete/activities")
-    suspend fun getActivities(
-        @Query("before") before: Long? = null,
-        @Query("after") after: Long? = null,
-        @Query("page") page: Int = 1,
-        @Query("per_page") perPage: Int = 30
-    ): List<ActivityDetailed>
-
-    @GET("gear/{id}")
-    suspend fun getGear(@Path("id") gearId: String): Gear
-}
-
-// --- GESTION DE L'AUTHENTIFICATION ---
-
-/**
- * Stockage simple pour les jetons (À remplacer par une solution persistante comme SharedPreferences/DataStore)
- */
-object TokenStorage {
-    var accessToken: String? = null
-    var refreshToken: String? = null
-    var expiresAt: Long = 0
-}
-
-/**
- * Authenticator OkHttp : Intercepte les erreurs 401 et rafraîchit le token
- */
-class StravaAuthenticator(
-    private val clientId: Int,
-    private val clientSecret: String,
-    private val apiService: StravaApiService
-) : Authenticator {
-    
-    override fun authenticate(route: Route?, response: Response): Request? {
-        // Éviter les boucles infinies si le rafraîchissement échoue lui aussi
-        if (response.count401() > 2) return null
-
-        synchronized(this) {
-            val currentRefreshToken = TokenStorage.refreshToken ?: return null
-            
-            // Appel synchrone pour obtenir un nouveau token
-            val tokenResponse = apiService.refreshAccessToken(
-                clientId, clientSecret, currentRefreshToken
-            ).execute()
-
-            if (tokenResponse.isSuccessful && tokenResponse.body() != null) {
-                val newTokens = tokenResponse.body()!!
-                
-                // Sauvegarde des nouveaux jetons
-                TokenStorage.accessToken = newTokens.access_token
-                TokenStorage.refreshToken = newTokens.refresh_token
-                TokenStorage.expiresAt = newTokens.expires_at
-
-                // Re-tentative de la requête initiale avec le nouveau token
-                return response.request.newBuilder()
-                    .header("Authorization", "Bearer ${newTokens.access_token}")
-                    .build()
-            }
-        }
-        return null
-    }
-
-    private fun Response.count401(): Int {
-        var result = 1
-        var r = priorResponse
-        while (r != null) {
-            result++
-            r = r.priorResponse
-        }
-        return result
-    }
-}
-
-/**
- * Intercepteur pour ajouter le Header Authorization à chaque requête
- */
-class AuthInterceptor : Interceptor {
-    override fun intercept(chain: Interceptor.Chain): Response {
-        val originalRequest = chain.request()
-        val token = TokenStorage.accessToken
-
-        // On n'ajoute pas le header pour l'endpoint d'authentification
-        if (originalRequest.url.encodedPath.contains("oauth/token") || token == null) {
-            return chain.proceed(originalRequest)
-        }
-
-        val authenticatedRequest = originalRequest.newBuilder()
-            .header("Authorization", "Bearer $token")
-            .build()
-        
-        return chain.proceed(authenticatedRequest)
-    }
-}
-
-// --- CLIENT FINAL ---
-
-class StravaClient(private val clientId: Int, private val clientSecret: String) {
-    
-    val api: StravaApiService
-
-    init {
-        val logging = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.HEADERS
-        }
-
-        // 1. Création d'un service temporaire pour l'authenticator
-        val tempRetrofit = Retrofit.Builder()
-            .baseUrl("https://www.strava.com/api/v3/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-        val tempService = tempRetrofit.create(StravaApiService::class.java)
-
-        // 2. Client OkHttp avec Interceptor et Authenticator
-        val okHttpClient = OkHttpClient.Builder()
-            .addInterceptor(AuthInterceptor())
-            .addInterceptor(logging)
-            .authenticator(StravaAuthenticator(clientId, clientSecret, tempService))
-            .build()
-
-        // 3. Instance Retrofit finale
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://www.strava.com/api/v3/")
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        api = retrofit.create(StravaApiService::class.java)
+    /**
+     * Vérifie si Health Connect est disponible sur l'appareil
+     */
+    fun checkAvailability(): Int {
+        return HealthConnectClient.getSdkStatus(context)
     }
 
     /**
-     * URL à générer pour que l'utilisateur valide TOUTES les permissions
+     * Vérifie si toutes les permissions sont accordées
      */
-    fun getAuthorizationUrl(redirectUri: String): String {
-        val scopes = "read,read_all,profile:read_all,profile:write,activity:read,activity:read_all,activity:write"
-        return "https://www.strava.com/oauth/authorize" +
-                "?client_id=$clientId" +
-                "&redirect_uri=$redirectUri" +
-                "&response_type=code" +
-                "&scope=$scopes"
+    suspend fun hasAllPermissions(): Boolean {
+        val granted = healthConnectClient.permissionController.getGrantedPermissions()
+        return granted.containsAll(allPermissions)
+    }
+
+    /**
+     * Récupère le nombre de pas sur une période donnée
+     */
+    suspend fun readSteps(startTime: Instant, endTime: Instant): List<StepsRecord> {
+        return try {
+            val response = healthConnectClient.readRecords(
+                ReadRecordsRequest(
+                    recordType = StepsRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(startTime, endTime)
+                )
+            )
+            response.records
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    /**
+     * Récupère les données de fréquence cardiaque
+     */
+    suspend fun readHeartRate(startTime: Instant, endTime: Instant): List<HeartRateRecord> {
+        return try {
+            val response = healthConnectClient.readRecords(
+                ReadRecordsRequest(
+                    recordType = HeartRateRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(startTime, endTime)
+                )
+            )
+            response.records
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    /**
+     * Récupère les sessions de sommeil
+     */
+    suspend fun readSleepSessions(startTime: Instant, endTime: Instant): List<SleepSessionRecord> {
+        return try {
+            val response = healthConnectClient.readRecords(
+                ReadRecordsRequest(
+                    recordType = SleepSessionRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(startTime, endTime)
+                )
+            )
+            response.records
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    /**
+     * Exemple de lecture générique pour n'importe quel type de donnée
+     */
+    suspend fun <T : Record> readData(
+        recordType: kotlin.reflect.KClass<T>,
+        startTime: Instant,
+        endTime: Instant
+    ): List<T> {
+        return try {
+            val response = healthConnectClient.readRecords(
+                ReadRecordsRequest(
+                    recordType = recordType,
+                    timeRangeFilter = TimeRangeFilter.between(startTime, endTime)
+                )
+            )
+            response.records
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 }
 
+/**
+ * Exemple d'implémentation dans un Fragment ou une Activity
+ */
+/*
+class HealthActivity : AppCompatActivity() {
+    private lateinit var manager: HealthConnectManager
+
+    // Le contrat pour demander les permissions
+    private val requestPermissions = registerForActivityResult(
+        PermissionController.createRequestPermissionResultContract()
+    ) { granted ->
+        if (granted.containsAll(manager.allPermissions)) {
+            // Toutes les permissions sont ok
+            fetchData()
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        manager = HealthConnectManager(this)
+
+        lifecycleScope.launch {
+            if (!manager.hasAllPermissions()) {
+                requestPermissions.launch(manager.allPermissions)
+            } else {
+                fetchData()
+            }
+        }
+    }
+
+    private fun fetchData() {
+        lifecycleScope.launch {
+            val start = ZonedDateTime.now().minusDays(1).toInstant()
+            val end = Instant.now()
+            
+            val steps = manager.readSteps(start, end)
+            val heartRate = manager.readHeartRate(start, end)
+            
+            // Traitement des données...
+        }
+    }
+}
+*/

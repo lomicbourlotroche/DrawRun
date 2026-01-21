@@ -56,25 +56,10 @@ class DataSyncManager(val context: Context, val state: AppState) {
     // Legacy OkHttp client for Health Connect and other non-Strava calls
     private val client = OkHttpClient()
     
-    // Make public for ProfileScreen usage
-    val healthConnectClient by lazy { HealthConnectClient.getOrCreate(context) }
-
-    /**
-     * Health Connect permissions required for the app.
-     */
-    val permissions = setOf(
-        HealthPermission.getReadPermission(HeartRateRecord::class),
-        HealthPermission.getReadPermission(RestingHeartRateRecord::class),
-        HealthPermission.getReadPermission(StepsRecord::class),
-        HealthPermission.getReadPermission(ExerciseSessionRecord::class),
-        HealthPermission.getReadPermission(DistanceRecord::class),
-        HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class),
-        HealthPermission.getReadPermission(SpeedRecord::class),
-        HealthPermission.getReadPermission(PowerRecord::class),
-        HealthPermission.getReadPermission(SleepSessionRecord::class),
-        HealthPermission.getReadPermission(HeartRateVariabilityRmssdRecord::class),
-        "android.permission.health.READ_EXERCISE_ROUTE"
-    )
+    // Make public for Screen usage
+    val healthConnectManager = HealthConnectManager(context)
+    val healthConnectClient get() = healthConnectManager.healthConnectClient
+    val permissions get() = healthConnectManager.allPermissions
 
     suspend fun restoreConnections() = withContext(Dispatchers.IO) {
         // Check if we have valid tokens in the new TokenStorage
@@ -98,12 +83,8 @@ class DataSyncManager(val context: Context, val state: AppState) {
     }
 
     suspend fun checkHealthConnectAvailability(): Boolean {
-        return try {
-            HealthConnectClient.getOrCreate(context)
-            true
-        } catch (e: Exception) {
-            false
-        }
+        val status = healthConnectManager.checkAvailability()
+        return status == HealthConnectClient.SDK_AVAILABLE
     }
     
     /**
@@ -175,8 +156,7 @@ class DataSyncManager(val context: Context, val state: AppState) {
      */
     suspend fun syncHealthData() = withContext(Dispatchers.IO) {
         try {
-            val granted = healthConnectClient.permissionController.getGrantedPermissions()
-            if (!granted.containsAll(permissions)) {
+            if (!healthConnectManager.hasPermissions(permissions as Set<String>)) {
                  android.util.Log.w("DrawRun", "Health Connect: Missing permissions")
                  return@withContext
             }
@@ -186,13 +166,7 @@ class DataSyncManager(val context: Context, val state: AppState) {
             
             // 1. Sync Resting HR & Readiness
             try {
-                val response = healthConnectClient.readRecords(
-                    ReadRecordsRequest(
-                        recordType = RestingHeartRateRecord::class,
-                        timeRangeFilter = TimeRangeFilter.between(startTime, endTime)
-                    )
-                )
-                val latestResting = response.records.lastOrNull()
+                val latestResting = healthConnectManager.readRestingHeartRate(startTime, endTime).lastOrNull()
                 if (latestResting != null) {
                     withContext(Dispatchers.Main) {
                         state.restingHR = latestResting.beatsPerMinute.toString()
@@ -206,13 +180,8 @@ class DataSyncManager(val context: Context, val state: AppState) {
             }
 
             try {
-                val sleepResponse = healthConnectClient.readRecords(
-                    ReadRecordsRequest(
-                        recordType = SleepSessionRecord::class,
-                        timeRangeFilter = TimeRangeFilter.between(endTime.minus(24, ChronoUnit.HOURS), endTime)
-                    )
-                )
-                val totalSleepMinutes = sleepResponse.records.sumOf { 
+                val sleepRecords = healthConnectManager.readSleepSessions(endTime.minus(24, ChronoUnit.HOURS), endTime)
+                val totalSleepMinutes = sleepRecords.sumOf { 
                     ChronoUnit.MINUTES.between(it.startTime, it.endTime)
                 }
                 withContext(Dispatchers.Main) {
@@ -227,13 +196,7 @@ class DataSyncManager(val context: Context, val state: AppState) {
             }
 
             try {
-                val hrvResponse = healthConnectClient.readRecords(
-                    ReadRecordsRequest(
-                        recordType = HeartRateVariabilityRmssdRecord::class,
-                        timeRangeFilter = TimeRangeFilter.between(endTime.minus(7, ChronoUnit.DAYS), endTime)
-                    )
-                )
-                val latestHRV = hrvResponse.records.lastOrNull()
+                val latestHRV = healthConnectManager.readHRV(endTime.minus(7, ChronoUnit.DAYS), endTime).lastOrNull()
                 if (latestHRV != null) {
                     withContext(Dispatchers.Main) {
                         state.hrv = "%.0f".format(latestHRV.heartRateVariabilityMillis)
@@ -405,11 +368,20 @@ class DataSyncManager(val context: Context, val state: AppState) {
                 state.activities = allActivities
                 state.stravaConnected = true
                 
-                if (state.readiness == "--" || state.readiness.isBlank()) {
-                    val proxyReadiness = (100 - (totalLoadWeek / 20)).coerceIn(10, 100)
+                // Calculate PMC (Banister Model)
+                val pmcData = PerformanceAnalyzer.calculatePMC(allActivities)
+                state.banisterPmcData = pmcData
+                
+                // Update Dashboard Metrics from the latest PMC point
+                pmcData.lastOrNull()?.let { latest ->
+                    state.ctl = "%.0f".format(latest.ctl)
+                    state.tsb = "%.0f".format(latest.tsb)
+                    state.fatigueATL = latest.atl.toInt()
+                    state.formTSB = latest.tsb.toInt()
+                    
+                    // Readiness proxy: 100 - fatigue (ATL) adjusted
+                    val proxyReadiness = (100 - latest.atl).coerceIn(10.0, 100.0).toInt()
                     state.readiness = proxyReadiness.toString()
-                    state.ctl = (totalLoadWeek / 7).toString()
-                    state.tsb = "0"
                 }
             }
             
@@ -423,33 +395,37 @@ class DataSyncManager(val context: Context, val state: AppState) {
         }
     }
 
-    suspend fun syncStravaProfile() = withContext(Dispatchers.IO) {
-        try {
-            val athlete = stravaClient.api.getAuthenticatedAthlete()
-            
-            withContext(Dispatchers.Main) {
-                // TODO: Add these properties to AppState if needed
-                // state.athleteName = "${athlete.firstname ?: ""} ${athlete.lastname ?: ""}".trim()
-                // state.athleteCity = athlete.city ?: ""
-                // state.athleteCountry = athlete.country ?: ""
-                // state.athleteFtp = athlete.ftp ?: 0
+    suspend fun syncStravaProfile() {
+        withContext(Dispatchers.IO) {
+            try {
+                val athlete = stravaClient.api.getAuthenticatedAthlete()
                 
-                if (athlete.firstname?.isNotBlank() == true) {
-                    state.firstName = athlete.firstname
+                withContext(Dispatchers.Main) {
+                    // TODO: Add these properties to AppState if needed
+                    // state.athleteName = "${athlete.firstname ?: ""} ${athlete.lastname ?: ""}".trim()
+                    // state.athleteCity = athlete.city ?: ""
+                    // state.athleteCountry = athlete.country ?: ""
+                    // state.athleteFtp = athlete.ftp ?: 0
+                    
+                    if (athlete.firstname?.isNotBlank() == true) {
+                        state.firstName = athlete.firstname
+                    }
+                    if (athlete.weight != null && athlete.weight > 0) {
+                        state.weight = "%.1f".format(athlete.weight)
+                    }
                 }
-                if (athlete.weight != null && athlete.weight > 0) {
-                    state.weight = "%.1f".format(athlete.weight)
+                
+                // Sync stats if we have athlete ID
+                val athleteId = athlete.id
+                if (athleteId != null && athleteId > 0) {
+                    state.stravaAthleteId = athleteId.toInt()
+                    syncStravaStats(athleteId)
                 }
+                Unit
+            } catch (e: Exception) {
+                Log.e("DataSyncManager", "Error syncing profile", e)
+                Unit
             }
-            
-            // Sync stats if we have athlete ID
-            val athleteId = athlete.id
-            if (athleteId != null && athleteId > 0) {
-                state.stravaAthleteId = athleteId.toInt()
-                syncStravaStats(athleteId)
-            }
-        } catch (e: Exception) {
-            Log.e("DataSyncManager", "Error syncing profile", e)
         }
     }
 
@@ -580,24 +556,15 @@ class DataSyncManager(val context: Context, val state: AppState) {
     suspend fun syncHealthConnectDetail(startTime: Instant, endTime: Instant, type: String) = withContext(Dispatchers.IO) {
         try {
              // 1. Fetch Heart Rate Series
-            val hrResponse = healthConnectClient.readRecords(
-                ReadRecordsRequest(
-                    recordType = HeartRateRecord::class,
-                    timeRangeFilter = TimeRangeFilter.between(startTime, endTime)
-                )
-            )
+            // 1. Fetch HR Series
+            val hrRecords = healthConnectManager.readHeartRate(startTime, endTime)
             // Flatten HR samples. Each record has multiple samples.
-            val hrSamples = hrResponse.records.flatMap { it.samples }
+            val hrSamples = hrRecords.flatMap { it.samples }
             
             // 2. Fetch Speed Series (if running)
             val speedSamples = if (type == "run") {
-                val speedResponse = healthConnectClient.readRecords(
-                    ReadRecordsRequest(
-                        recordType = SpeedRecord::class,
-                        timeRangeFilter = TimeRangeFilter.between(startTime, endTime)
-                    )
-                )
-                speedResponse.records.flatMap { it.samples }
+                val speedRecords = healthConnectManager.readData(SpeedRecord::class, startTime, endTime)
+                speedRecords.flatMap { it.samples }
             } else emptyList()
 
             // 3. Construct Streams

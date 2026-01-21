@@ -23,6 +23,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.drawrun.app.AppState
 import com.drawrun.app.ui.components.StatCard
 import com.drawrun.app.logic.CoachAI
+import com.drawrun.app.logic.PerformanceAnalyzer
+import com.drawrun.app.PmcDataPoint
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Fill
+import kotlin.math.abs
 
 @Composable
 fun HomeScreen(state: AppState) {
@@ -126,14 +131,13 @@ fun HomeScreen(state: AppState) {
                             }
                         )
                         StatCard(
-                            title = "Readiness",
-                            value = state.readiness,
+                            title = "Sommeil",
+                            value = state.sleepScore,
                             unit = "/100",
-                            showChart = false,
                             modifier = Modifier.height(64.dp),
                             onClick = {
-                                state.explanationTitle = "Score de Disponibilité"
-                                state.explanationContent = "Calculé à partir du sommeil, du HRV et de la charge d'entraînement récente. Un score élevé indique un état optimal pour la performance."
+                                state.explanationTitle = "Score de Sommeil"
+                                state.explanationContent = "Qualité de votre récupération nocturne. Un score élevé favorise la reconstruction musculaire et mentale."
                                 state.showExplanation = true
                             }
                         )
@@ -145,7 +149,6 @@ fun HomeScreen(state: AppState) {
         // Daily Training Section
         DailyTrainingSection(state)
 
-        // CTL / TSB Row
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -168,7 +171,7 @@ fun HomeScreen(state: AppState) {
                 title = "Balance (TSB)",
                 value = state.tsb,
                 unit = "pts",
-                color = Color(0xFF22C55E),
+                color = if ((state.tsb.toIntOrNull() ?: 0) >= 0) Color(0xFF22C55E) else Color(0xFFEF4444),
                 icon = Icons.Default.History,
                 modifier = Modifier.weight(1f),
                 onClick = {
@@ -177,6 +180,11 @@ fun HomeScreen(state: AppState) {
                     state.showExplanation = true
                 }
             )
+        }
+
+        // Banister Chart (PMC)
+        if (state.banisterPmcData.isNotEmpty()) {
+            PmcChart(state.banisterPmcData)
         }
 
         // Recent Activity
@@ -646,5 +654,102 @@ fun DailyTrainingSection(state: AppState) {
                 )
             }
         }
+    }
+}
+
+@Composable
+fun PmcChart(data: List<PmcDataPoint>) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(32.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f), RoundedCornerShape(32.dp))
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "GESTION DE PERFORMANCE",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                letterSpacing = 2.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Icon(Icons.Default.Timeline, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                if (data.size < 2) return@Canvas
+
+                val width = size.width
+                val height = size.height
+                val maxVal = data.flatMap { listOf(it.ctl, it.atl) }.maxOrNull()?.coerceAtLeast(10.0) ?: 10.0
+                val minTsb = data.map { it.tsb }.minOrNull() ?: -10.0
+                val maxTsb = data.map { it.tsb }.maxOrNull() ?: 10.0
+                val absMaxTsb = maxOf(abs(minTsb), abs(maxTsb)).coerceAtLeast(10.0)
+
+                val stepX = width / (data.size - 1)
+                
+                // 1. Draw TSB Area
+                val tsbPath = Path()
+                val midY = height / 2
+                tsbPath.moveTo(0f, midY)
+                data.forEachIndexed { i, pt ->
+                    val x = i * stepX
+                    val y = midY - (pt.tsb / absMaxTsb * (height / 2)).toFloat()
+                    tsbPath.lineTo(x, y)
+                }
+                tsbPath.lineTo(width, midY)
+                tsbPath.close()
+                drawPath(tsbPath, color = Color(0xFF22C55E).copy(alpha = 0.15f), style = Fill)
+
+                // 2. Draw CTL (Fitness) - Blue
+                val ctlPath = Path()
+                data.forEachIndexed { i, pt ->
+                    val x = i * stepX
+                    val y = height - (pt.ctl / maxVal * height).toFloat()
+                    if (i == 0) ctlPath.moveTo(x, y) else ctlPath.lineTo(x, y)
+                }
+                drawPath(ctlPath, color = Color(0xFF3B82F6), style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round))
+
+                // 3. Draw ATL (Fatigue) - Red
+                val atlPath = Path()
+                data.forEachIndexed { i, pt ->
+                    val x = i * stepX
+                    val y = height - (pt.atl / maxVal * height).toFloat()
+                    if (i == 0) atlPath.moveTo(x, y) else atlPath.lineTo(x, y)
+                }
+                drawPath(atlPath, color = Color(0xFFEF4444), style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round, pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)))
+            }
+        }
+
+        // Legend
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            LegendItem("Condition (CTL)", Color(0xFF3B82F6))
+            LegendItem("Fatigue (ATL)", Color(0xFFEF4444))
+            LegendItem("Fraîcheur (TSB)", Color(0xFF22C55E))
+        }
+    }
+}
+
+@Composable
+private fun LegendItem(label: String, color: Color) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(color))
+        Text(text = label, style = MaterialTheme.typography.labelSmall, fontSize = 8.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
     }
 }

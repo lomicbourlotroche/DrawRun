@@ -213,298 +213,53 @@ fun PlanningScreen(state: AppState) {
                         Spacer(modifier = Modifier.height(8.dp))
                         
                         // Week Cards in Carousel
-                        AppCarousel(
-                            items = state.generatedRunPlan,
-                            itemWidth = 340.dp,
-                            itemHeight = 520.dp,
-                            modifier = Modifier.fillMaxWidth()
-                        ) { weekPlan, index ->
-                            // Calculate week completion
-                            val weekWorkouts = weekPlan.days.count { it.dist > 0 }
-                            val weekCompleted = weekPlan.days.indices.count { dayIndex ->
-                                val key = "week${weekPlan.weekNum - 1}_day$dayIndex"
-                                state.workoutCompletions[key]?.status == com.drawrun.app.CompletionStatus.COMPLETED
+                        // New Training Plan UI: Flashcards for current week + Dropdown for future
+                        val currentWeek = state.generatedRunPlan.firstOrNull()
+                        val futureWeeks = state.generatedRunPlan.drop(1)
+                        
+                        if (currentWeek != null) {
+                            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                Text(
+                                    text = "SEMAINE ACTUELLE (${currentWeek.weekNum})",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Black,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    letterSpacing = 1.sp
+                                )
+                                
+                                // Current week days as flashcards
+                                currentWeek.days.forEachIndexed { dayIndex, day ->
+                                    DayFlashcard(
+                                        day = day,
+                                        weekNum = currentWeek.weekNum,
+                                        dayIndex = dayIndex,
+                                        state = state
+                                    )
+                                }
+                                
+                                if (futureWeeks.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    FutureWeeksDropdown(
+                                        weeks = futureWeeks,
+                                        state = state
+                                    )
+                                }
                             }
-                            val weekProgress = if (weekWorkouts > 0) (weekCompleted.toFloat() / weekWorkouts * 100).toInt() else 0
-                            
-                            Card(
-                                modifier = Modifier.fillMaxSize(),
-                                shape = RoundedCornerShape(32.dp),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                border = if (weekPlan.isDecharge) BorderStroke(2.dp, Color(0xFF10B981)) else BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        } else {
+                            // Placeholder if no plan
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                                    .clip(RoundedCornerShape(24.dp))
+                                    .background(MaterialTheme.colorScheme.surface)
+                                    .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f), RoundedCornerShape(24.dp)),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                    // Week Header
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Column {
-                                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                                Text(
-                                                    text = "SEMAINE ${weekPlan.weekNum}",
-                                                    style = MaterialTheme.typography.titleLarge,
-                                                    fontWeight = FontWeight.Black,
-                                                    color = MaterialTheme.colorScheme.primary
-                                                )
-                                                if (weekPlan.isDecharge) {
-                                                    Surface(
-                                                        color = Color(0xFF10B981).copy(alpha = 0.15f),
-                                                        shape = RoundedCornerShape(8.dp)
-                                                    ) {
-                                                        Text(
-                                                            text = "DÉCHARGE",
-                                                            color = Color(0xFF10B981),
-                                                            style = MaterialTheme.typography.labelSmall,
-                                                            fontWeight = FontWeight.Black,
-                                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                                        )
-                                                    }
-                                                }
-                                            }
-                                            val phaseName = when(weekPlan.phase) {
-                                                1 -> "FONDATION"
-                                                2 -> "FORCE & VMA"
-                                                3 -> "SEUIL & SPÉ"
-                                                else -> "AFFUTAGE"
-                                            }
-                                            Text(
-                                                text = phaseName,
-                                                style = MaterialTheme.typography.labelSmall,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-                                            )
-                                        }
-                                        
-                                        // Week Progress Circle
-                                        Box(contentAlignment = Alignment.Center) {
-                                            CircularProgressIndicator(
-                                                progress = weekProgress / 100f,
-                                                modifier = Modifier.size(48.dp),
-                                                strokeWidth = 4.dp,
-                                                color = when {
-                                                    weekProgress >= 75 -> Color(0xFF22C55E)
-                                                    weekProgress >= 50 -> Color(0xFFF59E0B)
-                                                    else -> MaterialTheme.colorScheme.primary
-                                                },
-                                                trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                                            )
-                                            Text(
-                                                text = "$weekProgress%",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                fontWeight = FontWeight.Black,
-                                                fontSize = 10.sp
-                                            )
-                                        }
-                                    }
-                                    
-                                    // Week Stats
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                    ) {
-                                        Surface(
-                                            modifier = Modifier.weight(1f),
-                                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                            shape = RoundedCornerShape(12.dp)
-                                        ) {
-                                            Column(
-                                                modifier = Modifier.padding(12.dp),
-                                                horizontalAlignment = Alignment.CenterHorizontally
-                                            ) {
-                                                Text(
-                                                    text = "${"%.1f".format(weekPlan.km)} km",
-                                                    style = MaterialTheme.typography.titleMedium,
-                                                    fontWeight = FontWeight.Black,
-                                                    color = MaterialTheme.colorScheme.primary
-                                                )
-                                                Text(
-                                                    text = "Volume",
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                                )
-                                            }
-                                        }
-                                        
-                                        Surface(
-                                            modifier = Modifier.weight(1f),
-                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
-                                            shape = RoundedCornerShape(12.dp)
-                                        ) {
-                                            Column(
-                                                modifier = Modifier.padding(12.dp),
-                                                horizontalAlignment = Alignment.CenterHorizontally
-                                            ) {
-                                                Text(
-                                                    text = "${weekPlan.days.count { it.isQuality }}",
-                                                    style = MaterialTheme.typography.titleMedium,
-                                                    fontWeight = FontWeight.Black
-                                                )
-                                                Text(
-                                                    text = "Qualité",
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                                )
-                                            }
-                                        }
-                                    }
-                                    
-                                    Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
-                                    
-                                    // Days List
-                                    Column(
-                                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                                        modifier = Modifier.verticalScroll(rememberScrollState())
-                                    ) {
-                                        weekPlan.days.forEachIndexed { dayIndex, day ->
-                                            val completionKey = "week${weekPlan.weekNum - 1}_day$dayIndex"
-                                            val completion = state.workoutCompletions[completionKey]
-                                            
-                                            Surface(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                color = when(completion?.status) {
-                                                    com.drawrun.app.CompletionStatus.COMPLETED -> Color(0xFF22C55E).copy(alpha = 0.08f)
-                                                    com.drawrun.app.CompletionStatus.PARTIAL -> Color(0xFFF59E0B).copy(alpha = 0.08f)
-                                                    com.drawrun.app.CompletionStatus.SKIPPED -> Color(0xFFEF4444).copy(alpha = 0.08f)
-                                                    else -> Color.Transparent
-                                                },
-                                                shape = RoundedCornerShape(12.dp)
-                                            ) {
-                                                Row(
-                                                    modifier = Modifier.padding(12.dp),
-                                                    verticalAlignment = Alignment.CenterVertically,
-                                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                                ) {
-                                                    // Day Icon
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .size(40.dp)
-                                                            .clip(RoundedCornerShape(10.dp))
-                                                            .background(
-                                                                if (day.isQuality) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                                                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
-                                                            ),
-                                                        contentAlignment = Alignment.Center
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = if (day.isQuality) Icons.Default.ElectricBolt
-                                                                         else if (day.type == "L") Icons.Default.Straighten
-                                                                         else Icons.Default.DirectionsRun,
-                                                            contentDescription = null,
-                                                            modifier = Modifier.size(20.dp),
-                                                            tint = if (day.isQuality) MaterialTheme.colorScheme.primary
-                                                                   else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                                                        )
-                                                    }
-                                                    
-                                                    // Day Info
-                                                    Column(modifier = Modifier.weight(1f)) {
-                                                        Row(
-                                                            verticalAlignment = Alignment.CenterVertically,
-                                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                                        ) {
-                                                            Text(
-                                                                text = day.title,
-                                                                style = MaterialTheme.typography.labelMedium,
-                                                                fontWeight = FontWeight.Bold,
-                                                                color = MaterialTheme.colorScheme.onSurface
-                                                            )
-                                                            
-                                                            // Completion Icon
-                                                            when(completion?.status) {
-                                                                com.drawrun.app.CompletionStatus.COMPLETED -> {
-                                                                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF22C55E), modifier = Modifier.size(16.dp))
-                                                                }
-                                                                com.drawrun.app.CompletionStatus.PARTIAL -> {
-                                                                    Icon(Icons.Default.Warning, contentDescription = null, tint = Color(0xFFF59E0B), modifier = Modifier.size(16.dp))
-                                                                }
-                                                                com.drawrun.app.CompletionStatus.SKIPPED -> {
-                                                                    Icon(Icons.Default.Cancel, contentDescription = null, tint = Color(0xFFEF4444), modifier = Modifier.size(16.dp))
-                                                                }
-                                                                com.drawrun.app.CompletionStatus.PENDING -> {
-                                                                    Icon(Icons.Default.RadioButtonUnchecked, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), modifier = Modifier.size(16.dp))
-                                                                }
-                                                                null -> {}
-                                                            }
-                                                        }
-                                                        
-                                                        val workoutSummary = day.details.find { det: TrainingPlanGenerator.Detail -> det.label == "Cœur" || det.label == "Objectif" }?.content ?: ""
-                                                        if (workoutSummary.isNotBlank()) {
-                                                            Text(
-                                                                text = workoutSummary,
-                                                                style = MaterialTheme.typography.labelSmall,
-                                                                fontSize = 10.sp,
-                                                                color = if (day.isQuality) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-                                                                       else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                                                maxLines = 1,
-                                                                overflow = TextOverflow.Ellipsis
-                                                            )
-                                                        }
-                                                        
-                                                        // Show completion details
-                                                        completion?.actualActivity?.let { activity ->
-                                                            Row(
-                                                                verticalAlignment = Alignment.CenterVertically,
-                                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                                            ) {
-                                                                Text(
-                                                                    text = "✓ ${activity.dist}",
-                                                                    style = MaterialTheme.typography.labelSmall,
-                                                                    fontSize = 9.sp,
-                                                                    color = when {
-                                                                        completion.completionScore >= 85 -> Color(0xFF22C55E)
-                                                                        completion.completionScore >= 50 -> Color(0xFFF59E0B)
-                                                                        else -> Color(0xFFEF4444)
-                                                                    },
-                                                                    fontWeight = FontWeight.Bold
-                                                                )
-                                                                
-                                                                Surface(
-                                                                    color = when {
-                                                                        completion.completionScore >= 85 -> Color(0xFF22C55E).copy(alpha = 0.15f)
-                                                                        completion.completionScore >= 50 -> Color(0xFFF59E0B).copy(alpha = 0.15f)
-                                                                        else -> Color(0xFFEF4444).copy(alpha = 0.15f)
-                                                                    },
-                                                                    shape = RoundedCornerShape(4.dp)
-                                                                ) {
-                                                                    Text(
-                                                                        text = "${completion.completionScore}%",
-                                                                        style = MaterialTheme.typography.labelSmall,
-                                                                        fontSize = 8.sp,
-                                                                        color = when {
-                                                                            completion.completionScore >= 85 -> Color(0xFF22C55E)
-                                                                            completion.completionScore >= 50 -> Color(0xFFF59E0B)
-                                                                            else -> Color(0xFFEF4444)
-                                                                        },
-                                                                        fontWeight = FontWeight.Black,
-                                                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                                                                    )
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                    
-                                                    // Distance Badge
-                                                    Surface(
-                                                        color = if (day.dist > 0) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                                                               else Color(0xFF10B981).copy(alpha = 0.15f),
-                                                        shape = RoundedCornerShape(8.dp)
-                                                    ) {
-                                                        Text(
-                                                            text = if (day.dist > 0) "${"%.1f".format(day.dist)}km" else "REPOS",
-                                                            style = MaterialTheme.typography.labelSmall,
-                                                            fontSize = 10.sp,
-                                                            fontWeight = FontWeight.Black,
-                                                            color = if (day.dist > 0) MaterialTheme.colorScheme.primary else Color(0xFF10B981),
-                                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                                        )
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icon(Icons.Default.EventNote, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Text("Aucun plan généré", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
                                 }
                             }
                         }
@@ -732,7 +487,7 @@ fun PlanningScreen(state: AppState) {
                             }
 
                             // Display all exercises
-                            session.exercises.forEach { exercise ->
+                            for (exercise in session.exercises) {
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -779,8 +534,7 @@ fun PlanningScreen(state: AppState) {
 
                             Button(
                                 onClick = {
-                                    val summary = session.exercises.joinToString(" | ") { "${it.type}: ${it.distance}m" }
-                                    val newSession = SwimSession(content = "${session.focus}: ${session.totalDistance}m - $summary")
+                                    val newSession = SwimSession(data = session)
                                     state.savedSwimSessions = state.savedSwimSessions + newSession
                                     state.generatedSwimSession = null
                                 },
@@ -815,8 +569,9 @@ fun PlanningScreen(state: AppState) {
                         
                         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             state.savedSwimSessions.asReversed().forEach { session ->
+                                var isExpanded by remember { mutableStateOf(false) }
                                 Card(
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier.fillMaxWidth().clickable { isExpanded = !isExpanded },
                                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
                                 ) {
@@ -826,22 +581,43 @@ fun PlanningScreen(state: AppState) {
                                             horizontalArrangement = Arrangement.SpaceBetween,
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Text(session.date, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                                            Column {
+                                                Text(session.date, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                                                Text("${session.data.focus} • ${session.data.totalDistance}m", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                                            }
                                             Row {
-                                                IconButton(onClick = { /* Share Logic */ }) {
-                                                    Icon(Icons.Default.Share, contentDescription = "Share", tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), modifier = Modifier.size(16.dp))
-                                                }
                                                 IconButton(onClick = { 
                                                     val current = state.savedSwimSessions.toMutableList()
                                                     current.removeAll { s: SwimSession -> s.id == session.id }
                                                     state.savedSwimSessions = current
                                                 }) {
-                                                    Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color(0xFFFF3B30), modifier = Modifier.size(16.dp))
+                                                    Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color(0xFFFF3B30).copy(alpha = 0.4f), modifier = Modifier.size(16.dp))
+                                                }
+                                                Icon(
+                                                    imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                                                )
+                                            }
+                                        }
+                                        
+                                        AnimatedVisibility(visible = isExpanded) {
+                                            Column(
+                                                modifier = Modifier.padding(top = 16.dp),
+                                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                                            ) {
+                                                session.data.exercises.forEach { exercise ->
+                                                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                            Icon(Icons.Default.Waves, contentDescription = null, tint = Color(0xFF0EA5E9), modifier = Modifier.size(12.dp))
+                                                            Text(exercise.type.uppercase(), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black, color = Color(0xFF0EA5E9), fontSize = 10.sp)
+                                                            Text("${exercise.distance}m", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                                                        }
+                                                        Text(text = exercise.description, style = MaterialTheme.typography.bodySmall)
+                                                    }
                                                 }
                                             }
                                         }
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        Text(session.content, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
                                     }
                                 }
                             }

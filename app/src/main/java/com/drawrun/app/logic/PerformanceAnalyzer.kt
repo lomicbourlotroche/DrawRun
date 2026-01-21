@@ -450,21 +450,84 @@ object PerformanceAnalyzer {
     }
 
     /**
+     * Calcule le TRIMP (Training Impulse) basé sur les zones cardiaques.
+     * Basé sur la méthode d'Edwards : Durée * Facteur de Zone.
+     */
+    fun calculateEdwardsTRIMP(durationSec: Int, avgHR: Int, fcm: Int): Double {
+        if (fcm <= 0) return 0.0
+        val intensity = avgHR.toDouble() / fcm.toDouble()
+        val factor = when {
+            intensity >= 0.9 -> 5.0
+            intensity >= 0.8 -> 4.0
+            intensity >= 0.7 -> 3.0
+            intensity >= 0.6 -> 2.0
+            else -> 1.0
+        }
+        return (durationSec / 60.0) * factor
+    }
+
+    /**
+     * Calcule le PMC (Performance Management Chart) pour une liste d'activités.
+     * Retoure une liste de PmcDataPoint (CTL, ATL, TSB).
+     */
+    fun calculatePMC(activities: List<com.drawrun.app.ActivityItem>): List<com.drawrun.app.PmcDataPoint> {
+        if (activities.isEmpty()) return emptyList()
+
+        // Filtrer les activités valides et trier par date
+        val sorted = activities.filter { it.date.matches(Regex("\\d{4}-\\d{2}-\\d{2}")) }
+            .sortedBy { it.date }
+        
+        if (sorted.isEmpty()) return emptyList()
+
+        val startDate = java.time.LocalDate.parse(sorted.first().date)
+        val endDate = java.time.LocalDate.now()
+        val days = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate).toInt()
+
+        val result = mutableListOf<com.drawrun.app.PmcDataPoint>()
+        
+        var currentCTL = 0.0
+        var currentATL = 0.0
+        
+        val ctlAlpha = 1.0 - kotlin.math.exp(-1.0 / 42.0)
+        val atlAlpha = 1.0 - kotlin.math.exp(-1.0 / 7.0)
+
+        // Nous itérons jour par jour pour simuler la dégradation de la forme et de la fatigue
+        for (i in 0..days) {
+            val currentDate = startDate.plusDays(i.toLong())
+            val dateStr = currentDate.toString()
+            
+            // Somme des TSS du jour (on extrait la valeur numérique de la chaîne "TSS 85")
+            val dayTSS = sorted.filter { it.date == dateStr }.sumOf { 
+                it.load.replace(Regex("[^0.9.-]"), "").toDoubleOrNull() ?: 0.0
+            }
+
+            // Application des formules de Banister (EMA)
+            currentCTL = currentCTL * (1.0 - ctlAlpha) + dayTSS * ctlAlpha
+            currentATL = currentATL * (1.0 - atlAlpha) + dayTSS * atlAlpha
+            val tsb = currentCTL - currentATL
+
+            result.add(com.drawrun.app.PmcDataPoint(dateStr, currentCTL, currentATL, tsb))
+        }
+
+        return result
+    }
+
+    /**
      * Calcule le volume hebdomadaire maximum des 4 dernières semaines.
      */
     fun calculatePeakWeeklyVolume(activities: List<com.drawrun.app.ActivityItem>): Double {
         if (activities.isEmpty()) return 30.0 // Default baseline
         
-        val now = LocalDate.now()
+        val now = java.time.LocalDate.now()
         val fourWeeksAgo = now.minusWeeks(4)
         
         val weeklyVolumes = mutableMapOf<Int, Double>()
         
         activities.filter { it.type == "run" }.forEach { act ->
             try {
-                val date = LocalDate.parse(act.date)
+                val date = java.time.LocalDate.parse(act.date)
                 if (date.isAfter(fourWeeksAgo)) {
-                    val weekOfYear = (ChronoUnit.DAYS.between(LocalDate.of(now.year, 1, 1), date) / 7).toInt()
+                    val weekOfYear = (java.time.temporal.ChronoUnit.DAYS.between(java.time.LocalDate.of(now.year, 1, 1), date) / 7).toInt()
                     val distVal = act.dist.replace("km", "").toDoubleOrNull() ?: 0.0
                     weeklyVolumes[weekOfYear] = (weeklyVolumes[weekOfYear] ?: 0.0) + distVal
                 }

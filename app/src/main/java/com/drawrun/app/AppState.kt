@@ -81,6 +81,9 @@ class AppState {
     // Training Plan Completion Tracking
     var workoutCompletions by mutableStateOf<Map<String, WorkoutCompletion>>(emptyMap())
 
+    // PMC (Performance Management Chart) / Banister Data
+    var banisterPmcData by mutableStateOf<List<PmcDataPoint>>(emptyList())
+
     // Derived Scientific Metrics
     val userProfileComplete by derivedStateOf {
         age.isNotBlank() && sex.isNotBlank() && weight.isNotBlank() && restingHR.isNotBlank()
@@ -263,8 +266,15 @@ data class PowerZone(
 
 data class SwimSession(
     val id: Long = System.currentTimeMillis(),
-    val content: String,
+    val data: TrainingPlanGenerator.SwimSessionData,
     val date: String = java.time.LocalDate.now().toString()
+)
+
+data class PmcDataPoint(
+    val date: String,
+    val ctl: Double,
+    val atl: Double,
+    val tsb: Double
 )
 
 enum class CompletionStatus {

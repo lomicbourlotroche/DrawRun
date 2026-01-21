@@ -149,7 +149,7 @@ fun OnboardingSyncScreen(state: AppState, syncManager: DataSyncManager) {
 
     // Check availability on load
     LaunchedEffect(Unit) {
-        val status = androidx.health.connect.client.HealthConnectClient.getSdkStatus(context)
+        val status = syncManager.healthConnectManager.checkAvailability()
         if (status != androidx.health.connect.client.HealthConnectClient.SDK_AVAILABLE) {
              android.widget.Toast.makeText(context, "Health Connect Status: $status", android.widget.Toast.LENGTH_LONG).show()
         }
