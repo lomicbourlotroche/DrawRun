@@ -177,24 +177,46 @@ fun ProfileScreen(state: AppState, syncManager: DataSyncManager) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(text = "Health Connect", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                        val statusText = if (state.healthConnectConnected) {
+                            if (state.healthConnectPermissionsGranted) "ACTIF & AUTORISÉ ✅" else "ATTENTION : PERMISSIONS MANQUANTES ⚠️"
+                        } else "DÉCONNECTÉ"
+                        
+                        val statusColor = if (state.healthConnectConnected) {
+                            if (state.healthConnectPermissionsGranted) MaterialTheme.colorScheme.primary else Color(0xFFF59E0B)
+                        } else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+
                         Text(
-                            text = if (state.healthConnectConnected) "ACTIVE & SYNCHRONISÉ" else "DÉCONNECTÉ",
+                            text = statusText,
                             style = MaterialTheme.typography.labelSmall,
-                            color = if (state.healthConnectConnected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                            color = statusColor,
                             fontWeight = if (state.healthConnectConnected) FontWeight.Black else FontWeight.Normal
                         )
+                        
+                        // Small button to re-request permissions if missing
+                        if (state.healthConnectConnected && !state.healthConnectPermissionsGranted) {
+                            Text(
+                                text = "Appuyez sur le switch pour corriger",
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
                     }
                     Switch(
                         checked = state.healthConnectConnected,
                         onCheckedChange = { isChecked ->
                             if (isChecked) {
                                 scope.launch {
-                                    if (syncManager.healthConnectManager.hasPermissions(syncManager.permissions as Set<String>)) {
-                                        state.healthConnectConnected = true
-                                        val prefs = context.getSharedPreferences("drawrun_prefs", android.content.Context.MODE_PRIVATE)
-                                        prefs.edit().putBoolean("health_connected", true).apply()
+                                    val allGranted = syncManager.healthConnectManager.hasPermissions(syncManager.permissions as Set<String>)
+                                    state.healthConnectConnected = true
+                                    state.healthConnectPermissionsGranted = allGranted
+                                    
+                                    val prefs = context.getSharedPreferences("drawrun_prefs", android.content.Context.MODE_PRIVATE)
+                                    prefs.edit().putBoolean("health_connected", true).apply()
+                                    
+                                    if (allGranted) {
                                         syncManager.syncHealthData()
                                     } else {
                                         permissionLauncher.launch(syncManager.permissions)
@@ -202,11 +224,15 @@ fun ProfileScreen(state: AppState, syncManager: DataSyncManager) {
                                 }
                             } else {
                                 state.healthConnectConnected = false
+                                state.healthConnectPermissionsGranted = false
                                 val prefs = context.getSharedPreferences("drawrun_prefs", android.content.Context.MODE_PRIVATE)
                                 prefs.edit().putBoolean("health_connected", false).apply()
                             }
                         },
-                        colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.primary, checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = if (state.healthConnectPermissionsGranted) MaterialTheme.colorScheme.primary else Color(0xFFF59E0B), 
+                            checkedTrackColor = (if (state.healthConnectPermissionsGranted) MaterialTheme.colorScheme.primary else Color(0xFFF59E0B)).copy(alpha = 0.2f)
+                        )
                     )
                 }
             }

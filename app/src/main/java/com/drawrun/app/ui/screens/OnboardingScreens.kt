@@ -185,22 +185,29 @@ fun OnboardingSyncScreen(state: AppState, syncManager: DataSyncManager) {
         
         SyncButton(
             title = "Health Connect",
-            subtitle = if (state.healthConnectConnected) "SYNCHRONISÉ ✅" else "SANTÉ",
+            subtitle = if (state.healthConnectConnected) {
+                if (state.healthConnectPermissionsGranted) "SYNCHRONISÉ ✅" else "AUTORISATIONS REQUISES ⚠️"
+            } else "SANTÉ",
             icon = Icons.Default.Favorite,
-            iconColor = MaterialTheme.colorScheme.primary,
-            connected = state.healthConnectConnected,
+            iconColor = if (state.healthConnectConnected && !state.healthConnectPermissionsGranted) Color(0xFFF59E0B) else MaterialTheme.colorScheme.primary,
+            connected = state.healthConnectConnected && state.healthConnectPermissionsGranted,
             onClick = { 
-                if (state.healthConnectConnected) return@SyncButton
-                
-                try {
-                    if (syncManager.permissions.isEmpty()) {
-                         android.widget.Toast.makeText(context, "Erreur: Aucune permission demandée", android.widget.Toast.LENGTH_LONG).show()
-                    } else {
-                        android.widget.Toast.makeText(context, "Lancement Health Connect...", android.widget.Toast.LENGTH_SHORT).show()
-                        healthPermissionLauncher.launch(syncManager.permissions)
+                scope.launch {
+                    val allGranted = syncManager.healthConnectManager.hasPermissions(syncManager.permissions as Set<String>)
+                    if (state.healthConnectConnected && allGranted) {
+                        return@launch
                     }
-                } catch (e: Exception) {
-                     android.widget.Toast.makeText(context, "Erreur Lancement: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+                    
+                    try {
+                        if (syncManager.permissions.isEmpty()) {
+                             android.widget.Toast.makeText(context, "Erreur: Aucune permission demandée", android.widget.Toast.LENGTH_LONG).show()
+                        } else {
+                            android.widget.Toast.makeText(context, "Lancement Health Connect...", android.widget.Toast.LENGTH_SHORT).show()
+                            healthPermissionLauncher.launch(syncManager.permissions)
+                        }
+                    } catch (e: Exception) {
+                         android.widget.Toast.makeText(context, "Erreur Lancement: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+                    }
                 }
             }
         )
@@ -407,8 +414,8 @@ fun SyncButton(
             Text(
                 text = if (connected) "ENREGISTRÉ & ACTIF" else subtitle, 
                 style = MaterialTheme.typography.labelSmall, 
-                color = if (connected) iconColor else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                fontWeight = if (connected) FontWeight.Black else FontWeight.Normal
+                color = if (connected) iconColor else if (subtitle.contains("REQUISES")) Color(0xFFF59E0B) else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                fontWeight = if (connected || subtitle.contains("REQUISES")) FontWeight.Black else FontWeight.Normal
             )
         }
         if (connected) {

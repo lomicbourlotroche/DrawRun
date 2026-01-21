@@ -38,6 +38,7 @@ class AppState {
     // Connections
     var stravaConnected by mutableStateOf(false)
     var healthConnectConnected by mutableStateOf(false)
+    var healthConnectPermissionsGranted by mutableStateOf(false)
     var stravaAthleteId by mutableStateOf<Int?>(null)
     var athleteStats by mutableStateOf<AthleteStats?>(null)
     var athleteZones by mutableStateOf<AthleteZones?>(null)
@@ -213,7 +214,21 @@ data class ActivityAnalysis(
     val intensityFactor: Double?,
     val tss: Double?,
     val variabilityIndex: Double?,
-    val lapData: List<LapInfo>
+    val lapData: List<LapInfo>,
+    // Advanced Metrics
+    val normalizedPower: Double? = null,
+    val normalizedSpeed: Double? = null, // NGP / GAP based
+    val trimp: Double? = null,
+    val vam: Double? = null,
+    val hrZoneDistribution: List<Double>? = null, // Percentages per zone
+    val powerZoneDistribution: List<Double>? = null,
+    val paceZoneDistribution: List<Double>? = null,
+    // Biomechanical (Sport Specific)
+    val groundContactTime: Double? = null,
+    val verticalOscillation: Double? = null,
+    val swolf: Int? = null,
+    val dps: Double? = null,
+    val strokeRate: Int? = null
 )
 
 data class LapInfo(

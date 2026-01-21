@@ -72,12 +72,14 @@ class DataSyncManager(val context: Context, val state: AppState) {
         }
         val prefs = context.getSharedPreferences("drawrun_prefs", Context.MODE_PRIVATE)
         val healthConnected = prefs.getBoolean("health_connected", false)
+        val allGranted = if (healthConnected) healthConnectManager.hasPermissions(permissions as Set<String>) else false
 
         withContext(Dispatchers.Main) {
             state.healthConnectConnected = healthConnected
+            state.healthConnectPermissionsGranted = allGranted
         }
         
-        if (healthConnected) {
+        if (healthConnected && allGranted) {
             syncHealthData()
         }
     }
@@ -156,7 +158,12 @@ class DataSyncManager(val context: Context, val state: AppState) {
      */
     suspend fun syncHealthData() = withContext(Dispatchers.IO) {
         try {
-            if (!healthConnectManager.hasPermissions(permissions as Set<String>)) {
+            val allGranted = healthConnectManager.hasPermissions(permissions as Set<String>)
+            withContext(Dispatchers.Main) {
+                state.healthConnectPermissionsGranted = allGranted
+            }
+            
+            if (!allGranted) {
                  android.util.Log.w("DrawRun", "Health Connect: Missing permissions")
                  return@withContext
             }
@@ -606,6 +613,17 @@ class DataSyncManager(val context: Context, val state: AppState) {
 
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+
+    /**
+     * Updates the AppState with current real-time permission status.
+     * Useful for UI feedback when returning from system settings.
+     */
+    suspend fun refreshHealthConnectStatus() {
+        val allGranted = healthConnectManager.hasPermissions(permissions as Set<String>)
+        withContext(Dispatchers.Main) {
+            state.healthConnectPermissionsGranted = allGranted
         }
     }
 }
