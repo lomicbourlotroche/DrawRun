@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.drawrun.app-mergeDebugResources-50:/values-ta/values-ta.xml",
+            "outputFile": "com.drawrun.app-mergeDebugResources-53:/values-ta/values-ta.xml",
             "map": [
                 {
                     "source": "C:\\Users\\lomic\\.gradle\\caches\\8.10.2\\transforms\\285768e3397e6ac3a3bbfc4538e3c65a\\transformed\\jetified-material3-1.1.2\\res\\values-ta\\values-ta.xml",

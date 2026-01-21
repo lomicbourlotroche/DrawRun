@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.text.KeyboardOptions
 import com.drawrun.app.*
 import com.drawrun.app.ui.components.*
@@ -614,22 +615,6 @@ fun PlanningScreen(state: AppState) {
                                     
                                     Column {
                                         Text(text = "Fréquence: ${state.runPlanFreq.toInt()} séances/semaine", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
-                                        Slider(
-                                            value = state.runPlanFreq,
-                                            onValueChange = { state.runPlanFreq = it },
-                                            valueRange = 3f..7f,
-                                            steps = 3
-                                        )
-                                    }
-                                }
-                            },
-                            confirmButton = {
-                                        modifier = Modifier.fillMaxWidth(),
-                                        shape = RoundedCornerShape(12.dp)
-                                    )
-                                    
-                                    Column {
-                                        Text(text = "Volume: ${state.runPlanFreq.toInt()} séances / semaine", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                                         Slider(
                                             value = state.runPlanFreq,
                                             onValueChange = { state.runPlanFreq = it },

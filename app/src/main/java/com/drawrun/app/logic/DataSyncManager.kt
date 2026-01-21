@@ -37,17 +37,23 @@ import androidx.compose.material.icons.filled.Pool
 import okhttp3.FormBody
 import org.json.JSONObject
 
+// New Strava API imports
+import com.drawrun.app.api.StravaClient
+import com.drawrun.app.data.ActivityDetailed
+import com.drawrun.app.data.StravaTokenResponse
+import android.util.Log
+
 class DataSyncManager(val context: Context, val state: AppState) {
 
     // OAuth Configuration
-    private val STRAVA_CLIENT_ID = "190602"
+    private val STRAVA_CLIENT_ID = 190602
     private val STRAVA_CLIENT_SECRET = "1909300e2dfb5301fab8b6e9bf9635206c983308"
     private val REDIRECT_URI = "http://localhost/strava_callback"
     
-    // Tokens (loaded from prefs in real app, here checking prefs)
-    var stravaAccessToken: String? = null
-    var stravaRefreshToken: String? = null
-
+    // New Strava Client with automatic token management
+    private val stravaClient = StravaClient(context, STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET)
+    
+    // Legacy OkHttp client for Health Connect and other non-Strava calls
     private val client = OkHttpClient()
     
     // Make public for ProfileScreen usage
@@ -69,26 +75,21 @@ class DataSyncManager(val context: Context, val state: AppState) {
         HealthPermission.getReadPermission(HeartRateVariabilityRmssdRecord::class),
         "android.permission.health.READ_EXERCISE_ROUTE"
     )
-    
-    init {
-        // Load tokens from prefs
-        val prefs = context.getSharedPreferences("drawrun_prefs", Context.MODE_PRIVATE)
-        stravaAccessToken = prefs.getString("strava_access_token", null)
-        stravaRefreshToken = prefs.getString("strava_refresh_token", null)
-    }
 
     suspend fun restoreConnections() = withContext(Dispatchers.IO) {
+        // Check if we have valid tokens in the new TokenStorage
+        if (stravaClient.tokenStorage.hasTokens()) {
+            withContext(Dispatchers.Main) {
+                state.stravaConnected = true
+            }
+            // Sync activities on restore
+            syncStravaActivities()
+        }
         val prefs = context.getSharedPreferences("drawrun_prefs", Context.MODE_PRIVATE)
-        val stravaConnected = prefs.getBoolean("strava_connected", false)
         val healthConnected = prefs.getBoolean("health_connected", false)
 
         withContext(Dispatchers.Main) {
-            state.stravaConnected = stravaConnected
             state.healthConnectConnected = healthConnected
-        }
-
-        if (stravaConnected) {
-            syncStravaActivities()
         }
         
         if (healthConnected) {
@@ -109,14 +110,8 @@ class DataSyncManager(val context: Context, val state: AppState) {
      * Step 1: Start OAuth - Launches Browser or Strava App
      */
     fun startStravaAuth() {
-        val intentUri = android.net.Uri.parse("https://www.strava.com/oauth/mobile/authorize")
-            .buildUpon()
-            .appendQueryParameter("client_id", STRAVA_CLIENT_ID)
-            .appendQueryParameter("redirect_uri", REDIRECT_URI)
-            .appendQueryParameter("response_type", "code")
-            .appendQueryParameter("approval_prompt", "auto")
-            .appendQueryParameter("scope", "activity:read_all,profile:read_all")
-            .build()
+        val authUrl = stravaClient.getMobileAuthorizationUrl(REDIRECT_URI)
+        val intentUri = android.net.Uri.parse(authUrl)
             
         val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, intentUri)
         
@@ -135,41 +130,42 @@ class DataSyncManager(val context: Context, val state: AppState) {
      * Step 2: Exchange Code for Token
      */
     suspend fun exchangeToken(code: String): Boolean = withContext(Dispatchers.IO) {
-        val formBody = FormBody.Builder()
-            .add("client_id", STRAVA_CLIENT_ID)
-            .add("client_secret", STRAVA_CLIENT_SECRET)
-            .add("code", code)
-            .add("grant_type", "authorization_code")
-            .build()
-
-        val request = Request.Builder()
-            .url("https://www.strava.com/oauth/token")
-            .post(formBody)
-            .build()
-
         try {
-            val response = client.newCall(request).execute()
-            if (response.isSuccessful) {
-                val json = JSONObject(response.body?.string() ?: "{}")
-                stravaAccessToken = json.getString("access_token")
-                stravaRefreshToken = json.getString("refresh_token")
+            val response = stravaClient.api.exchangeToken(
+                clientId = STRAVA_CLIENT_ID,
+                clientSecret = STRAVA_CLIENT_SECRET,
+                code = code
+            ).execute()
+
+            if (response.isSuccessful && response.body() != null) {
+                val tokenResponse = response.body()!!
                 
+                // Save tokens securely
+                stravaClient.tokenStorage.saveTokens(
+                    accessToken = tokenResponse.accessToken,
+                    refreshToken = tokenResponse.refreshToken,
+                    expiresAt = tokenResponse.expiresAt,
+                    athleteId = tokenResponse.athlete?.id
+                )
+                
+                // Also save to legacy prefs for backward compatibility
                 context.getSharedPreferences("drawrun_prefs", Context.MODE_PRIVATE).edit()
-                    .putString("strava_access_token", stravaAccessToken)
-                    .putString("strava_refresh_token", stravaRefreshToken)
                     .putBoolean("strava_connected", true)
                     .apply()
                     
                 withContext(Dispatchers.Main) {
                     state.stravaConnected = true
                 }
-                syncStravaActivities(stravaAccessToken)
+                
+                // Sync activities after successful connection
+                syncStravaActivities()
                 true
             } else {
+                Log.e("DataSyncManager", "Token exchange failed: ${response.code()}")
                 false
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("DataSyncManager", "Error exchanging token", e)
             false
         }
     }
@@ -337,82 +333,58 @@ class DataSyncManager(val context: Context, val state: AppState) {
         }
     }
 
+
     /**
      * Fetches real activities from Strava with unlimited pagination.
+     * Token refresh is handled automatically by StravaAuthenticator.
      */
-    suspend fun syncStravaActivities(token: String? = null) {
+    suspend fun syncStravaActivities() = withContext(Dispatchers.IO) {
         withContext(Dispatchers.Main) { state.isSyncing = true }
+        
         try {
-            val currentToken = token ?: stravaAccessToken
-            if (currentToken == null) {
-                 withContext(Dispatchers.Main) { state.isSyncing = false }
-                 return
-            }
-
             val allActivities = mutableListOf<ActivityItem>()
             var page = 1
             var totalLoadWeek = 0
             
             // Pagination loop to fetch ALL activities
             while (true) {
-                val request = Request.Builder()
-                    .url("https://www.strava.com/api/v3/athlete/activities?per_page=200&page=$page")
-                    .header("Authorization", "Bearer $currentToken")
-                    .build()
-
-                val response = client.newCall(request).execute()
-                if (response.code == 401) {
-                    if (refreshStravaToken()) {
-                        syncStravaActivities(stravaAccessToken) // Retry once
-                    }
-                    return
-                }
-
-                if (!response.isSuccessful) break
-
-                val json = JSONArray(response.body?.string() ?: "[]")
-                if (json.length() == 0) break // No more activities
+                val activities = stravaClient.api.getActivities(page = page, perPage = 200)
                 
-                for (i in 0 until json.length()) {
-                    val obj = json.getJSONObject(i)
-                    val type = obj.getString("type").lowercase()
-                    val distVal = obj.getDouble("distance")
-                    val dist = (distVal / 1000.0).let { "%.1fkm".format(it) }
+                if (activities.isEmpty()) break // No more activities
+                
+                // Convert ActivityDetailed to ActivityItem
+                for (activity in activities) {
+                    val type = activity.type.lowercase()
+                    val dist = (activity.distance / 1000.0).let { "%.1fkm".format(it) }
                     
-                    val movingTime = obj.optLong("moving_time", 0)
-                    val duration = if (movingTime > 3600) {
-                         "%dh%02d".format(movingTime / 3600, (movingTime % 3600) / 60)
+                    val duration = if (activity.movingTime > 3600) {
+                        "%dh%02d".format(activity.movingTime / 3600, (activity.movingTime % 3600) / 60)
                     } else {
-                         "%02d:%02d".format(movingTime / 60, movingTime % 60)
+                        "%02d:%02d".format(activity.movingTime / 60, activity.movingTime % 60)
                     }
                     
-                    val avgSpeed = obj.optDouble("average_speed", 0.0)
-                    val pace = if (avgSpeed > 0) {
-                        val paceSeconds = (1000 / avgSpeed).toInt()
-                         "%d:%02d /km".format(paceSeconds / 60, paceSeconds % 60)
+                    val pace = if (activity.averageSpeed > 0) {
+                        val paceSeconds = (1000 / activity.averageSpeed).toInt()
+                        "%d:%02d /km".format(paceSeconds / 60, paceSeconds % 60)
                     } else "--"
                     
-                    val avgHr = obj.optDouble("average_heartrate", 0.0)
-                    val hrStr = if (avgHr > 0) "%.0f bpm".format(avgHr) else "--"
+                    val hrStr = activity.averageHeartrate?.let { "%.0f bpm".format(it) } ?: "--"
                     
-                    val sufferScore = obj.optInt("suffer_score", 0)
+                    val sufferScore = activity.sufferScore ?: 0
                     // Only count first 7 activities for weekly load (most recent)
                     if (allActivities.size < 7) totalLoadWeek += sufferScore
                     
-                    val mapObj = obj.optJSONObject("map")
-                    val polyline = mapObj?.optString("summary_polyline")
-
                     allActivities.add(ActivityItem(
-                        id = obj.getInt("id"),
+                        id = activity.id.toInt(),
                         type = type,
-                        title = obj.getString("name"),
-                        date = obj.getString("start_date_local").take(10),
+                        title = activity.name,
+                        date = activity.startDateLocal.take(10),
                         dist = dist,
                         load = "TSS $sufferScore",
                         duration = duration,
                         pace = pace,
                         avgHr = hrStr,
-                        mapPolyline = polyline,
+                        mapPolyline = activity.map?.summaryPolyline,
                         color = when(type) {
                             "run" -> Color(0xFFFF3B30)
                             "swim" -> Color(0xFF007AFF)
@@ -440,46 +412,42 @@ class DataSyncManager(val context: Context, val state: AppState) {
                     state.tsb = "0"
                 }
             }
+            
+            // Sync additional data
             syncStravaProfile()
             syncStravaZones()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("DataSyncManager", "Error syncing activities", e)
         } finally {
             withContext(Dispatchers.Main) { state.isSyncing = false }
         }
     }
 
     suspend fun syncStravaProfile() = withContext(Dispatchers.IO) {
-        val token = stravaAccessToken ?: return@withContext
-        val request = Request.Builder()
-            .url("https://www.strava.com/api/v3/athlete")
-            .header("Authorization", "Bearer $token")
-            .build()
-            
         try {
-            val response = client.newCall(request).execute()
-            if (response.isSuccessful) {
-                val json = JSONObject(response.body?.string() ?: "{}")
-                val fName = json.optString("firstname", "")
-                val lName = json.optString("lastname", "")
-                val weightVal = json.optDouble("weight", 0.0)
-                val profileUrl = json.optString("profile", "")
+            val athlete = stravaClient.api.getAuthenticatedAthlete()
+            
+            withContext(Dispatchers.Main) {
+                state.athleteName = "${athlete.firstname ?: ""} ${athlete.lastname ?: ""}".trim()
+                state.athleteCity = athlete.city ?: ""
+                state.athleteCountry = athlete.country ?: ""
+                state.athleteFtp = athlete.ftp ?: 0
                 
-                withContext(Dispatchers.Main) {
-                    if (fName.isNotBlank()) state.firstName = fName
-                    if (weightVal > 0) state.weight = "%.1f".format(weightVal)
-                    if (profileUrl.isNotBlank() && profileUrl != "avatar/athlete/large.png") {
-                        state.avatarUrl = profileUrl
-                    }
-                    val athleteId = json.optInt("id", 0)
-                    if (athleteId > 0) {
-                         state.stravaAthleteId = athleteId
-                         syncStravaStats(athleteId)
-                    }
+                if (athlete.firstname?.isNotBlank() == true) {
+                    state.firstName = athlete.firstname
+                }
+                if (athlete.weight != null && athlete.weight > 0) {
+                    state.weight = "%.1f".format(athlete.weight)
                 }
             }
+            
+            // Sync stats if we have athlete ID
+            if (athlete.id > 0) {
+                state.stravaAthleteId = athlete.id.toInt()
+                syncStravaStats(athlete.id)
+            }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("DataSyncManager", "Error syncing profile", e)
         }
     }
 
@@ -488,181 +456,120 @@ class DataSyncManager(val context: Context, val state: AppState) {
      */
     suspend fun syncActivityDetail(activityId: Int, type: String) = withContext(Dispatchers.IO) {
         android.util.Log.d("DrawRun", "syncActivityDetail: Starting for activity $activityId")
-        val token = stravaAccessToken ?: run {
-            android.util.Log.w("DrawRun", "syncActivityDetail: No Strava token available")
-            return@withContext
-        }
         
-        val request = Request.Builder()
-            .url("https://www.strava.com/api/v3/activities/$activityId/streams?keys=time,distance,altitude,heartrate,cadence,watts,velocity_smooth,grade_smooth&key_by_type=true")
-            .header("Authorization", "Bearer $token")
-            .build()
-            
         try {
-            val response = client.newCall(request).execute()
-            android.util.Log.d("DrawRun", "syncActivityDetail: API response code = ${response.code}")
+            val streams = stravaClient.api.getActivityStreams(activityId.toLong())
+            android.util.Log.d("DrawRun", "syncActivityDetail: Received streams data")
             
-            if (response.isSuccessful) {
-                val json = JSONObject(response.body?.string() ?: "{}")
-                
-                val timeStream = json.optJSONObject("time")?.optJSONArray("data")?.let { arr -> List(arr.length()) { arr.getInt(it) } } ?: emptyList()
-                val distStream = json.optJSONObject("distance")?.optJSONArray("data")?.let { arr -> List(arr.length()) { arr.getDouble(it) } }
-                val altStream = json.optJSONObject("altitude")?.optJSONArray("data")?.let { arr -> List(arr.length()) { arr.getDouble(it) } }
-                val hrStream = json.optJSONObject("heartrate")?.optJSONArray("data")?.let { arr -> List(arr.length()) { arr.getInt(it) } }
-                val cadStream = json.optJSONObject("cadence")?.optJSONArray("data")?.let { arr -> List(arr.length()) { arr.getInt(it) } }
-                val pwrStream = json.optJSONObject("watts")?.optJSONArray("data")?.let { arr -> List(arr.length()) { arr.getInt(it) } }
-                val velStream = json.optJSONObject("velocity_smooth")?.optJSONArray("data")?.let { arr -> List(arr.length()) { arr.getDouble(it) } }
-                
-                android.util.Log.d("DrawRun", "syncActivityDetail: Streams fetched - time:${timeStream.size}, hr:${hrStream?.size}, vel:${velStream?.size}")
-                
-                val streams = com.drawrun.app.ActivityStreams(
-                    time = timeStream,
-                    distance = distStream,
-                    heartRate = hrStream,
-                    pace = velStream, // velocity_smooth is m/s
-                    altitude = altStream,
-                    cadence = cadStream,
-                    power = pwrStream,
-                    vam = if (altStream != null) PerformanceAnalyzer.calculateVAM(altStream, timeStream) else null,
-                    hrDerivative = if (hrStream != null) PerformanceAnalyzer.calculateHRDerivative(hrStream, timeStream) else null,
-                    gradAdjustedPace = if (velStream != null && altStream != null && distStream != null) {
-                        PerformanceAnalyzer.calculateGAP(velStream, altStream, distStream)
-                    } else null
-                )
-                
-                android.util.Log.d("DrawRun", "syncActivityDetail: Running analysis with zones = ${state.zones != null}")
-                val analysis = PerformanceAnalyzer.analyzeActivity(type, streams, state.zones)
-                android.util.Log.d("DrawRun", "syncActivityDetail: Analysis complete - IF=${analysis.intensityFactor}, TSS=${analysis.tss}")
-                
-                withContext(Dispatchers.Main) {
-                    state.selectedActivityStreams = streams
-                    state.selectedActivityAnalysis = analysis
-                    android.util.Log.d("DrawRun", "syncActivityDetail: State updated successfully")
-                }
-            } else {
-                android.util.Log.w("DrawRun", "syncActivityDetail: API call failed with code ${response.code}")
+            // Extract stream data
+            val timeStream = (streams["time"]?.data as? List<*>)?.mapNotNull { (it as? Number)?.toInt() } ?: emptyList()
+            val distStream = (streams["distance"]?.data as? List<*>)?.mapNotNull { (it as? Number)?.toDouble() }
+            val altStream = (streams["altitude"]?.data as? List<*>)?.mapNotNull { (it as? Number)?.toDouble() }
+            val hrStream = (streams["heartrate"]?.data as? List<*>)?.mapNotNull { (it as? Number)?.toInt() }
+            val cadStream = (streams["cadence"]?.data as? List<*>)?.mapNotNull { (it as? Number)?.toInt() }
+            val pwrStream = (streams["watts"]?.data as? List<*>)?.mapNotNull { (it as? Number)?.toInt() }
+            val velStream = (streams["velocity_smooth"]?.data as? List<*>)?.mapNotNull { (it as? Number)?.toDouble() }
+            
+            android.util.Log.d("DrawRun", "syncActivityDetail: Streams fetched - time:${timeStream.size}, hr:${hrStream?.size}, vel:${velStream?.size}")
+            
+            val activityStreams = com.drawrun.app.ActivityStreams(
+                time = timeStream,
+                distance = distStream,
+                heartRate = hrStream,
+                pace = velStream, // velocity_smooth is m/s
+                altitude = altStream,
+                cadence = cadStream,
+                power = pwrStream,
+                vam = if (altStream != null) PerformanceAnalyzer.calculateVAM(altStream, timeStream) else null,
+                hrDerivative = if (hrStream != null) PerformanceAnalyzer.calculateHRDerivative(hrStream, timeStream) else null,
+                gradAdjustedPace = if (velStream != null && altStream != null && distStream != null) {
+                    PerformanceAnalyzer.calculateGAP(velStream, altStream, distStream)
+                } else null
+            )
+            
+            android.util.Log.d("DrawRun", "syncActivityDetail: Running analysis with zones = ${state.zones != null}")
+            val analysis = PerformanceAnalyzer.analyzeActivity(type, activityStreams, state.zones)
+            android.util.Log.d("DrawRun", "syncActivityDetail: Analysis complete - IF=${analysis.intensityFactor}, TSS=${analysis.tss}")
+            
+            withContext(Dispatchers.Main) {
+                state.selectedActivityStreams = activityStreams
+                state.selectedActivityAnalysis = analysis
+                android.util.Log.d("DrawRun", "syncActivityDetail: State updated successfully")
             }
         } catch (e: Exception) {
             android.util.Log.e("DrawRun", "syncActivityDetail: Exception occurred", e)
-            e.printStackTrace()
         }
     }
 
-    private fun refreshStravaToken(): Boolean {
-        val rToken = stravaRefreshToken ?: return false
-        
-        val formBody = FormBody.Builder()
-            .add("client_id", STRAVA_CLIENT_ID)
-            .add("client_secret", STRAVA_CLIENT_SECRET)
-            .add("grant_type", "refresh_token")
-            .add("refresh_token", rToken)
-            .build()
 
-        val request = Request.Builder()
-            .url("https://www.strava.com/api/v3/oauth/token")
-            .post(formBody)
-            .build()
-
-        return try {
-            val response = client.newCall(request).execute()
-            if (response.isSuccessful) {
-                val json = JSONObject(response.body?.string() ?: "{}")
-                stravaAccessToken = json.getString("access_token")
-                stravaRefreshToken = json.getString("refresh_token")
-                
-                context.getSharedPreferences("drawrun_prefs", Context.MODE_PRIVATE).edit()
-                    .putString("strava_access_token", stravaAccessToken)
-                    .putString("strava_refresh_token", stravaRefreshToken)
-                    .apply()
-                true
-            } else {
-                false
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
-    }
-
-    suspend fun syncStravaStats(athleteId: Int) = withContext(Dispatchers.IO) {
-        val token = stravaAccessToken ?: return@withContext
-        val request = Request.Builder()
-            .url("https://www.strava.com/api/v3/athletes/$athleteId/stats")
-            .header("Authorization", "Bearer $token")
-            .build()
-            
+    suspend fun syncStravaStats(athleteId: Long) = withContext(Dispatchers.IO) {
         try {
-            val response = client.newCall(request).execute()
-            if (response.isSuccessful) {
-                val json = JSONObject(response.body?.string() ?: "{}")
-                
-                fun parseTotals(objName: String): com.drawrun.app.Totals {
-                    val obj = json.optJSONObject(objName) ?: JSONObject()
-                    return com.drawrun.app.Totals(
-                        count = obj.optInt("count", 0),
-                        distance = obj.optDouble("distance", 0.0),
-                        movingTime = obj.optInt("moving_time", 0),
-                        elapsedTime = obj.optInt("elapsed_time", 0),
-                        elevationGain = obj.optDouble("elevation_gain", 0.0)
+            val statsResponse = stravaClient.api.getAthleteStats(athleteId)
+            
+            val stats = com.drawrun.app.AthleteStats(
+                allRunTotals = statsResponse.allRunTotals?.let {
+                    com.drawrun.app.Totals(
+                        count = it.count,
+                        distance = it.distance.toDouble(),
+                        movingTime = it.movingTime,
+                        elapsedTime = it.elapsedTime,
+                        elevationGain = it.elevationGain.toDouble()
                     )
-                }
-
-                val stats = com.drawrun.app.AthleteStats(
-                    allRunTotals = parseTotals("all_run_totals"),
-                    allBikeTotals = parseTotals("all_ride_totals"),
-                    allSwimTotals = parseTotals("all_swim_totals")
-                )
-                
-                withContext(Dispatchers.Main) {
-                    state.athleteStats = stats
-                }
+                } ?: com.drawrun.app.Totals(0, 0.0, 0, 0, 0.0),
+                allBikeTotals = statsResponse.allRideTotals?.let {
+                    com.drawrun.app.Totals(
+                        count = it.count,
+                        distance = it.distance.toDouble(),
+                        movingTime = it.movingTime,
+                        elapsedTime = it.elapsedTime,
+                        elevationGain = it.elevationGain.toDouble()
+                    )
+                } ?: com.drawrun.app.Totals(0, 0.0, 0, 0, 0.0),
+                allSwimTotals = statsResponse.allSwimTotals?.let {
+                    com.drawrun.app.Totals(
+                        count = it.count,
+                        distance = it.distance.toDouble(),
+                        movingTime = it.movingTime,
+                        elapsedTime = it.elapsedTime,
+                        elevationGain = it.elevationGain.toDouble()
+                    )
+                } ?: com.drawrun.app.Totals(0, 0.0, 0, 0, 0.0)
+            )
+            
+            withContext(Dispatchers.Main) {
+                state.athleteStats = stats
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("DataSyncManager", "Error syncing stats", e)
         }
     }
 
     suspend fun syncStravaZones() = withContext(Dispatchers.IO) {
-        val token = stravaAccessToken ?: return@withContext
-        val request = Request.Builder()
-            .url("https://www.strava.com/api/v3/athlete/zones")
-            .header("Authorization", "Bearer $token")
-            .build()
-            
         try {
-            val response = client.newCall(request).execute()
-            if (response.isSuccessful) {
-                val json = JSONObject(response.body?.string() ?: "{}")
-                
-                val hrObj = json.optJSONObject("heart_rate")
-                val hrZones = if (hrObj != null) {
-                    val zonesArr = hrObj.optJSONArray("zones") ?: JSONArray()
-                    com.drawrun.app.HRZones(
-                        customZones = hrObj.optBoolean("custom_zones", false),
-                        zones = List(zonesArr.length()) { i ->
-                            val z = zonesArr.getJSONObject(i)
-                            com.drawrun.app.HRZone(z.getInt("min"), z.getInt("max"))
-                        }
-                    )
-                } else null
+            val zonesResponse = stravaClient.api.getAthleteZones()
+            
+            val hrZones = zonesResponse.heartRate?.let {
+                com.drawrun.app.HRZones(
+                    customZones = it.customZones,
+                    zones = it.zones.map { zone ->
+                        com.drawrun.app.HRZone(zone.min, zone.max)
+                    }
+                )
+            }
 
-                val pwrObj = json.optJSONObject("power")
-                val pwrZones = if (pwrObj != null) {
-                    val zonesArr = pwrObj.optJSONArray("zones") ?: JSONArray()
-                    com.drawrun.app.PowerZones(
-                        zones = List(zonesArr.length()) { i ->
-                            val z = zonesArr.getJSONObject(i)
-                            com.drawrun.app.PowerZone(z.getInt("min"), z.getInt("max"))
-                        }
-                    )
-                } else null
+            val pwrZones = zonesResponse.power?.let {
+                com.drawrun.app.PowerZones(
+                    zones = it.zones.map { zone ->
+                        com.drawrun.app.PowerZone(zone.min, zone.max)
+                    }
+                )
+            }
 
-                withContext(Dispatchers.Main) {
-                    state.athleteZones = com.drawrun.app.AthleteZones(hrZones, pwrZones)
-                }
+            withContext(Dispatchers.Main) {
+                state.athleteZones = com.drawrun.app.AthleteZones(hrZones, pwrZones)
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("DataSyncManager", "Error syncing zones", e)
         }
     }
     /**
