@@ -189,47 +189,169 @@ object TrainingPlanGenerator {
 
         return weeks
     }
-    data class SwimSessionData(
-        val dist: Int,
-        val duration: Int,
-        val warmup: String,
-        val mainSet: List<String>,
-        val cooldown: String,
-        val focus: String
+    data class SwimExercise(
+        val type: String,           // "Échauffement", "Éducatifs", "Série Principale", etc.
+        val distance: Int,          // Distance en mètres
+        val description: String,    // Description détaillée
+        val intensity: String,      // "Facile", "Modérée", "Intense"
+        val restTime: String?       // Temps de récupération
     )
 
-    fun generateSwimSession(mode: String, target: Int, cssPace: String = "1:45"): SwimSessionData {
-        return if (mode == "distance") {
-            val dist = target
-            val mainDist = (dist * 0.6).toInt()
-            val warmupDist = (dist * 0.25).toInt().coerceAtLeast(200)
-            val cooldownDist = dist - mainDist - warmupDist
+    data class SwimSessionData(
+        val totalDistance: Int,
+        val estimatedDuration: Int,
+        val exercises: List<SwimExercise>,
+        val focus: String,
+        val level: String
+    )
+
+    fun generateSwimSession(
+        mode: String,           // "distance" ou "duration"
+        target: Int,            // Distance en m ou durée en min
+        level: String = "Intermédiaire",  // "Débutant", "Intermédiaire", "Avancé"
+        focus: String = "Endurance"       // "Endurance", "Technique", "Vitesse"
+    ): SwimSessionData {
+        val targetDistance = if (mode == "distance") target else (target * 35) // ~35m/min
+        val exercises = mutableListOf<SwimExercise>()
+        var totalDistance = 0
+        
+        // 1. ÉCHAUFFEMENT (15-20% de la distance totale)
+        val warmupDistance = (targetDistance * 0.175).toInt()
+        exercises.add(SwimExercise(
+            type = "Échauffement",
+            distance = warmupDistance,
+            description = buildString {
+                append("${warmupDistance}m nage libre facile\n")
+                append("• ${warmupDistance / 4}m crawl souple\n")
+                append("• ${warmupDistance / 4}m dos\n")
+                append("• ${warmupDistance / 4}m crawl avec pull-buoy\n")
+                append("• ${warmupDistance / 4}m crawl respiration 3 temps")
+            },
+            intensity = "Facile",
+            restTime = "30s après chaque 100m"
+        ))
+        totalDistance += warmupDistance
+        
+        // 2. ÉDUCATIFS TECHNIQUES (10% de la distance)
+        val drillsDistance = (targetDistance * 0.10).toInt()
+        val drillReps = drillsDistance / 25
+        exercises.add(SwimExercise(
+            type = "Éducatifs Techniques",
+            distance = drillsDistance,
+            description = buildString {
+                append("${drillsDistance}m exercices techniques\n")
+                append("• ${drillReps / 3} x 25m rattrapé (récup 15s)\n")
+                append("• ${drillReps / 3} x 25m point mort (récup 15s)\n")
+                append("• ${drillReps / 3} x 25m respiration alternée")
+            },
+            intensity = "Technique",
+            restTime = "15s entre séries"
+        ))
+        totalDistance += drillsDistance
+        
+        // 3. SÉRIE PRINCIPALE (60% de la distance)
+        val mainSetDistance = (targetDistance * 0.60).toInt()
+        val mainSetExercise = when (focus) {
+            "Endurance" -> {
+                val reps = mainSetDistance / 100
+                SwimExercise(
+                    type = "Série Principale - Endurance",
+                    distance = mainSetDistance,
+                    description = buildString {
+                        append("${reps} x 100m crawl (récup 20s)\n")
+                        append("• Allure régulière et constante\n")
+                        append("• Respiration bilatérale (3 temps)\n")
+                        append("• Focus sur la glisse et l'amplitude\n")
+                        append("• Maintenir 16-18 coups de bras par 25m")
+                    },
+                    intensity = "Modérée",
+                    restTime = "20s entre chaque 100m"
+                )
+            }
             
-            SwimSessionData(
-                dist = dist,
-                duration = (dist / 1.5).toInt(), // Approximation
-                warmup = "$warmupDist m (100m Libre / 50m Jambes / 50m Éducatifs)",
-                mainSet = listOf(
-                    "${mainDist / 200} x 200m @ Allure CSS (r=20s)",
-                    "Focus: Maintien de la propulsion en fatigue"
-                ),
-                focus = "Endurance Aérobie",
-                cooldown = "$cooldownDist m Souple (Dos/Brasse)"
-            )
-        } else {
-            val duration = target
-            val mainDur = (duration * 0.6).toInt()
-            SwimSessionData(
-                dist = (duration * 40), // Approximation 2km/h
-                duration = duration,
-                warmup = "10 min Progressif (Varier les nages)",
-                mainSet = listOf(
-                    "$mainDur min Fartlek (30s Accéléré / 30s Lent)",
-                    "Maintenir une fréquence de bras constante"
-                ),
-                focus = "Vitesse & Fréquence",
-                cooldown = "5 min Récupération Active"
-            )
+            "Vitesse" -> {
+                SwimExercise(
+                    type = "Série Principale - Vitesse",
+                    distance = mainSetDistance,
+                    description = buildString {
+                        append("Pyramide de vitesse:\n")
+                        append("• 4 x 50m rapide (récup 30s)\n")
+                        append("• 3 x 100m tempo (récup 45s)\n")
+                        append("• 2 x 200m seuil (récup 60s)\n")
+                        append("• 3 x 100m tempo (récup 45s)\n")
+                        append("• 4 x 50m sprint (récup 30s)\n")
+                        append("Focus: Accélération progressive et fréquence élevée")
+                    },
+                    intensity = "Intense",
+                    restTime = "Variable selon distance"
+                )
+            }
+            
+            else -> { // Technique
+                SwimExercise(
+                    type = "Série Principale - Technique",
+                    distance = mainSetDistance,
+                    description = buildString {
+                        append("Série mixte technique/vitesse:\n")
+                        append("• 4 x 100m (25m éducatif + 75m crawl)\n")
+                        append("• 4 x 75m crawl tempo\n")
+                        append("• 4 x 50m avec palmes (travail jambes)\n")
+                        append("• 4 x 25m sprint départ plongé\n")
+                        append("Focus: Qualité technique avant vitesse")
+                    },
+                    intensity = "Modérée à Intense",
+                    restTime = "30s entre séries"
+                )
+            }
         }
+        exercises.add(mainSetExercise)
+        totalDistance += mainSetDistance
+        
+        // 4. SÉRIE JAMBES (10% de la distance)
+        val legsDistance = (targetDistance * 0.10).toInt()
+        exercises.add(SwimExercise(
+            type = "Travail de Jambes",
+            distance = legsDistance,
+            description = buildString {
+                append("${legsDistance}m travail spécifique jambes\n")
+                append("• ${legsDistance / 2}m planche (4 x 50m, récup 20s)\n")
+                append("• ${legsDistance / 4}m ondulations (2 x 50m, récup 30s)\n")
+                append("• ${legsDistance / 4}m jambes sur le dos\n")
+                append("Focus: Battements souples et réguliers")
+            },
+            intensity = "Modérée",
+            restTime = "20-30s entre séries"
+        ))
+        totalDistance += legsDistance
+        
+        // 5. RETOUR AU CALME (5% de la distance)
+        val cooldownDistance = targetDistance - totalDistance
+        exercises.add(SwimExercise(
+            type = "Retour au Calme",
+            distance = cooldownDistance,
+            description = buildString {
+                append("${cooldownDistance}m nage libre très facile\n")
+                append("• Respiration ample et détendue\n")
+                append("• Relâchement musculaire progressif\n")
+                append("• Varier les nages (crawl, dos, brasse)\n")
+                append("• Étirements dans l'eau (5 min)")
+            },
+            intensity = "Très facile",
+            restTime = null
+        ))
+        
+        val estimatedDuration = when (level) {
+            "Débutant" -> (targetDistance / 25).toInt()      // ~25m/min
+            "Avancé" -> (targetDistance / 45).toInt()        // ~45m/min
+            else -> (targetDistance / 35).toInt()            // ~35m/min
+        }
+        
+        return SwimSessionData(
+            totalDistance = targetDistance,
+            estimatedDuration = estimatedDuration,
+            exercises = exercises,
+            focus = focus,
+            level = level
+        )
     }
 }
