@@ -130,12 +130,23 @@ fun ActivityDetailScreen(state: AppState, syncManager: com.drawrun.app.logic.Dat
                                 .background(if (state.appTheme == com.drawrun.app.ui.theme.AppTheme.LIGHT) Color(0xFFF1F5F9) else Color(0xFF1C1C1E)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = if (act.type == "swim") Icons.Default.Pool else if (act.type == "bike") Icons.Default.DirectionsBike else Icons.Default.Map,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                modifier = Modifier.size(64.dp)
-                            )
+                            if (act.mapPolyline != null && act.mapPolyline.isNotEmpty()) {
+                                com.drawrun.app.ui.components.ActivityMap(
+                                    polyline = act.mapPolyline,
+                                    modifier = Modifier.fillMaxSize().padding(16.dp),
+                                    lineColor = if (act.type == "run") Color(0xFFFF3B30) else if (act.type == "bike") Color(0xFFF59E0B) else Color(0xFF007AFF)
+                                )
+                            }
+                            
+                            // Watermark Icon if no map or purely decorative background
+                            if (act.mapPolyline.isNullOrEmpty()) {
+                                Icon(
+                                    imageVector = if (act.type == "swim") Icons.Default.Pool else if (act.type == "bike") Icons.Default.DirectionsBike else Icons.Default.Map,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                    modifier = Modifier.size(64.dp)
+                                )
+                            }
                             
                             // Live Replay Overlay
                             if (isLiveMode && currentPoint != null) {
@@ -339,7 +350,14 @@ fun ActivityDetailScreen(state: AppState, syncManager: com.drawrun.app.logic.Dat
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         TechnicalSection("Charge & Intensité", listOf(
-                            TechItem("Normalized Power", "${analysis.normalizedPower?.toInt() ?: "--"}", "W", Icons.Default.Bolt),
+                            if (act.type == "run") 
+                                TechItem("NGP (Vitesse Norm.)", analysis.normalizedSpeed?.let { spd ->
+                                    val p = 60.0 / (spd * 3.6 / 60.0)
+                                    "%d:%02d".format((p/60).toInt(), (p%60).toInt())
+                                } ?: "--:--", "min/km", Icons.Default.Speed)
+                            else 
+                                TechItem("Normalized Power", "${analysis.normalizedPower?.toInt() ?: "--"}", "W", Icons.Default.Bolt),
+                                
                             TechItem("TSS (Stress Score)", "${analysis.tss?.toInt() ?: "--"}", "pts", Icons.Default.History),
                             TechItem("IF (Intensité)", "%.2f".format(analysis.intensityFactor ?: 0.0), "", Icons.Default.TrendingUp),
                             TechItem("TRIMP", "${analysis.trimp?.toInt() ?: "--"}", "pts", Icons.Default.Favorite)
@@ -352,12 +370,22 @@ fun ActivityDetailScreen(state: AppState, syncManager: com.drawrun.app.logic.Dat
                             TechItem("VAM Ascension", "${analysis.vam?.toInt() ?: "--"}", "m/h", Icons.Default.Terrain)
                         ), Modifier.weight(1f).widthIn(min = 300.dp))
 
-                        TechnicalSection("Dynamique & Technique", listOf(
-                            TechItem("SWOLF (Bassin)", "${analysis.swolf ?: "--"}", "", Icons.Default.Waves),
-                            TechItem("Stroke Rate", "${analysis.strokeRate ?: "--"}", "spm", Icons.Default.Timer),
-                            TechItem("Cadence Moyenne", "${analysis.lapData.mapNotNull { it.avgPower }.average().toInt()}", "rpm", Icons.Default.DirectionsBike),
-                            TechItem("Équilibre G/D", "--/--", "%", Icons.Default.Transform)
-                        ), Modifier.weight(1f).widthIn(min = 300.dp))
+                        TechnicalSection("Dynamique & Technique", 
+                            if (act.type == "swim") {
+                                listOf(
+                                    TechItem("SWOLF (Bassin)", "${analysis.swolf ?: "--"}", "", Icons.Default.Waves),
+                                    TechItem("Stroke Rate", "${analysis.strokeRate ?: "--"}", "spm", Icons.Default.Timer),
+                                    TechItem("Cadence", "--", "rpm", Icons.Default.DirectionsBike), // Placeholder if needed or remove
+                                    TechItem("Efficacité", "--", "idx", Icons.Default.Speed)
+                                )
+                            } else {
+                                listOf(
+                                    TechItem("Cadence Moyenne", "${streams?.cadence?.map { it.toDouble() }?.average()?.toInt() ?: "--"}", "rpm", Icons.Default.DirectionsBike),
+                                    TechItem("Longueur Foulée", "${analysis.dps?.let { "%.2f".format(it) } ?: "--"}", "m", Icons.Default.Straighten),
+                                    TechItem("Oscillation Vert.", "${analysis.verticalOscillation?.let { "%.1f".format(it) } ?: "--"}", "cm", Icons.Default.Height),
+                                    TechItem("Temps Contact Sol", "${analysis.groundContactTime?.toInt() ?: "--"}", "ms", Icons.Default.Timer)
+                                )
+                            }, Modifier.weight(1f).widthIn(min = 300.dp))
                     }
                 }
 
@@ -383,7 +411,45 @@ fun AnalysisChartSection(state: AppState) {
     val streams = state.selectedActivityStreams ?: return
     
     var selectedMetrics by remember { mutableStateOf(setOf("FC", "ALLURE")) }
-    var scrubX by remember { mutableStateOf<Float?>(null) }
+    var isExpanded by remember { mutableStateOf(false) }
+
+    // Chart content extraction for reuse
+    val chartContent = @Composable { modifier: Modifier ->
+        DynamicCorrelationChart(
+            streams = streams,
+            selectedMetrics = selectedMetrics,
+            modifier = modifier
+        )
+    }
+
+    if (isExpanded) {
+        androidx.compose.ui.window.Dialog(onDismissRequest = { isExpanded = false }) {
+             Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(16.dp)
+            ) {
+                Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("ANALYSE DÉTAILLÉE", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        IconButton(onClick = { isExpanded = false }) {
+                            Icon(Icons.Default.Close, null)
+                        }
+                    }
+                    
+                    // Re-use metric selectors in expanded mode
+                    MetricSelector(streams, selectedMetrics) { selectedMetrics = it }
+                    
+                    chartContent(Modifier.fillMaxWidth().weight(1f))
+                }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -396,129 +462,151 @@ fun AnalysisChartSection(state: AppState) {
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(text = "CORRÉLATION DYNAMIQUE", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), letterSpacing = 2.sp)
-            Icon(imageVector = Icons.Default.Timeline, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
-        }
-
-        // Metric Selectors
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            val available = listOf(
-                "FC" to Color(0xFFFF3B30),
-                "ALLURE" to Color(0xFF007AFF),
-                "ALT" to Color(0xFF8E8E93),
-                "VAM" to Color(0xFF22C55E),
-                "PUISSANCE" to Color(0xFFF59E0B),
-                "GAP" to Color(0xFF8B5CF6),
-                "CADENCE" to Color(0xFFEC4899),
-                "DÉRIVÉE" to Color(0xFF14B8A6)
-            ).filter { (name, _) ->
-                when(name) {
-                    "FC" -> streams.heartRate != null
-                    "ALLURE" -> streams.pace != null
-                    "ALT" -> streams.altitude != null
-                    "VAM" -> streams.vam != null
-                    "PUISSANCE" -> streams.power != null
-                    "GAP" -> streams.gradAdjustedPace != null
-                    "CADENCE" -> streams.cadence != null
-                    "DÉRIVÉE" -> streams.hrDerivative != null
-                    else -> false
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                IconButton(onClick = { isExpanded = true }, modifier = Modifier.size(24.dp)) {
+                     Icon(imageVector = Icons.Default.Fullscreen, contentDescription = "Agrandir", tint = MaterialTheme.colorScheme.primary)
                 }
-            }
-
-            available.forEach { (name, color) ->
-                val selected = selectedMetrics.contains(name)
-                Surface(
-                    onClick = {
-                        selectedMetrics = if (selected) selectedMetrics - name else selectedMetrics + name
-                    },
-                    shape = RoundedCornerShape(12.dp),
-                    color = if (selected) color.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    border = BorderStroke(1.dp, if (selected) color else Color.Transparent)
-                ) {
-                    Text(
-                        text = name,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (selected) color else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                        fontWeight = FontWeight.Black
-                    )
-                }
+                Icon(imageVector = Icons.Default.Timeline, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
             }
         }
 
-        // Chart Canvas
-        Box(
-            modifier = Modifier
+        MetricSelector(streams, selectedMetrics) { selectedMetrics = it }
+
+        chartContent(
+            Modifier
                 .fillMaxWidth()
                 .height(200.dp)
                 .background(Color.Black.copy(alpha = 0.05f), RoundedCornerShape(24.dp))
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragStart = { offset -> scrubX = offset.x },
-                        onDrag = { change, _ -> scrubX = change.position.x },
-                        onDragEnd = { scrubX = null },
-                        onDragCancel = { scrubX = null }
-                    )
+        )
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun MetricSelector(streams: com.drawrun.app.ActivityStreams, selectedMetrics: Set<String>, onSelectionChanged: (Set<String>) -> Unit) {
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        val available = listOf(
+            "FC" to Color(0xFFFF3B30),
+            "ALLURE" to Color(0xFF007AFF),
+            "ALT" to Color(0xFF8E8E93),
+            "VAM" to Color(0xFF22C55E),
+            "PUISSANCE" to Color(0xFFF59E0B),
+            "GAP" to Color(0xFF8B5CF6),
+            "CADENCE" to Color(0xFFEC4899),
+            "DÉRIVÉE" to Color(0xFF14B8A6)
+        ).filter { (name, _) ->
+            when(name) {
+                "FC" -> streams.heartRate != null
+                "ALLURE" -> streams.pace != null
+                "ALT" -> streams.altitude != null
+                "VAM" -> streams.vam != null
+                "PUISSANCE" -> streams.power != null
+                "GAP" -> streams.gradAdjustedPace != null
+                "CADENCE" -> streams.cadence != null
+                "DÉRIVÉE" -> streams.hrDerivative != null
+                else -> false
+            }
+        }
+
+        available.forEach { (name, color) ->
+            val selected = selectedMetrics.contains(name)
+            Surface(
+                onClick = {
+                    onSelectionChanged(if (selected) selectedMetrics - name else selectedMetrics + name)
+                },
+                shape = RoundedCornerShape(12.dp),
+                color = if (selected) color.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                border = BorderStroke(1.dp, if (selected) color else Color.Transparent)
+            ) {
+                Text(
+                    text = name,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (selected) color else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    fontWeight = FontWeight.Black
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun DynamicCorrelationChart(
+    streams: com.drawrun.app.ActivityStreams,
+    selectedMetrics: Set<String>,
+    modifier: Modifier
+) {
+    var scrubX by remember { mutableStateOf<Float?>(null) }
+    
+    Box(
+        modifier = modifier
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragStart = { offset -> scrubX = offset.x },
+                    onDrag = { change, _ -> scrubX = change.position.x },
+                    onDragEnd = { scrubX = null },
+                    onDragCancel = { scrubX = null }
+                )
+            }
+            .pointerInput(Unit) {
+               detectTapGestures { offset -> scrubX = offset.x }
+            }
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+            val w = size.width
+            val h = size.height
+            
+            selectedMetrics.forEach { metricName ->
+                val color = when(metricName) {
+                    "FC" -> Color(0xFFFF3B30)
+                    "ALLURE" -> Color(0xFF007AFF)
+                    "ALT" -> Color(0xFF8E8E93)
+                    "VAM" -> Color(0xFF22C55E)
+                    "PUISSANCE" -> Color(0xFFF59E0B)
+                    "GAP" -> Color(0xFF8B5CF6)
+                    "CADENCE" -> Color(0xFFEC4899)
+                    "DÉRIVÉE" -> Color(0xFF14B8A6)
+                    else -> Color.Gray
                 }
-                .pointerInput(Unit) {
-                    detectTapGestures { offset -> scrubX = offset.x }
-                }
-        ) {
-            Canvas(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-                val w = size.width
-                val h = size.height
                 
-                selectedMetrics.forEach { metricName ->
-                    val color = when(metricName) {
-                        "FC" -> Color(0xFFFF3B30)
-                        "ALLURE" -> Color(0xFF007AFF)
-                        "ALT" -> Color(0xFF8E8E93)
-                        "VAM" -> Color(0xFF22C55E)
-                        "PUISSANCE" -> Color(0xFFF59E0B)
-                        "GAP" -> Color(0xFF8B5CF6)
-                        "CADENCE" -> Color(0xFFEC4899)
-                        "DÉRIVÉE" -> Color(0xFF14B8A6)
-                        else -> Color.Gray
-                    }
-                    
-                    val data = when(metricName) {
-                        "FC" -> streams.heartRate?.map { it.toDouble() }
-                        "ALLURE" -> streams.pace 
-                        "ALT" -> streams.altitude
-                        "VAM" -> streams.vam
-                        "PUISSANCE" -> streams.power?.map { it.toDouble() }
-                        "GAP" -> streams.gradAdjustedPace
-                        "CADENCE" -> streams.cadence?.map { it.toDouble() }
-                        "DÉRIVÉE" -> streams.hrDerivative
-                        else -> null
-                    } ?: return@forEach
+                val data = when(metricName) {
+                    "FC" -> streams.heartRate?.map { it.toDouble() }
+                    "ALLURE" -> streams.pace 
+                    "ALT" -> streams.altitude
+                    "VAM" -> streams.vam
+                    "PUISSANCE" -> streams.power?.map { it.toDouble() }
+                    "GAP" -> streams.gradAdjustedPace
+                    "CADENCE" -> streams.cadence?.map { it.toDouble() }
+                    "DÉRIVÉE" -> streams.hrDerivative
+                    else -> null
+                } ?: return@forEach
 
-                    if (data.isEmpty()) return@forEach
-                    
-                    val min = data.minOrNull() ?: 0.0
-                    val max = data.maxOrNull() ?: 1.0
-                    val range = (max - min).coerceAtLeast(0.1)
-                    
-                    val path = Path()
-                    data.forEachIndexed { index, value ->
-                        val x = (index.toFloat() / (data.size - 1)) * w
-                        val y = h - (((value - min) / range).toFloat() * h).coerceIn(0f, h)
-                        if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
-                    }
-                    drawPath(path, color, style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round))
+                if (data.isEmpty()) return@forEach
+                
+                val min = data.minOrNull() ?: 0.0
+                val max = data.maxOrNull() ?: 1.0
+                val range = (max - min).coerceAtLeast(0.1)
+                
+                val path = Path()
+                data.forEachIndexed { index, value ->
+                    val x = (index.toFloat() / (data.size - 1)) * w
+                    val y = h - (((value - min) / range).toFloat() * h).coerceIn(0f, h)
+                    if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
                 }
+                drawPath(path, color, style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round))
+            }
 
-                scrubX?.let { x ->
-                    drawLine(
-                        color = Color.White.copy(alpha = 0.5f),
-                        start = Offset(x.coerceIn(0f, w), 0f),
-                        end = Offset(x.coerceIn(0f, w), h),
-                        strokeWidth = 1.dp.toPx()
-                    )
-                }
+            scrubX?.let { x ->
+                drawLine(
+                    color = Color.White.copy(alpha = 0.5f),
+                    start = Offset(x.coerceIn(0f, w), 0f),
+                    end = Offset(x.coerceIn(0f, w), h),
+                    strokeWidth = 1.dp.toPx()
+                )
             }
         }
     }
@@ -584,11 +672,66 @@ fun TelemetryCard(
     currentIndex: Int,
     modifier: Modifier = Modifier
 ) {
+    var isExpanded by remember { mutableStateOf(false) }
+
+    if (isExpanded && stream != null && stream.isNotEmpty()) {
+        androidx.compose.ui.window.Dialog(onDismissRequest = { isExpanded = false }) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(24.dp)
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Icon(icon, null, tint = color, modifier = Modifier.size(20.dp))
+                            Text(title.uppercase(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        }
+                        IconButton(onClick = { isExpanded = false }) {
+                            Icon(Icons.Default.Close, null)
+                        }
+                    }
+                    
+                    Text("$value $unit", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black)
+
+                    Canvas(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                        val w = size.width
+                        val h = size.height
+                        val min = stream.minOrNull() ?: 0.0
+                        val max = stream.maxOrNull() ?: 1.0
+                        val range = (max - min).coerceAtLeast(1.0)
+                        
+                        val path = Path()
+                        stream.forEachIndexed { idx, v ->
+                            val x = (idx.toFloat() / (stream.size - 1)) * w
+                            val y = h - (((v - min) / range).toFloat() * h).coerceIn(0f, h)
+                            if (idx == 0) path.moveTo(x, y) else path.lineTo(x, y)
+                        }
+                        drawPath(path, color, style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round))
+                        
+                        if (isLive) {
+                            val lx = (currentIndex.toFloat() / (stream.size - 1)) * w
+                            drawLine(color, Offset(lx, 0f), Offset(lx, h), strokeWidth = 2.dp.toPx())
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(24.dp))
             .background(if (isLive) color.copy(alpha = 0.05f) else MaterialTheme.colorScheme.surface)
             .border(1.dp, if (isLive) color.copy(alpha = 0.2f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f), RoundedCornerShape(24.dp))
+            .clickable(enabled = stream != null && stream.isNotEmpty()) { isExpanded = true }
             .padding(16.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -598,6 +741,7 @@ fun TelemetryCard(
                     Text(title.uppercase(), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), fontWeight = FontWeight.Bold)
                 }
                 if (isLive) Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(color))
+                else if (stream != null && stream.isNotEmpty()) Icon(Icons.Default.Fullscreen, null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), modifier = Modifier.size(12.dp))
             }
             Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)

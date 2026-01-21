@@ -269,151 +269,35 @@ fun PlanningScreen(state: AppState) {
                     var showPlanSetup by remember { mutableStateOf(false) }
 
                     if (showPlanSetup) {
-                        val insights = remember { com.drawrun.app.logic.ActivityAnalyzer.analyzeActivities(state.activities) }
-                        var useAutoConfig by remember { mutableStateOf(true) }
-                        var distText by remember { mutableStateOf("") }
-                        var timeText by remember { mutableStateOf("") }
+                        // Update key to state.activities to ensure reactivity when activities change
+                        val insights = remember(state.activities) { com.drawrun.app.logic.ActivityAnalyzer.analyzeActivities(state.activities) }
                         
-                        AlertDialog(
-                            onDismissRequest = { showPlanSetup = false },
-                            title = { Text("Configuration Intelligente", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black) },
-                            text = {
-                                Column(verticalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.verticalScroll(rememberScrollState())) {
-                                    // Activity insights section
-                                    if (insights.totalRuns > 0) {
-                                        Surface(
-                                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                            shape = RoundedCornerShape(12.dp)
-                                        ) {
-                                            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                                    Icon(Icons.Default.Analytics, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                                                    Text("📊 Analyse de votre historique", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.primary)
-                                                }
-                                                
-                                                Divider(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), modifier = Modifier.padding(vertical = 4.dp))
-                                                
-                                                // Best times
-                                                insights.bestTimes[10000.0]?.let { perf ->
-                                                    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                                                        Text("Meilleur 10km:", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
-                                                        Text("${(perf.timeSeconds / 60).toInt()}:${((perf.timeSeconds % 60).toInt()).toString().padStart(2, '0')} (${perf.pace})", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
-                                                    }
-                                                }
-                                                
-                                                insights.bestTimes[5000.0]?.let { perf ->
-                                                    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                                                        Text("Meilleur 5km:", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
-                                                        Text("${(perf.timeSeconds / 60).toInt()}:${((perf.timeSeconds % 60).toInt()).toString().padStart(2, '0')} (${perf.pace})", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
-                                                    }
-                                                }
-                                                
-                                                // Weekly average
-                                                Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                                                    Text("Moyenne hebdo:", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
-                                                    Text("${insights.weeklyAverage.toInt()} km/semaine", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                                }
-                                                
-                                                // Longest run
-                                                Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                                                    Text("Plus longue sortie:", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
-                                                    Text("${"%.1f".format(insights.longestRun)} km", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
-                                                }
-                                                
-                                                // VDOT estimate
-                                                insights.estimatedVDOT?.let { vdot ->
-                                                    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                                                        Text("VDOT estimé:", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
-                                                        Text("${"%.1f".format(vdot)}", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Color(0xFFF59E0B))
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        
-                                        // Auto-config toggle
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Text("Utiliser ces données", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
-                                            Switch(
-                                                checked = useAutoConfig,
-                                                onCheckedChange = { useAutoConfig = it },
-                                                colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.primary)
-                                            )
-                                        }
-                                    } else {
-                                        Text("Aucune activité trouvée. Entrez vos données manuellement.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
-                                    }
-                                    
-                                    if (!useAutoConfig || insights.totalRuns == 0) {
-                                        Text("Configuration manuelle", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
-                                        OutlinedTextField(
-                                            value = distText,
-                                            onValueChange = { distText = it },
-                                            label = { Text("Distance (m)") },
-                                            placeholder = { Text("ex: 10000") },
-                                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                            modifier = Modifier.fillMaxWidth(),
-                                            shape = RoundedCornerShape(12.dp)
-                                        )
-                                        OutlinedTextField(
-                                            value = timeText,
-                                            onValueChange = { timeText = it },
-                                            label = { Text("Temps (min)") },
-                                            placeholder = { Text("ex: 45.5") },
-                                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                            modifier = Modifier.fillMaxWidth(),
-                                            shape = RoundedCornerShape(12.dp)
-                                        )
-                                    }
-                                    
-                                    Column {
-                                        Text(text = "Fréquence: ${state.runPlanFreq.toInt()} séances/semaine", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
-                                        Slider(
-                                            value = state.runPlanFreq,
-                                            onValueChange = { state.runPlanFreq = it },
-                                            valueRange = 3f..7f,
-                                            steps = 3
-                                        )
-                                    }
-                                }
-                            },
-                            confirmButton = {
-                                Button(
-                                    onClick = { 
-                                         // VDOT COACH ELITE V6.4 Generation
-                                         val d = distText.toDoubleOrNull() ?: 10000.0
-                                         val m = timeText.substringBefore(".").toIntOrNull() ?: 45
-                                         val s = timeText.substringAfter(".", "0").toIntOrNull() ?: 0
-                                         
-                                         val peakVol = PerformanceAnalyzer.calculatePeakWeeklyVolume(state.activities)
-                                         
-                                         val config = TrainingPlanGenerator.PlanConfig(
-                                             method = if (state.zones?.runZones?.fc?.isNotEmpty() == true) "hr" else "vdot",
-                                             raceDistance = d,
-                                             minutes = m,
-                                             seconds = s,
-                                             peakWeeklyKm = peakVol,
-                                             programWeeks = 12,
-                                             maxHR = 185,
-                                             restHR = state.restingHR.toIntOrNull() ?: 55
-                                         )
-                                         
-                                         state.generatedRunPlan = TrainingPlanGenerator.generatePlan(config)
-                                         showPlanSetup = false
-                                    },
-                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                                ) {
-                                    Text("CALIBRER & GÉNÉRER", fontWeight = FontWeight.Black)
-                                }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = { showPlanSetup = false }) { Text("Annuler") }
-                            },
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            shape = RoundedCornerShape(24.dp)
+                        // New Plan Configuration Dialog
+                        com.drawrun.app.ui.components.PlanConfigurationDialog(
+                            onDismiss = { showPlanSetup = false },
+                            onGenerate = { distance, h, m, s, startDate ->
+                                // Calculate total minutes
+                                val totalMin = h * 60 + m + s / 60.0
+                                
+                                val peakVol = com.drawrun.app.logic.PerformanceAnalyzer.calculatePeakWeeklyVolume(state.activities)
+
+                                // Generate Config
+                                val config = TrainingPlanGenerator.PlanConfig(
+                                    method = "vdot",
+                                    raceDistance = distance,
+                                    minutes = (totalMin).toInt(),
+                                    seconds = s,
+                                    peakWeeklyKm = peakVol,
+                                    startDate = startDate
+                                )
+                                
+                                // Generate Call
+                                state.generatedRunPlan = TrainingPlanGenerator.generatePlan(config)
+                                state.runPlanObjective = "Objectif: ${(distance/1000).toInt()}km en ${String.format("%d:%02d", h, m)}"
+                                
+                                // Also update user stats if needed
+                                showPlanSetup = false
+                            }
                         )
                     }
 

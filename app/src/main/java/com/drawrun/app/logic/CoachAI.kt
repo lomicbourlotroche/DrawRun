@@ -148,14 +148,19 @@ object CoachAI {
     private fun getDynamicSuggestion(state: AppState, date: LocalDate): TrainingRecommendation {
         val dayOfWeek = date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.FRENCH)
         
-        // Calculate readiness (use default values if not available)
-        val readinessValue = calculateReadiness(
-            ReadinessFactors(
-                hrv = 60,  // TODO: Get from Health Connect
-                sleepQuality = 7,  // TODO: Get from user input
-                muscleSoreness = 3  // TODO: Get from user input
+        // Calculate readiness with real data
+        val readinessValue = if (state.readiness != "--") {
+            state.readiness.toIntOrNull() ?: 50
+        } else {
+            // Fallback calculation if pre-calculated readiness is missing
+            calculateReadiness(
+                ReadinessFactors(
+                    hrv = state.hrv.toIntOrNull() ?: 60,
+                    sleepQuality = (state.sleepScore.toIntOrNull() ?: 70) / 10,
+                    muscleSoreness = 3 // Default, could be a user input later
+                )
             )
-        )
+        }
         
         // Check if user already trained today
         val today = date.toString()
