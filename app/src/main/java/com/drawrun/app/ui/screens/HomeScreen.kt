@@ -349,6 +349,57 @@ fun DailyTrainingSection(state: AppState) {
         CoachAI.getDailyTraining(state)
     }
     
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        // MAIN CARD (Today)
+        val todayDate = java.time.LocalDate.now().toString()
+        val todaysActivities = state.activities.filter { it.date == todayDate }
+        TrainingCard(recommendation = recommendation, isTomorrow = false, todaysActivities = todaysActivities)
+
+        // TOMORROW PREVIEW (Only if today is done)
+        if (recommendation.title == "Entraînement Terminé") {
+            val tomorrowRecommendation = remember(state) {
+                CoachAI.getTomorrowTraining(state)
+            }
+            
+            var showTomorrow by remember { mutableStateOf(false) }
+
+            if (!showTomorrow) {
+                Button(
+                    onClick = { showTomorrow = true },
+                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.primary
+                    ),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Text("VOIR LA SÉANCE DE DEMAIN", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                    }
+                }
+            } else {
+                 Column(modifier = Modifier.animateContentSize()) {
+                     Row(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("DEMAIN", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), fontWeight = FontWeight.Bold)
+                        IconButton(onClick = { showTomorrow = false }, modifier = Modifier.size(24.dp)) {
+                            Icon(Icons.Default.KeyboardArrowUp, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
+                        }
+                    }
+                    TrainingCard(recommendation = tomorrowRecommendation, isTomorrow = true)
+                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun TrainingCard(recommendation: CoachAI.TrainingRecommendation, isTomorrow: Boolean, todaysActivities: List<com.drawrun.app.ActivityItem> = emptyList()) {
     // Color based on intensity
     val intensityColor = when(recommendation.intensityColor) {
         "red" -> Color(0xFFEF4444)
@@ -365,7 +416,7 @@ fun DailyTrainingSection(state: AppState) {
             .background(
                 brush = androidx.compose.ui.graphics.Brush.linearGradient(
                     colors = listOf(
-                        intensityColor.copy(alpha = 0.15f),
+                        intensityColor.copy(alpha = if (isTomorrow) 0.05f else 0.15f),
                         MaterialTheme.colorScheme.surface
                     )
                 )
@@ -401,7 +452,7 @@ fun DailyTrainingSection(state: AppState) {
                         }
                     }
                     Text(
-                        text = if (recommendation.isFromPlan) "ENTRAÎNEMENT DU JOUR" else "SUGGESTION DU COACH",
+                        text = if (isTomorrow) "SUGGESTION DEMAIN" else if (recommendation.isFromPlan) "ENTRAÎNEMENT DU JOUR" else "SUGGESTION DU COACH",
                         style = MaterialTheme.typography.labelSmall,
                         color = intensityColor,
                         fontWeight = FontWeight.Bold,
@@ -615,11 +666,8 @@ fun DailyTrainingSection(state: AppState) {
                 }
             }
 
-            // Compliance Check (if activity done today)
-            val todayDate = java.time.LocalDate.now().toString()
-            val todaysActivities = state.activities.filter { it.date == todayDate }
-            // Only show compliance if it was a planned/suggested session (not just "REST")
-            if (todaysActivities.isNotEmpty() && recommendation.type != "REST") {
+            // Compliance Check (if activity done today - ONLY FOR TODAY)
+            if (!isTomorrow && recommendation.type != "REST") {
                 val compliance = CoachAI.calculateCompliance(recommendation, todaysActivities)
                 if (compliance != null) {
                     Surface(
@@ -671,41 +719,7 @@ fun DailyTrainingSection(state: AppState) {
                         }
                     }
                 }
-            } else if (recommendation.physiologicalGain.isNotBlank()) {
-                Surface(
-                    color = Color(0xFF3B82F6).copy(alpha = 0.1f),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.EmojiEvents,
-                            contentDescription = null,
-                            tint = Color(0xFF3B82F6),
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Column {
-                            Text(
-                                text = "GAIN PHYSIOLOGIQUE",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Color(0xFF3B82F6).copy(alpha = 0.7f),
-                                fontSize = 9.sp,
-                                letterSpacing = 0.5.sp
-                            )
-                            Text(
-                                text = recommendation.physiologicalGain,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF3B82F6),
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-                    }
-                }
-            }
+
 
             Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
 

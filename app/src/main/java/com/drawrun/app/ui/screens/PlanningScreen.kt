@@ -88,50 +88,8 @@ fun PlanningScreen(state: AppState) {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     Text(text = "JACK DANIELS VDOT", style = MaterialTheme.typography.headlineMedium, fontStyle = FontStyle.Italic, fontWeight = FontWeight.Black)
                     
-                    // Paces Display (Always Visible) - SAFE ACCESS TO PREVENT CRASH
-                    val runZones = state.zones?.runZones
-                    val paces = try {
-                         runZones?.pace?.let { allure ->
-                            val list = mutableListOf<Pair<String, String>>()
-                            // Safe access for all zones - PerformanceAnalyzer returns 5 zones (indices 0-4)
-                            allure.getOrNull(0)?.let { list.add("Recup (Z1)" to "${formatPace(it.first)}-${formatPace(it.second)}") }
-                            allure.getOrNull(1)?.let { list.add("Easy (Z2)" to "${formatPace(it.first)}-${formatPace(it.second)}") }
-                            allure.getOrNull(2)?.let { list.add("Marathon (Z3)" to formatPace(it.first)) }
-                            allure.getOrNull(3)?.let { list.add("Seuil (Z4)" to formatPace(it.first)) }
-                            allure.getOrNull(4)?.let { list.add("Interval (Z5)" to formatPace(it.first)) }
-                            // R-Pace is typically faster than Z5, calculate if needed
-                            allure.getOrNull(4)?.let { z5 -> 
-                                val rPace = z5.first * 0.95 // R-pace is ~5% faster than Z5
-                                list.add("Répétition (R)" to formatPace(rPace))
-                            }
-                            list
-                         }
-                    } catch (e: Exception) {
-                        android.util.Log.e("DrawRun", "Error loading paces", e)
-                        null
-                    } ?: listOf(
-                        "Easy (E)" to "5:30 - 6:00",
-                        "Marathon (M)" to "4:45",
-                        "Seuil (T)" to "4:15",
-                        "Interval (I)" to "3:55",
-                        "Répétition (R)" to "3:30"
-                    )
+                    // Paces removed (available in Performance Screen)
 
-                    paces.forEach { (label, pace) ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
-                                .padding(12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(text = label.uppercase(), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
-                            Text(text = "$pace /km", style = MaterialTheme.typography.bodyLarge, fontStyle = FontStyle.Italic, fontWeight = FontWeight.Black)
-                        }
-                    }
-
-                    Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
                     
                     // Weekly Plan Section - Modern Card Layout
                     if (state.generatedRunPlan.isNotEmpty()) {
