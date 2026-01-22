@@ -30,13 +30,52 @@ class MainActivity : ComponentActivity() {
         appState = AppState()
         syncManager = DataSyncManager(this, appState)
         
+        // Start background restoration BEFORE setContent
+        lifecycleScope.launch {
+            val prefs = getSharedPreferences("drawrun_prefs", MODE_PRIVATE)
+            val onboardingComplete = prefs.getBoolean("onboarding_complete", false)
+            
+            if (onboardingComplete) {
+                // Restore user profile synchronously (lightweight)
+                appState.stravaConnected = prefs.getBoolean("strava_connected", false)
+                appState.healthConnectConnected = prefs.getBoolean("health_connected", false)
+                appState.firstName = prefs.getString("first_name", "") ?: ""
+                appState.age = prefs.getString("user_age", "") ?: ""
+                appState.sex = prefs.getString("user_sex", "") ?: ""
+                appState.weight = prefs.getString("user_weight", "") ?: ""
+                appState.restingHR = prefs.getString("user_hr", "") ?: ""
+                
+                // Load saved theme
+                val savedTheme = prefs.getString("app_theme", null)
+                if (savedTheme != null) {
+                    try {
+                        appState.appTheme = com.drawrun.app.ui.theme.AppTheme.valueOf(savedTheme)
+                    } catch (e: Exception) {}
+                }
+                
+                // Load training plan
+                val savedPlan = com.drawrun.app.data.PlanRepository.loadPlan(this@MainActivity)
+                if (savedPlan != null) {
+                    appState.generatedRunPlan = savedPlan.first
+                    appState.runPlanObjective = savedPlan.second
+                }
+                
+                // Navigate to splash then trigger heavy sync operations in background
+                appState.currentScreen = Screen.WelcomeSplash
+                
+                // Heavy operations run in background without blocking UI
+                syncManager.restoreConnections()
+            } else {
+                appState.currentScreen = Screen.OnboardingProfile
+            }
+        }
+        
         setContent {
-            // Keep remember for recomposition safety if needed, or pass the prop
             val rememberedAppState = remember { appState } 
             val rememberedSyncManager = remember { syncManager }
             val systemInDark = isSystemInDarkTheme()
             
-            // Initialize theme based on system if not switched
+            // Auto-adjust theme based on system
             LaunchedEffect(systemInDark) {
                 if (rememberedAppState.appTheme == com.drawrun.app.ui.theme.AppTheme.ONYX || 
                     rememberedAppState.appTheme == com.drawrun.app.ui.theme.AppTheme.LIGHT) {
@@ -57,43 +96,6 @@ class MainActivity : ComponentActivity() {
                             Screen.MainApp -> MainScaffold(rememberedAppState, rememberedSyncManager)
                         }
                     }
-                }
-            }
-            
-            // Initial Navigation Logic
-            LaunchedEffect(Unit) {
-                val prefs = getSharedPreferences("drawrun_prefs", MODE_PRIVATE)
-                val onboardingComplete = prefs.getBoolean("onboarding_complete", false)
-                if (onboardingComplete) {
-                    rememberedAppState.stravaConnected = prefs.getBoolean("strava_connected", false)
-                    rememberedAppState.healthConnectConnected = prefs.getBoolean("health_connected", false)
-                    rememberedAppState.firstName = prefs.getString("first_name", "") ?: ""
-                    rememberedAppState.age = prefs.getString("user_age", "") ?: ""
-                    rememberedAppState.sex = prefs.getString("user_sex", "") ?: ""
-                    rememberedAppState.weight = prefs.getString("user_weight", "") ?: ""
-                    rememberedAppState.restingHR = prefs.getString("user_hr", "") ?: ""
-                    
-                    // Load Theme
-                    val savedTheme = prefs.getString("app_theme", null)
-                    if (savedTheme != null) {
-                        try {
-                            rememberedAppState.appTheme = com.drawrun.app.ui.theme.AppTheme.valueOf(savedTheme)
-                        } catch (e: Exception) {}
-                    }
-
-                    rememberedAppState.currentScreen = Screen.WelcomeSplash
-                    
-                    // Restore connections and sync data
-                    rememberedSyncManager.restoreConnections()
-                    
-                    // Restore Training Plan
-                    val savedPlan = com.drawrun.app.data.PlanRepository.loadPlan(this@MainActivity)
-                    if (savedPlan != null) {
-                        rememberedAppState.generatedRunPlan = savedPlan.first
-                        rememberedAppState.runPlanObjective = savedPlan.second
-                    }
-                } else {
-                    rememberedAppState.currentScreen = Screen.OnboardingProfile
                 }
             }
         }

@@ -65,22 +65,19 @@ class DataSyncManager(val context: Context, val state: AppState) {
     suspend fun restoreConnections() = withContext(Dispatchers.IO) {
         val prefs = context.getSharedPreferences("drawrun_prefs", Context.MODE_PRIVATE)
         
-        // 1. Restore Strava State
+        // Collect all data in IO context first
         val hasStravaTokens = stravaClient.tokenStorage.hasTokens()
-        withContext(Dispatchers.Main) { 
-            state.stravaConnected = hasStravaTokens 
-        }
+        val cachedActivities = mutableListOf<ActivityItem>()
         
+        // 1. Load cached activities if Strava connected
         if (hasStravaTokens) {
-            // Load cached activities while we sync
             val cachedJson = prefs.getString("cached_activities", null)
             if (cachedJson != null) {
                 try {
                     val array = JSONArray(cachedJson)
-                    val cachedList = mutableListOf<ActivityItem>()
                     for (i in 0 until array.length()) {
                         val obj = array.getJSONObject(i)
-                        cachedList.add(ActivityItem(
+                        cachedActivities.add(ActivityItem(
                             id = obj.getLong("id"),
                             type = obj.getString("type"),
                             title = obj.getString("title"),
@@ -92,36 +89,44 @@ class DataSyncManager(val context: Context, val state: AppState) {
                             avgHr = obj.getString("avgHr"),
                             mapPolyline = if (obj.has("map")) obj.getString("map") else null,
                             color = Color(obj.getInt("color")),
-                            icon = Icons.Default.DirectionsRun, // Placeholder, will be fixed on UI level
+                            icon = Icons.Default.DirectionsRun,
                             startTime = if (obj.has("start")) obj.getString("start") else null,
                             endTime = if (obj.has("end")) obj.getString("end") else null
                         ))
                     }
-                    withContext(Dispatchers.Main) { state.activities = cachedList }
-                } catch (e: Exception) { Log.e("DrawRun", "Cache Load Failed", e) }
+                } catch (e: Exception) { 
+                    Log.e("DrawRun", "Cache Load Failed", e) 
+                }
             }
-            
-            syncStravaActivities()
         }
-
-        // 2. Restore Health Connect State
+        
+        // 2. Check Health Connect status
         val healthConnected = prefs.getBoolean("health_connected", false)
-        // Check only CORE permissions for the "Granted" check to avoid frustration
         val corePermissions = setOf(
             HealthPermission.getReadPermission(HeartRateRecord::class),
             HealthPermission.getReadPermission(ExerciseSessionRecord::class)
         )
         val allGranted = if (healthConnected) healthConnectManager.hasPermissions(corePermissions) else false
-
+        
+        // BATCH UPDATE: Apply all state changes atomically on Main thread
         withContext(Dispatchers.Main) {
+            state.stravaConnected = hasStravaTokens
+            if (cachedActivities.isNotEmpty()) {
+                state.activities = cachedActivities
+            }
             state.healthConnectConnected = healthConnected
             state.healthConnectPermissionsGranted = allGranted
         }
         
+        // Trigger background syncs after state is restored
+        if (hasStravaTokens) {
+            syncStravaActivities()
+        }
         if (healthConnected && allGranted) {
             syncHealthData()
         }
     }
+
 
     suspend fun checkHealthConnectAvailability(): Boolean {
         val status = healthConnectManager.checkAvailability()
@@ -358,7 +363,6 @@ class DataSyncManager(val context: Context, val state: AppState) {
         try {
             val allActivities = mutableListOf<ActivityItem>()
             var page = 1
-            var totalLoadWeek = 0
             
             // Pagination loop to fetch ALL activities
             while (true) {
@@ -371,7 +375,7 @@ class DataSyncManager(val context: Context, val state: AppState) {
                 }
                 
                 android.util.Log.d("DrawRun", "Strava: Received ${activities.size} activities on page $page")
-                if (activities.isEmpty()) break // No more activities
+                if (activities.isEmpty()) break
                 
                 // Convert ActivityDetailed to ActivityItem
                 for (activity in activities) {
@@ -390,10 +394,7 @@ class DataSyncManager(val context: Context, val state: AppState) {
                     } else "--"
                     
                     val hrStr = activity.averageHeartrate?.let { "%.0f bpm".format(it) } ?: "--"
-                    
                     val sufferScore = activity.sufferScore ?: 0
-                    // Only count first 7 activities for weekly load (most recent)
-                    if (allActivities.size < 7) totalLoadWeek += sufferScore
                     
                     allActivities.add(ActivityItem(
                         id = activity.id,
@@ -422,50 +423,51 @@ class DataSyncManager(val context: Context, val state: AppState) {
                 page++
             }
             
+            // Perform all heavy computations in IO context
+            val pmcData = PerformanceAnalyzer.calculatePMC(allActivities)
+            val latestPmc = pmcData.lastOrNull()
+            
+            // Prepare cache data
+            val prefs = context.getSharedPreferences("drawrun_prefs", Context.MODE_PRIVATE)
+            val cacheArray = JSONArray()
+            allActivities.take(50).forEach { item ->
+                val obj = JSONObject()
+                obj.put("id", item.id)
+                obj.put("type", item.type)
+                obj.put("title", item.title)
+                obj.put("date", item.date)
+                obj.put("dist", item.dist)
+                obj.put("load", item.load)
+                obj.put("duration", item.duration)
+                obj.put("pace", item.pace)
+                obj.put("avgHr", item.avgHr)
+                obj.put("map", item.mapPolyline)
+                obj.put("color", item.color.toArgb())
+                obj.put("start", item.startTime)
+                obj.put("end", item.endTime)
+                cacheArray.put(obj)
+            }
+            
+            // Save cache in IO context
+            prefs.edit().putString("cached_activities", cacheArray.toString()).apply()
+            
+            // BATCH UPDATE: Apply all state changes atomically
             withContext(Dispatchers.Main) {
                 state.activities = allActivities
                 state.stravaConnected = true
-                
-                // Save to local cache
-                val prefs = context.getSharedPreferences("drawrun_prefs", Context.MODE_PRIVATE)
-                val array = JSONArray()
-                allActivities.take(50).forEach { item -> // Cache last 50
-                    val obj = JSONObject()
-                    obj.put("id", item.id)
-                    obj.put("type", item.type)
-                    obj.put("title", item.title)
-                    obj.put("date", item.date)
-                    obj.put("dist", item.dist)
-                    obj.put("load", item.load)
-                    obj.put("duration", item.duration)
-                    obj.put("pace", item.pace)
-                    obj.put("avgHr", item.avgHr)
-                    obj.put("map", item.mapPolyline)
-                    obj.put("color", item.color.toArgb())
-                    obj.put("start", item.startTime)
-                    obj.put("end", item.endTime)
-                    array.put(obj)
-                }
-                prefs.edit().putString("cached_activities", array.toString()).apply()
-                
-                // Calculate PMC (Banister Model)
-                val pmcData = PerformanceAnalyzer.calculatePMC(allActivities)
                 state.banisterPmcData = pmcData
                 
-                // Update Dashboard Metrics from the latest PMC point
-                pmcData.lastOrNull()?.let { latest ->
+                // Update dashboard metrics
+                latestPmc?.let { latest ->
                     state.ctl = "%.0f".format(latest.ctl)
                     state.tsb = "%.0f".format(latest.tsb)
                     state.fatigueATL = latest.atl.toInt()
                     state.formTSB = latest.tsb.toInt()
-                    
-                    // Readiness proxy: 100 - fatigue (ATL) adjusted
-                    val proxyReadiness = (100 - latest.atl).coerceIn(10.0, 100.0).toInt()
-                    state.readiness = proxyReadiness.toString()
+                    state.readiness = (100 - latest.atl).coerceIn(10.0, 100.0).toInt().toString()
                 }
             }
             
-            // Sync additional data
+            // Sync additional data in background
             syncStravaProfile()
             syncStravaZones()
         } catch (e: Exception) {

@@ -338,7 +338,16 @@ fun MetricItem(label: String, value: String, icon: ImageVector) {
 
 @Composable
 fun DailyTrainingSection(state: AppState) {
-    val recommendation = remember { CoachAI.getDailyTraining(state) }
+    // Memoize recommendation calculation - only recalculate when dependencies change
+    val recommendation = remember(
+        state.activities.size,
+        state.readiness,
+        state.vdot,
+        state.generatedRunPlan.size,
+        java.time.LocalDate.now().toString()
+    ) {
+        CoachAI.getDailyTraining(state)
+    }
     
     // Color based on intensity
     val intensityColor = when(recommendation.intensityColor) {
