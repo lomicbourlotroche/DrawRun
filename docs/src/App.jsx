@@ -99,8 +99,8 @@ function App() {
             {/* Stats */}
             <div className="flex flex-wrap justify-center gap-8 md:gap-16 text-white/40">
               <div className="flex flex-col items-center">
-                <span className="text-3xl md:text-4xl font-black text-white mb-2">3:1</span>
-                <span className="text-xs uppercase tracking-widest font-bold">Step Loading</span>
+                <span className="text-3xl md:text-4xl font-black text-white mb-2">15+</span>
+                <span className="text-xs uppercase tracking-widest font-bold">Métriques Avancées</span>
               </div>
               <div className="w-px h-12 bg-white/10" />
               <div className="flex flex-col items-center">
@@ -109,8 +109,8 @@ function App() {
               </div>
               <div className="w-px h-12 bg-white/10" />
               <div className="flex flex-col items-center">
-                <span className="text-3xl md:text-4xl font-black text-white mb-2">5</span>
-                <span className="text-xs uppercase tracking-widest font-bold">Zones Training</span>
+                <span className="text-3xl md:text-4xl font-black text-white mb-2">TSS</span>
+                <span className="text-xs uppercase tracking-widest font-bold">En Temps Réel</span>
               </div>
             </div>
           </div>
@@ -196,8 +196,8 @@ function App() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <FeatureCard
               icon={Brain}
-              title="Moteur VDOT V6.4"
-              desc="Algorithme Jack Daniels pour calcul précis de vos allures E, M, T, I, R."
+              title="ScienceEngine™"
+              desc="15+ métriques avancées : TSS, TRIMP, NP, Age Grading, W', RAI, profils athlétiques."
               color="from-amber-500/20 to-amber-600/20"
             />
             <FeatureCard
@@ -214,8 +214,8 @@ function App() {
             />
             <FeatureCard
               icon={TrendingUp}
-              title="Sync Strava"
-              desc="Synchronisation automatique de vos activités et statistiques."
+              title="Prédictions"
+              desc="Marathon, Age Grading WMA, Classification profil (Sprinter/Grimpeur/etc.)."
               color="from-blue-500/20 to-blue-600/20"
             />
           </div>

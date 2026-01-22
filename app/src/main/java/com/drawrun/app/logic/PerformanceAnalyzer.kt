@@ -290,20 +290,10 @@ object PerformanceAnalyzer {
 
     /**
      * Calcule la Puissance Normalisée (NP) - Modèle Coggan
+     * Delegates to ScienceEngine for consistency
      */
     fun calculateNP(powerStream: List<Int>?): Double? {
-        if (powerStream == null || powerStream.isEmpty()) return null
-        
-        // 1. 30s rolling average
-        val rollingAvg = mutableListOf<Double>()
-        for (i in powerStream.indices) {
-            val window = powerStream.subList(kotlin.math.max(0, i - 29), i + 1)
-            rollingAvg.add(window.average())
-        }
-        
-        // 2. Raise values to 4th power, average, and take 4th root
-        val avgFourth = rollingAvg.map { it.pow(4.0) }.average()
-        return avgFourth.pow(0.25)
+        return com.drawrun.app.logic.ScienceEngine.calculateNormalizedPower(powerStream ?: return null)
     }
 
     /**

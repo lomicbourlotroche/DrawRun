@@ -7,7 +7,18 @@
 ## 🚀 Fonctionnalités Clés
 
 ### 🧠 Intelligence Physiologique
+
 - **Moteur VDOT Elite (V6.4)** : Calcul automatique et dynamique de votre VDOT basé sur vos meilleures performances. Ajustement instantané de vos allures cibles : *Easy, Marathon, Threshold, Interval, Repetition*.
+- **ScienceEngine Centralisé** : 15+ métriques avancées dans un seul moteur :
+  - **TSS** (Training Stress Score) - Charge d'entraînement Coggan
+  - **TRIMP** (Edwards) - Impulsion d'entraînement cardiaque
+  - **NP** (Normalized Power) - Puissance normalisée cyclisme
+  - **IF** (Intensity Factor) - Facteur d'intensité
+  - **Age Grading** (WMA) - Ajustement performance / âge
+  - **W'** (W Prime) - Réserve anaérobie cyclisme
+  - **RAI** (Run Activity Index) - VDOT ajusté volume
+  - **Marathon Prediction** - Prédiction temps (Riegel/Daniels)
+  - **Profils Athlétiques** - Classification Cyclisme (Sprinter/Grimpeur/Rouleur/Puncheur) et Natation (Sprint/Middle/Distance)
 - **Analyse de Charge (CTL/TSB)** : Suivi précis de votre charge chronique (Forme) et de votre balance de stress (Fraîcheur) pour atteindre un pic de forme optimal le jour J.
 - **Variabilité de la Fréquence Cardiaque (HRV)** : Intégration des données de santé pour évaluer votre état de récupération quotidien et adapter l'intensité au réveil.
 
