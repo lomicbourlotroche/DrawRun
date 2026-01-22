@@ -246,7 +246,10 @@ fun PerformanceScreen(state: AppState) {
 
         
         val (levelMetrics, otherMetrics) = remember(metrics) {
-            metrics.partition { it.category == "NIVEAU" || it.id == "fcm" || it.id == "vo2max" }
+            val carouselIds = setOf("vma", "vo2max", "fcm", "ftp", "w_kg", "css", "vo2_swim", "vdot", "rai")
+            metrics.partition { metric ->
+                carouselIds.contains(metric.id) || metric.category == "NIVEAU"
+            }
         }
 
         Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
