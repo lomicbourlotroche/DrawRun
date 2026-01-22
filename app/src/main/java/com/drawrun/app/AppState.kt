@@ -102,7 +102,7 @@ class AppState {
     var rai by mutableStateOf<Double?>(null) // Run Activity Index
 
     val fcm by derivedStateOf {
-        if (userProfileComplete) PerformanceAnalyzer.calculateFCM(age.toIntOrNull() ?: 30, sex, weight.toDoubleOrNull() ?: 70.0) else 0
+        if (userProfileComplete) com.drawrun.app.logic.ScienceEngine.calculateFCM(age.toIntOrNull() ?: 30, sex, weight.toDoubleOrNull() ?: 70.0) else 0
     }
 
     val vo2Max by derivedStateOf {
@@ -145,7 +145,7 @@ class AppState {
                  // Rough estimation: Run 5km at 90% VMA
                  val speed5k = vma * 0.90 // km/h
                  val timeMin = (5.0 / speed5k) * 60.0
-                 PerformanceAnalyzer.calculateVDOT(5000.0, timeMin)
+                 com.drawrun.app.logic.ScienceEngine.calculateVDOT(5000.0, timeMin)
             } else {
                 30.0 // Default baseline
             }

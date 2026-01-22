@@ -56,35 +56,11 @@ object TrainingPlanGenerator {
     )
 
     /**
-     * Calcul du VDOT selon Jack Daniels
+     * Calcul du VDOT selon Jack Daniels -> Use ScienceEngine
      */
-    fun calculateVDOT(distance: Double, totalMinutes: Double): Double {
-        if (totalMinutes <= 0.0) return 0.0
-        val velocity = distance / totalMinutes
-        val vo2 = -4.60 + 0.182258 * velocity + 0.000104 * velocity.pow(2)
-        val dropOff = 0.8 + 0.189439 * exp(-0.012778 * totalMinutes) + 0.298956 * exp(-0.193261 * totalMinutes)
-        return (vo2 / dropOff)
-    }
-
-    /**
-     * Résolution de la vitesse pour une cible VO2 (Formule inverse Daniels)
-     */
-    private fun solveVelocity(vdot: Double, targetVO2Pct: Double): Double {
-        val targetVO2 = vdot * targetVO2Pct
-        val a = 0.000104
-        val b = 0.182258
-        val c = -(4.60 + targetVO2)
-        val velocity = (-b + sqrt(b * b - 4 * a * c)) / (2 * a)
-        return velocity
-    }
-
-    private fun formatPace(velocity: Double): String {
-        if (velocity <= 0) return "--:--"
-        val paceMinPerKm = 1000.0 / velocity
-        val mins = paceMinPerKm.toInt()
-        val secs = ((paceMinPerKm - mins) * 60).roundToInt()
-        return "%d:%02d".format(mins, if (secs == 60) 0 else secs)
-    }
+     // removed calculateVDOT
+     // removed solveVelocity
+     // removed formatPace
 
     private fun formatHR(minPct: Double, maxPct: Double, maxHR: Int, restHR: Int): String {
         val reserve = maxHR - restHR
@@ -96,17 +72,11 @@ object TrainingPlanGenerator {
     fun generatePlan(config: PlanConfig, forcedVdot: Double? = null): List<WeekPlan> {
         // Use forced (global) VDOT if provided and valid (> 20), otherwise calculate from race goal
         val vdot = if (forcedVdot != null && forcedVdot > 20.0) forcedVdot 
-                   else calculateVDOT(config.raceDistance, config.minutes + config.seconds / 60.0)
+                   else ScienceEngine.calculateVDOT(config.raceDistance, config.minutes + config.seconds / 60.0)
         
         val zones = if (config.method == "vdot") {
-            mapOf(
-                "E" to formatPace(solveVelocity(vdot, 0.70)),
-                "M" to formatPace(solveVelocity(vdot, 0.80)),
-                "T" to formatPace(solveVelocity(vdot, 0.88)),
-                "I" to formatPace(solveVelocity(vdot, 0.98)),
-                "R" to formatPace(solveVelocity(vdot, 1.10)),
-                "unit" to "/km"
-            )
+            // Use ScienceEngine standard zones
+            ScienceEngine.getTrainingPaces(vdot) + mapOf("unit" to "/km")
         } else {
             mapOf(
                 "E" to formatHR(0.59, 0.74, config.maxHR, config.restHR),

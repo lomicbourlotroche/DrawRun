@@ -45,7 +45,7 @@ object ActivityAnalyzer {
         val weeklyAvg = calculateWeeklyAverage(runs)
         
         // Find longest run
-        val longest = runs.maxOfOrNull { parseDistance(it.dist) } ?: 0.0
+        val longest = runs.maxOfOrNull { ScienceEngine.parseDistanceToMeters(it.dist) / 1000.0 } ?: 0.0
         
         // Estimate VDOT from best 10km or 5km
         val vdot = estimateVDOT(bestTimes)
@@ -73,18 +73,18 @@ object ActivityAnalyzer {
             // Find runs within ±5% of target distance
             val tolerance = targetDist * 0.05
             val candidates = runs.filter { run ->
-                val dist = parseDistance(run.dist) * 1000 // convert to meters
+                val dist = ScienceEngine.parseDistanceToMeters(run.dist)
                 abs(dist - targetDist) <= tolerance
             }
             
             if (candidates.isEmpty()) continue
             
             // Find fastest (best pace)
-            val best = candidates.minByOrNull { parsePaceToSeconds(it.pace) }
+            val best = candidates.minByOrNull { ScienceEngine.parsePaceToSeconds(it.pace) }
             
             best?.let { run ->
-                val distKm = parseDistance(run.dist)
-                val durationSec = parseDuration(run.duration)
+                val distKm = ScienceEngine.parseDistanceToMeters(run.dist) / 1000.0
+                val durationSec = ScienceEngine.parseDurationSeconds(run.duration)
                 
                 if (durationSec > 0) {
                     bestTimes[targetDist] = BestPerformance(
@@ -117,7 +117,7 @@ object ActivityAnalyzer {
         
         if (recentRuns.isEmpty()) return 0.0
         
-        val totalKm = recentRuns.sumOf { parseDistance(it.dist) }
+        val totalKm = recentRuns.sumOf { ScienceEngine.parseDistanceToMeters(it.dist) / 1000.0 }
         val weeks = ChronoUnit.WEEKS.between(twelveWeeksAgo, today).coerceAtLeast(1)
         
         return totalKm / weeks
@@ -130,7 +130,7 @@ object ActivityAnalyzer {
         var maxVdot = 0.0
         
         bestTimes.values.forEach { performance ->
-            val vdot = PerformanceAnalyzer.calculateVDOT(
+            val vdot = ScienceEngine.calculateVDOT(
                 performance.distance * 1000, // convert to meters
                 performance.timeSeconds / 60.0 // convert to minutes
             )
@@ -142,51 +142,7 @@ object ActivityAnalyzer {
         return if (maxVdot > 0) maxVdot else null
     }
     
-    // Helper functions
-    private fun parseDistance(distStr: String): Double {
-        // Handle "5,2km" or "5.2km"
-        val clean = distStr.replace("km", "").replace(",", ".").trim()
-        return clean.toDoubleOrNull() ?: 0.0
-    }
-    
-    private fun parsePaceToSeconds(paceStr: String): Double {
-        // Format: "5:30 /km" or "5:30"
-        try {
-            val clean = paceStr.replace("/km", "").trim()
-            val parts = clean.split(":")
-            if (parts.size == 2) {
-                val min = parts[0].toIntOrNull() ?: 0
-                val sec = parts[1].toIntOrNull() ?: 0
-                return (min * 60 + sec).toDouble()
-            }
-        } catch (e: Exception) {}
-        return Double.MAX_VALUE // Worst pace if parsing fails
-    }
-    
-    private fun parseDuration(durationStr: String): Double {
-        // Format: "45:30" or "1h23" -> seconds
-        try {
-            if (durationStr.contains("h")) {
-                val parts = durationStr.split("h")
-                val hours = parts[0].toIntOrNull() ?: 0
-                val mins = parts.getOrNull(1)?.toIntOrNull() ?: 0
-                return (hours * 3600 + mins * 60).toDouble()
-            } else {
-                val parts = durationStr.split(":")
-                if (parts.size == 2) {
-                    val min = parts[0].toIntOrNull() ?: 0
-                    val sec = parts[1].toIntOrNull() ?: 0
-                    return (min * 60 + sec).toDouble()
-                } else if (parts.size == 3) {
-                     val h = parts[0].toIntOrNull() ?: 0
-                     val m = parts[1].toIntOrNull() ?: 0
-                     val s = parts[2].toIntOrNull() ?: 0
-                     return (h * 3600 + m * 60 + s).toDouble()
-                }
-            }
-        } catch (e: Exception) {}
-        return 0.0
-    }
+    // Helpers removed (parseDistance, parsePaceToSeconds, parseDuration) -> Use ScienceEngine
     
     private fun safeDateParse(dateStr: String): LocalDate? {
         // Handle "2024-01-20" or "2024-01-20T10:00:00Z"

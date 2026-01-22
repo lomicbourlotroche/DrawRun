@@ -37,10 +37,10 @@ object PerformanceAnalyzer {
      * Retourne les zones personnalisées basées sur Strava ou les calculs par défaut.
      */
     fun getPersonalizedZones(state: AppState): TrainingZones {
-        val fcm = calculateFCM(state.age.toIntOrNull() ?: 30, state.sex, state.weight.toDoubleOrNull() ?: 70.0)
+        val fcm = state.fcm // Use state derived
         val rHR = state.restingHR.toIntOrNull() ?: 50
-        val vma = calculateVMA(state.age.toIntOrNull() ?: 30, state.sex, state.weight.toDoubleOrNull() ?: 70.0, rHR)
-        val vdot = 50.0 // Default or from PRs if implemented
+        val vma = state.vma // Use state derived
+        val vdot = state.vdot // Use state derived (ScienceEngine based)
         
         // 1. Run Zones
         val stravaHR = state.athleteZones?.heartRate
@@ -50,9 +50,40 @@ object PerformanceAnalyzer {
             calculateKarvonenZones(fcm, rHR)
         }
         
+        // Use VDOT for pace zones if available, improving consistency with Coach/Plan
+        val paceZones = if (vdot > 0) {
+            // Z1: Easy (Low to High)
+            // Z2: Marathon (+/- 3%)
+            // Z3: Threshold (+/- 3%)
+            // Z4: Interval (+/- 2%)
+            // Z5: Repetition (+/- 2%)
+            
+            // Helper: get min/km from intensity
+            fun p(i: Double) = com.drawrun.app.logic.ScienceEngine.getPaceSeconds(vdot, i) / 60.0
+            
+            listOf(
+                p(com.drawrun.app.logic.ScienceEngine.VdotZones.E_LOW) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.E_HIGH),
+                p(com.drawrun.app.logic.ScienceEngine.VdotZones.M * 0.97) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.M * 1.03),
+                p(com.drawrun.app.logic.ScienceEngine.VdotZones.T * 0.97) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.T * 1.03),
+                p(com.drawrun.app.logic.ScienceEngine.VdotZones.I * 0.98) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.I * 1.02),
+                p(com.drawrun.app.logic.ScienceEngine.VdotZones.R * 0.98) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.R * 1.02)
+            )
+        } else {
+             // Fallback VMA
+             // Reuse deprecated logic if needed or reimplement simply
+             val speeds = listOf(
+                (vma * 0.60) to (vma * 0.75),
+                (vma * 0.75) to (vma * 0.85),
+                (vma * 0.85) to (vma * 0.92),
+                (vma * 0.92) to (vma * 0.98),
+                (vma * 0.98) to vma 
+            )
+            speeds.map { (60.0/it.second) to (60.0/it.first) }
+        }
+        
         val runZones = RunZones(
             fc = runFC,
-            pace = calculatePaceZones(vma),
+            pace = paceZones,
             vma = vma
         )
 
@@ -60,7 +91,7 @@ object PerformanceAnalyzer {
         val stravaPower = state.athleteZones?.power
         val ftp = if (stravaPower != null && stravaPower.zones.size >= 4) {
              stravaPower.zones[3].max // Common proxy for threshold
-        } else 250
+        } else state.ftp.toIntOrNull() ?: 250
         
         val bikeZones = BikeZones(
             power = if (stravaPower != null) stravaPower.zones.map { it.min to it.max } else calculateCogganPowerZones(ftp),
@@ -81,12 +112,12 @@ object PerformanceAnalyzer {
      * Calcul de la FCM (Fréquence Cardiaque Maximale)
      * Formule hybride basée sur l'algorithme Python fourni.
      */
+     // Keep for now or delegate to ScienceEngine.calculateFCM? 
+     // PerformanceAnalyzer is the original source. ScienceEngine copied it.
+     // AppState uses ScienceEngine now. So this is likely unused by App.
+     // But for safety, let's keep it or delegate to ScienceEngine.
     fun calculateFCM(age: Int, sex: String, weight: Double): Int {
-        return if (sex == "H") {
-            ((-0.007 * age.toDouble().pow(2.0) - 2.819 * age - 0.11 * weight + 1043.554) / 5.0).roundToInt()
-        } else {
-            ((-0.007 * age.toDouble().pow(2.0) - 2.819 * age - 0.11 * weight + 1042.554) / 5.0).roundToInt()
-        }
+        return com.drawrun.app.logic.ScienceEngine.calculateFCM(age, sex, weight)
     }
 
     /**
@@ -130,33 +161,8 @@ object PerformanceAnalyzer {
         )
     }
 
-    /**
-     * Calcul des zones de vitesse fondées sur la méthode VDOT (Daniels)
-     * Pourcentages de VMA approximés pour les zones E, M, T, I, R.
-     */
-    fun calculateSpeedZones(vma: Double): List<Pair<Double, Double>> {
-        return listOf(
-            (vma * 0.60) to (vma * 0.70), // Z1: Récupération
-            (vma * 0.70) to (vma * 0.82), // Z2: Easy (Daniels E)
-            (vma * 0.82) to (vma * 0.88), // Z3: Marathon / Tempo (Daniels M/T)
-            (vma * 0.88) to (vma * 0.95), // Z4: Seuil (Daniels T)
-            (vma * 0.95) to vma          // Z5: Intervalle (Daniels I / VMA)
-        )
-    }
-
-    /**
-     * Conversion vitesse (km/h) en allure (min/km)
-     */
-    fun speedToPace(speedKmH: Double): Double {
-        if (speedKmH <= 0) return 0.0
-        return 60.0 / speedKmH
-    }
-
-    fun calculatePaceZones(vma: Double): List<Pair<Double, Double>> {
-        val speeds = calculateSpeedZones(vma)
-        return speeds.map { speedToPace(it.second) to speedToPace(it.first) } // Allure min/km (rapide to lent)
-    }
-
+    // Removed calculateSpeedZones, speedToPace, calculatePaceZones -> Logic inlined/replaced
+    
     /**
      * Calcul de la durée des phases (Modèle interne)
      */
@@ -170,77 +176,7 @@ object PerformanceAnalyzer {
         return Triple(general, specific, tapering)
     }
 
-    /**
-     * Calcul du VDOT (Jack Daniels)
-     * Utilise une approximation de la formule de régression pour la course à pied.
-     * VDOT est estimé à partir de la vitesse moyenne sur une distance donnée.
-     * VDOT ~ Speed (m/min) -> Lookup Table or Formula.
-     * Formule simplifiée de Daniels:
-     * VO2Cost = 0.182258 * v + 0.000104 * v^2 - 4.60
-     * %VO2Max = 0.8 + 0.1894393 * exp(-0.012778 * t) + 0.2989558 * exp(-0.1932605 * t)
-     * VDOT = VO2Cost / %VO2Max
-     */
-    fun calculateVDOT(distanceMeters: Double, timeMinutes: Double): Double {
-        if (timeMinutes <= 0) return 0.0
-        val v = distanceMeters / timeMinutes // m/min
-        
-        // 1. Oxygen Cost (ml/kg/min)
-        val vo2Cost = 0.182258 * v + 0.000104 * v.pow(2) - 4.60
-        
-        // 2. % VO2Max sustained for time t (minutes)
-        val t = timeMinutes
-        val percentMax = 0.8 + 0.1894393 * kotlin.math.exp(-0.012778 * t) + 0.2989558 * kotlin.math.exp(-0.1932605 * t)
-        
-        // 3. VDOT
-        return vo2Cost / percentMax
-    }
-
-    /**
-     * Zones d'allure Jack Daniels (Basées sur VDOT)
-     */
-    fun calculateJackDanielsPaces(vdot: Double): List<Pair<String, String>> {
-        if (vdot <= 0) return emptyList()
-        
-        // Inverse Formula: Find Velocity (m/min) for a given VO2
-        // VO2 = 0.182258 * v + 0.000104 * v^2 - 4.60
-        // Rearrange quadratic: 0.000104*v^2 + 0.182258*v - (VO2 + 4.60) = 0
-        fun solveVelocity(targetVO2: Double): Double {
-            val a = 0.000104
-            val b = 0.182258
-            val c = -(targetVO2 + 4.60)
-            val delta = b*b - 4*a*c
-            return if (delta >= 0) (-b + kotlin.math.sqrt(delta)) / (2*a) else 0.0
-        }
-
-        fun fmt(speedMMin: Double): String {
-            val pace = 1000.0 / speedMMin // min/km
-            val m = pace.toInt()
-            val s = ((pace - m) * 60).roundToInt()
-            return "%d:%02d".format(m, s)
-        }
-
-        // Zones defined by % VO2Max (approximate for Pacing)
-        // E (Easy): 59-74% VO2max -> Use ~70% center
-        // M (Marathon): ~80-85% VO2max -> Use ~83%
-        // T (Threshold): ~88-92% VO2max -> Use ~90%
-        // I (Interval): ~98-100% VO2max -> Use ~99%
-        // R (Repetition): >100% -> Use ~108% (Approx based on Mile pace)
-
-        val vE1 = solveVelocity(vdot * 0.65)
-        val vE2 = solveVelocity(vdot * 0.79)
-        val vM = solveVelocity(vdot * 0.84) // Center of M zone
-        val vT = solveVelocity(vdot * 0.90) // Threshold
-        val vI = solveVelocity(vdot * 0.98) // VO2Max pace
-        val vR = solveVelocity(vdot * 1.08) // Repetition pace (approx)
-
-        return listOf(
-            "Easy (E)" to "${fmt(vE1)}-${fmt(vE2)}",
-            "Marathon (M)" to fmt(vM),
-            "Seuil (T)" to fmt(vT),
-            "Interval (I)" to fmt(vI),
-            "Répétition (R)" to fmt(vR)
-        )
-    }
+    // Removed calculateVDOT, calculateJackDanielsPaces
 
     /**
      * Calcul des zones de puissance (Coggan)

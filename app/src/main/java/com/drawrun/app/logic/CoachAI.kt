@@ -8,14 +8,7 @@ import java.util.Locale
 
 object CoachAI {
 
-    // Training zones based on VDOT percentage
-    object TrainingZones {
-        const val RECOVERY = 0.65      // Récupération (E)
-        const val MARATHON = 0.78       // Marathon (M)
-        const val THRESHOLD = 0.88      // Seuil (T)
-        const val INTERVAL = 0.98       // Intervalles (I)
-        const val REPETITION = 1.10     // Répétitions (R)
-    }
+    // Training zones removed -> Use ScienceEngine.VdotZones
 
     data class ReadinessFactors(
         val hrv: Int,           // Variabilité cardiaque en ms (base: 60ms)
@@ -76,22 +69,7 @@ object CoachAI {
         return (durationMin * intensityFactor).toInt()
     }
 
-    /**
-     * Calculate pace from VDOT and intensity
-     */
-    fun getPaceFromVDOT(vdot: Int, intensity: Double): String {
-        // intensity: 0.65 (Easy), 0.78 (Marathon), 0.88 (Threshold), 0.98 (Interval), 1.10 (Repetition)
-        val targetVO2 = vdot * intensity
-        
-        // Inversion quadratique approximative pour trouver la vitesse m/min
-        val speedMmin = 29.54 + 5.000663 * targetVO2 - 0.00767 * Math.pow(targetVO2, 2.0)
-        val minPerKm = 1000 / speedMmin
-        
-        val min = minPerKm.toInt()
-        val sec = ((minPerKm - min) * 60).toInt()
-        
-        return String.format("%d:%02d", min, sec)
-    }
+    // getPaceFromVDOT Removed -> Use ScienceEngine methods
 
     fun getDailyTraining(state: AppState): TrainingRecommendation {
         val today = LocalDate.now()
@@ -100,14 +78,17 @@ object CoachAI {
         val planWorkout = findWorkoutInPlan(state, today)
         if (planWorkout != null) {
             // Enrich plan workout with pace calculation
-            val vdotValue = state.vdot.toInt()
+            val vdotValue = state.vdot
             val pace = if (vdotValue > 0) {
+                // Formatting helper
+                fun p(intensity: Double) = ScienceEngine.formatPace(ScienceEngine.getPaceSeconds(vdotValue, intensity))
+                
                 when (planWorkout.type) {
-                    "E" -> getPaceFromVDOT(vdotValue, TrainingZones.RECOVERY)
-                    "M" -> getPaceFromVDOT(vdotValue, TrainingZones.MARATHON)
-                    "T" -> getPaceFromVDOT(vdotValue, TrainingZones.THRESHOLD)
-                    "I" -> getPaceFromVDOT(vdotValue, TrainingZones.INTERVAL)
-                    "R" -> getPaceFromVDOT(vdotValue, TrainingZones.REPETITION)
+                    "E" -> p(ScienceEngine.VdotZones.E_LOW)
+                    "M" -> p(ScienceEngine.VdotZones.M)
+                    "T" -> p(ScienceEngine.VdotZones.T)
+                    "I" -> p(ScienceEngine.VdotZones.I)
+                    "R" -> p(ScienceEngine.VdotZones.R)
                     else -> null
                 }
             } else null
@@ -235,8 +216,8 @@ object CoachAI {
         
         // CASE 2: Moderate Fatigue or Big Session Yesterday
         if (readinessValue < 60 || prevTSS > 120) {
-            val vdotValue = state.vdot.toInt()
-            val pace = if (vdotValue > 0) getPaceFromVDOT(vdotValue, TrainingZones.RECOVERY) else null
+            val vdotValue = state.vdot
+            val pace = if (vdotValue > 0) ScienceEngine.formatPace(ScienceEngine.getPaceSeconds(vdotValue, ScienceEngine.VdotZones.E_LOW)) else null
             return TrainingRecommendation(
                 title = "Footing de Régénération",
                 type = "E",
@@ -260,13 +241,15 @@ object CoachAI {
         
         // Helper to format pace
         fun fmtPace(type: String): String {
-            val v = state.vdot.toInt()
+            val v = state.vdot
             if (v <= 0) return ""
+            fun p(i: Double) = ScienceEngine.formatPace(ScienceEngine.getPaceSeconds(v, i))
+            
             return when(type) {
-                "E" -> "(${getPaceFromVDOT(v, TrainingZones.RECOVERY)})"
-                "M" -> "(${getPaceFromVDOT(v, TrainingZones.MARATHON)})"
-                "T" -> "(${getPaceFromVDOT(v, TrainingZones.THRESHOLD)})"
-                "I" -> "(${getPaceFromVDOT(v, TrainingZones.INTERVAL)})"
+                "E" -> "(${p(ScienceEngine.VdotZones.E_LOW)})"
+                "M" -> "(${p(ScienceEngine.VdotZones.M)})"
+                "T" -> "(${p(ScienceEngine.VdotZones.T)})"
+                "I" -> "(${p(ScienceEngine.VdotZones.I)})"
                 else -> ""
             }
         }
@@ -274,8 +257,8 @@ object CoachAI {
         // CASE 3: Optimal Form - Energy System Rotation
         if (lastSessionType == "interval" || lastSessionType == "tempo") {
             // After quality -> Volume
-            val vdotValue = state.vdot.toInt()
-            val pace = if (vdotValue > 0) getPaceFromVDOT(vdotValue, 0.70) else null
+            val vdotValue = state.vdot
+            val pace = if (vdotValue > 0) ScienceEngine.formatPace(ScienceEngine.getPaceSeconds(vdotValue, 0.70)) else null
             val duration = if (weeklyTSS < 300) 75 else 60
             
             return TrainingRecommendation(
@@ -302,8 +285,8 @@ object CoachAI {
             // Can do quality work
             if (readinessValue > 80 && weeklyTSS < 400) {
                 // VO2Max
-                val vdotValue = state.vdot.toInt()
-                val pace = if (vdotValue > 0) getPaceFromVDOT(vdotValue, TrainingZones.INTERVAL) else null
+                val vdotValue = state.vdot
+                val pace = if (vdotValue > 0) ScienceEngine.formatPace(ScienceEngine.getPaceSeconds(vdotValue, ScienceEngine.VdotZones.I)) else null
                 return TrainingRecommendation(
                     title = "Puissance Aérobie (VMA)",
                     type = "I",
@@ -326,8 +309,8 @@ object CoachAI {
                 )
             } else {
                 // Threshold
-                val vdotValue = state.vdot.toInt()
-                val pace = if (vdotValue > 0) getPaceFromVDOT(vdotValue, TrainingZones.THRESHOLD) else null
+                val vdotValue = state.vdot
+                val pace = if (vdotValue > 0) ScienceEngine.formatPace(ScienceEngine.getPaceSeconds(vdotValue, ScienceEngine.VdotZones.T)) else null
                 return TrainingRecommendation(
                     title = "Seuil Anaérobie (Tempo)",
                     type = "T",
@@ -411,9 +394,9 @@ object CoachAI {
         var paceScore = 100
         val targetPaceStr = recommendation.targetPace
         if (targetPaceStr != null && activities.isNotEmpty()) {
-            val targetSec = parsePace(targetPaceStr)
+            val targetSec = ScienceEngine.parsePaceToSeconds(targetPaceStr)
             val actualPaceStr = activities[0].pace // Take main activity
-            val actualSec = parsePace(actualPaceStr)
+            val actualSec = ScienceEngine.parsePaceToSeconds(actualPaceStr)
             
             if (targetSec > 0 && actualSec > 0) {
                 // Determine if faster or slower
@@ -441,11 +424,5 @@ object CoachAI {
         return ComplianceResult(totalScore, feedback, details, color)
     }
 
-    private fun parsePace(pace: String): Int {
-         val clean = pace.replace("/km", "").trim()
-         val parts = clean.split(":")
-         return if (parts.size == 2) {
-             (parts[0].toIntOrNull() ?: 0) * 60 + (parts[1].toIntOrNull() ?: 0)
-         } else 0
-    }
+    // parsePace removed -> Use ScienceEngine.parsePaceToSeconds
 }
