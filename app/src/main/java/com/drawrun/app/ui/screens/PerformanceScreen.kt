@@ -22,6 +22,7 @@ import com.drawrun.app.ui.components.Zone
 import com.drawrun.app.ui.components.ZoneBar
 import com.drawrun.app.ui.components.MetricData
 import com.drawrun.app.AppState
+import com.drawrun.app.logic.PerformanceAnalyzer
 import androidx.compose.ui.draw.drawBehind
 
 fun formatPace(paceDecimal: Double): String {
@@ -88,31 +89,40 @@ fun PerformanceScreen(state: AppState) {
             
             // 1. VMA / FTP / CSS
             if (selectedSport == "run") {
+                val vmaLevel = PerformanceAnalyzer.getPerformanceLevel("VO2MAX", state.vma * 3.5) // Approx VO2 match
                 list.add(MetricData(
                     id = "vma",
                     title = "VMA",
                     value = if (state.vma > 0) "%.1f".format(state.vma) else "--",
                     unit = "km/h",
-                    category = "NIVEAU",
-                    color = Color(0xFFF59E0B), // Amber
+                    category = vmaLevel.first,
+                    color = Color(vmaLevel.second),
                     icon = Icons.Default.Bolt,
                     percentage = (state.vma.toFloat() / 25f).coerceIn(0f, 1f),
                     trend = listOf(14f, 14.2f, 14.5f, 14.8f, 15f, 15.2f)
                 ))
             } else if (selectedSport == "swim") {
+                // Determine CSS level (default 1.6 = 1:36/100m)
+                val cssVal = 1.6 // Placeholder or from state
+                val cssLevel = PerformanceAnalyzer.getPerformanceLevel("CSS", cssVal)
+                
                 list.add(MetricData(
                     id = "css",
                     title = "CSS (400/200)",
                     value = "--",
                     unit = "min/100m",
-                    category = "NIVEAU",
-                    color = Color(0xFF0EA5E9), // Cyan
+                    category = cssLevel.first,
+                    color = Color(cssLevel.second), // Dynamic color
                     icon = Icons.Default.Timer,
                     percentage = 0.6f,
                     trend = emptyList()
                 ))
                 
-                list.add(MetricData("vo2_swim", "VO2 MAX AQUA", "--", "ml/kg/min", "NIVEAU", Color(0xFF007AFF), Icons.Default.Air, 0.0f, emptyList()))
+                // Reuse VO2MAX logic for Aqua
+                val vo2AquaVal = 60.0 // Placeholder matched to screenshot
+                val vo2AquaLevel = PerformanceAnalyzer.getPerformanceLevel("VO2MAX", vo2AquaVal)
+                
+                list.add(MetricData("vo2_swim", "VO2 MAX AQUA", "--", "ml/kg/min", vo2AquaLevel.first, Color(vo2AquaLevel.second), Icons.Default.Air, 0.0f, emptyList()))
                 list.add(MetricData("cp_swim", "PUISSANCE CRIT", "--", "Watts", "NIVEAU", Color(0xFF10B981), Icons.Default.Bolt, 0.0f, emptyList()))
                 list.add(MetricData("riegel_swim", "RIEGEL (1500m)", "--", "h:mm:ss", "PRÉDICTION", Color(0xFF3B82F6), Icons.Default.Timeline, 0.0f, emptyList()))
                 list.add(MetricData("ie_swim", "INDICE ENDURANCE", "--", "% Vmax", "PROFIL", Color(0xFF3B82F6), Icons.Default.TrendingDown, 0.0f, emptyList()))
@@ -126,13 +136,18 @@ fun PerformanceScreen(state: AppState) {
                 list.add(MetricData("monotony_swim", "MONOTONIE", "--", "Foster", "SANTÉ", Color(0xFFEF4444), Icons.Default.HorizontalRule, 0.0f, emptyList()))
                 list.add(MetricData("ctl_swim", "CTL (FITNESS)", "--", "TSS/j", "CHARGE", Color(0xFFEF4444), Icons.Default.FitnessCenter, 0.0f, emptyList()))
             } else {
+                val ftpVal = state.ftp.toDoubleOrNull() ?: 0.0
+                val weight = state.weight.toDoubleOrNull() ?: 70.0
+                val wkg = if (weight > 0) ftpVal / weight else 0.0
+                val ftpLevel = PerformanceAnalyzer.getPerformanceLevel("W/KG", wkg)
+                
                 list.add(MetricData(
                     id = "ftp",
                     title = "FTP",
                     value = state.ftp,
                     unit = "Watts",
-                    category = "NIVEAU",
-                    color = Color(0xFFF59E0B),
+                    category = ftpLevel.first,
+                    color = Color(ftpLevel.second),
                     icon = Icons.Default.Bolt,
                     percentage = ((state.ftp.toFloatOrNull() ?: 0f) / 400f).coerceIn(0f, 1f),
                     trend = listOf(200f, 210f, 220f, 225f, 230f, 240f)
@@ -156,13 +171,14 @@ fun PerformanceScreen(state: AppState) {
             }
 
             // 2. VO2 Max
+            val vo2Level = PerformanceAnalyzer.getPerformanceLevel("VO2MAX", state.vo2Max)
             list.add(MetricData(
                 id = "vo2max",
                 title = "VO2 MAX",
                 value = "%.0f".format(state.vo2Max),
                 unit = "ml/kg/min",
-                category = "NIVEAU",
-                color = Color(0xFF007AFF), // Blue
+                category = vo2Level.first,
+                color = Color(vo2Level.second), // Blue
                 icon = Icons.Default.Air,
                 percentage = (state.vo2Max.toFloat() / 85f).coerceIn(0f, 1f),
                 trend = listOf(50f, 52f, 53f, 55f, 56f, 58f)

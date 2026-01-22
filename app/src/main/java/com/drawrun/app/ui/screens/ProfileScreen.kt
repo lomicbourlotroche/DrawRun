@@ -24,6 +24,7 @@ import androidx.health.connect.client.PermissionController
 import androidx.compose.animation.core.*
 
 import com.drawrun.app.logic.DataSyncManager
+import com.drawrun.app.logic.PerformanceAnalyzer
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
@@ -153,6 +154,38 @@ fun ProfileScreen(state: AppState, syncManager: DataSyncManager) {
                 if (state.stravaConnected && state.athleteStats != null) {
                     Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
                     AthleteTotalsSection(state.athleteStats!!)
+                    
+                    Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+                    
+                    // Records / Bilan
+                    val records = remember(state.activities) {
+                        PerformanceAnalyzer.calculateRecordStats(state.activities)
+                    }
+                    if (records.isNotEmpty()) {
+                         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Icon(imageVector = Icons.Default.EmojiEvents, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(14.dp))
+                                Text(text = "RECORDS PERSONNELS", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), letterSpacing = 2.sp)
+                            }
+                            
+                            Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                records.forEach { (label, value) ->
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                            .padding(16.dp)
+                                    ) {
+                                        Column {
+                                            Text(text = label.uppercase(), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), fontSize = 10.sp)
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text(text = value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 
                 Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))

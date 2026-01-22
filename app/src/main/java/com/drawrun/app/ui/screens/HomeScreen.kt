@@ -128,23 +128,23 @@ fun HomeScreen(state: AppState) {
                     ) {
                         StatCard(
                             title = "VRC / HRV",
-                            value = state.hrv,
-                            unit = "ms",
+                            value = if (state.hrv == "--" && !state.healthConnectConnected) "OFF" else state.hrv,
+                            unit = if (state.hrv == "--" && !state.healthConnectConnected) "Connecter" else "ms",
                             modifier = Modifier.height(64.dp),
                             onClick = {
                                 state.explanationTitle = "HRV (Variabilité Cardiaque)"
-                                state.explanationContent = "Indicateur de la récupération du système nerveux. Plus elle est élevée par rapport à votre moyenne, plus vous êtes prêt à encaisser une séance intense."
+                                state.explanationContent = "Indicateur de la récupération du système nerveux. Nécessite une connexion Health Connect (Montre/Bague) pour être précis."
                                 state.showExplanation = true
                             }
                         )
                         StatCard(
                             title = "Sommeil",
-                            value = state.sleepScore,
-                            unit = "/100",
+                            value = if (state.sleepScore == "--" && !state.healthConnectConnected) "OFF" else state.sleepScore,
+                            unit = if (state.sleepScore == "--" && !state.healthConnectConnected) "Connecter" else "/100",
                             modifier = Modifier.height(64.dp),
                             onClick = {
                                 state.explanationTitle = "Score de Sommeil"
-                                state.explanationContent = "Qualité de votre récupération nocturne. Un score élevé favorise la reconstruction musculaire et mentale."
+                                state.explanationContent = "Qualité de votre récupération nocturne. Données synchronisées via Health Connect."
                                 state.showExplanation = true
                             }
                         )
@@ -719,6 +719,7 @@ fun TrainingCard(recommendation: CoachAI.TrainingRecommendation, isTomorrow: Boo
                         }
                     }
                 }
+            }
 
 
             Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))

@@ -477,8 +477,10 @@ object PerformanceAnalyzer {
             val dateStr = currentDate.toString()
             
             // Somme des TSS du jour (on extrait la valeur numérique de la chaîne "TSS 85")
-            val dayTSS = sorted.filter { it.date == dateStr }.sumOf { 
-                it.load.replace(Regex("[^0.9.-]"), "").toDoubleOrNull() ?: 0.0
+            val dayTSS = sorted.filter { it.date == dateStr }.sumOf { activity ->
+                // Try multiple patterns: "TSS 85", "85 TSS", just "85", or "Load: 85"
+                val loadStr = activity.load.uppercase().replace("TSS", "").replace("LOAD", "").replace(":", "").trim()
+                loadStr.toDoubleOrNull() ?: 0.0
             }
 
             // Application des formules de Banister (EMA)
@@ -515,5 +517,84 @@ object PerformanceAnalyzer {
         }
         
         return (weeklyVolumes.values.maxOrNull() ?: 30.0).coerceAtLeast(20.0)
+    }
+
+    /**
+     * Determine le niveau de performance pour une métrique donnée.
+     * Retourne une paire (Libellé, CouleurHex).
+     */
+    fun getPerformanceLevel(metricType: String, value: Double, sex: String = "M"): Pair<String, Long> {
+        // Simple benchmark logic - can be expanded
+        return when (metricType) {
+            "VO2MAX" -> {
+                when {
+                    value >= 60 -> "ÉLITE" to 0xFF8B5CF6 // Purple
+                    value >= 52 -> "EXCELLENT" to 0xFF22C55E // Green
+                    value >= 45 -> "BON" to 0xFF3B82F6 // Blue
+                    value >= 38 -> "MOYEN" to 0xFFF59E0B // Orange
+                    else -> "FAIBLE" to 0xFFEF4444 // Red
+                }
+            }
+            "W/KG" -> {
+                when {
+                    value >= 4.5 -> "PRO" to 0xFF8B5CF6
+                    value >= 3.8 -> "EXCELLENT" to 0xFF22C55E
+                    value >= 3.0 -> "BON" to 0xFF3B82F6
+                    value >= 2.2 -> "MOYEN" to 0xFFF59E0B
+                    else -> "DÉBUTANT" to 0xFFEF4444
+                }
+            }
+            "CSS" -> { // min/100m (passed as decimal minutes, e.g. 1.5 for 1:30)
+                 when {
+                    value <= 1.25 -> "ÉLITE" to 0xFF8B5CF6 // < 1:15
+                    value <= 1.5 -> "EXCELLENT" to 0xFF22C55E // < 1:30
+                    value <= 1.75 -> "BON" to 0xFF3B82F6 // < 1:45
+                    value <= 2.0 -> "MOYEN" to 0xFFF59E0B // < 2:00
+                    else -> "DÉBUTANT" to 0xFFEF4444
+                }
+            }
+            else -> "NIVEAU" to 0xFF9CA3AF
+        }
+    }
+
+    /**
+     * Calcule les records personnels (Bilan) à partir de l'historique d'activités.
+     */
+    fun calculateRecordStats(activities: List<com.drawrun.app.ActivityItem>): Map<String, String> {
+        val runActivities = activities.filter { it.type == "run" }
+        if (runActivities.isEmpty()) return emptyMap()
+
+        // 1. Max Distance
+        val maxDist = runActivities.maxByOrNull { 
+            it.dist.replace("km", "").replace(",", ".").trim().toDoubleOrNull() ?: 0.0 
+        }
+        
+        // 2. Best Pace (for activities > 1km to avoid GPS glitches)
+        val bestPace = runActivities.filter { 
+            val d = it.dist.replace("km", "").replace(",", ".").trim().toDoubleOrNull() ?: 0.0
+            d > 1.0
+        }.minByOrNull { 
+            // Pace string "4:30 /km" -> convert to seconds
+            val p = it.pace.replace("/km", "").trim()
+            val parts = p.split(":")
+            if (parts.size == 2) {
+                parts[0].toInt() * 60 + parts[1].toInt()
+            } else 9999
+        }
+
+        // 3. Longest Duration
+        val maxDuration = runActivities.maxByOrNull { 
+           val parts = it.duration.replace("h", ":").split(":")
+           if (parts.size == 2) { // "1h30" or "45:30"
+               parts[0].toInt() * 60 + parts[1].toInt()
+           } else 0
+        }
+
+        val records = mutableMapOf<String, String>()
+        maxDist?.let { records["Distance Max"] = it.dist }
+        bestPace?.let { records["Meilleure Allure"] = it.pace }
+        maxDuration?.let { records["Durée Max"] = it.duration }
+
+        return records
     }
 }
