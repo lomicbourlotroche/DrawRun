@@ -48,10 +48,14 @@ function App() {
             <Github size={18} />
             <span>GitHub</span>
           </a>
-          <button className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-black text-sm hover:shadow-lg hover:shadow-amber-500/30 transition-all flex items-center gap-2">
+          <a
+            href="./DrawRun.apk"
+            download="DrawRun.apk"
+            className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-black text-sm hover:shadow-lg hover:shadow-amber-500/30 transition-all flex items-center gap-2"
+          >
             <Download size={16} />
-            Télécharger
-          </button>
+            Télécharger APK
+          </a>
         </div>
       </nav>
 
@@ -66,9 +70,9 @@ function App() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-black tracking-widest uppercase mb-8">
-              <Sparkles size={14} />
-              Version v3.42 Elite
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-black tracking-widest uppercase mb-8 animate-pulse">
+              <Sparkles size={14} className="animate-spin" />
+              Version v3.42 Elite • ScienceEngine™
             </div>
 
             {/* Title */}
@@ -87,13 +91,24 @@ function App() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20">
-              <button className="group px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-black text-base hover:shadow-2xl hover:shadow-amber-500/40 transition-all flex items-center gap-3">
-                Lancer la session
+              <a
+                href="./DrawRun.apk"
+                download="DrawRun.apk"
+                className="group px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-black text-base hover:shadow-2xl hover:shadow-amber-500/40 transition-all flex items-center gap-3"
+              >
+                <Download size={20} />
+                Télécharger DrawRun
                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-              </button>
-              <button className="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 font-bold hover:bg-white/10 transition-all">
-                Explorer l'algorithme
-              </button>
+              </a>
+              <a
+                href="https://github.com/lomicbourlotroche/DrawRun"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 font-bold hover:bg-white/10 transition-all flex items-center gap-2"
+              >
+                <Github size={20} />
+                Voir le code source
+              </a>
             </div>
 
             {/* Stats */}
