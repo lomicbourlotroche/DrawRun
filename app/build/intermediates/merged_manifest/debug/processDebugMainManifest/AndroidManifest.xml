@@ -41,7 +41,6 @@
         android:icon="@drawable/ic_launcher_vector"
         android:label="DrawRun"
         android:supportsRtl="true"
-        android:testOnly="true"
         android:theme="@style/Theme.DrawRun" >
         <activity
             android:name="com.drawrun.app.MainActivity"

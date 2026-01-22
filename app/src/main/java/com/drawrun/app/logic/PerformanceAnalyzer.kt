@@ -58,8 +58,12 @@ object PerformanceAnalyzer {
             // Z4: Interval (+/- 2%)
             // Z5: Repetition (+/- 2%)
             
-            // Helper: get min/km from intensity
-            fun p(i: Double) = com.drawrun.app.logic.ScienceEngine.getPaceSeconds(vdot, i) / 60.0
+            // Helper: get decimal min/km from intensity
+            // getPaceSeconds returns seconds/km, divide by 60 to get decimal minutes
+            fun p(i: Double): Double {
+                val secondsPerKm = com.drawrun.app.logic.ScienceEngine.getPaceSeconds(vdot, i)
+                return secondsPerKm / 60.0  // Convert to decimal minutes (e.g., 5.5 = 5:30)
+            }
             
             listOf(
                 p(com.drawrun.app.logic.ScienceEngine.VdotZones.E_LOW) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.E_HIGH),
@@ -70,7 +74,6 @@ object PerformanceAnalyzer {
             )
         } else {
              // Fallback VMA
-             // Reuse deprecated logic if needed or reimplement simply
              val speeds = listOf(
                 (vma * 0.60) to (vma * 0.75),
                 (vma * 0.75) to (vma * 0.85),
