@@ -610,6 +610,23 @@ fun DynamicCorrelationChart(
                     val y = h - (((value - min) / range).toFloat() * h).coerceIn(0f, h)
                     if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
                 }
+
+                // If Elevation or VAM, fill the area like a chart
+                if (metricName == "ALT" || metricName == "VAM") {
+                     val fillPath = Path()
+                     fillPath.addPath(path)
+                     fillPath.lineTo(w, h)
+                     fillPath.lineTo(0f, h)
+                     fillPath.close()
+                     
+                     val gradient = androidx.compose.ui.graphics.Brush.verticalGradient(
+                         colors = listOf(color.copy(alpha = 0.5f), color.copy(alpha = 0.1f)),
+                         startY = 0f,
+                         endY = h
+                     )
+                     drawPath(fillPath, gradient)
+                }
+                
                 drawPath(path, color, style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round))
             }
 

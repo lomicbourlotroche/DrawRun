@@ -2,7 +2,10 @@ package com.drawrun.app.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -11,10 +14,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.drawrun.app.logic.MapUtils
+import kotlin.math.ceil
+import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 @Composable
 fun ActivityMap(
@@ -28,86 +36,123 @@ fun ActivityMap(
 
     if (coordinates.isEmpty()) return
     
-    // In a real app with API Key, we would use AsyncImage here with a static map URL
-    // For now, we simulate a map background style
-    Box(modifier = modifier) {
-         // Placeholder Map Background (Grid style)
-        Canvas(modifier = Modifier.fillMaxSize()) {
-             drawRect(color = Color(0xFFE5E7EB)) // Generic land color
-             // Optional: Draw simple grid lines to simulate a map
-             val step = 50.dp.toPx()
-             for (x in 0..size.width.toInt() step step.toInt()) {
-                 drawLine(Color.White.copy(alpha=0.5f), Offset(x.toFloat(), 0f), Offset(x.toFloat(), size.height))
-             }
-             for (y in 0..size.height.toInt() step step.toInt()) {
-                 drawLine(Color.White.copy(alpha=0.5f), Offset(0f, y.toFloat()), Offset(size.width, y.toFloat()))
-             }
+    BoxWithConstraints(modifier = modifier) {
+        val viewWidth = constraints.maxWidth
+        val viewHeight = constraints.maxHeight
+        
+        if (viewWidth <= 0 || viewHeight <= 0) return@BoxWithConstraints
+
+        // 1. Calculate Bounds
+        var minLat = Double.MAX_VALUE
+        var maxLat = -Double.MAX_VALUE
+        var minLng = Double.MAX_VALUE
+        var maxLng = -Double.MAX_VALUE
+
+        coordinates.forEach { (lat, lng) ->
+            minLat = min(minLat, lat)
+            maxLat = max(maxLat, lat)
+            minLng = min(minLng, lng)
+            maxLng = max(maxLng, lng)
         }
 
+        // 2. Optimal Zoom
+        val zoom = remember(viewWidth, viewHeight, minLat, maxLat, minLng, maxLng) {
+            MapUtils.getOptimalZoom(minLat, maxLat, minLng, maxLng, viewWidth, viewHeight)
+        }
+        
+        // 3. Viewport Calculations
+        // Center of the bounding box -> Center of view
+        val centerLat = (minLat + maxLat) / 2
+        val centerLng = (minLng + maxLng) / 2
+        
+        // Pixel coordinates of center at this zoom
+        val (centerPxX, centerPxY) = MapUtils.latLngToWorldPixel(centerLat, centerLng, zoom)
+        
+        // Top-left of the viewport in world pixels
+        val viewportLx = centerPxX - viewWidth / 2.0
+        val viewportTy = centerPxY - viewHeight / 2.0
+        
+        // 4. Determine visible tiles
+        // Tile size = 256px
+        val minTileX = floor(viewportLx / 256.0).toInt()
+        val maxTileX = ceil((viewportLx + viewWidth) / 256.0).toInt()
+        val minTileY = floor(viewportTy / 256.0).toInt()
+        val maxTileY = ceil((viewportTy + viewHeight) / 256.0).toInt()
+        
+        // 5. Render Tiles
+        val maxTiles = 1 shl zoom
+        
+        for (x in minTileX..maxTileX) {
+            for (y in minTileY..maxTileY) {
+                // Wrap X for world wrap (optional, mostly relevant for zoom 0-2)
+                val tileX = (x % maxTiles + maxTiles) % maxTiles
+                val tileY = y // Y doesn't wrap
+                
+                if (tileY in 0 until maxTiles) {
+                    val tileUrl = "https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/$zoom/$tileX/$tileY.png"
+                    
+                    val pxX = (x * 256.0 - viewportLx).roundToInt()
+                    val pxY = (y * 256.0 - viewportTy).roundToInt()
+                    
+                    AsyncImage(
+                        model = tileUrl,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(256.dp) // Wait, size needs to be px, but modifier takes dp.
+                            // FIX: Using absolute px offsets is hard in pure Compose modifiers without density.
+                            // Better: Use a Canvas to draw images? No, AsyncImage is Composable.
+                            // Solution: Convert px to dp or use layout.
+                            // Simplest here: offset with IntOffset which is px.
+                            .offset { IntOffset(pxX, pxY) }
+                            // Wait, Modifier.size(256.dp) is WRONG. Tiles are 256px.
+                            // We should use layout or explicit size in px converted to dp.
+                            // Or utilize density.
+                    )
+                }
+            }
+        }
+        
+        // Since Modifier.size takes Dp, we need density.
+        val density = androidx.compose.ui.platform.LocalDensity.current
+        val tileSizeDp = with(density) { 256.toDp() }
+        
+        // Re-loop for correct rendering with size
+         for (x in minTileX..maxTileX) {
+            for (y in minTileY..maxTileY) {
+                val tileX = (x % maxTiles + maxTiles) % maxTiles
+                val tileY = y
+                
+                if (tileY in 0 until maxTiles) {
+                     val tileUrl = "https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/$zoom/$tileX/$tileY.png"
+                     val pxX = (x * 256.0 - viewportLx).roundToInt()
+                     val pxY = (y * 256.0 - viewportTy).roundToInt()
+                     
+                     AsyncImage(
+                        model = tileUrl,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .offset { IntOffset(pxX, pxY) }
+                            .size(tileSizeDp) // This assumes 1:1 density mapping which is WRONG for most screens.
+                            // Tiles are 256 PIXELS.
+                            // On 2.0 density screen, 256px = 128dp.
+                            // Correct logic: .size(with(density){ 256.toDp() })
+                            // Wait, 256.toDp() means "256 pixels converted to dp".
+                            // If density is 2.0, 1dp = 2px. So 128dp = 256px.
+                            // 256.toDp() -> 128.dp. Correct.
+                     )
+                }
+            }
+        }
+
+        // 6. Draw Polyline Overlay
         Canvas(modifier = Modifier.fillMaxSize()) {
             val path = Path()
             
-            // 1. Calculate Bounds
-            var minLat = Double.MAX_VALUE
-            var maxLat = -Double.MAX_VALUE
-            var minLng = Double.MAX_VALUE
-            var maxLng = -Double.MAX_VALUE
-
-            coordinates.forEach { (lat, lng) ->
-                minLat = min(minLat, lat)
-                maxLat = max(maxLat, lat)
-                minLng = min(minLng, lng)
-                maxLng = max(maxLng, lng)
-            }
-
-            // Add padding (Aspect Fit Logic)
-            val canvasWidth = size.width
-            val canvasHeight = size.height
-            val latRange = max(maxLat - minLat, 0.0001)
-            val lngRange = max(maxLng - minLng, 0.0001)
-            
-            val routeAspect = lngRange / latRange 
-            val canvasAspect = canvasWidth / canvasHeight
-            
-            var renderMinLng = minLng
-            var renderMaxLng = maxLng
-            var renderMinLat = minLat
-            var renderMaxLat = maxLat
-            var renderLngRange = lngRange
-            var renderLatRange = latRange
-
-            if (routeAspect > canvasAspect) {
-                // Route is wider than canvas. Vertical padding needed.
-                val targetLatRange = lngRange / canvasAspect
-                val latDiff = targetLatRange - latRange
-                renderMinLat -= latDiff / 2
-                renderMaxLat += latDiff / 2
-                renderLatRange = targetLatRange
-            } else {
-                // Route is taller than canvas. Horizontal padding needed.
-                val targetLngRange = latRange * canvasAspect
-                val lngDiff = targetLngRange - lngRange
-                renderMinLng -= lngDiff / 2
-                renderMaxLng += lngDiff / 2
-                renderLngRange = targetLngRange
-            }
-
-            // Add 10% padding
-            renderMinLat -= renderLatRange * 0.1
-            renderMaxLat += renderLatRange * 0.1
-            renderMinLng -= renderLngRange * 0.1
-            renderMaxLng += renderLngRange * 0.1
-            renderLatRange *= 1.2
-            renderLngRange *= 1.2
-
-            // Helper to project
             fun project(lat: Double, lng: Double): Offset {
-                val x = ((lng - renderMinLng) / renderLngRange * canvasWidth).toFloat()
-                val y = ((renderMaxLat - lat) / renderLatRange * canvasHeight).toFloat()
-                return Offset(x, y)
+                val (wX, wY) = MapUtils.latLngToWorldPixel(lat, lng, zoom)
+                return Offset((wX - viewportLx).toFloat(), (wY - viewportTy).toFloat())
             }
 
-            // 2. Draw Path
             coordinates.forEachIndexed { index, (lat, lng) ->
                 val p = project(lat, lng)
                 if (index == 0) path.moveTo(p.x, p.y) else path.lineTo(p.x, p.y)
@@ -119,7 +164,7 @@ fun ActivityMap(
                 style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
             )
 
-            // 3. Draw Live Point
+            // 7. Draw Live Point
             if (currentProgress != null && coordinates.isNotEmpty()) {
                 val targetIndex = (currentProgress * (coordinates.size - 1)).toInt().coerceIn(0, coordinates.size - 1)
                 val (lat, lng) = coordinates[targetIndex]

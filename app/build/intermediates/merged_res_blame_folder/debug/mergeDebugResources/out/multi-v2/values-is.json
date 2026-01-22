@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.drawrun.app-mergeDebugResources-53:/values-is/values-is.xml",
+            "outputFile": "com.drawrun.app-mergeDebugResources-55:/values-is/values-is.xml",
             "map": [
                 {
                     "source": "C:\\Users\\lomic\\.gradle\\caches\\8.10.2\\transforms\\3d113e9384d6ceea794526eca0759fbe\\transformed\\jetified-ui-release\\res\\values-is\\values-is.xml",
