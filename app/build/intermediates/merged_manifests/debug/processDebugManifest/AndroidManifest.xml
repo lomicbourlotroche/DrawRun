@@ -21,6 +21,14 @@
     <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE" />
     <uses-permission android:name="android.permission.health.READ_SLEEP" />
     <uses-permission android:name="android.permission.health.READ_HEART_RATE_VARIABILITY" />
+    <uses-permission android:name="android.permission.health.READ_OXYGEN_SATURATION" />
+    <uses-permission android:name="android.permission.health.READ_BLOOD_PRESSURE" />
+    <uses-permission android:name="android.permission.health.READ_BODY_TEMPERATURE" />
+    <uses-permission android:name="android.permission.health.READ_HYDRATION" />
+    <uses-permission android:name="android.permission.health.READ_NUTRITION" />
+    <uses-permission android:name="android.permission.health.READ_WEIGHT" />
+    <uses-permission android:name="android.permission.health.READ_BODY_FAT" />
+    <uses-permission android:name="android.permission.health.READ_HEIGHT" />
     <uses-permission android:name="android.permission.health.READ_EXERCISE_ROUTE" />
 
     <queries>
@@ -41,7 +49,6 @@
         android:icon="@drawable/ic_launcher_vector"
         android:label="DrawRun"
         android:supportsRtl="true"
-        android:testOnly="true"
         android:theme="@style/Theme.DrawRun" >
         <activity
             android:name="com.drawrun.app.MainActivity"
