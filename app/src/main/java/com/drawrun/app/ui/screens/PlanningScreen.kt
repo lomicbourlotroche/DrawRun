@@ -407,7 +407,7 @@ fun PlanningScreen(state: AppState) {
 
                             // Display all exercises
                             for (exercise in session.exercises) {
-                                Column(
+                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(24.dp))
@@ -416,10 +416,36 @@ fun PlanningScreen(state: AppState) {
                                         .padding(20.dp),
                                     verticalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    var showEducationDialog by remember { mutableStateOf(false) }
+                                    
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
                                         Icon(Icons.Default.Waves, contentDescription = null, tint = Color(0xFF0EA5E9), modifier = Modifier.size(16.dp))
                                         Text(exercise.type.uppercase(), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black, color = Color(0xFF0EA5E9))
                                         Text("${exercise.distance}m", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                                        
+                                        // Education icon for drills
+                                        if (exercise.type.contains("Éducatifs", ignoreCase = true)) {
+                                            IconButton(
+                                                onClick = { showEducationDialog = true },
+                                                modifier = Modifier.size(24.dp)
+                                            ) {
+                                                Icon(
+                                                    Icons.Default.School,
+                                                    contentDescription = "Voir les éducatifs",
+                                                    tint = Color(0xFF0EA5E9),
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            }
+                                        }
+                                    }
+                                    
+                                    if (showEducationDialog) {
+                                        com.drawrun.app.ui.components.SwimEducationDialog(
+                                            onDismiss = { showEducationDialog = false }
+                                        )
                                     }
                                     
                                     Text(

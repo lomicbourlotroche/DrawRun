@@ -1,15 +1,225 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DrawRun ⚡ | Dominez vos limites</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Inter:wght@100..900&display=swap" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DrawRun ⚡ | Dominez vos limites</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <div class="logo-icon">⚡</div>
+                <span class="logo-text">DRAW<span class="highlight">RUN</span></span>
+            </div>
+            <div class="nav-links">
+                <a href="https://github.com/lomicbourlotroche/DrawRun" target="_blank" rel="noopener" class="btn-link">
+                    <svg width="20px" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    GitHub
+                </a>
+                <a href="./DrawRun.apk" download="DrawRun.apk" class="btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    APK
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="badge">
+                <span class="sparkle">✨</span>
+                <span>v3.42 Elite • ScienceEngine™</span>
+            </div>
+            
+            <h1 class="hero-title">
+                DOMINEZ VOS<br>
+                <span class="gradient-text">LIMITES</span>
+            </h1>
+            
+            <p class="hero-subtitle">
+                L'application de performance ultime intégrant le moteur
+                <span class="highlight-text">Jack Daniels VDOT V6.4</span> et
+                <span class="highlight-text">15+ métriques avancées</span>.
+                Une précision chirurgicale pour vos entraînements.
+            </p>
+            
+            <div class="hero-buttons">
+                <a href="./DrawRun.apk" download="DrawRun.apk" class="btn-hero">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Télécharger DrawRun
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="arrow"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </a>
+                <a href="https://github.com/lomicbourlotroche/DrawRun" target="_blank" rel="noopener" class="btn-secondary">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    Code Source
+                </a>
+            </div>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">15+</div>
+                    <div class="stat-label">Métriques</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <div class="stat-value">99%</div>
+                    <div class="stat-label">Précision</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <div class="stat-value">TSS</div>
+                    <div class="stat-label">Temps Réel</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-tag">Ingénierie de pointe</p>
+                <h2 class="section-title">UN ÉCOSYSTÈME<br>SANS COMPROMIS</h2>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3>ScienceEngine™</h3>
+                    <p>15+ métriques avancées : TSS, TRIMP, NP, Age Grading, W', RAI, profils athlétiques.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Périodisation 3:1</h3>
+                    <p>Gestion automatisée avec 3 semaines de progression et 1 de décharge.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Health Connect</h3>
+                    <p>HRV, sommeil et pouls au repos pour analyse de disponibilité temps réel.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3>Prédictions</h3>
+                    <p>Marathon, Age Grading WMA, Classification profil (Sprinter/Grimpeur/etc.).</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VDOT Section -->
+    <section class="vdot-section">
+        <div class="container">
+            <div class="vdot-grid">
+                <div class="vdot-content">
+                    <h2 class="vdot-title">
+                        LA SCIENCE<br>DERRIÈRE LA<br>
+                        <span class="highlight-text">VITESSE</span>
+                    </h2>
+                    <p class="vdot-description">
+                        Le VDOT n'est pas qu'un chiffre. C'est l'essence de votre efficacité running.
+                        DrawRun analyse chaque foulée pour affiner votre profil physiologique.
+                    </p>
+                    <ul class="vdot-features">
+                        <li>
+                            <span class="check">✓</span>
+                            <div>
+                                <strong>Zones Personnalisées</strong>
+                                <p>5 zones d'entraînement calculées sur votre VDOT unique.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="check">✓</span>
+                            <div>
+                                <strong>TSS en Temps Réel</strong>
+                                <p>Charge d'entraînement calculée dynamiquement.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="check">✓</span>
+                            <div>
+                                <strong>15+ Métriques Avancées</strong>
+                                <p>Age Grading, W', RAI, Marathon Prediction et plus.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="zones-card">
+                    <h3 class="zones-title">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                        ZONES VDOT
+                    </h3>
+                    <div class="zones-list">
+                        <div class="zone-row">
+                            <div class="zone-label">
+                                <span class="zone-dot" style="background-color: #22C55E;"></span>
+                                <span>EASY (E)</span>
+                            </div>
+                            <span class="zone-value">4:45 - 5:15</span>
+                        </div>
+                        <div class="zone-row">
+                            <div class="zone-label">
+                                <span class="zone-dot" style="background-color: #3B82F6;"></span>
+                                <span>MARATHON (M)</span>
+                            </div>
+                            <span class="zone-value">4:15</span>
+                        </div>
+                        <div class="zone-row">
+                            <div class="zone-label">
+                                <span class="zone-dot" style="background-color: #A855F7;"></span>
+                                <span>THRESHOLD (T)</span>
+                            </div>
+                            <span class="zone-value">3:58</span>
+                        </div>
+                        <div class="zone-row">
+                            <div class="zone-label">
+                                <span class="zone-dot" style="background-color: #EF4444;"></span>
+                                <span>INTERVAL (I)</span>
+                            </div>
+                            <span class="zone-value">3:42</span>
+                        </div>
+                        <div class="zone-row">
+                            <div class="zone-label">
+                                <span class="zone-dot" style="background-color: #F59E0B;"></span>
+                                <span>REPETITION (R)</span>
+                            </div>
+                            <span class="zone-value">3:25</span>
+                        </div>
+                    </div>
+                    <div class="zones-note">
+                        *Basé sur une performance récente au 10km en 39:00.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo-icon">⚡</div>
+                    <span class="logo-text">DRAW<span class="highlight">RUN</span></span>
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com/lomicbourlotroche/DrawRun" target="_blank" rel="noopener">GitHub</a>
+                </div>
+            </div>
+            <div class="footer-copy">
+                © 2026 DrawRun • Powered by ScienceEngine™
+            </div>
+        </div>
+    </footer>
+    
+    <script src="script.js"></script>
+</body>
 </html>

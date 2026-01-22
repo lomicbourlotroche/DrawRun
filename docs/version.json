@@ -1,0 +1,6 @@
+{
+  "version": "3.42",
+  "versionCode": 342,
+  "downloadUrl": "https://lomicbourlotroche.github.io/DrawRun/DrawRun.apk",
+  "releaseNotes": "Performance optimizations:\n• Batched state updates reducing recompositions\n• Improved startup time (<2s)\n• Optimized data sync operations\n• Fixed UI thread blocking issues"
+}

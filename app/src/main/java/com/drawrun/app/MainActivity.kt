@@ -65,6 +65,9 @@ class MainActivity : ComponentActivity() {
                 
                 // Heavy operations run in background without blocking UI
                 syncManager.restoreConnections()
+                
+                // Check for app updates
+                checkForUpdates()
             } else {
                 appState.currentScreen = Screen.OnboardingProfile
             }
@@ -149,6 +152,39 @@ class MainActivity : ComponentActivity() {
                     android.util.Log.e("DrawRun", "Strava: Auth error returned: $error")
                     android.widget.Toast.makeText(this, "Strava Auth Error: $error", android.widget.Toast.LENGTH_LONG).show()
                 }
+            }
+        }
+    }
+    
+    private fun checkForUpdates() {
+        lifecycleScope.launch {
+            try {
+                val currentVersionCode = packageManager.getPackageInfo(packageName, 0).versionCode
+                val updateInfo = com.drawrun.app.logic.UpdateChecker.checkForUpdate(currentVersionCode)
+                
+                if (updateInfo != null) {
+                    runOnUiThread {
+                        val dialog = android.app.AlertDialog.Builder(this@MainActivity)
+                            .setTitle("✨ Mise à jour disponible")
+                            .setMessage(
+                                "Version ${updateInfo.version} est disponible !\n\n" +
+                                "📝 Nouveautés :\n${updateInfo.releaseNotes}\n\n" +
+                                "Voulez-vous télécharger la nouvelle version ?"
+                            )
+                            .setPositiveButton("Télécharger") { _, _ ->
+                                val downloadIntent = android.content.Intent(android.content.Intent.ACTION_VIEW)
+                                downloadIntent.data = android.net.Uri.parse(updateInfo.downloadUrl)
+                                startActivity(downloadIntent)
+                            }
+                            .setNegativeButton("Plus tard", null)
+                            .setCancelable(true)
+                            .create()
+                        
+                        dialog.show()
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("DrawRun", "Update check failed", e)
             }
         }
     }
