@@ -132,20 +132,23 @@ class AppState {
         rai ?: (vdot * 1.05)
     }
 
+    // Cached analysis of all activities
+    val activityInsights by derivedStateOf {
+        com.drawrun.app.logic.ActivityAnalyzer.analyzeActivities(activities)
+    }
+
     val vdot by derivedStateOf {
-        // Calculate VDOT from the latest 'run' activity if available
-        val latestRun = activities.firstOrNull { it.type == "run" }
-        if (latestRun != null) {
-            // Parse distance (e.g. "5.2km") and date/time not available in ActivityItem simple model?
-            // ActivityItem has 'dist' string. We assume a duration or speed?
-            // Simulating parsing or using placeholder logic since time isn't in ActivityItem yet.
-            // For now, let's assume average speed if we can parse it, or fallback.
-            // Wait, ActivityItem needs duration! I will assume 'load' implies intensity?
-            // To do this properly, ActivityItem should have duration.
-            // Fallback: Use VMA converted to VDOT
-            PerformanceAnalyzer.calculateVDOT(10000.0, 50.0) // Placeholder: 10k in 50min
-        } else {
-            0.0
+        // Use the best VDOT found in history (Global VDOT)
+        activityInsights.estimatedVDOT ?: run {
+            // Fallback: Estimate VDOT from VMA if available
+            if (vma > 0) {
+                 // Rough estimation: Run 5km at 90% VMA
+                 val speed5k = vma * 0.90 // km/h
+                 val timeMin = (5.0 / speed5k) * 60.0
+                 PerformanceAnalyzer.calculateVDOT(5000.0, timeMin)
+            } else {
+                30.0 // Default baseline
+            }
         }
     }
 

@@ -93,8 +93,10 @@ object TrainingPlanGenerator {
         return "$minBPM-$maxBPM bpm"
     }
 
-    fun generatePlan(config: PlanConfig): List<WeekPlan> {
-        val vdot = calculateVDOT(config.raceDistance, config.minutes + config.seconds / 60.0)
+    fun generatePlan(config: PlanConfig, forcedVdot: Double? = null): List<WeekPlan> {
+        // Use forced (global) VDOT if provided and valid (> 20), otherwise calculate from race goal
+        val vdot = if (forcedVdot != null && forcedVdot > 20.0) forcedVdot 
+                   else calculateVDOT(config.raceDistance, config.minutes + config.seconds / 60.0)
         
         val zones = if (config.method == "vdot") {
             mapOf(
@@ -142,17 +144,29 @@ object TrainingPlanGenerator {
 
             fun generateDetails(type: String, dist: Double, workout: Workout? = null): List<Detail> {
                 val targetValue = zones[type] ?: "--"
+                val ePace = zones["E"] ?: "--"
+                val unit = zones["unit"] ?: ""
+                
                 return if (workout != null) {
+                    val warmupDist = 3.0 // Approx 20 min
+                    val cooldownDist = 2.0 // Approx 10-15 min
+                    
                     listOf(
-                        Detail("Préparation", "15 min progressif + gammes"),
-                        Detail("Cœur", "${workout.main} @ $targetValue ${zones["unit"]}", true),
-                        Detail("Récupération", workout.rec),
-                        Detail("Cooldown", "10 min retour calme")
+                        Detail("Échauffement", "3km progressif @ $ePace $unit", false),
+                        Detail("Gammes", "5 min éducatifs (Montées de genoux, talons-fesses)", false),
+                        Detail("Cœur de séance", "${workout.main} @ $targetValue $unit", true),
+                        Detail("Récupération", workout.rec, false),
+                        Detail("Retour au calme", "2km souple @ $ePace $unit", false)
                     )
                 } else {
+                    val comment = when(type) {
+                        "L" -> "Hydratation toutes les 20 min."
+                        "M" -> "Allure spécifique marathon. Régularité clé."
+                        else -> "Maintenir une aisance respiratoire totale."
+                    }
                     listOf(
-                        Detail("Objectif", "%.1fkm en endurance @ $targetValue %s".format(dist, zones["unit"]), true),
-                        Detail("Note Coach", "Maintenir une posture droite et des bras relâchés.")
+                        Detail("Objectif", "%.1fkm continu @ $targetValue $unit".format(dist), true),
+                        Detail("Conseil Coach", comment)
                     )
                 }
             }

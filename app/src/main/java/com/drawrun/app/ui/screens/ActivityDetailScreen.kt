@@ -135,11 +135,51 @@ fun ActivityDetailScreen(state: AppState, syncManager: com.drawrun.app.logic.Dat
                             } else null
 
                             if (act.mapPolyline != null && act.mapPolyline.isNotEmpty()) {
+                                // Calculate Heatmap Colors if streams available
+                                val heatmapColors = remember(streams) {
+                                    if (streams != null && (streams.pace != null || streams.power != null)) {
+                                        val data = if (act.type == "bike") streams.power?.map { it.toDouble() } else streams.pace
+                                        if (data != null && data.isNotEmpty()) {
+                                             val min = data.minOrNull() ?: 0.0
+                                             val max = data.maxOrNull()?.coerceAtLeast(min + 0.1) ?: 1.0
+                                             val range = max - min
+                                             
+                                             data.map { value ->
+                                                 val ratio = ((value - min) / range).coerceIn(0.0, 1.0).toFloat()
+                                                 // Gradient: Green (Easy) -> Yellow -> Red (Hard) for HR/Power
+                                                 // For Pace: Fast is Low value? Pace is usually min/km. Lower is faster/harder.
+                                                 
+                                                 if (act.type == "bike") {
+                                                     // Higher Power = Harder = Red
+                                                     androidx.compose.ui.graphics.lerp(
+                                                         androidx.compose.ui.graphics.lerp(Color(0xFF22C55E), Color(0xFFF59E0B), ratio),
+                                                         Color(0xFFEF4444),
+                                                         ratio
+                                                     )
+                                                 } else {
+                                                     // Pace: Lower value (Faster) = Harder = Red
+                                                     // value is in m/s usually from streams? No, streams.pace in ActivityStream might be raw.
+                                                     // Assuming Stream is numeric pace or speed. 
+                                                     // If pace (min/km), lower is red.
+                                                     // Let's assume standard behavior: Fast = Red.
+                                                     val speedRatio = 1f - ratio // Invert for Pace (Lower = Faster)
+                                                     androidx.compose.ui.graphics.lerp(
+                                                         androidx.compose.ui.graphics.lerp(Color(0xFF22C55E), Color(0xFFF59E0B), speedRatio),
+                                                         Color(0xFFEF4444),
+                                                         speedRatio
+                                                     )
+                                                 }
+                                             }
+                                        } else null
+                                    } else null
+                                }
+
                                 com.drawrun.app.ui.components.ActivityMap(
                                     polyline = act.mapPolyline,
                                     modifier = Modifier.fillMaxSize().padding(16.dp),
                                     lineColor = if (act.type == "run") Color(0xFFFF3B30) else if (act.type == "bike") Color(0xFFF59E0B) else Color(0xFF007AFF),
-                                    currentProgress = mapProgress
+                                    currentProgress = mapProgress,
+                                    pointColors = heatmapColors
                                 )
                             } else {
                                 Icon(

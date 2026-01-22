@@ -229,16 +229,18 @@ class DataSyncManager(val context: Context, val state: AppState) {
             }
 
             try {
-                val sleepRecords = healthConnectManager.readSleepSessions(endTime.minus(24, ChronoUnit.HOURS), endTime)
-                val totalSleepMinutes = sleepRecords.sumOf { 
-                    ChronoUnit.MINUTES.between(it.startTime, it.endTime)
-                }
-                withContext(Dispatchers.Main) {
-                    if (totalSleepMinutes > 0) {
+                // Look back 48 hours to ensure we catch the last sleep session even if synced late
+                val recentSleep = healthConnectManager.readSleepSessions(endTime.minus(48, ChronoUnit.HOURS), endTime)
+                    .sortedByDescending { it.endTime }
+                    .firstOrNull() // Take the most recent sleep session
+
+                if (recentSleep != null) {
+                    val totalSleepMinutes = ChronoUnit.MINUTES.between(recentSleep.startTime, recentSleep.endTime)
+                    withContext(Dispatchers.Main) {
                         state.sleepDuration = "%dh%02d".format(totalSleepMinutes / 60, totalSleepMinutes % 60)
                         state.sleepScore = (totalSleepMinutes.toFloat() / 480f * 100).coerceAtMost(100f).toInt().toString()
-                        android.util.Log.d("DrawRun", "Health Connect: Synced Sleep = ${totalSleepMinutes}min")
                     }
+                    android.util.Log.d("DrawRun", "Health Connect: Synced Sleep = ${totalSleepMinutes}min from ${recentSleep.startTime}")
                 }
             } catch (e: Exception) { 
                 android.util.Log.e("DrawRun", "Health Connect: Sleep sync failed", e)

@@ -106,8 +106,10 @@ object ActivityAnalyzer {
         
         val recentRuns = runs.filter { run ->
             try {
-                val runDate = LocalDate.parse(run.date)
-                runDate.isAfter(twelveWeeksAgo) && runDate.isBefore(today.plusDays(1))
+                val runDate = safeDateParse(run.date)
+                if (runDate != null) {
+                    runDate.isAfter(twelveWeeksAgo) && runDate.isBefore(today.plusDays(1))
+                } else false
             } catch (e: Exception) {
                 false
             }
@@ -122,24 +124,36 @@ object ActivityAnalyzer {
     }
     
     private fun estimateVDOT(bestTimes: Map<Double, BestPerformance>): Double? {
-        // Prefer 10km, fallback to 5km
-        val performance = bestTimes[10000.0] ?: bestTimes[5000.0] ?: return null
+        // Calculate VDOT for each best time and find the maximum (Global Best VDOT)
+        if (bestTimes.isEmpty()) return null
         
-        return PerformanceAnalyzer.calculateVDOT(
-            performance.distance * 1000, // convert to meters
-            performance.timeSeconds / 60.0 // convert to minutes
-        )
+        var maxVdot = 0.0
+        
+        bestTimes.values.forEach { performance ->
+            val vdot = PerformanceAnalyzer.calculateVDOT(
+                performance.distance * 1000, // convert to meters
+                performance.timeSeconds / 60.0 // convert to minutes
+            )
+            if (vdot > maxVdot) {
+                maxVdot = vdot
+            }
+        }
+        
+        return if (maxVdot > 0) maxVdot else null
     }
     
     // Helper functions
     private fun parseDistance(distStr: String): Double {
-        return distStr.replace("km", "").trim().toDoubleOrNull() ?: 0.0
+        // Handle "5,2km" or "5.2km"
+        val clean = distStr.replace("km", "").replace(",", ".").trim()
+        return clean.toDoubleOrNull() ?: 0.0
     }
     
     private fun parsePaceToSeconds(paceStr: String): Double {
-        // Format: "5:30 /km" -> 330 seconds
+        // Format: "5:30 /km" or "5:30"
         try {
-            val parts = paceStr.replace("/km", "").trim().split(":")
+            val clean = paceStr.replace("/km", "").trim()
+            val parts = clean.split(":")
             if (parts.size == 2) {
                 val min = parts[0].toIntOrNull() ?: 0
                 val sec = parts[1].toIntOrNull() ?: 0
@@ -163,9 +177,25 @@ object ActivityAnalyzer {
                     val min = parts[0].toIntOrNull() ?: 0
                     val sec = parts[1].toIntOrNull() ?: 0
                     return (min * 60 + sec).toDouble()
+                } else if (parts.size == 3) {
+                     val h = parts[0].toIntOrNull() ?: 0
+                     val m = parts[1].toIntOrNull() ?: 0
+                     val s = parts[2].toIntOrNull() ?: 0
+                     return (h * 3600 + m * 60 + s).toDouble()
                 }
             }
         } catch (e: Exception) {}
         return 0.0
     }
+    
+    private fun safeDateParse(dateStr: String): LocalDate? {
+        // Handle "2024-01-20" or "2024-01-20T10:00:00Z"
+        try {
+            if (dateStr.isBlank()) return null
+            val cleanDate = dateStr.substringBefore("T").trim()
+            return LocalDate.parse(cleanDate)
+        } catch (e: Exception) {
+            return null
+    }
+}
 }

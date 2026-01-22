@@ -85,6 +85,13 @@ class MainActivity : ComponentActivity() {
                     
                     // Restore connections and sync data
                     rememberedSyncManager.restoreConnections()
+                    
+                    // Restore Training Plan
+                    val savedPlan = com.drawrun.app.data.PlanRepository.loadPlan(this@MainActivity)
+                    if (savedPlan != null) {
+                        rememberedAppState.generatedRunPlan = savedPlan.first
+                        rememberedAppState.runPlanObjective = savedPlan.second
+                    }
                 } else {
                     rememberedAppState.currentScreen = Screen.OnboardingProfile
                 }

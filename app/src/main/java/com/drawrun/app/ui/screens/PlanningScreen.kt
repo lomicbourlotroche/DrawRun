@@ -23,7 +23,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.platform.LocalContext
 import com.drawrun.app.*
+import com.drawrun.app.data.PlanRepository
 import com.drawrun.app.ui.components.*
 import com.drawrun.app.logic.TrainingPlanGenerator
 import com.drawrun.app.logic.PerformanceAnalyzer
@@ -31,6 +33,7 @@ import java.time.LocalDate
 
 @Composable
 fun PlanningScreen(state: AppState) {
+    val context = LocalContext.current
     var planningSport by remember { mutableStateOf("run") }
 
     Column(
@@ -157,8 +160,25 @@ fun PlanningScreen(state: AppState) {
                                     )
                                 }
                                 
-                                // Progress Badge
-                                Surface(
+                                // Progress Badge & Delete
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    IconButton(
+                                        onClick = {
+                                            PlanRepository.deletePlan(context)
+                                            state.generatedRunPlan = emptyList()
+                                            state.runPlanObjective = ""
+                                        },
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = "Supprimer le plan",
+                                            tint = MaterialTheme.colorScheme.error.copy(alpha = 0.5f),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+
+                                    Surface(
                                     color = when {
                                         overallProgress >= 75 -> Color(0xFF22C55E).copy(alpha = 0.15f)
                                         overallProgress >= 50 -> Color(0xFFF59E0B).copy(alpha = 0.15f)
@@ -193,7 +213,8 @@ fun PlanningScreen(state: AppState) {
                                         )
                                     }
                                 }
-                            }
+                                    }
+                                }
                             
                             // Progress Bar
                             LinearProgressIndicator(
@@ -269,8 +290,8 @@ fun PlanningScreen(state: AppState) {
                     var showPlanSetup by remember { mutableStateOf(false) }
 
                     if (showPlanSetup) {
-                        // Update key to state.activities to ensure reactivity when activities change
-                        val insights = remember(state.activities) { com.drawrun.app.logic.ActivityAnalyzer.analyzeActivities(state.activities) }
+                        // Use cached insights from AppState
+                        val insights = state.activityInsights
                         
                         // Default values based on insights (e.g. improve 10k by 2%)
                         val defaultDist = 10000.0
@@ -286,7 +307,10 @@ fun PlanningScreen(state: AppState) {
                                 // Calculate total minutes
                                 val totalMin = h * 60 + m + s / 60.0
                                 
-                                val peakVol = com.drawrun.app.logic.PerformanceAnalyzer.calculatePeakWeeklyVolume(state.activities)
+                                val currentPeak = com.drawrun.app.logic.PerformanceAnalyzer.calculatePeakWeeklyVolume(state.activities)
+                                val avgVol = insights.weeklyAverage
+                                // Target peak should be higher than current average, typically plan peaks at ~130-150% of base
+                                val peakVol = maxOf(currentPeak, avgVol * 1.3, 30.0)
 
                                 // Generate Config
                                 val config = TrainingPlanGenerator.PlanConfig(
@@ -299,8 +323,11 @@ fun PlanningScreen(state: AppState) {
                                 )
                                 
                                 // Generate Call
-                                state.generatedRunPlan = TrainingPlanGenerator.generatePlan(config)
+                                state.generatedRunPlan = TrainingPlanGenerator.generatePlan(config, state.vdot)
                                 state.runPlanObjective = "Objectif: ${(distance/1000).toInt()}km en ${String.format("%d:%02d", h, m)}"
+                                
+                                // Save Plan
+                                PlanRepository.savePlan(context, state.generatedRunPlan, state.runPlanObjective)
                                 
                                 // Also update user stats if needed
                                 showPlanSetup = false

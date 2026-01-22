@@ -606,16 +606,71 @@ fun DailyTrainingSection(state: AppState) {
                 }
             }
 
-            // Physiological Gain
-            if (recommendation.physiologicalGain.isNotBlank()) {
+            // Compliance Check (if activity done today)
+            val todayDate = java.time.LocalDate.now().toString()
+            val todaysActivities = state.activities.filter { it.date == todayDate }
+            // Only show compliance if it was a planned/suggested session (not just "REST")
+            if (todaysActivities.isNotEmpty() && recommendation.type != "REST") {
+                val compliance = CoachAI.calculateCompliance(recommendation, todaysActivities)
+                if (compliance != null) {
+                    Surface(
+                        color = when(compliance.color) {
+                            "green" -> Color(0xFF22C55E).copy(alpha = 0.15f)
+                            "orange" -> Color(0xFFF97316).copy(alpha = 0.15f)
+                            "red" -> Color(0xFFEF4444).copy(alpha = 0.15f)
+                            else -> Color(0xFF3B82F6).copy(alpha = 0.15f)
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(Color.White, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "${compliance.score}%",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Black
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = compliance.feedback.uppercase(),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Black,
+                                    color = when(compliance.color) {
+                                        "green" -> Color(0xFF22C55E)
+                                        "orange" -> Color(0xFFF97316)
+                                        "red" -> Color(0xFFEF4444)
+                                        else -> Color(0xFF3B82F6)
+                                    }
+                                )
+                                Text(
+                                    text = compliance.details,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                                )
+                            }
+                        }
+                    }
+                }
+            } else if (recommendation.physiologicalGain.isNotBlank()) {
                 Surface(
                     color = Color(0xFF3B82F6).copy(alpha = 0.1f),
                     shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
                 ) {
                     Row(
                         modifier = Modifier.padding(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
@@ -739,79 +794,90 @@ fun PmcChart(data: List<PmcDataPoint>) {
                 
                 // Update selected index based on scrub
                 if (scrubX != null) {
-                    val idx = (scrubX!! / width * (data.size - 1)).roundToInt().coerceIn(0, data.size - 1)
+                    val idx = (scrubX!! / width * (data.size - 1)).toInt().coerceIn(0, data.size - 1)
                     selectedIndex = idx
                 }
 
-                // 1. Draw TSB (Bars or Area) - Let's use Area centered on 0
-                val zeroY = height * 0.75f // TSB mostly below, Fitness above? No, let's put 0 at 80% height?
-                // Standard PMC: 
-                // CTL/ATL on Left Axis (0 to Max)
-                // TSB on Right Axis (-Min to +Max)
-                // For simplicity here:
-                // Plot CTL/ATL 0..Max on full height
-                // Plot TSB scaled to e.g. 50% height centered
+                // 1. Draw TSB Area (Yellow)
+                // Normalize TSB to fit in bottom half or overlay? Let's use full height but 0 is at 50%
+                // Actually standard PMC has Load on Left, TSB on Right.
+                // We will scale TSB to use +/- 40 range mapped to bottom 20% to top 80%?
+                // Let's keep it simple: Map TSB [-30, 30] to [height, 0] adjusted.
                 
-                val tsbScale = (height * 0.4f) / maxOf(abs(minTsb), maxTsb)
-                
+                val tsbZeroY = height / 2
+                val tsbScale = height / 100.0 // 100 range
+
                 val tsbPath = Path()
-                tsbPath.moveTo(0f, height/2)
-                
                 data.forEachIndexed { i, pt ->
                     val x = i * stepX
-                    val y = (height/2) - (pt.tsb * tsbScale).toFloat()
-                    if (i==0) tsbPath.moveTo(x, height/2)
-                    tsbPath.lineTo(x, y)
+                    val y = tsbZeroY - (pt.tsb * tsbScale).toFloat()
+                    if (i == 0) tsbPath.moveTo(x, tsbZeroY)
+                    else {
+                        tsbPath.lineTo(x, y)
+                    }
                 }
-                tsbPath.lineTo(width, height/2)
+                // Close path for filling area
+                tsbPath.lineTo(width, tsbZeroY)
+                tsbPath.lineTo(0f, tsbZeroY)
                 tsbPath.close()
-                drawPath(tsbPath, color = Color(0xFFEAB308).copy(alpha = 0.2f), style = Fill) // Yellow for TSB
-
-                // 2. Draw CTL (Fitness) - Blue Line
+                
+                drawPath(tsbPath, color = Color(0xFFF59E0B).copy(alpha = 0.2f))
+                
+                // 2. Draw CTL (Blue Line) - Fitness
+                val loadScale = height / (maxVal * 1.2)
+                
                 val ctlPath = Path()
                 data.forEachIndexed { i, pt ->
                     val x = i * stepX
-                    val y = height - (pt.ctl / maxVal * height).toFloat()
+                    val y = height - (pt.ctl * loadScale).toFloat()
                     if (i == 0) ctlPath.moveTo(x, y) else ctlPath.lineTo(x, y)
                 }
-                drawPath(ctlPath, color = Color(0xFF3B82F6), style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round))
-
-                // 3. Draw ATL (Fatigue) - Red Dashed
+                drawPath(ctlPath, color = Color(0xFF3B82F6), style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round))
+                
+                // 3. Draw ATL (Red Dashed) - Fatigue
                 val atlPath = Path()
                 data.forEachIndexed { i, pt ->
                     val x = i * stepX
-                    val y = height - (pt.atl / maxVal * height).toFloat()
+                    val y = height - (pt.atl * loadScale).toFloat()
                     if (i == 0) atlPath.moveTo(x, y) else atlPath.lineTo(x, y)
                 }
-                drawPath(atlPath, color = Color(0xFFEF4444), style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round, pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)))
-
-                // 4. Scrubber Line
-                val idx = selectedIndex
-                if (idx != null) {
-                    val x = idx * stepX
-                    drawLine(
-                        color = Color.Black.copy(alpha = 0.5f),
-                        start = Offset(x, 0f),
-                        end = Offset(x, height),
-                        strokeWidth = 1.dp.toPx()
-                    )
+                drawPath(
+                    atlPath, 
+                    color = Color(0xFFEF4444), 
+                    style = Stroke(width = 1.5.dp.toPx(), pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f))
+                )
+                
+                // 4. Zero Line for TSB
+                drawLine(
+                    color = Color.Gray.copy(alpha = 0.3f),
+                    start = Offset(0f, tsbZeroY),
+                    end = Offset(width, tsbZeroY),
+                    strokeWidth = 1.dp.toPx()
+                )
+                
+                // 5. Scrub Line & Data Points
+                if (selectedIndex != null) {
+                    val x = selectedIndex!! * stepX
+                    drawLine(Color.White, Offset(x, 0f), Offset(x, height), strokeWidth = 1.dp.toPx())
                     
-                    // Draw dots
-                    val ctlY = height - (data[idx].ctl / maxVal * height).toFloat()
-                    drawCircle(Color(0xFF3B82F6), 4.dp.toPx(), Offset(x, ctlY))
+                    val pt = data[selectedIndex!!]
+                    // TSB Point
+                    drawCircle(Color(0xFFF59E0B), 4.dp.toPx(), Offset(x, tsbZeroY - (pt.tsb * tsbScale).toFloat()))
+                    // CTL Point
+                    drawCircle(Color(0xFF3B82F6), 4.dp.toPx(), Offset(x, height - (pt.ctl * loadScale).toFloat()))
                 }
             }
         }
 
         // Legend
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
             LegendItem("Condition (CTL)", Color(0xFF3B82F6))
             LegendItem("Fatigue (ATL)", Color(0xFFEF4444))
-            LegendItem("Fraîcheur (TSB)", Color(0xFF22C55E))
+            LegendItem("Fraîcheur (TSB)", Color(0xFFF59E0B))
         }
     }
 }

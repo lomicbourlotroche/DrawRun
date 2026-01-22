@@ -43,8 +43,8 @@ object CoachAI {
      * Calculate readiness score based on HRV, sleep quality, and muscle soreness
      */
     fun calculateReadiness(factors: ReadinessFactors): Int {
-        // HRV normalisé (60ms = neutre)
-        val hrvScore = minOf(100, ((factors.hrv / 60.0) * 50).toInt())
+        // HRV based on 60ms baseline for 100%
+        val hrvScore = minOf(100, ((factors.hrv.toDouble() / 60.0) * 100).toInt())
         
         // Sommeil (1-10) -> 0-100
         val sleepScore = factors.sleepQuality * 10
@@ -258,6 +258,19 @@ object CoachAI {
             )
         }
         
+        // Helper to format pace
+        fun fmtPace(type: String): String {
+            val v = state.vdot.toInt()
+            if (v <= 0) return ""
+            return when(type) {
+                "E" -> "(${getPaceFromVDOT(v, TrainingZones.RECOVERY)})"
+                "M" -> "(${getPaceFromVDOT(v, TrainingZones.MARATHON)})"
+                "T" -> "(${getPaceFromVDOT(v, TrainingZones.THRESHOLD)})"
+                "I" -> "(${getPaceFromVDOT(v, TrainingZones.INTERVAL)})"
+                else -> ""
+            }
+        }
+        
         // CASE 3: Optimal Form - Energy System Rotation
         if (lastSessionType == "interval" || lastSessionType == "tempo") {
             // After quality -> Volume
@@ -274,10 +287,10 @@ object CoachAI {
                 isFromPlan = false,
                 duration = duration,
                 structure = listOf(
-                    "15' Échauffement progressif",
-                    "${duration - 25}' Endurance Fondamentale (Zone 2)",
+                    "15' Échauffement progressif ${fmtPace("E")}",
+                    "${duration - 25}' Endurance Fondamentale ${fmtPace("E")}",
                     "6 x 100m Lignes droites (Vitesse technique)",
-                    "10' Retour au calme"
+                    "10' Retour au calme ${fmtPace("E")}"
                 ),
                 targetPace = pace,
                 hrZone = "145-160 bpm",
@@ -300,10 +313,10 @@ object CoachAI {
                     isFromPlan = false,
                     duration = 60,
                     structure = listOf(
-                        "20' Échauffement + Gammes",
-                        "SÉRIE: 6 x 3' à VMA (95-100% FCMax)",
+                        "20' Échauffement + Gammes ${fmtPace("E")}",
+                        "SÉRIE: 6 x 3' à VMA ${fmtPace("I")}",
                         "RÉCUP: 2' trot lent entre les fractions",
-                        "10' Retour au calme"
+                        "10' Retour au calme ${fmtPace("E")}"
                     ),
                     targetPace = pace,
                     hrZone = "175-185 bpm",
@@ -324,10 +337,10 @@ object CoachAI {
                     isFromPlan = false,
                     duration = 55,
                     structure = listOf(
-                        "15' Échauffement",
-                        "BLOC: 2 x 15' au Seuil (88-92% FCMax)",
+                        "15' Échauffement ${fmtPace("E")}",
+                        "BLOC: 2 x 15' au Seuil ${fmtPace("T")}",
                         "RÉCUP: 3' trot entre les blocs",
-                        "10' Retour au calme"
+                        "10' Retour au calme ${fmtPace("E")}"
                     ),
                     targetPace = pace,
                     hrZone = "165-175 bpm",
@@ -337,5 +350,102 @@ object CoachAI {
                 )
             }
         }
+    }
+    data class ComplianceResult(
+        val score: Int, // 0-100
+        val feedback: String,
+        val details: String,
+        val color: String = "green"
+    )
+
+    fun calculateCompliance(
+        recommendation: TrainingRecommendation,
+        activities: List<com.drawrun.app.ActivityItem>
+    ): ComplianceResult? {
+        if (activities.isEmpty()) return null
+        
+        // Summing up activities for the day if split
+        val totalDist = activities.sumOf { 
+            it.dist.replace("km", "").replace(",", ".").toDoubleOrNull() ?: 0.0 
+        }
+        
+        // Extracting Duration from subtitle "50 min" or similar if possible, else approximation
+        // Recommendation has duration input
+        val plannedDuration = recommendation.duration.toDouble()
+        val plannedDist = recommendation.subtitle.substringBefore("km").replace(",", ".").toDoubleOrNull() ?: (plannedDuration / 6.0) // fallback 10km/h
+        
+        // Logic: Compare Distance or Duration
+        val actualDurationMin = activities.sumOf { 
+            // ActivityItem.duration format "45 min" or "1:05:00" or raw string? 
+            // Looking at ActivityAnalyzer.parseDuration, it handles multiple formats.
+            // But here let's assume it's the formatted string.
+            val dur = it.duration
+            val parts = dur.replace("h", ":").split(":")
+            if(parts.size == 3) parts[0].toInt() * 60 + parts[1].toInt() + parts[2].toInt()/60.0
+            else if(parts.size == 2) (parts[0].toInt() * 60 + parts[1].toInt()).toDouble()
+            else dur.replace(Regex("[^0-9]"), "").toDoubleOrNull() ?: 0.0 // Raw minutes or empty
+        }
+
+        // Compliance Factors: Distance & Pace
+        // 1. Volume Compliance
+        val volumeScore = if (plannedDist > 0) {
+            val ratio = totalDist / plannedDist
+            // Optimal: 0.9 to 1.1 => 100%
+            // Penalize under or over
+            when {
+                ratio in 0.9..1.1 -> 100
+                ratio < 0.9 -> (ratio * 100).toInt()
+                else -> maxOf(0, (100 - (ratio - 1.1) * 100).toInt())
+            }
+        } else {
+             // Use duration if distance unknown
+             val ratio = actualDurationMin / plannedDuration
+             when {
+                 ratio in 0.9..1.1 -> 100
+                 ratio < 0.9 -> (ratio * 100).toInt()
+                 else -> maxOf(0, (100 - (ratio - 1.1) * 100).toInt())
+             }
+        }
+
+        // 2. Pace/Intensity Compliance (Only if pace target exists)
+        var paceScore = 100
+        val targetPaceStr = recommendation.targetPace
+        if (targetPaceStr != null && activities.isNotEmpty()) {
+            val targetSec = parsePace(targetPaceStr)
+            val actualPaceStr = activities[0].pace // Take main activity
+            val actualSec = parsePace(actualPaceStr)
+            
+            if (targetSec > 0 && actualSec > 0) {
+                // Determine if faster or slower
+                // Lower sec/km = faster
+                val diffPct = (actualSec - targetSec) / targetSec.toDouble() // + slower, - faster
+                
+                paceScore = if (Math.abs(diffPct) < 0.05) 100 // +/- 5% ok
+                else maxOf(0, (100 - (Math.abs(diffPct) - 0.05) * 500).toInt())
+            }
+        }
+
+        val totalScore = (volumeScore * 0.6 + paceScore * 0.4).toInt()
+
+        val (feedback, color) = when {
+            totalScore >= 90 -> "Excellent !" to "green"
+            totalScore >= 70 -> "Bien respecté" to "blue"
+            totalScore >= 50 -> "Partiellement suivi" to "orange"
+            else -> "Non respecté" to "red"
+        }
+        
+        val details = if (volumeScore < 70) "Volume ajusté par rapport au plan."
+                     else if (paceScore < 70) "Allure différente de la cible."
+                     else "Objectifs de séance atteints."
+
+        return ComplianceResult(totalScore, feedback, details, color)
+    }
+
+    private fun parsePace(pace: String): Int {
+         val clean = pace.replace("/km", "").trim()
+         val parts = clean.split(":")
+         return if (parts.size == 2) {
+             (parts[0].toIntOrNull() ?: 0) * 60 + (parts[1].toIntOrNull() ?: 0)
+         } else 0
     }
 }
