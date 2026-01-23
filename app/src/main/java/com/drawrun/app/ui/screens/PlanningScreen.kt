@@ -90,6 +90,7 @@ fun PlanningScreen(state: AppState) {
         }
 
         var showWorkoutCreator by remember { mutableStateOf(false) }
+        var workoutToEdit by remember { mutableStateOf<CustomRunWorkout?>(null) }
 
         if (planningSport == "run") {
             Box(
@@ -368,6 +369,10 @@ fun PlanningScreen(state: AppState) {
                                              list.remove(workout)
                                              state.savedRunWorkouts = list
                                          },
+                                         onEdit = {
+                                             workoutToEdit = workout
+                                             showWorkoutCreator = true
+                                         },
                                          onExpandToggle = { isExpanded = !isExpanded },
                                          isExpanded = isExpanded
                                      )
@@ -638,6 +643,7 @@ fun SwimPartCard(title: String, content: String, icon: androidx.compose.ui.graph
 fun CustomWorkoutCard(
     workout: CustomRunWorkout,
     onDelete: () -> Unit,
+    onEdit: () -> Unit,
     onExpandToggle: () -> Unit,
     isExpanded: Boolean
 ) {
@@ -695,8 +701,13 @@ fun CustomWorkoutCard(
                     )
                 }
 
-                IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
-                    Icon(Icons.Default.Delete, contentDescription = "Supprimer", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.5f))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
+                        Icon(Icons.Default.Edit, contentDescription = "Modifier", tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
+                    }
+                    IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
+                        Icon(Icons.Default.Delete, contentDescription = "Supprimer", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.5f))
+                    }
                 }
             }
 

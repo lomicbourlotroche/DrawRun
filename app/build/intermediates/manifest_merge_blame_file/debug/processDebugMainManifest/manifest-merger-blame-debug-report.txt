@@ -107,317 +107,316 @@
 50-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:36:9-32
 51        android:supportsRtl="true"
 51-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:37:9-35
-52        android:testOnly="true"
-53        android:theme="@style/Theme.DrawRun" >
-53-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:38:9-45
-54        <activity
-54-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:39:9-64:20
-55            android:name="com.drawrun.app.MainActivity"
-55-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:40:13-41
-56            android:exported="true"
-56-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:41:13-36
-57            android:launchMode="singleTask"
-57-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:42:13-44
-58            android:theme="@style/Theme.DrawRun" >
-58-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:43:13-49
-59            <intent-filter>
-59-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:44:13-47:29
-60                <action android:name="android.intent.action.MAIN" />
-60-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:17-69
-60-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:25-66
-61
-62                <category android:name="android.intent.category.LAUNCHER" />
-62-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:17-77
-62-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:27-74
-63            </intent-filter>
-64
-65            <!-- Strava OAuth Callback -->
-66            <intent-filter>
-66-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:50:13-55:29
-67                <action android:name="android.intent.action.VIEW" />
-67-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:51:17-69
-67-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:51:25-66
-68
-69                <category android:name="android.intent.category.DEFAULT" />
-69-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:52:17-76
-69-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:52:27-73
-70                <category android:name="android.intent.category.BROWSABLE" />
-70-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:53:17-78
-70-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:53:27-75
-71
-72                <data
-72-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:54:17-81
-73                    android:host="strava_callback"
-73-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:54:48-78
-74                    android:scheme="drawrun" />
-74-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:54:23-47
-75            </intent-filter>
-76            <!-- localhost Callback (Standard) -->
-77            <intent-filter>
-77-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:57:13-63:29
-78                <action android:name="android.intent.action.VIEW" />
-78-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:51:17-69
-78-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:51:25-66
-79
-80                <category android:name="android.intent.category.DEFAULT" />
-80-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:52:17-76
-80-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:52:27-73
-81                <category android:name="android.intent.category.BROWSABLE" />
-81-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:53:17-78
-81-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:53:27-75
-82
-83                <data
-83-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:54:17-81
-84                    android:host="localhost"
-84-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:54:48-78
-85                    android:pathPrefix="/strava_callback"
-85-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:61:70-107
-86                    android:scheme="http" />
-86-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:54:23-47
-87                <data
-87-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:54:17-81
-88                    android:host="localhost"
-88-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:54:48-78
-89                    android:pathPrefix="/strava_callback"
-89-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:61:70-107
-90                    android:scheme="https" />
-90-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:54:23-47
-91            </intent-filter>
-92        </activity>
-93
-94        <activity-alias
-94-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:105:9-116:26
-95            android:name="com.drawrun.app.MainActivityLight"
-95-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:106:13-46
-96            android:enabled="false"
-96-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:107:13-36
-97            android:exported="true"
-97-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:108:13-36
-98            android:icon="@drawable/ic_launcher_light"
-98-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:109:13-55
-99            android:label="DrawRun"
-99-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:110:13-36
-100            android:targetActivity="com.drawrun.app.MainActivity" >
-100-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:111:13-51
-101            <intent-filter>
-101-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:44:13-47:29
-102                <action android:name="android.intent.action.MAIN" />
-102-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:17-69
-102-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:25-66
-103
-104                <category android:name="android.intent.category.LAUNCHER" />
-104-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:17-77
-104-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:27-74
-105            </intent-filter>
-106        </activity-alias>
-107        <activity-alias
-107-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:92:9-103:26
-108            android:name="com.drawrun.app.MainActivityRuby"
-108-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:93:13-45
-109            android:enabled="false"
-109-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:94:13-36
-110            android:exported="true"
-110-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:95:13-36
-111            android:icon="@drawable/ic_launcher_ruby"
-111-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:96:13-54
-112            android:label="DrawRun"
-112-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:97:13-36
-113            android:targetActivity="com.drawrun.app.MainActivity" >
-113-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:98:13-51
-114            <intent-filter>
-114-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:44:13-47:29
-115                <action android:name="android.intent.action.MAIN" />
-115-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:17-69
-115-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:25-66
-116
-117                <category android:name="android.intent.category.LAUNCHER" />
-117-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:17-77
-117-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:27-74
-118            </intent-filter>
-119        </activity-alias>
-120        <activity-alias
-120-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:79:9-90:26
-121            android:name="com.drawrun.app.MainActivityEmerald"
-121-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:80:13-48
-122            android:enabled="false"
-122-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:81:13-36
-123            android:exported="true"
-123-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:82:13-36
-124            android:icon="@drawable/ic_launcher_emerald"
-124-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:83:13-57
-125            android:label="DrawRun"
-125-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:84:13-36
-126            android:targetActivity="com.drawrun.app.MainActivity" >
-126-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:85:13-51
-127            <intent-filter>
-127-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:44:13-47:29
-128                <action android:name="android.intent.action.MAIN" />
-128-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:17-69
-128-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:25-66
-129
-130                <category android:name="android.intent.category.LAUNCHER" />
-130-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:17-77
-130-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:27-74
-131            </intent-filter>
-132        </activity-alias>
-133        <activity-alias
-133-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:66:9-77:26
-134            android:name="com.drawrun.app.MainActivityOnyx"
-134-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:67:13-45
-135            android:enabled="false"
-135-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:68:13-36
-136            android:exported="true"
-136-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:69:13-36
-137            android:icon="@drawable/ic_launcher_onyx"
-137-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:70:13-54
-138            android:label="DrawRun"
-138-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:71:13-36
-139            android:targetActivity="com.drawrun.app.MainActivity" >
-139-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:72:13-51
-140            <intent-filter>
-140-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:44:13-47:29
-141                <action android:name="android.intent.action.MAIN" />
-141-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:17-69
-141-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:25-66
-142
-143                <category android:name="android.intent.category.LAUNCHER" />
-143-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:17-77
-143-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:27-74
-144            </intent-filter>
-145        </activity-alias>
-146
-147        <!-- Health Connect Rationale (Privacy Policy) - MANDATORY -->
-148        <activity
-148-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:120:9-127:20
-149            android:name="com.drawrun.app.PermissionsRationaleActivity"
-149-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:121:13-57
-150            android:exported="true"
-150-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:122:13-36
-151            android:label="Politique de Confidentialité" >
-151-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:123:13-57
-152            <intent-filter>
-152-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:124:13-126:29
-153                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
-153-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:125:17-92
-153-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:125:25-89
-154            </intent-filter>
-155        </activity> <!-- Android 14+ Rationale Alias -->
-156        <activity-alias
-156-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:130:9-139:26
-157            android:name="com.drawrun.app.ViewPermissionUsageActivity"
-157-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:131:13-55
-158            android:exported="true"
-158-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:132:13-36
-159            android:permission="android.permission.START_VIEW_PERMISSION_USAGE"
-159-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:134:13-80
-160            android:targetActivity="com.drawrun.app.PermissionsRationaleActivity" >
-160-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:133:13-67
-161            <intent-filter>
-161-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:135:13-138:29
-162                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
-162-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:136:17-86
-162-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:136:25-83
-163
-164                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
-164-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:137:17-87
-164-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:137:27-84
-165            </intent-filter>
-166        </activity-alias>
-167
-168        <service
-168-->[androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:24:9-32:19
-169            android:name="androidx.health.platform.client.impl.sdkservice.HealthDataSdkService"
-169-->[androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:25:13-96
-170            android:enabled="true"
-170-->[androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:26:13-35
-171            android:exported="true" >
-171-->[androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:27:13-36
-172            <intent-filter>
-172-->[androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:29:13-31:29
-173                <action android:name="androidx.health.platform.client.ACTION_BIND_SDK_SERVICE" />
-173-->[androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:30:17-98
-173-->[androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:30:25-95
-174            </intent-filter>
-175        </service>
-176
-177        <activity
-177-->[androidx.compose.ui:ui-tooling-android:1.5.4] C:\Users\lomic\.gradle\caches\8.10.2\transforms\34cb6146333b4979903ef89bb0c3fd9c\transformed\jetified-ui-tooling-release\AndroidManifest.xml:23:9-25:39
-178            android:name="androidx.compose.ui.tooling.PreviewActivity"
-178-->[androidx.compose.ui:ui-tooling-android:1.5.4] C:\Users\lomic\.gradle\caches\8.10.2\transforms\34cb6146333b4979903ef89bb0c3fd9c\transformed\jetified-ui-tooling-release\AndroidManifest.xml:24:13-71
-179            android:exported="true" />
-179-->[androidx.compose.ui:ui-tooling-android:1.5.4] C:\Users\lomic\.gradle\caches\8.10.2\transforms\34cb6146333b4979903ef89bb0c3fd9c\transformed\jetified-ui-tooling-release\AndroidManifest.xml:25:13-36
-180        <activity
-180-->[androidx.compose.ui:ui-test-manifest:1.5.4] C:\Users\lomic\.gradle\caches\8.10.2\transforms\3ebe82da5284a1834a8669608930f034\transformed\jetified-ui-test-manifest-1.5.4\AndroidManifest.xml:23:9-25:39
-181            android:name="androidx.activity.ComponentActivity"
-181-->[androidx.compose.ui:ui-test-manifest:1.5.4] C:\Users\lomic\.gradle\caches\8.10.2\transforms\3ebe82da5284a1834a8669608930f034\transformed\jetified-ui-test-manifest-1.5.4\AndroidManifest.xml:24:13-63
-182            android:exported="true" />
-182-->[androidx.compose.ui:ui-test-manifest:1.5.4] C:\Users\lomic\.gradle\caches\8.10.2\transforms\3ebe82da5284a1834a8669608930f034\transformed\jetified-ui-test-manifest-1.5.4\AndroidManifest.xml:25:13-36
-183
-184        <provider
-184-->[androidx.emoji2:emoji2:1.4.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\869bbb72343c982b769a56637587b2ef\transformed\jetified-emoji2-1.4.0\AndroidManifest.xml:24:9-32:20
-185            android:name="androidx.startup.InitializationProvider"
-185-->[androidx.emoji2:emoji2:1.4.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\869bbb72343c982b769a56637587b2ef\transformed\jetified-emoji2-1.4.0\AndroidManifest.xml:25:13-67
-186            android:authorities="com.drawrun.app.androidx-startup"
-186-->[androidx.emoji2:emoji2:1.4.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\869bbb72343c982b769a56637587b2ef\transformed\jetified-emoji2-1.4.0\AndroidManifest.xml:26:13-68
-187            android:exported="false" >
-187-->[androidx.emoji2:emoji2:1.4.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\869bbb72343c982b769a56637587b2ef\transformed\jetified-emoji2-1.4.0\AndroidManifest.xml:27:13-37
-188            <meta-data
-188-->[androidx.emoji2:emoji2:1.4.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\869bbb72343c982b769a56637587b2ef\transformed\jetified-emoji2-1.4.0\AndroidManifest.xml:29:13-31:52
-189                android:name="androidx.emoji2.text.EmojiCompatInitializer"
-189-->[androidx.emoji2:emoji2:1.4.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\869bbb72343c982b769a56637587b2ef\transformed\jetified-emoji2-1.4.0\AndroidManifest.xml:30:17-75
-190                android:value="androidx.startup" />
-190-->[androidx.emoji2:emoji2:1.4.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\869bbb72343c982b769a56637587b2ef\transformed\jetified-emoji2-1.4.0\AndroidManifest.xml:31:17-49
-191            <meta-data
-191-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\f9d5ecc9859dbbc49567f45abda0e86c\transformed\jetified-lifecycle-process-2.7.0\AndroidManifest.xml:29:13-31:52
-192                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
-192-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\f9d5ecc9859dbbc49567f45abda0e86c\transformed\jetified-lifecycle-process-2.7.0\AndroidManifest.xml:30:17-78
-193                android:value="androidx.startup" />
-193-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\f9d5ecc9859dbbc49567f45abda0e86c\transformed\jetified-lifecycle-process-2.7.0\AndroidManifest.xml:31:17-49
-194            <meta-data
-194-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:29:13-31:52
-195                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
-195-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:30:17-85
-196                android:value="androidx.startup" />
-196-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:31:17-49
-197        </provider>
-198
-199        <receiver
-199-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:34:9-52:20
-200            android:name="androidx.profileinstaller.ProfileInstallReceiver"
-200-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:35:13-76
-201            android:directBootAware="false"
-201-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:36:13-44
-202            android:enabled="true"
-202-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:37:13-35
-203            android:exported="true"
-203-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:38:13-36
-204            android:permission="android.permission.DUMP" >
-204-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:39:13-57
-205            <intent-filter>
-205-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:40:13-42:29
-206                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
-206-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:41:17-91
-206-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:41:25-88
-207            </intent-filter>
-208            <intent-filter>
-208-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:43:13-45:29
-209                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
-209-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:44:17-85
-209-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:44:25-82
-210            </intent-filter>
-211            <intent-filter>
-211-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:46:13-48:29
-212                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
-212-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:47:17-88
-212-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:47:25-85
-213            </intent-filter>
-214            <intent-filter>
-214-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:49:13-51:29
-215                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
-215-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:50:17-95
-215-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:50:25-92
-216            </intent-filter>
-217        </receiver>
-218    </application>
-219
-220</manifest>
+52        android:theme="@style/Theme.DrawRun" >
+52-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:38:9-45
+53        <activity
+53-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:39:9-64:20
+54            android:name="com.drawrun.app.MainActivity"
+54-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:40:13-41
+55            android:exported="true"
+55-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:41:13-36
+56            android:launchMode="singleTask"
+56-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:42:13-44
+57            android:theme="@style/Theme.DrawRun" >
+57-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:43:13-49
+58            <intent-filter>
+58-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:44:13-47:29
+59                <action android:name="android.intent.action.MAIN" />
+59-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:17-69
+59-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:25-66
+60
+61                <category android:name="android.intent.category.LAUNCHER" />
+61-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:17-77
+61-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:27-74
+62            </intent-filter>
+63
+64            <!-- Strava OAuth Callback -->
+65            <intent-filter>
+65-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:50:13-55:29
+66                <action android:name="android.intent.action.VIEW" />
+66-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:51:17-69
+66-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:51:25-66
+67
+68                <category android:name="android.intent.category.DEFAULT" />
+68-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:52:17-76
+68-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:52:27-73
+69                <category android:name="android.intent.category.BROWSABLE" />
+69-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:53:17-78
+69-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:53:27-75
+70
+71                <data
+71-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:54:17-81
+72                    android:host="strava_callback"
+72-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:54:48-78
+73                    android:scheme="drawrun" />
+73-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:54:23-47
+74            </intent-filter>
+75            <!-- localhost Callback (Standard) -->
+76            <intent-filter>
+76-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:57:13-63:29
+77                <action android:name="android.intent.action.VIEW" />
+77-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:51:17-69
+77-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:51:25-66
+78
+79                <category android:name="android.intent.category.DEFAULT" />
+79-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:52:17-76
+79-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:52:27-73
+80                <category android:name="android.intent.category.BROWSABLE" />
+80-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:53:17-78
+80-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:53:27-75
+81
+82                <data
+82-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:54:17-81
+83                    android:host="localhost"
+83-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:54:48-78
+84                    android:pathPrefix="/strava_callback"
+84-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:61:70-107
+85                    android:scheme="http" />
+85-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:54:23-47
+86                <data
+86-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:54:17-81
+87                    android:host="localhost"
+87-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:54:48-78
+88                    android:pathPrefix="/strava_callback"
+88-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:61:70-107
+89                    android:scheme="https" />
+89-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:54:23-47
+90            </intent-filter>
+91        </activity>
+92
+93        <activity-alias
+93-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:105:9-116:26
+94            android:name="com.drawrun.app.MainActivityLight"
+94-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:106:13-46
+95            android:enabled="false"
+95-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:107:13-36
+96            android:exported="true"
+96-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:108:13-36
+97            android:icon="@drawable/ic_launcher_light"
+97-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:109:13-55
+98            android:label="DrawRun"
+98-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:110:13-36
+99            android:targetActivity="com.drawrun.app.MainActivity" >
+99-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:111:13-51
+100            <intent-filter>
+100-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:44:13-47:29
+101                <action android:name="android.intent.action.MAIN" />
+101-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:17-69
+101-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:25-66
+102
+103                <category android:name="android.intent.category.LAUNCHER" />
+103-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:17-77
+103-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:27-74
+104            </intent-filter>
+105        </activity-alias>
+106        <activity-alias
+106-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:92:9-103:26
+107            android:name="com.drawrun.app.MainActivityRuby"
+107-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:93:13-45
+108            android:enabled="false"
+108-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:94:13-36
+109            android:exported="true"
+109-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:95:13-36
+110            android:icon="@drawable/ic_launcher_ruby"
+110-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:96:13-54
+111            android:label="DrawRun"
+111-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:97:13-36
+112            android:targetActivity="com.drawrun.app.MainActivity" >
+112-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:98:13-51
+113            <intent-filter>
+113-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:44:13-47:29
+114                <action android:name="android.intent.action.MAIN" />
+114-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:17-69
+114-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:25-66
+115
+116                <category android:name="android.intent.category.LAUNCHER" />
+116-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:17-77
+116-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:27-74
+117            </intent-filter>
+118        </activity-alias>
+119        <activity-alias
+119-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:79:9-90:26
+120            android:name="com.drawrun.app.MainActivityEmerald"
+120-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:80:13-48
+121            android:enabled="false"
+121-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:81:13-36
+122            android:exported="true"
+122-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:82:13-36
+123            android:icon="@drawable/ic_launcher_emerald"
+123-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:83:13-57
+124            android:label="DrawRun"
+124-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:84:13-36
+125            android:targetActivity="com.drawrun.app.MainActivity" >
+125-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:85:13-51
+126            <intent-filter>
+126-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:44:13-47:29
+127                <action android:name="android.intent.action.MAIN" />
+127-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:17-69
+127-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:25-66
+128
+129                <category android:name="android.intent.category.LAUNCHER" />
+129-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:17-77
+129-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:27-74
+130            </intent-filter>
+131        </activity-alias>
+132        <activity-alias
+132-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:66:9-77:26
+133            android:name="com.drawrun.app.MainActivityOnyx"
+133-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:67:13-45
+134            android:enabled="false"
+134-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:68:13-36
+135            android:exported="true"
+135-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:69:13-36
+136            android:icon="@drawable/ic_launcher_onyx"
+136-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:70:13-54
+137            android:label="DrawRun"
+137-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:71:13-36
+138            android:targetActivity="com.drawrun.app.MainActivity" >
+138-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:72:13-51
+139            <intent-filter>
+139-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:44:13-47:29
+140                <action android:name="android.intent.action.MAIN" />
+140-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:17-69
+140-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:45:25-66
+141
+142                <category android:name="android.intent.category.LAUNCHER" />
+142-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:17-77
+142-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:46:27-74
+143            </intent-filter>
+144        </activity-alias>
+145
+146        <!-- Health Connect Rationale (Privacy Policy) - MANDATORY -->
+147        <activity
+147-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:120:9-127:20
+148            android:name="com.drawrun.app.PermissionsRationaleActivity"
+148-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:121:13-57
+149            android:exported="true"
+149-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:122:13-36
+150            android:label="Politique de Confidentialité" >
+150-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:123:13-57
+151            <intent-filter>
+151-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:124:13-126:29
+152                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+152-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:125:17-92
+152-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:125:25-89
+153            </intent-filter>
+154        </activity> <!-- Android 14+ Rationale Alias -->
+155        <activity-alias
+155-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:130:9-139:26
+156            android:name="com.drawrun.app.ViewPermissionUsageActivity"
+156-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:131:13-55
+157            android:exported="true"
+157-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:132:13-36
+158            android:permission="android.permission.START_VIEW_PERMISSION_USAGE"
+158-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:134:13-80
+159            android:targetActivity="com.drawrun.app.PermissionsRationaleActivity" >
+159-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:133:13-67
+160            <intent-filter>
+160-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:135:13-138:29
+161                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+161-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:136:17-86
+161-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:136:25-83
+162
+163                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+163-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:137:17-87
+163-->C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:137:27-84
+164            </intent-filter>
+165        </activity-alias>
+166
+167        <service
+167-->[androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:24:9-32:19
+168            android:name="androidx.health.platform.client.impl.sdkservice.HealthDataSdkService"
+168-->[androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:25:13-96
+169            android:enabled="true"
+169-->[androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:26:13-35
+170            android:exported="true" >
+170-->[androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:27:13-36
+171            <intent-filter>
+171-->[androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:29:13-31:29
+172                <action android:name="androidx.health.platform.client.ACTION_BIND_SDK_SERVICE" />
+172-->[androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:30:17-98
+172-->[androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:30:25-95
+173            </intent-filter>
+174        </service>
+175
+176        <activity
+176-->[androidx.compose.ui:ui-tooling-android:1.5.4] C:\Users\lomic\.gradle\caches\8.10.2\transforms\34cb6146333b4979903ef89bb0c3fd9c\transformed\jetified-ui-tooling-release\AndroidManifest.xml:23:9-25:39
+177            android:name="androidx.compose.ui.tooling.PreviewActivity"
+177-->[androidx.compose.ui:ui-tooling-android:1.5.4] C:\Users\lomic\.gradle\caches\8.10.2\transforms\34cb6146333b4979903ef89bb0c3fd9c\transformed\jetified-ui-tooling-release\AndroidManifest.xml:24:13-71
+178            android:exported="true" />
+178-->[androidx.compose.ui:ui-tooling-android:1.5.4] C:\Users\lomic\.gradle\caches\8.10.2\transforms\34cb6146333b4979903ef89bb0c3fd9c\transformed\jetified-ui-tooling-release\AndroidManifest.xml:25:13-36
+179        <activity
+179-->[androidx.compose.ui:ui-test-manifest:1.5.4] C:\Users\lomic\.gradle\caches\8.10.2\transforms\3ebe82da5284a1834a8669608930f034\transformed\jetified-ui-test-manifest-1.5.4\AndroidManifest.xml:23:9-25:39
+180            android:name="androidx.activity.ComponentActivity"
+180-->[androidx.compose.ui:ui-test-manifest:1.5.4] C:\Users\lomic\.gradle\caches\8.10.2\transforms\3ebe82da5284a1834a8669608930f034\transformed\jetified-ui-test-manifest-1.5.4\AndroidManifest.xml:24:13-63
+181            android:exported="true" />
+181-->[androidx.compose.ui:ui-test-manifest:1.5.4] C:\Users\lomic\.gradle\caches\8.10.2\transforms\3ebe82da5284a1834a8669608930f034\transformed\jetified-ui-test-manifest-1.5.4\AndroidManifest.xml:25:13-36
+182
+183        <provider
+183-->[androidx.emoji2:emoji2:1.4.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\869bbb72343c982b769a56637587b2ef\transformed\jetified-emoji2-1.4.0\AndroidManifest.xml:24:9-32:20
+184            android:name="androidx.startup.InitializationProvider"
+184-->[androidx.emoji2:emoji2:1.4.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\869bbb72343c982b769a56637587b2ef\transformed\jetified-emoji2-1.4.0\AndroidManifest.xml:25:13-67
+185            android:authorities="com.drawrun.app.androidx-startup"
+185-->[androidx.emoji2:emoji2:1.4.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\869bbb72343c982b769a56637587b2ef\transformed\jetified-emoji2-1.4.0\AndroidManifest.xml:26:13-68
+186            android:exported="false" >
+186-->[androidx.emoji2:emoji2:1.4.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\869bbb72343c982b769a56637587b2ef\transformed\jetified-emoji2-1.4.0\AndroidManifest.xml:27:13-37
+187            <meta-data
+187-->[androidx.emoji2:emoji2:1.4.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\869bbb72343c982b769a56637587b2ef\transformed\jetified-emoji2-1.4.0\AndroidManifest.xml:29:13-31:52
+188                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+188-->[androidx.emoji2:emoji2:1.4.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\869bbb72343c982b769a56637587b2ef\transformed\jetified-emoji2-1.4.0\AndroidManifest.xml:30:17-75
+189                android:value="androidx.startup" />
+189-->[androidx.emoji2:emoji2:1.4.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\869bbb72343c982b769a56637587b2ef\transformed\jetified-emoji2-1.4.0\AndroidManifest.xml:31:17-49
+190            <meta-data
+190-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\f9d5ecc9859dbbc49567f45abda0e86c\transformed\jetified-lifecycle-process-2.7.0\AndroidManifest.xml:29:13-31:52
+191                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+191-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\f9d5ecc9859dbbc49567f45abda0e86c\transformed\jetified-lifecycle-process-2.7.0\AndroidManifest.xml:30:17-78
+192                android:value="androidx.startup" />
+192-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\lomic\.gradle\caches\8.10.2\transforms\f9d5ecc9859dbbc49567f45abda0e86c\transformed\jetified-lifecycle-process-2.7.0\AndroidManifest.xml:31:17-49
+193            <meta-data
+193-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:29:13-31:52
+194                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+194-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:30:17-85
+195                android:value="androidx.startup" />
+195-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:31:17-49
+196        </provider>
+197
+198        <receiver
+198-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:34:9-52:20
+199            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+199-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:35:13-76
+200            android:directBootAware="false"
+200-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:36:13-44
+201            android:enabled="true"
+201-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:37:13-35
+202            android:exported="true"
+202-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:38:13-36
+203            android:permission="android.permission.DUMP" >
+203-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:39:13-57
+204            <intent-filter>
+204-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:40:13-42:29
+205                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+205-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:41:17-91
+205-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:41:25-88
+206            </intent-filter>
+207            <intent-filter>
+207-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:43:13-45:29
+208                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+208-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:44:17-85
+208-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:44:25-82
+209            </intent-filter>
+210            <intent-filter>
+210-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:46:13-48:29
+211                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+211-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:47:17-88
+211-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:47:25-85
+212            </intent-filter>
+213            <intent-filter>
+213-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:49:13-51:29
+214                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+214-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:50:17-95
+214-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\lomic\.gradle\caches\8.10.2\transforms\960ee3df10a28251f7a38487061b01bf\transformed\jetified-profileinstaller-1.3.1\AndroidManifest.xml:50:25-92
+215            </intent-filter>
+216        </receiver>
+217    </application>
+218
+219</manifest>

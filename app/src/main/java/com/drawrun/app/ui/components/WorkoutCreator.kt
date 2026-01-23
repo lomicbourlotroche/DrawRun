@@ -24,13 +24,18 @@ import java.util.UUID
 
 @Composable
 fun WorkoutCreator(
+    initialWorkout: CustomRunWorkout? = null,
     onSave: (CustomRunWorkout) -> Unit,
     onCancel: () -> Unit
 ) {
-    var workoutName by remember { mutableStateOf("Nouvel Entraînement") }
-    var workoutDesc by remember { mutableStateOf("") }
-    var steps by remember { mutableStateOf<List<WorkoutStep>>(emptyList()) }
-    var editingStep by remember { mutableStateOf<Pair<Int, WorkoutStep>?>(null) }
+    var workoutName by remember { mutableStateOf(initialWorkout?.name ?: "Nouvel Entraînement") }
+    var workoutDesc by remember { mutableStateOf(initialWorkout?.description ?: "") }
+    var steps by remember { mutableStateOf<List<WorkoutStep>>(initialWorkout?.steps ?: emptyList()) }
+    var editingStep by remember { mutableStateOf<Pair<Int, WorkoutStep>?>(null) } // Only for top-level non-block steps
+    
+    // For nested editing (Block Index + Step Index + Step)
+    var editingSubStep by remember { mutableStateOf<Triple<Int, Int, WorkoutStep>?>(null) }
+
     val totalDist = remember(steps) { steps.sumOf { calculateStepDist(it) } }
     val totalDuration = remember(steps) { steps.sumOf { calculateStepDuration(it) } }
 
@@ -50,10 +55,11 @@ fun WorkoutCreator(
             IconButton(onClick = onCancel) {
                 Icon(Icons.Default.Close, contentDescription = "Close")
             }
-            Text("CRÉATEUR SÉANCE", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black)
+            Text(if (initialWorkout != null) "MODIFIER SÉANCE" else "CRÉATEUR SÉANCE", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black)
             Button(
                 onClick = {
                     val workout = CustomRunWorkout(
+                        id = initialWorkout?.id ?: UUID.randomUUID().toString(),
                         name = workoutName,
                         description = workoutDesc,
                         steps = steps,
@@ -102,118 +108,87 @@ fun WorkoutCreator(
         }
         
         // Steps List
-        if (steps.isEmpty()) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxWidth().padding(32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(Icons.Default.Edit, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(48.dp))
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text("Aucune étape", color = Color.Gray, style = MaterialTheme.typography.bodyMedium)
-                        Text("Cliquez sur un bouton ci-dessous", color = Color.Gray.copy(alpha = 0.7f), style = MaterialTheme.typography.bodySmall)
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            if (steps.isEmpty()) {
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(Icons.Default.Edit, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(48.dp))
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text("Aucune étape", color = Color.Gray, style = MaterialTheme.typography.bodyMedium)
+                                Text("Cliquez sur un bouton ci-dessous", color = Color.Gray.copy(alpha = 0.7f), style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
                     }
                 }
             }
-        } else {
-            Text(
-                "${steps.size} étape(s)",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold
-            )
             
-            steps.forEachIndexed { index, step ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { editingStep = index to step },
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(56.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(getColorForStep(step.type).copy(alpha = 0.15f)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    getIconForStep(step.type),
-                                    contentDescription = null,
-                                    tint = getColorForStep(step.type),
-                                    modifier = Modifier.size(28.dp)
-                                )
+            itemsIndexed(steps) { index, step ->
+                if (step.type == "INTERVAL_BLOCK") {
+                    BlockCard(
+                        step = step,
+                        index = index,
+                        totalSteps = steps.size,
+                        onUpdate = { updatedStep ->
+                            steps = steps.toMutableList().also { it[index] = updatedStep }
+                        },
+                        onRemove = {
+                            steps = steps.toMutableList().also { it.removeAt(index) }
+                        },
+                        onMoveUp = {
+                            if (index > 0) {
+                                val list = steps.toMutableList()
+                                java.util.Collections.swap(list, index, index - 1)
+                                steps = list
                             }
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    if (step.type == "PPG") step.targetValue else getStepTypeLabel(step.type),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    formatStepDuration(step),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                                )
-                                if (step.targetType == "PACE" && step.targetValue.isNotBlank()) {
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Text(
-                                        "🎯 Allure: ${step.targetValue}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = getColorForStep(step.type),
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                } else if (step.targetType == "HR_ZONE" && step.targetValue.isNotBlank()) {
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Text(
-                                        "💓 Zone FC: ${step.targetValue}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = Color(0xFFEF4444),
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                } else if (step.targetType == "PACE_ZONE" && step.targetValue.isNotBlank()) {
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Text(
-                                        "⚡ Zone Allure: ${step.targetValue}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = Color(0xFF8B5CF6),
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
+                        },
+                        onMoveDown = {
+                             if (index < steps.size - 1) {
+                                val list = steps.toMutableList()
+                                java.util.Collections.swap(list, index, index + 1)
+                                steps = list
+                            }
+                        },
+                        onEditSubStep = { subIndex, subStep -> 
+                            editingSubStep = Triple(index, subIndex, subStep)
+                        }
+                    )
+                } else {
+                    StepCard(
+                        step = step,
+                        index = index,
+                        totalSteps = steps.size,
+                        onClick = { editingStep = index to step },
+                        onRemove = { steps = steps.toMutableList().also { it.removeAt(index) } },
+                        onMoveUp = {
+                             if (index > 0) {
+                                val list = steps.toMutableList()
+                                java.util.Collections.swap(list, index, index - 1)
+                                steps = list
+                            }
+                        },
+                        onMoveDown = {
+                             if (index < steps.size - 1) {
+                                val list = steps.toMutableList()
+                                java.util.Collections.swap(list, index, index + 1)
+                                steps = list
                             }
                         }
-                        IconButton(onClick = { steps = steps.toMutableList().also { it.removeAt(index) } }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Supprimer", tint = MaterialTheme.colorScheme.error)
-                        }
-                    }
+                    )
                 }
             }
         }
-        
-        Spacer(modifier = Modifier.height(8.dp))
         
         // Tools Row
         Card(
@@ -255,11 +230,9 @@ fun WorkoutCreator(
                 }
             }
         }
-        
-        Spacer(modifier = Modifier.height(100.dp))
     }
     
-    // Editor Dialog
+    // Editor Dialogs
     editingStep?.let { (index, step) ->
         WorkoutStepEditorDialog(
             step = step,
@@ -269,6 +242,225 @@ fun WorkoutCreator(
                 editingStep = null
             }
         )
+    }
+    
+    editingSubStep?.let { (blockIndex, subIndex, subStep) ->
+         WorkoutStepEditorDialog(
+            step = subStep,
+            onDismiss = { editingSubStep = null },
+            onSave = { newStep ->
+                val block = steps[blockIndex]
+                val newSubSteps = block.steps.toMutableList()
+                newSubSteps[subIndex] = newStep
+                steps = steps.toMutableList().also { it[blockIndex] = block.copy(steps = newSubSteps) }
+                editingSubStep = null
+            }
+        )
+    }
+}
+
+@Composable
+fun StepCard(
+    step: WorkoutStep,
+    index: Int,
+    totalSteps: Int,
+    onClick: () -> Unit,
+    onRemove: () -> Unit,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Reorder Controls
+            Column {
+                IconButton(onClick = onMoveUp, enabled = index > 0, modifier = Modifier.size(24.dp)) {
+                    Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Up", tint = if (index > 0) Color.Gray else Color.Transparent)
+                }
+                IconButton(onClick = onMoveDown, enabled = index < totalSteps - 1, modifier = Modifier.size(24.dp)) {
+                     Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Down", tint = if (index < totalSteps - 1) Color.Gray else Color.Transparent)
+                }
+            }
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            // Icon
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(getColorForStep(step.type).copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    getIconForStep(step.type),
+                    contentDescription = null,
+                    tint = getColorForStep(step.type),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            // Content
+            Column(modifier = Modifier.weight(1f)) {
+                 Text(
+                    if (step.type == "PPG") step.targetValue else getStepTypeLabel(step.type),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    formatStepDuration(step),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+                if (step.targetValue.isNotBlank() && step.type != "PPG") {
+                     Text(
+                        "${step.targetType}: ${step.targetValue}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = getColorForStep(step.type)
+                    )
+                }
+            }
+            
+            IconButton(onClick = onRemove) {
+                Icon(Icons.Default.Delete, contentDescription = "Supprimer", tint = MaterialTheme.colorScheme.error.copy(alpha=0.6f))
+            }
+        }
+    }
+}
+
+@Composable
+fun BlockCard(
+    step: WorkoutStep,
+    index: Int,
+    totalSteps: Int,
+    onUpdate: (WorkoutStep) -> Unit,
+    onRemove: () -> Unit,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
+    onEditSubStep: (Int, WorkoutStep) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFEC4899).copy(alpha = 0.05f)),
+        border = BorderStroke(1.dp, Color(0xFFEC4899).copy(alpha = 0.2f)),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            // Header
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column {
+                    IconButton(onClick = onMoveUp, enabled = index > 0, modifier = Modifier.size(24.dp)) {
+                        Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Up", tint = if (index > 0) Color.Gray else Color.Transparent)
+                    }
+                    IconButton(onClick = onMoveDown, enabled = index < totalSteps - 1, modifier = Modifier.size(24.dp)) {
+                         Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Down", tint = if (index < totalSteps - 1) Color.Gray else Color.Transparent)
+                    }
+                }
+                
+                Spacer(modifier = Modifier.width(8.dp))
+                
+                Text(
+                    "${step.repeatCount} SÉRIES", 
+                    style = MaterialTheme.typography.titleMedium, 
+                    fontWeight = FontWeight.Black,
+                    color = Color(0xFFEC4899)
+                )
+                
+                Spacer(modifier = Modifier.weight(1f))
+            
+                // Actions on block
+                IconButton(onClick = { 
+                    // Edit repetition count via simple dialog or cycle? 
+                    // Let's increment/decrement for simplicity or open a small dialog?
+                    // Implementation choice: Open custom dialog for block
+                    // For now, let's just use Up/Down arrows for reps if space allows or separate editing
+                }) {
+                   // Icon(Icons.Default.Edit, contentDescription = "Edit Reps", tint = Color(0xFFEC4899))
+                }
+                
+                // Reps control
+                IconButton(onClick = { if (step.repeatCount > 1) onUpdate(step.copy(repeatCount = step.repeatCount - 1)) }) {
+                    Icon(Icons.Default.RemoveCircleOutline, contentDescription = null, tint = Color(0xFFEC4899))
+                }
+                Text("${step.repeatCount}", fontWeight = FontWeight.Bold)
+                IconButton(onClick = { onUpdate(step.copy(repeatCount = step.repeatCount + 1)) }) {
+                    Icon(Icons.Default.AddCircleOutline, contentDescription = null, tint = Color(0xFFEC4899))
+                }
+                
+                IconButton(onClick = onRemove) {
+                    Icon(Icons.Default.Close, contentDescription = "Supprimer", tint = MaterialTheme.colorScheme.error)
+                }
+            }
+            
+            Divider(color = Color(0xFFEC4899).copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 8.dp))
+            
+            // Nested Steps
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                step.steps.forEachIndexed { subIndex, subStep ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onEditSubStep(subIndex, subStep) },
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(getIconForStep(subStep.type), contentDescription = null, tint = getColorForStep(subStep.type), modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("${getStepTypeLabel(subStep.type)} • ${formatStepDuration(subStep)}", style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+                             if (subStep.targetValue.isNotBlank()) {
+                                 Text("@ ${subStep.targetValue}", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                             }
+                             Spacer(modifier = Modifier.width(8.dp))
+                             IconButton(onClick = {
+                                 val newSubList = step.steps.toMutableList()
+                                 newSubList.removeAt(subIndex)
+                                 onUpdate(step.copy(steps = newSubList))
+                             }, modifier = Modifier.size(20.dp)) {
+                                 Icon(Icons.Default.Close, contentDescription = null, tint = Color.Red.copy(alpha = 0.4f))
+                             }
+                        }
+                    }
+                }
+                
+                // Add SubStep Buttons
+                Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Ajouter : ", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                    IconButton(onClick = {
+                        val newSubList = step.steps.toMutableList()
+                        newSubList.add(WorkoutStep(type = "RUN", durationType = "DISTANCE", durationValue = 400.0, targetType = "PACE", targetValue = "4:00"))
+                        onUpdate(step.copy(steps = newSubList))
+                    }) {
+                        Box(Modifier.clip(RoundedCornerShape(4.dp)).background(Color(0xFF22C55E).copy(alpha = 0.1f)).padding(4.dp)) {
+                            Icon(Icons.Default.DirectionsRun, contentDescription = null, tint = Color(0xFF22C55E), modifier = Modifier.size(16.dp))
+                        }
+                    }
+                     IconButton(onClick = {
+                        val newSubList = step.steps.toMutableList()
+                        newSubList.add(WorkoutStep(type = "REST", durationType = "TIME", durationValue = 60.0, targetType = "NONE", targetValue = ""))
+                        onUpdate(step.copy(steps = newSubList))
+                    }) {
+                        Box(Modifier.clip(RoundedCornerShape(4.dp)).background(Color(0xFFF59E0B).copy(alpha = 0.1f)).padding(4.dp)) {
+                            Icon(Icons.Default.SelfImprovement, contentDescription = null, tint = Color(0xFFF59E0B), modifier = Modifier.size(16.dp))
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -512,7 +704,7 @@ fun getColorForStep(type: String): Color = when(type) {
     "RUN" -> Color(0xFF22C55E)
     "REST" -> Color(0xFFF59E0B)
     "COOL" -> Color(0xFF8B5CF6)
-    "PPG" -> Color(0xFFEC4899)
+    "PPG" -> Color(0xFFE040FB) // More distinct Pink/Purple for PPG
     else -> Color.Gray
 }
 
