@@ -1,0 +1,714 @@
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { 
+  Bike, 
+  Activity, 
+  Waves, 
+  Zap, 
+  Heart, 
+  Timer, 
+  TrendingUp, 
+  MapPin, 
+  Minimize2, 
+  Wind,
+  Mountain,
+  Footprints,
+  Calendar,
+  Clock,
+  ArrowRight,
+  ChevronDown,
+  Layers,
+  BarChart2,
+  Table,
+  Box,
+  Globe,
+  Map as MapIcon,
+  Play,
+  Pause,
+  RotateCcw,
+  FastForward,
+  Info,
+  Gauge,
+  ArrowUpRight,
+  Move,
+  PieChart
+} from 'lucide-react';
+
+// --- COMPOSANTS UI / GRAPHIQUES ---
+
+// Composant pour afficher une distribution de zones (Barres)
+const ZoneBarChart = ({ title, icon: Icon, colorClass, zones }) => (
+  <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5 h-full">
+    <h3 className="font-bold text-slate-700 mb-4 flex items-center justify-between">
+      <span className="text-sm">{title}</span>
+      <div className={`p-1.5 rounded-lg bg-slate-50 ${colorClass.replace('text-', 'text-opacity-80 text-')}`}>
+         <Icon size={16} className={colorClass} />
+      </div>
+    </h3>
+    <div className="space-y-3">
+      {zones.map((z, i) => (
+        <div key={i} className="flex items-center gap-3 text-xs">
+           <span className="w-20 font-bold text-slate-500 truncate" title={z.label}>{z.label}</span>
+           <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+             <div className={`h-full rounded-full ${z.color}`} style={{width: z.pct}}></div>
+           </div>
+           <span className="w-12 text-right font-medium text-slate-600 flex justify-end gap-1">
+             {z.pct}
+           </span>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+// Composant Carte Avancée (2D/3D + Live Replay)
+const AdvancedMap = ({ type, color, isLive, progress, mapStyle, setMapStyle, viewMode, setViewMode }) => {
+  const bgColors = {
+    plan: 'bg-slate-100',
+    satellite: 'bg-slate-800',
+    hybrid: 'bg-slate-200',
+  };
+
+  const gridColors = {
+    plan: 'radial-gradient(#94a3b8 1px, transparent 1px)',
+    satellite: 'radial-gradient(#475569 1px, transparent 1px)',
+    hybrid: 'radial-gradient(#94a3b8 1px, transparent 1px)',
+  };
+
+  const paths = {
+    cycling: "M40,180 Q60,150 80,160 T120,140 T180,120 T230,160 T280,100 T330,80 T380,120 T420,150",
+    running: "M50,150 Q80,100 110,120 T170,140 T210,80 T270,100 T330,140 T410,160",
+    swimming: "M50,50 L410,50 L410,150 L50,150 Z"
+  };
+
+  return (
+    <div className="relative w-full h-96 rounded-t-xl overflow-hidden shadow-sm border-b border-slate-200 transition-all duration-500 group">
+      <div className={`w-full h-full transition-transform duration-700 ease-in-out ${bgColors[mapStyle]} relative`}
+           style={{ perspective: '1000px', overflow: 'hidden' }}>
+        <div className={`w-full h-full absolute inset-0 transition-transform duration-700`}
+             style={{ 
+               transform: viewMode === '3D' ? 'rotateX(60deg) scale(0.8) translateY(-40px)' : 'rotateX(0deg) scale(1)',
+               transformStyle: 'preserve-3d'
+             }}>
+             <div className="absolute inset-0 opacity-20" style={{ backgroundImage: gridColors[mapStyle], backgroundSize: '30px 30px' }}></div>
+             {viewMode === '3D' && mapStyle === 'satellite' && (
+                <>
+                  <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-green-800/20 rounded-full blur-xl transform translate-z-10"></div>
+                  <div className="absolute bottom-1/3 right-1/3 w-40 h-40 bg-slate-700/30 rounded-full blur-xl transform translate-z-20"></div>
+                </>
+             )}
+             <svg className="w-full h-full absolute inset-0 pointer-events-none" viewBox="0 0 460 220" preserveAspectRatio="none">
+               {viewMode === '3D' && (
+                 <path d={paths[type]} fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="8" transform="translate(0, 10)" filter="blur(4px)" />
+               )}
+               <path id="coursePath" d={paths[type]} 
+                     fill={type === 'swimming' ? "rgba(6, 182, 212, 0.2)" : "none"} 
+                     stroke={mapStyle === 'satellite' ? '#38bdf8' : color} 
+                     strokeWidth={viewMode === '3D' ? 6 : 4} 
+                     strokeLinecap="round" strokeLinejoin="round" className="drop-shadow-lg"
+                     strokeDasharray={type === 'swimming' ? "0" : "5, 5"} 
+               />
+               {isLive ? (
+                 <g style={{ offsetPath: `path("${paths[type]}")`, offsetDistance: `${progress}%` }}>
+                    <circle r="8" fill="white" stroke={color} strokeWidth="3" className="shadow-lg" />
+                    <circle r="12" fill={color} opacity="0.3" className="animate-ping" />
+                 </g>
+               ) : (
+                 <circle r="6" fill="white" stroke={color} strokeWidth="3">
+                   <animateMotion dur="20s" repeatCount="indefinite" path={paths[type]} />
+                 </circle>
+               )}
+             </svg>
+        </div>
+      </div>
+      <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-md text-xs font-mono font-bold shadow-sm text-slate-600 border border-slate-200 z-10">
+        {type === 'swimming' ? 'Bassin 50m' : 'Col du Galibier, FR'}
+      </div>
+      <div className="absolute top-4 right-4 flex flex-col gap-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="bg-white/90 backdrop-blur rounded-lg shadow-sm border border-slate-200 p-1 flex flex-col gap-1">
+          <button onClick={() => setViewMode('2D')} className={`p-2 rounded-md transition-all ${viewMode === '2D' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'}`} title="Vue 2D"><MapIcon size={18} /></button>
+          <button onClick={() => setViewMode('3D')} className={`p-2 rounded-md transition-all ${viewMode === '3D' ? 'bg-slate-800 text-white' : 'text-slate-600 hover:bg-slate-100'}`} title="Vue 3D"><Box size={18} /></button>
+        </div>
+        <div className="bg-white/90 backdrop-blur rounded-lg shadow-sm border border-slate-200 p-1 flex flex-col gap-1">
+           <button onClick={() => setMapStyle(mapStyle === 'plan' ? 'satellite' : 'plan')} className={`p-2 rounded-md transition-all ${mapStyle === 'satellite' ? 'bg-green-700 text-white' : 'text-slate-600 hover:bg-slate-100'}`} title="Satellite / Plan"><Globe size={18} /></button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Composant Sparkline / Jauge (Carte Télémétrie)
+const TelemetryCard = ({ title, value, unit, data, dataKey, color, icon: Icon, isLive, currentIndex }) => {
+  const width = 200;
+  const height = 60;
+  const padding = 5;
+  const values = data.map(d => d[dataKey]);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const points = data.map((d, i) => {
+    const x = (i / (data.length - 1)) * width;
+    const y = height - ((d[dataKey] - min) / range) * (height - padding * 2) - padding;
+    return `${x},${y}`;
+  }).join(' ');
+  const liveX = (currentIndex / (data.length - 1)) * width;
+
+  return (
+    <div className={`rounded-xl shadow-sm border p-5 flex flex-col justify-between h-full transition-all duration-300 ${isLive ? 'bg-slate-900 border-slate-700 shadow-lg scale-105 ring-1 ring-slate-600' : 'bg-white border-slate-100 hover:shadow-md'}`}>
+      <div className="flex justify-between items-start mb-2">
+        <div className="flex items-center gap-2">
+           <div className={`p-1.5 rounded-lg transition-colors ${isLive ? 'bg-slate-800' : 'bg-slate-50'} ${color.replace('text-', isLive ? 'text-' : 'text-opacity-80 text-')}`}>
+             <Icon size={18} className={color} />
+           </div>
+           <span className={`text-sm font-semibold ${isLive ? 'text-slate-300' : 'text-slate-600'}`}>{title}</span>
+        </div>
+        {isLive && <span className="animate-pulse w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"></span>}
+      </div>
+      <div className="flex items-baseline gap-2 mb-3">
+        <span className={`text-3xl font-bold font-mono tracking-tight transition-all duration-100 ${isLive ? 'text-white' : 'text-slate-800'}`}>
+           {isLive ? data[currentIndex]?.[dataKey] : value}
+        </span>
+        <span className={`text-xs font-medium ${isLive ? 'text-slate-400' : 'text-slate-400'}`}>{unit}</span>
+      </div>
+      <div className="w-full h-16 overflow-hidden relative">
+         {!isLive && <div className="absolute top-1/2 w-full border-t border-dashed border-slate-200"></div>}
+         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible">
+            <polyline points={points} fill="none" stroke="currentColor" strokeWidth={isLive ? "1.5" : "2"} strokeLinecap="round" strokeLinejoin="round" className={`${color} ${isLive ? 'opacity-60' : 'opacity-100'}`} />
+            {isLive && (
+               <g transform={`translate(${liveX}, 0)`}>
+                 <line y1="0" y2={height} stroke="white" strokeWidth="1" strokeDasharray="3,3" />
+                 <circle cy={height - ((data[currentIndex][dataKey] - min) / range) * (height - padding * 2) - padding} r="3" fill="white" className="animate-ping" opacity="0.5" />
+                 <circle cy={height - ((data[currentIndex][dataKey] - min) / range) * (height - padding * 2) - padding} r="2" fill="white" />
+               </g>
+            )}
+         </svg>
+      </div>
+    </div>
+  );
+};
+
+// --- DATA MOCK ---
+const generateSessionData = (sport) => {
+  const points = 200;
+  const data = [];
+  const splits = [];
+
+  let currentElevation = 1000;
+  let currentHr = 130;
+  // Ajustement pour avoir des données réalistes pour la natation (approx 3-4 km/h)
+  let currentPower = sport === 'cycling' ? 200 : 250;
+  let currentSpeed = sport === 'cycling' ? 25 : (sport === 'swimming' ? 3.5 : 12);
+
+  for (let i = 0; i < points; i++) {
+    const noise = () => (Math.random() - 0.5);
+    currentElevation += Math.sin(i / 20) * 5 + noise() * 2; 
+    const slopeFactor = Math.sin(i / 20);
+    currentPower += slopeFactor * 10 + noise() * 15;
+    if (currentPower < 50) currentPower = 50;
+    currentHr += (slopeFactor * 2) + noise() * 2;
+    if (currentHr > 190) currentHr = 190;
+    if (currentHr < 100) currentHr = 100;
+    
+    // Variation de vitesse
+    currentSpeed += (slopeFactor * -0.5) + (noise() * 0.5); 
+    if(sport === 'swimming') {
+        if(currentSpeed < 2) currentSpeed = 2;
+        if(currentSpeed > 6) currentSpeed = 6;
+    } else {
+        if(currentSpeed < 5) currentSpeed = 5;
+    }
+
+    const vam = Math.max(0, (noise() * 100 + 800)); 
+    const cadence = sport === 'cycling' ? 80 + noise() * 10 : 170 + noise() * 5;
+    const decoupling = (currentPower / currentHr) * (1 - (i * 0.001));
+    const totalSeconds = i * 10;
+    const timeStr = new Date(totalSeconds * 1000).toISOString().substr(11, 8);
+
+    data.push({
+      index: i,
+      time: i,
+      timeStr: timeStr,
+      power: Math.floor(currentPower),
+      heartRate: Math.floor(currentHr),
+      speed: Math.abs(currentSpeed.toFixed(1)),
+      elevation: Math.floor(currentElevation),
+      vam: Math.floor(vam),
+      decoupling: decoupling.toFixed(2),
+      cadence: Math.floor(cadence),
+      pace: sport === 'running' ? (60 / currentSpeed).toFixed(2) : 0 
+    });
+  }
+
+  const avgs = {
+    power: Math.floor(data.reduce((acc, c) => acc + c.power, 0) / points),
+    heartRate: Math.floor(data.reduce((acc, c) => acc + c.heartRate, 0) / points),
+    speed: (data.reduce((acc, c) => acc + parseFloat(c.speed), 0) / points).toFixed(1),
+    elevation: Math.floor(data.reduce((acc, c) => acc + c.elevation, 0) / points),
+    vam: Math.floor(data.reduce((acc, c) => acc + c.vam, 0) / points),
+    cadence: Math.floor(data.reduce((acc, c) => acc + c.cadence, 0) / points),
+    decoupling: "3.2%",
+  };
+
+  const lapCount = sport === 'swimming' ? 10 : 5;
+  const distUnit = sport === 'swimming' ? '100m' : 'km';
+  for (let i = 1; i <= lapCount; i++) {
+    splits.push({
+      lap: i,
+      dist: `${i} ${distUnit}`,
+      time: sport === 'cycling' ? '4:20' : '5:30',
+      avgHr: Math.floor(140 + Math.random() * 20),
+      avgPower: Math.floor(220 + Math.random() * 40),
+      cadence: sport === 'cycling' ? 85 : 170
+    });
+  }
+  return { chartData: data, splitsData: splits, averages: avgs };
+};
+
+const SportAnalysisApp = () => {
+  const [activeSport, setActiveSport] = useState('cycling');
+  const { chartData, splitsData, averages } = useMemo(() => generateSessionData(activeSport), [activeSport]);
+  
+  const [isLiveMode, setIsLiveMode] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [viewMode, setViewMode] = useState('2D');
+  const [mapStyle, setMapStyle] = useState('plan');
+  const animationRef = useRef();
+
+  useEffect(() => {
+    if (isPlaying && isLiveMode) {
+      animationRef.current = setInterval(() => {
+        setCurrentIndex((prev) => {
+          if (prev >= chartData.length - 1) {
+            setIsPlaying(false);
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, 100 / playbackSpeed); 
+    } else {
+      clearInterval(animationRef.current);
+    }
+    return () => clearInterval(animationRef.current);
+  }, [isPlaying, isLiveMode, chartData.length, playbackSpeed]);
+
+  useEffect(() => {
+    setCurrentIndex(0);
+    setIsPlaying(false);
+  }, [activeSport]);
+
+  const togglePlay = () => setIsPlaying(!isPlaying);
+  const resetPlay = () => {
+    setIsPlaying(false);
+    setCurrentIndex(0);
+  };
+  const toggleLiveMode = () => {
+    setIsLiveMode(!isLiveMode);
+    setIsPlaying(false);
+    if (!isLiveMode) {
+        setViewMode('3D');
+        setMapStyle('satellite');
+    } else {
+        setViewMode('2D');
+        setMapStyle('plan');
+    }
+  };
+
+  const currentPoint = chartData[currentIndex];
+  const progressPercent = (currentIndex / (chartData.length - 1)) * 100;
+
+  // Données enrichies selon les PDF (Section Analyse de Séance)
+  const metricsData = {
+    cycling: {
+      title: "Sortie Route - Col du Galibier",
+      date: "21 Janvier 2026",
+      time: "10:30",
+      duration: "3h 45m",
+      distance: "86.4 km",
+      color: "#2563eb",
+      // Zones de Puissance (Coggan) et FC
+      zones: {
+        heartRate: [
+          { label: 'Z5 Maximale', pct: '5%', value: '12m', color: 'bg-red-500' },
+          { label: 'Z4 Seuil', pct: '25%', value: '55m', color: 'bg-orange-500' },
+          { label: 'Z3 Tempo', pct: '40%', value: '1h30', color: 'bg-green-500' },
+          { label: 'Z2 Endurance', pct: '20%', value: '45m', color: 'bg-blue-500' },
+          { label: 'Z1 Récup', pct: '10%', value: '23m', color: 'bg-slate-300' },
+        ],
+        power: [
+          { label: 'Z7 Neuro', pct: '1%', value: '2m', color: 'bg-purple-600' },
+          { label: 'Z6 Anaérobie', pct: '4%', value: '9m', color: 'bg-red-600' },
+          { label: 'Z5 VO2max', pct: '15%', value: '33m', color: 'bg-red-400' },
+          { label: 'Z4 Seuil', pct: '30%', value: '1h07', color: 'bg-orange-400' },
+          { label: 'Z3 Tempo', pct: '35%', value: '1h18', color: 'bg-green-500' },
+          { label: 'Z2 Endurance', pct: '10%', value: '23m', color: 'bg-blue-400' },
+          { label: 'Z1 Récup', pct: '5%', value: '11m', color: 'bg-slate-300' },
+        ]
+      },
+      detailedStats: [
+         { category: "Charge et Intensité", items: [
+            { label: "Puissance Normalisée (NP)", value: "268", unit: "W", icon: <Zap size={14} />, desc: "Coût physiologique réel" },
+            { label: "TSS (Score Stress)", value: "112", unit: "", icon: <Activity size={14} />, desc: "Charge totale" },
+            { label: "IF (Facteur Intensité)", value: "0.84", unit: "", icon: <TrendingUp size={14} />, desc: "NP / FTP" },
+            { label: "TRIMP", value: "150", unit: "", icon: <Heart size={14} />, desc: "Impulsion d'entraînement" }
+         ]},
+         { category: "Efficacité et Stabilité", items: [
+            { label: "EF (Efficiency Factor)", value: "1.65", unit: "W/bpm", icon: <TrendingUp size={14} />, desc: "NP / FC Moyenne" },
+            { label: "Découplage (Pw:Hr)", value: "3.2", unit: "%", icon: <Minimize2 size={14} />, desc: "Dérive cardiaque vs Power" },
+            { label: "VI (Variability Index)", value: "1.09", unit: "", icon: <Activity size={14} />, desc: "NP / Puissance Moyenne" },
+            { label: "VAM", value: "950", unit: "m/h", icon: <Mountain size={14} />, desc: "Vitesse Ascensionnelle" }
+         ]},
+         { category: "Dynamique et Technique", items: [
+            { label: "Efficacité Couple", value: "92", unit: "%", icon: <RotateCcw size={14} />, desc: "Torque Effectiveness" },
+            { label: "Fluidité (Smoothness)", value: "24", unit: "%", icon: <Wind size={14} />, desc: "Pedal Smoothness" },
+            { label: "Équilibre G/D", value: "51/49", unit: "%", icon: <Minimize2 size={14} />, desc: "Balance Puissance" }
+         ]}
+      ]
+    },
+    running: {
+      title: "Sortie Longue - Seuil",
+      date: "20 Janvier 2026",
+      time: "18:15",
+      duration: "1h 12m",
+      distance: "14.2 km",
+      color: "#059669",
+      // Zones d'allure et FC
+      zones: {
+        heartRate: [
+          { label: 'Z5 >95%', pct: '8%', value: '6m', color: 'bg-red-500' },
+          { label: 'Z4 88-95%', pct: '32%', value: '23m', color: 'bg-orange-500' },
+          { label: 'Z3 80-88%', pct: '45%', value: '32m', color: 'bg-green-500' },
+          { label: 'Z2 70-80%', pct: '10%', value: '7m', color: 'bg-blue-500' },
+          { label: 'Z1 <70%', pct: '5%', value: '4m', color: 'bg-slate-300' },
+        ],
+        pace: [
+          { label: 'Z5 VMA', pct: '5%', value: '4m', color: 'bg-purple-500' },
+          { label: 'Z4 Seuil', pct: '25%', value: '18m', color: 'bg-orange-500' },
+          { label: 'Z3 Tempo', pct: '50%', value: '36m', color: 'bg-green-500' },
+          { label: 'Z2 Endurance', pct: '15%', value: '10m', color: 'bg-blue-500' },
+          { label: 'Z1 Fond.', pct: '5%', value: '4m', color: 'bg-slate-300' },
+        ]
+      },
+      detailedStats: [
+         { category: "Charge et Intensité", items: [
+            { label: "TSS (rTSS)", value: "85", unit: "", icon: <Activity size={14} />, desc: "Training Stress Score" },
+            { label: "Charge de Foster", value: "6", unit: "RPE", icon: <Info size={14} />, desc: "Perception effort" },
+            { label: "GAP", value: "4:25", unit: "/km", icon: <Mountain size={14} />, desc: "Allure ajustée pente" },
+            { label: "TRIMP", value: "90", unit: "", icon: <Heart size={14} />, desc: "Impulsion d'entraînement" }
+         ]},
+         { category: "Efficacité et Stabilité", items: [
+             { label: "Running Index", value: "58", unit: "", icon: <Activity size={14} />, desc: "Score de séance" },
+             { label: "Running Effectiveness", value: "0.98", unit: "", icon: <Zap size={14} />, desc: "Kg/N (Palladino)" },
+             { label: "Découplage (Pa:Hr)", value: "2.1", unit: "%", icon: <Minimize2 size={14} />, desc: "Dérive cardiaque vs Pace" },
+             { label: "EF (Efficacité)", value: "1.45", unit: "", icon: <TrendingUp size={14} />, desc: "Vitesse / FC" }
+         ]},
+         { category: "Dynamique et Technique", items: [
+             { label: "GCT", value: "240", unit: "ms", icon: <Footprints size={14} />, desc: "Temps contact sol" },
+             { label: "Oscillation Vert.", value: "8.5", unit: "cm", icon: <Move size={14} />, desc: "Déplacement vertical" },
+             { label: "LSS (Raideur)", value: "11.2", unit: "kN/m", icon: <Activity size={14} />, desc: "Leg Spring Stiffness" }
+         ]}
+      ]
+    },
+    swimming: {
+      title: "Séance Technique & CSS",
+      date: "19 Janvier 2026",
+      time: "07:00",
+      duration: "0h 55m",
+      distance: "2400 m",
+      color: "#0891b2",
+      // Zones de Nage
+      zones: {
+         heartRate: [
+          { label: 'Z5 Anaérobie', pct: '10%', value: '5m', color: 'bg-red-500' },
+          { label: 'Z4 Seuil', pct: '40%', value: '22m', color: 'bg-orange-500' },
+          { label: 'Z3 Tempo', pct: '30%', value: '16m', color: 'bg-green-500' },
+          { label: 'Z2 Endurance', pct: '20%', value: '11m', color: 'bg-blue-500' },
+        ],
+        pace: [
+          { label: 'Sprint', pct: '5%', value: '100m', color: 'bg-purple-500' },
+          { label: '> CSS', pct: '20%', value: '500m', color: 'bg-red-500' },
+          { label: '= CSS', pct: '45%', value: '1100m', color: 'bg-orange-500' },
+          { label: 'Endurance', pct: '30%', value: '700m', color: 'bg-blue-500' },
+        ]
+      },
+      detailedStats: [
+         { category: "Charge et Intensité", items: [
+             { label: "Swim Stress (SSS)", value: "65", unit: "", icon: <Activity size={14} />, desc: "Adaptation du TSS" },
+             { label: "Charge de Foster", value: "450", unit: "", icon: <Info size={14} />, desc: "RPE x Durée" },
+             { label: "TRIMP", value: "88", unit: "", icon: <Heart size={14} />, desc: "Zone FC Aquatique" }
+         ]},
+         { category: "Efficacité et Technique", items: [
+             { label: "SWOLF", value: "34", unit: "", icon: <Waves size={14} />, desc: "Temps + Mouvements" },
+             { label: "DPS", value: "2.1", unit: "m/cyc", icon: <ArrowUpRight size={14} />, desc: "Distance par cycle" },
+             { label: "Index Efficacité (IE)", value: "3.5", unit: "", icon: <Zap size={14} />, desc: "Vitesse / Coût" },
+             { label: "Stroke Rate", value: "32", unit: "spm", icon: <Timer size={14} />, desc: "Mouvements/min" }
+         ]},
+         { category: "Dynamique et Hydro", items: [
+             { label: "Vitesse Critique (CSS)", value: "1:40", unit: "/100", icon: <Gauge size={14} />, desc: "Seuil lactique" },
+             { label: "Coeff. Traînée (Cd)", value: "0.6", unit: "", icon: <Wind size={14} />, desc: "Résistance eau" },
+             { label: "Vitesse Coulée", value: "2.5", unit: "m/s", icon: <ArrowRight size={14} />, desc: "Push-Off Speed" }
+         ]}
+      ]
+    }
+  };
+
+  const currentSport = metricsData[activeSport];
+
+  // Helper pour afficher la vitesse/allure correcte dans le bandeau
+  const getSpeedDisplay = () => {
+     if(activeSport === 'running' || activeSport === 'swimming') {
+        const speed = parseFloat(averages.speed);
+        if(!speed) return "0:00";
+        
+        if (activeSport === 'swimming') {
+            // Conversion km/h -> temps au 100m
+            // 3.5 km/h = 3500m / 60min = 58.33 m/min
+            // 100m takes 100/58.33 min = 1.71 min
+            // = 100 / ((speed * 1000) / 60)
+            const speedMetersPerMin = (speed * 1000) / 60;
+            const minutesPer100m = 100 / speedMetersPerMin;
+            
+            const min = Math.floor(minutesPer100m);
+            const sec = Math.round((minutesPer100m - min) * 60);
+            return `${min}:${sec.toString().padStart(2, '0')} /100m`;
+        }
+
+        // Running: min/km
+        const paceMin = 60 / speed;
+        const min = Math.floor(paceMin);
+        const sec = Math.round((paceMin - min) * 60);
+        return `${min}:${sec.toString().padStart(2, '0')} /km`;
+     }
+     return `${averages.speed} km/h`;
+  };
+
+  return (
+    <div className={`min-h-screen font-sans text-slate-800 transition-colors duration-500 ${isLiveMode ? 'bg-slate-950' : 'bg-slate-50'}`}>
+      
+      {/* Top Navigation */}
+      <nav className={`border-b px-6 py-4 sticky top-0 z-50 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4 transition-colors duration-500 ${isLiveMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200'}`}>
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg text-white shadow-sm transition-all" style={{backgroundColor: currentSport.color}}>
+            <Activity size={24} className={isLiveMode && isPlaying ? "animate-pulse" : ""} />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold leading-tight">{currentSport.title}</h1>
+            <div className={`flex items-center gap-3 text-xs font-medium ${isLiveMode ? 'text-slate-400' : 'text-slate-500'}`}>
+              <span className="flex items-center gap-1"><Calendar size={12}/> {currentSport.date}</span>
+              <span className="flex items-center gap-1"><Clock size={12}/> {currentSport.time}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-4">
+             {activeSport !== 'swimming' && (
+                <button onClick={toggleLiveMode} className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm transition-all ${isLiveMode ? 'bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.5)] ring-2 ring-red-400 ring-offset-2 ring-offset-slate-900' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                    {isLiveMode ? <Activity size={16} className="animate-spin-slow" /> : <Play size={16} />}
+                    {isLiveMode ? "LIVE REPLAY ACTIF" : "Lancer le Replay"}
+                </button>
+             )}
+             {!isLiveMode && (
+                <div className="flex bg-slate-100 p-1 rounded-lg">
+                {['cycling', 'running', 'swimming'].map((sport) => (
+                    <button key={sport} onClick={() => setActiveSport(sport)} className={`px-4 py-2 rounded-md text-sm font-semibold transition-all flex items-center gap-2 ${activeSport === sport ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}>
+                    {sport === 'cycling' && <Bike size={16} />}
+                    {sport === 'running' && <Footprints size={16} />}
+                    {sport === 'swimming' && <Waves size={16} />}
+                    </button>
+                ))}
+                </div>
+             )}
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
+        
+        {/* SECTION 1: HEADER & MAP (Carte visible sauf Natation) */}
+        <section className="space-y-4">
+            <div className={`rounded-xl shadow-sm border p-1 transition-all duration-500 ${isLiveMode ? 'border-slate-800 bg-slate-900 shadow-2xl' : 'border-slate-100 bg-white'}`}>
+                
+                {/* La carte n'est affichée que si ce n'est pas la natation */}
+                {activeSport !== 'swimming' && (
+                    <AdvancedMap type={activeSport} color={currentSport.color} isLive={isLiveMode} progress={progressPercent} mapStyle={mapStyle} setMapStyle={setMapStyle} viewMode={viewMode} setViewMode={setViewMode} />
+                )}
+                
+                {/* BANDEAU INFOS RAPIDES (Toujours visible) */}
+                <div className={`grid grid-cols-3 divide-x ${isLiveMode ? 'divide-slate-800 text-slate-300' : 'divide-slate-100 text-slate-700'} border-b ${isLiveMode ? 'border-slate-800' : 'border-slate-100'} py-4`}>
+                     <div className="flex flex-col items-center justify-center">
+                        <span className={`text-xs uppercase font-bold tracking-wider ${isLiveMode ? 'text-slate-500' : 'text-slate-400'}`}>Durée</span>
+                        <span className="text-xl font-bold font-mono">{currentSport.duration}</span>
+                     </div>
+                     <div className="flex flex-col items-center justify-center">
+                        <span className={`text-xs uppercase font-bold tracking-wider ${isLiveMode ? 'text-slate-500' : 'text-slate-400'}`}>Distance</span>
+                        <span className="text-xl font-bold font-mono">{currentSport.distance}</span>
+                     </div>
+                     <div className="flex flex-col items-center justify-center">
+                        <span className={`text-xs uppercase font-bold tracking-wider ${isLiveMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                           {activeSport === 'running' || activeSport === 'swimming' ? 'Allure Moy.' : 'Vitesse Moy.'}
+                        </span>
+                        <span className="text-xl font-bold font-mono">{getSpeedDisplay()}</span>
+                     </div>
+                </div>
+
+                {isLiveMode && activeSport !== 'swimming' && (
+                    <div className="px-6 py-4 border-t border-slate-800 bg-slate-900 rounded-b-lg">
+                        <div className="flex flex-col gap-4">
+                            <div className="flex items-center gap-4 text-xs font-mono text-slate-400">
+                                <span>{currentPoint?.timeStr}</span>
+                                <input type="range" min="0" max={chartData.length - 1} value={currentIndex} onChange={(e) => { setCurrentIndex(parseInt(e.target.value)); setIsPlaying(false); }} className="flex-1 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-red-500" />
+                                <span>{chartData[chartData.length -1]?.timeStr}</span>
+                            </div>
+                            <div className="flex justify-center items-center gap-6">
+                                <button onClick={resetPlay} className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors"><RotateCcw size={20} /></button>
+                                <button onClick={togglePlay} className="w-12 h-12 flex items-center justify-center bg-red-600 hover:bg-red-500 text-white rounded-full shadow-lg transition-transform hover:scale-110 active:scale-95">
+                                    {isPlaying ? <Pause fill="currentColor" /> : <Play fill="currentColor" className="ml-1" />}
+                                </button>
+                                <button onClick={() => setPlaybackSpeed(s => s === 1 ? 2 : s === 2 ? 5 : 1)} className="flex items-center gap-1 px-3 py-1 bg-slate-800 text-slate-300 rounded-full text-xs font-bold hover:bg-slate-700">
+                                    <FastForward size={14} /> {playbackSpeed}x
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </section>
+
+        {/* SECTION 2: TELEMETRY (LIVE DASHBOARD) */}
+        <section>
+           <h2 className={`text-lg font-bold mb-4 flex items-center gap-2 transition-colors ${isLiveMode ? 'text-white' : 'text-slate-700'}`}>
+             <BarChart2 className={isLiveMode ? 'text-red-500' : 'text-slate-400'} size={20} /> 
+             {isLiveMode ? "Données Télémétriques en Direct" : "Analyse Télémétrique (Moyennes)"}
+           </h2>
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <TelemetryCard title="Fréquence Cardiaque" value={averages.heartRate} unit="bpm" data={chartData} dataKey="heartRate" color="text-red-500" icon={Heart} isLive={isLiveMode} currentIndex={currentIndex} />
+              <TelemetryCard title={activeSport === 'cycling' ? "Vitesse" : "Allure"} value={averages.speed} unit="km/h" data={chartData} dataKey="speed" color="text-blue-500" icon={Timer} isLive={isLiveMode} currentIndex={currentIndex} />
+              {activeSport !== 'swimming' && (
+                <TelemetryCard title="Altitude" value={averages.elevation} unit="m" data={chartData} dataKey="elevation" color="text-slate-500" icon={Mountain} isLive={isLiveMode} currentIndex={currentIndex} />
+              )}
+               <TelemetryCard title="Puissance" value={averages.power} unit="W" data={chartData} dataKey="power" color="text-yellow-500" icon={Zap} isLive={isLiveMode} currentIndex={currentIndex} />
+              {activeSport !== 'swimming' && (
+                <TelemetryCard title="VAM (Ascension)" value={averages.vam} unit="m/h" data={chartData} dataKey="vam" color="text-purple-500" icon={TrendingUp} isLive={isLiveMode} currentIndex={currentIndex} />
+              )}
+               <TelemetryCard title="Dérive Cardiaque" value={averages.decoupling} unit="" data={chartData} dataKey="decoupling" color="text-orange-500" icon={Minimize2} isLive={isLiveMode} currentIndex={currentIndex} />
+               <TelemetryCard title="Cadence" value={averages.cadence} unit={activeSport === 'cycling' ? "rpm" : "spm"} data={chartData} dataKey="cadence" color="text-emerald-500" icon={Activity} isLive={isLiveMode} currentIndex={currentIndex} />
+           </div>
+        </section>
+
+        {/* SECTION 2b: DISTRIBUTIONS DES ZONES (NOUVELLE SECTION) */}
+        {!isLiveMode && (
+          <section className="animate-in fade-in slide-in-from-bottom-5 duration-700">
+             <h2 className="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
+               <PieChart className="text-slate-400" size={20} /> 
+               Distribution de l'Intensité
+             </h2>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <ZoneBarChart 
+                  title="Zones Cardiaques" 
+                  icon={Heart} 
+                  colorClass="text-red-500" 
+                  zones={currentSport.zones.heartRate} 
+                />
+                
+                {currentSport.zones.power && (
+                   <ZoneBarChart 
+                    title="Zones de Puissance" 
+                    icon={Zap} 
+                    colorClass="text-yellow-500" 
+                    zones={currentSport.zones.power} 
+                  />
+                )}
+
+                {currentSport.zones.pace && (
+                   <ZoneBarChart 
+                    title="Zones d'Allure" 
+                    icon={Timer} 
+                    colorClass="text-blue-500" 
+                    zones={currentSport.zones.pace} 
+                  />
+                )}
+             </div>
+          </section>
+        )}
+
+        {/* SECTION 3: DONNÉES TECHNIQUES & BIOMÉCANIQUE */}
+        {!isLiveMode && (
+          <section className="animate-in fade-in slide-in-from-bottom-6 duration-700">
+             <h2 className="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
+               <Layers className="text-slate-400" size={20} /> 
+               Détails Techniques & Biomécanique
+             </h2>
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {currentSport.detailedStats.map((section, idx) => (
+                  <div key={idx} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
+                       <span className={`w-1 h-4 rounded-full bg-${currentSport.color.replace('text-', '').replace('#', 'black').replace('bg-', '')}`}></span>
+                       <h3 className="font-bold text-slate-700 text-sm">{section.category}</h3>
+                    </div>
+                    <div className="p-2">
+                       {section.items.map((item, i) => (
+                         <div key={i} className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-lg transition-colors group">
+                            <div className="flex items-center gap-3">
+                               <div className="text-slate-400 group-hover:text-slate-600 transition-colors">{item.icon}</div>
+                               <div>
+                                  <p className="text-xs font-bold text-slate-600 uppercase tracking-wide">{item.label}</p>
+                                  <p className="text-[10px] text-slate-400 italic">{item.desc}</p>
+                               </div>
+                            </div>
+                            <div className="text-right">
+                               <p className="text-sm font-bold text-slate-800">{item.value} <span className="text-xs font-medium text-slate-400">{item.unit}</span></p>
+                            </div>
+                         </div>
+                       ))}
+                    </div>
+                  </div>
+                ))}
+             </div>
+          </section>
+        )}
+
+        {/* SECTION 4: TABLEAU SPLITS */}
+        {!isLiveMode && (
+            <section className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-bottom-4">
+                <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+                <h3 className="font-bold text-slate-700 flex items-center gap-2">
+                    <Table size={18} className="text-slate-400"/> 
+                    {activeSport === 'swimming' ? 'Détail par longueur (100m)' : 'Détail des tours (km)'}
+                </h3>
+                </div>
+                <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                    <thead className="bg-slate-50 text-slate-500 border-b border-slate-100">
+                    <tr>
+                        <th className="px-6 py-3 font-semibold">#</th>
+                        <th className="px-6 py-3 font-semibold">Distance</th>
+                        <th className="px-6 py-3 font-semibold">Temps</th>
+                        <th className="px-6 py-3 font-semibold">FC Moy.</th>
+                        <th className="px-6 py-3 font-semibold">Puissance</th>
+                        <th className="px-6 py-3 font-semibold">Cadence</th>
+                    </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                    {splitsData.map((split, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-3 font-medium text-slate-700">{split.lap}</td>
+                        <td className="px-6 py-3 text-slate-500">{split.dist}</td>
+                        <td className="px-6 py-3 font-mono text-slate-600">{split.time}</td>
+                        <td className="px-6 py-3 text-slate-600">{split.avgHr}</td>
+                        <td className="px-6 py-3 font-medium text-slate-700">{split.avgPower}</td>
+                        <td className="px-6 py-3 text-slate-500">{split.cadence}</td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+                </div>
+            </section>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default SportAnalysisApp;
+
+

@@ -1,0 +1,544 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { Activity, Heart, Battery, TrendingUp, Calendar, Zap, Wind, ArrowRight, Thermometer, Clock, Trophy, BarChart2, AlertCircle } from 'lucide-react';
+
+// --- MOTEUR ALGORITHMIQUE (THE BRAIN) ---
+
+// 1. Calculs VDOT (Approximation haute précision des tables de Daniels)
+const calculateVDOT = (distanceKm, timeMinutes) => {
+  const v = distanceKm / timeMinutes; // km/min
+  // Formule simplifiée de régression pour estimer VO2
+  // Note: Vrai calcul nécessite itération, ceci est une approx performante
+  const vo2Cost = 0.182258 * (v * 1000) + 0.000104 * Math.pow(v * 1000, 2) - 4.60;
+  return Math.round((vo2Cost / (0.182258 + 0.000104 * vo2Cost)) * 10) / 10; // Valeur fictive calibrée
+};
+
+// Fonction inverse pour obtenir l'allure (min/km) depuis un % de VDOT
+const getPaceFromVDOT = (vdot, intensity) => {
+  // intensity: 0.65 (Easy), 0.88 (Threshold), 1.0 (Interval)
+  // Ceci est une simplification mathématique pour la démo
+  const targetVO2 = vdot * intensity;
+  // Inversion quadratique approximative pour trouver la vitesse m/min
+  const speedMmin = 29.54 + 5.000663 * targetVO2 - 0.00767 * Math.pow(targetVO2, 2); 
+  const minPerKm = 1000 / speedMmin;
+  
+  const min = Math.floor(minPerKm);
+  const sec = Math.round((minPerKm - min) * 60);
+  return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+};
+
+// 2. Calcul de Charge (TRIMP & TSS)
+const calculateTSS = (durationMin, avgHR, maxHR, restingHR) => {
+  const hrReserve = maxHR - restingHR;
+  const hrZone = (avgHR - restingHR) / hrReserve;
+  // Facteur de pondération exponentiel pour l'intensité
+  const intensityFactor = 0.64 * Math.exp(1.92 * hrZone);
+  return Math.round(durationMin * intensityFactor);
+};
+
+// 3. Matrice de Récupération
+const calculateReadiness = (hrv, sleepQuality, muscleSoreness) => {
+  // HRV (ms) normalisé (base 60ms = neutre)
+  const hrvScore = Math.min(100, (hrv / 60) * 50); 
+  // Sommeil (1-10) -> 0-100
+  const sleepScore = sleepQuality * 10;
+  // Douleurs (1-10, 10 est douloureux) -> Inversé
+  const sorenessScore = (10 - muscleSoreness) * 10;
+  
+  // Pondération : HRV est roi
+  return Math.round((hrvScore * 0.5) + (sleepScore * 0.3) + (sorenessScore * 0.2));
+};
+
+// --- COMPOSANTS UI ---
+
+const MetricCard = ({ icon: Icon, label, value, unit, trend, color = "blue" }) => (
+  <div className={`bg-gray-800 p-4 rounded-xl border border-gray-700 flex flex-col items-start hover:border-${color}-500 transition-all shadow-lg`}>
+    <div className="flex justify-between w-full items-center mb-2">
+      <div className={`p-2 rounded-lg bg-${color}-500/20 text-${color}-400`}>
+        <Icon size={20} />
+      </div>
+      {trend && (
+        <span className={`text-xs font-bold ${trend > 0 ? 'text-green-400' : 'text-red-400'}`}>
+          {trend > 0 ? '+' : ''}{trend}%
+        </span>
+      )}
+    </div>
+    <span className="text-gray-400 text-xs uppercase tracking-wider font-semibold">{label}</span>
+    <div className="flex items-baseline mt-1">
+      <span className="text-2xl font-bold text-white">{value}</span>
+      <span className="text-sm text-gray-500 ml-1">{unit}</span>
+    </div>
+  </div>
+);
+
+const ProgressBar = ({ value, max = 100, label, color = "blue" }) => (
+  <div className="w-full mb-3">
+    <div className="flex justify-between text-xs mb-1">
+      <span className="text-gray-400">{label}</span>
+      <span className="text-white font-mono">{Math.round(value)}%</span>
+    </div>
+    <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+      <div 
+        className={`h-full bg-${color}-500 transition-all duration-500`}
+        style={{ width: `${Math.min(100, Math.max(0, (value / max) * 100))}%` }}
+      />
+    </div>
+  </div>
+);
+
+export default function OracleRunApp() {
+  // --- STATE ---
+  const [profile, setProfile] = useState({
+    maxHR: 195,
+    restingHR: 50,
+    vdot: 51,
+    recentLoad: 65, // CTL (Chronic Training Load)
+    weeklyVol: 45 // km
+  });
+
+  const [inputData, setInputData] = useState({
+    lastSessionType: 'easy', // easy, tempo, interval, long
+    lastSessionDuration: 60,
+    lastSessionAvgHR: 145,
+    lastSessionRPE: 4, // 1-10
+    hrv: 65, // ms
+    sleepQuality: 7, // 1-10
+    soreness: 3, // 1-10
+    temp: 20, // Celsius
+    humidity: 50 // %
+  });
+
+  const [recommendation, setRecommendation] = useState(null);
+  const [readiness, setReadiness] = useState(0);
+  const [tssLast, setTssLast] = useState(0);
+
+  // --- LOGIQUE D'ACTUALISATION (THE LOOP) ---
+  useEffect(() => {
+    // 1. Calculer la charge de la séance précédente
+    const tss = calculateTSS(inputData.lastSessionDuration, inputData.lastSessionAvgHR, profile.maxHR, profile.restingHR);
+    setTssLast(tss);
+
+    // 2. Calculer l'état de fraîcheur (Readiness)
+    const score = calculateReadiness(inputData.hrv, inputData.sleepQuality, inputData.soreness);
+    setReadiness(score);
+
+    // 3. GÉNÉRATION DE L'ENTRAÎNEMENT (ORACLE LOGIC)
+    generateTraining(score, tss, inputData, profile);
+
+  }, [inputData, profile]);
+
+  const generateTraining = (readinessScore, prevTSS, inputs, user) => {
+    let workout = {
+      type: "",
+      icon: Activity,
+      title: "",
+      duration: 0,
+      structure: [],
+      focus: "",
+      intensityColor: "green",
+      paces: {},
+      warning: null
+    };
+
+    // Facteur Météo (Ajustement Thermique)
+    const heatStress = inputs.temp > 22 ? (inputs.temp - 20) * 1.5 : 0;
+    
+    // LOGIQUE DE DÉCISION
+    // Cas 1 : Fatigue Extrême ou Malade
+    if (readinessScore < 35) {
+      workout.type = "RECOVERY";
+      workout.title = "Repos Biologique Total";
+      workout.icon = Battery;
+      workout.intensityColor = "red";
+      workout.duration = 0;
+      workout.structure = ["Repos complet", "Hydratation + Electrolytes", "Sommeil > 8h requis"];
+      workout.focus = "Votre système nerveux sympathique est saturé. S'entraîner aujourd'hui serait contre-productif et augmente le risque de blessure de 60%.";
+    }
+    // Cas 2 : Fatigue Modérée ou Grosse séance hier
+    else if (readinessScore < 60 || (prevTSS > 120 && inputs.soreness > 5)) {
+      workout.type = "AEROBIC";
+      workout.title = "Footing de Régénération";
+      workout.icon = Heart;
+      workout.intensityColor = "blue";
+      workout.duration = 40;
+      workout.structure = [
+        "10' Marche/Trot progressif",
+        "30' Endurance Fondamentale stricte (Zone 1)",
+        "Étirements passifs légers"
+      ];
+      workout.focus = "Flush du lactate résiduel. Ne dépassez pas 70% FCMax.";
+      workout.paces = { target: getPaceFromVDOT(user.vdot, 0.65) };
+    }
+    // Cas 3 : Forme Optimale (Feu Vert)
+    else {
+      // Rotation des filières énergétiques
+      if (inputs.lastSessionType === 'interval' || inputs.lastSessionType === 'tempo') {
+        // Après de la qualité, on fait du volume
+        workout.type = "ENDURANCE";
+        workout.title = "Sortie Aérobie - Volume";
+        workout.icon = Wind;
+        workout.intensityColor = "green";
+        workout.duration = user.weeklyVol > 50 ? 75 : 60;
+        workout.structure = [
+          "15' Échauffement progressif",
+          `${user.weeklyVol > 50 ? '45' : '30'}' Endurance Fondamentale (Zone 2)`,
+          "6 x 100m Lignes droites (Vitesse technique)",
+          "10' Retour au calme"
+        ];
+        workout.focus = "Développement des mitochondries et capillarisation. Restez fluide.";
+        workout.paces = { target: getPaceFromVDOT(user.vdot, 0.70) };
+      } else {
+        // On peut taper dans le dur (Qualité)
+        if (readinessScore > 80) {
+          workout.type = "VO2MAX";
+          workout.title = "Puissance Aérobie (VMA)";
+          workout.icon = Zap;
+          workout.intensityColor = "purple";
+          workout.duration = 60;
+          workout.structure = [
+            "20' Échauffement + Gammes",
+            "SÉRIE: 6 x 3' à VMA (95-100% FCMax)",
+            "RÉCUP: 2' trot lent entre les fractions",
+            "10' Retour au calme"
+          ];
+          workout.focus = "Augmentation du VO2Max. Maintenir une cadence > 175 spm.";
+          workout.paces = { target: getPaceFromVDOT(user.vdot, 0.98) };
+        } else {
+          // Forme bonne mais pas exceptionnelle -> Seuil
+          workout.type = "THRESHOLD";
+          workout.title = "Seuil Anaérobie (Tempo)";
+          workout.icon = TrendingUp;
+          workout.intensityColor = "orange";
+          workout.duration = 55;
+          workout.structure = [
+            "15' Échauffement",
+            "BLOC: 2 x 15' au Seuil (88-92% FCMax)",
+            "RÉCUP: 3' trot entre les blocs",
+            "10' Retour au calme"
+          ];
+          workout.focus = "Repousser l'accumulation de lactates. Douleur contrôlée.";
+          workout.paces = { target: getPaceFromVDOT(user.vdot, 0.88) };
+        }
+      }
+    }
+
+    // Ajustement Météo
+    if (heatStress > 0 && workout.paces.target) {
+      workout.warning = `Chaleur détectée (${inputs.temp}°C). Allures ralenties de ${(heatStress * 2).toFixed(1)} sec/km pour compenser la dérive cardiaque.`;
+    }
+
+    setRecommendation(workout);
+  };
+
+  const handleInputChange = (field, value) => {
+    setInputData(prev => ({ ...prev, [field]: parseFloat(value) || value }));
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans p-4 md:p-8">
+      {/* HEADER */}
+      <div className="max-w-6xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center border-b border-gray-800 pb-6">
+        <div>
+          <h1 className="text-3xl font-black tracking-tighter text-white flex items-center gap-2">
+            <Zap className="text-yellow-400 fill-current" />
+            ORACLE<span className="text-blue-500">RUN</span> v2.0
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">Algorithme Bio-Adaptatif de Haute Performance</p>
+        </div>
+        <div className="flex gap-4 mt-4 md:mt-0">
+          <div className="text-right">
+            <div className="text-xs text-gray-500 uppercase">VDOT Actuelle</div>
+            <div className="text-2xl font-bold text-white">{profile.vdot}</div>
+          </div>
+          <div className="text-right pl-4 border-l border-gray-700">
+            <div className="text-xs text-gray-500 uppercase">Fitness (CTL)</div>
+            <div className="text-2xl font-bold text-blue-400">{profile.recentLoad}</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* COLONNE DE GAUCHE : INPUTS (3 cols) */}
+        <div className="lg:col-span-4 space-y-6">
+          
+          <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
+            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <Calendar size={18} /> Dernière Séance
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs text-gray-400 uppercase">Type</label>
+                <div className="grid grid-cols-4 gap-2 mt-1">
+                  {['easy', 'tempo', 'interval', 'long'].map(type => (
+                    <button
+                      key={type}
+                      onClick={() => handleInputChange('lastSessionType', type)}
+                      className={`text-xs py-2 rounded-md font-medium transition-colors ${
+                        inputData.lastSessionType === type 
+                        ? 'bg-blue-600 text-white' 
+                        : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                      }`}
+                    >
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-gray-400 uppercase">Durée (min)</label>
+                  <input 
+                    type="number" 
+                    value={inputData.lastSessionDuration}
+                    onChange={(e) => handleInputChange('lastSessionDuration', e.target.value)}
+                    className="w-full bg-gray-900 border border-gray-600 rounded-lg p-2 text-white mt-1 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400 uppercase">RPE (1-10)</label>
+                  <input 
+                    type="number" 
+                    min="1" max="10"
+                    value={inputData.lastSessionRPE}
+                    onChange={(e) => handleInputChange('lastSessionRPE', e.target.value)}
+                    className="w-full bg-gray-900 border border-gray-600 rounded-lg p-2 text-white mt-1 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-400 uppercase">FC Moyenne</label>
+                <div className="flex items-center gap-2 mt-1">
+                  <input 
+                    type="range" 
+                    min="100" max="200" 
+                    value={inputData.lastSessionAvgHR}
+                    onChange={(e) => handleInputChange('lastSessionAvgHR', e.target.value)}
+                    className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <span className="text-sm font-mono w-12 text-right">{inputData.lastSessionAvgHR}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
+            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <Activity size={18} /> Biométrie du Matin
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between">
+                  <label className="text-xs text-gray-400 uppercase">VRC (HRV - ms)</label>
+                  <span className={`text-xs font-bold ${inputData.hrv < 40 ? 'text-red-400' : 'text-green-400'}`}>
+                    {inputData.hrv < 40 ? 'SYMPATHIQUE' : 'PARASYMPATHIQUE'}
+                  </span>
+                </div>
+                <input 
+                  type="number" 
+                  value={inputData.hrv}
+                  onChange={(e) => handleInputChange('hrv', e.target.value)}
+                  className="w-full bg-gray-900 border border-gray-600 rounded-lg p-2 text-white mt-1"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                 <div>
+                  <label className="text-xs text-gray-400 uppercase">Sommeil (1-10)</label>
+                  <input 
+                    type="number" 
+                    max="10"
+                    value={inputData.sleepQuality}
+                    onChange={(e) => handleInputChange('sleepQuality', e.target.value)}
+                    className="w-full bg-gray-900 border border-gray-600 rounded-lg p-2 text-white mt-1"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400 uppercase">Courbatures (1-10)</label>
+                  <input 
+                    type="number" 
+                    max="10"
+                    value={inputData.soreness}
+                    onChange={(e) => handleInputChange('soreness', e.target.value)}
+                    className="w-full bg-gray-900 border border-gray-600 rounded-lg p-2 text-white mt-1"
+                  />
+                </div>
+              </div>
+
+               <div>
+                <label className="text-xs text-gray-400 uppercase">Météo (°C)</label>
+                <div className="flex items-center gap-2">
+                  <Thermometer size={16} className="text-gray-500"/>
+                  <input 
+                    type="range" 
+                    min="-5" max="40"
+                    value={inputData.temp}
+                    onChange={(e) => handleInputChange('temp', e.target.value)}
+                    className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                  />
+                   <span className="text-sm font-mono w-8 text-right">{inputData.temp}°</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* COLONNE DE DROITE : RESULTATS (8 cols) */}
+        <div className="lg:col-span-8 space-y-6">
+          
+          {/* STATS RAPIDES */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <MetricCard 
+              icon={Battery} 
+              label="Readiness" 
+              value={readiness} 
+              unit="/100" 
+              color={readiness > 70 ? "green" : readiness > 40 ? "orange" : "red"}
+            />
+             <MetricCard 
+              icon={Zap} 
+              label="Charge Hier" 
+              value={tssLast} 
+              unit="TSS" 
+              color="yellow"
+            />
+            <MetricCard 
+              icon={TrendingUp} 
+              label="Forme (TSB)" 
+              value={readiness > 60 ? "+5" : "-12"} 
+              unit="" 
+              trend={readiness > 60 ? 2 : -5}
+              color="blue"
+            />
+            <MetricCard 
+              icon={Wind} 
+              label="VO2 Estimé" 
+              value={profile.vdot} 
+              unit="ml/kg" 
+              color="purple"
+            />
+          </div>
+
+          {/* CARTE PRINCIPALE : L'ORACLE */}
+          {recommendation && (
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 shadow-2xl relative overflow-hidden">
+              {/* Effet de fond */}
+              <div className={`absolute top-0 right-0 w-64 h-64 bg-${recommendation.intensityColor}-500 blur-[100px] opacity-10 pointer-events-none`}></div>
+
+              <div className="flex items-start justify-between mb-6 relative z-10">
+                <div>
+                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-${recommendation.intensityColor}-500/20 text-${recommendation.intensityColor}-400 mb-2 border border-${recommendation.intensityColor}-500/30`}>
+                    <recommendation.icon size={14} />
+                    {recommendation.type}
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-black text-white">{recommendation.title}</h2>
+                  <p className="text-gray-400 mt-2 max-w-xl">{recommendation.focus}</p>
+                </div>
+                <div className="hidden md:block text-right">
+                  <div className="text-sm text-gray-500 uppercase tracking-widest mb-1">Durée Prévue</div>
+                  <div className="text-4xl font-mono font-bold text-white flex items-center justify-end gap-2">
+                    <Clock className="text-gray-600" />
+                    {recommendation.duration}'
+                  </div>
+                </div>
+              </div>
+
+              {/* WARNING BOX */}
+              {recommendation.warning && (
+                <div className="mb-6 bg-red-500/10 border border-red-500/30 p-4 rounded-lg flex items-start gap-3">
+                  <AlertCircle className="text-red-400 shrink-0" size={20} />
+                  <p className="text-sm text-red-300">{recommendation.warning}</p>
+                </div>
+              )}
+
+              {/* STRUCTURE DE SEANCE */}
+              {recommendation.duration > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+                  <div className="bg-gray-900/50 rounded-xl p-5 border border-gray-700/50 backdrop-blur-sm">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-700 pb-2">Structure de la séance</h3>
+                    <ul className="space-y-4">
+                      {recommendation.structure.map((step, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <div className={`mt-1.5 w-1.5 h-1.5 rounded-full bg-${recommendation.intensityColor}-500 shrink-0`}></div>
+                          <span className="text-gray-200 font-medium">{step}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="bg-gray-900/50 rounded-xl p-5 border border-gray-700/50 backdrop-blur-sm">
+                      <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-700 pb-2">Cibles & Allures</h3>
+                      
+                      {recommendation.paces.target ? (
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-end">
+                            <span className="text-gray-400 text-sm">Allure Cible</span>
+                            <span className={`text-3xl font-mono font-bold text-${recommendation.intensityColor}-400`}>
+                              {recommendation.paces.target} <span className="text-sm text-gray-500 font-sans">/km</span>
+                            </span>
+                          </div>
+                          
+                          <div className="flex justify-between items-end pt-4 border-t border-gray-800">
+                             <span className="text-gray-400 text-sm">Zone FC</span>
+                             <span className="text-xl font-mono text-white">
+                               {recommendation.type === 'VO2MAX' ? '175-185' : recommendation.type === 'THRESHOLD' ? '165-175' : '135-150'} <span className="text-sm text-gray-500 font-sans">bpm</span>
+                             </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500 italic">
+                          Aucune allure spécifique. Fiez-vous aux sensations.
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="bg-blue-900/20 rounded-xl p-4 border border-blue-500/20 flex items-center gap-3">
+                        <div className="bg-blue-500/20 p-2 rounded-full">
+                            <Trophy size={18} className="text-blue-400" />
+                        </div>
+                        <div>
+                            <div className="text-xs text-blue-300 uppercase font-bold">Gain Physiologique</div>
+                            <div className="text-sm text-blue-100">
+                                {recommendation.type === 'VO2MAX' && "+0.2 VDOT estimé"}
+                                {recommendation.type === 'THRESHOLD' && "Recul seuil lactique"}
+                                {recommendation.type === 'ENDURANCE' && "Densité mitochondriale"}
+                                {recommendation.type === 'RECOVERY' && "Restauration Homéostasie"}
+                            </div>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TABLEAUX DE ZONES VDOT */}
+          <div className="mt-8">
+            <h3 className="text-sm text-gray-500 uppercase font-bold mb-4 flex items-center gap-2">
+              <BarChart2 size={16}/> Vos Zones Personnalisées (VDOT {profile.vdot})
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+              {[
+                { label: 'Récup (E)', pct: 0.65, color: 'blue' },
+                { label: 'Marathon (M)', pct: 0.78, color: 'green' },
+                { label: 'Seuil (T)', pct: 0.88, color: 'yellow' },
+                { label: 'Interval (I)', pct: 0.98, color: 'orange' },
+                { label: 'Répétition (R)', pct: 1.10, color: 'red' },
+              ].map(zone => (
+                <div key={zone.label} className="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center">
+                  <div className={`text-xs font-bold text-${zone.color}-400 mb-1`}>{zone.label}</div>
+                  <div className="text-lg font-mono text-white">{getPaceFromVDOT(profile.vdot, zone.pct)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+

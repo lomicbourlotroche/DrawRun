@@ -314,9 +314,10 @@ fun StepCard(
             // Content
             Column(modifier = Modifier.weight(1f)) {
                  Text(
-                    if (step.type == "PPG") step.targetValue else getStepTypeLabel(step.type),
+                    if (step.type == "PPG") "PPG: ${step.targetValue}" else getStepTypeLabel(step.type),
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = if (step.type == "PPG") Color(0xFFE040FB) else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     formatStepDuration(step),
@@ -421,7 +422,8 @@ fun BlockCard(
                         ) {
                             Icon(getIconForStep(subStep.type), contentDescription = null, tint = getColorForStep(subStep.type), modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("${getStepTypeLabel(subStep.type)} • ${formatStepDuration(subStep)}", style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+                            val label = if (subStep.type == "PPG") "PPG: ${subStep.targetValue}" else getStepTypeLabel(subStep.type)
+                            Text("$label • ${formatStepDuration(subStep)}", style = MaterialTheme.typography.bodySmall, color = if (subStep.type == "PPG") Color(0xFFE040FB) else MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
                              if (subStep.targetValue.isNotBlank()) {
                                  Text("@ ${subStep.targetValue}", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
                              }
@@ -456,6 +458,15 @@ fun BlockCard(
                     }) {
                         Box(Modifier.clip(RoundedCornerShape(4.dp)).background(Color(0xFFF59E0B).copy(alpha = 0.1f)).padding(4.dp)) {
                             Icon(Icons.Default.SelfImprovement, contentDescription = null, tint = Color(0xFFF59E0B), modifier = Modifier.size(16.dp))
+                        }
+                    }
+                    IconButton(onClick = {
+                        val newSubList = step.steps.toMutableList()
+                        newSubList.add(WorkoutStep(type = "PPG", durationType = "REPS", durationValue = 15.0, targetType = "NONE", targetValue = "Exercice"))
+                        onUpdate(step.copy(steps = newSubList))
+                    }) {
+                        Box(Modifier.clip(RoundedCornerShape(4.dp)).background(Color(0xFF8B5CF6).copy(alpha = 0.1f)).padding(4.dp)) {
+                            Icon(Icons.Default.FitnessCenter, contentDescription = null, tint = Color(0xFF8B5CF6), modifier = Modifier.size(16.dp))
                         }
                     }
                 }
@@ -653,11 +664,29 @@ fun WorkoutStepEditorDialog(
                     }
                 }
                 } // End if not PPG
+
+                // Repeat Count (Only if it's an Interval Block or we want to allow repeats on steps?)
+                // Actually, let's only dynamic show it if type is INTERVAL_BLOCK (though dialog usually handles steps)
+                if (step.type == "INTERVAL_BLOCK") {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Nombre de Séries", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    var repsStr by remember { mutableStateOf(step.repeatCount.toString()) }
+                    OutlinedTextField(
+                        value = repsStr,
+                        onValueChange = { 
+                            repsStr = it.filter { c -> c.isDigit() }
+                            editedStep = editedStep.copy(repeatCount = repsStr.toIntOrNull() ?: 1)
+                        },
+                        label = { Text("Nombre de répétitions") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                }
             }
         },
         confirmButton = {
             Button(onClick = {
-                val newStep = step.copy(
+                val newStep = editedStep.copy(
                     type = stepType,
                     durationType = durationType,
                     durationValue = durationValue.toDoubleOrNull() ?: step.durationValue,

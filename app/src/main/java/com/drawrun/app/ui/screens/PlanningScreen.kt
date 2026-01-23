@@ -37,11 +37,13 @@ import java.time.LocalDate
 fun PlanningScreen(state: AppState) {
     val context = LocalContext.current
     var planningSport by remember { mutableStateOf("run") }
+    var showWorkoutCreator by remember { mutableStateOf(false) }
+    var workoutToEdit by remember { mutableStateOf<CustomRunWorkout?>(null) } 
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .then(if (showWorkoutCreator && planningSport == "custom") Modifier else Modifier.verticalScroll(rememberScrollState()))
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
@@ -88,9 +90,6 @@ fun PlanningScreen(state: AppState) {
                 Text(text = "CRÉATION", style = MaterialTheme.typography.labelSmall, color = if (planningSport == "custom") Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), fontWeight = FontWeight.Black)
             }
         }
-
-        var showWorkoutCreator by remember { mutableStateOf(false) }
-        var workoutToEdit by remember { mutableStateOf<CustomRunWorkout?>(null) }
 
         if (planningSport == "run") {
             Box(

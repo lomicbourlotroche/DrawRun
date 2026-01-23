@@ -22,14 +22,20 @@
 - **Analyse de Charge (CTL/TSB)** : Suivi précis de votre charge chronique (Forme) et de votre balance de stress (Fraîcheur) pour atteindre un pic de forme optimal le jour J.
 - **Variabilité de la Fréquence Cardiaque (HRV)** : Intégration des données de santé pour évaluer votre état de récupération quotidien et adapter l'intensité au réveil.
 
-### 📅 Planification & Coaching
-- **Périodisation 3:1 (Step-Loading)** : Structure algorithmique des blocs d'entraînement (3 semaines de charge progressive, 1 semaine de décharge spécifique).
-- **Suggestion Quotidienne** : Un coach IA analyse vos données Strava et Health Connect pour vous suggérer la séance idéale en fonction de votre programme et de votre fatigue réelle.
-- **Journal d'Activités Interactif** : Visualisation riche des parcours (polylines), analyse du découplage cardiaque et suivi de l'efficacité (EF).
+### 📅 Planification IA & Coaching
+- **Générateur de Plan Run (12 Semaines)** : Création instantanée d'un plan complet de 12 semaines ciblant votre objectif (5k à Marathon) basé sur votre VDOT actuel.
+- **Swim Coach IA** : Module dédié à la natation capable de générer des séances structurées (Distance ou Durée) avec focus technique et éducatifs.
+- **Créateur de Séance Avancé "Pro"** :
+  - **Structure par Blocs** : Créez des répétitions complexes (ex: 10x 400m/1').
+  - **Réorganisation** : Déplacez vos blocs librement.
+  - **PPG Intégrée** : Ajoutez des blocs de renforcement musculaire.
+  - **Mode Édition** : Modifiez vos séances existantes à la volée.
+- **Périodisation 3:1** : Structure algorithmique des blocs (3 semaines charge, 1 semaine décharge).
 
 ### 🔗 Écosystème Connecté
-- **Strava API v3** : Synchronisation bidirectionnelle fluide des activités, des segments et des scores de souffrance.
-- **Google Health Connect** : Centralisation des données de repos (Sommeil, HRV, Pouls au repos) pour une vision holistique de l'athlète.
+- **Strava API v3** : Synchronisation bidirectionnelle. Import des activités, calcul des scores.
+- **Liaison Intelligente** : Associez manuellement vos activités Strava à vos séances prévues ("Lier/Délier") pour un suivi précis de la conformité au plan.
+- **Google Health Connect** : Centralisation des données de repos (Sommeil, HRV).
 
 ## 🛠️ Stack Technique
 

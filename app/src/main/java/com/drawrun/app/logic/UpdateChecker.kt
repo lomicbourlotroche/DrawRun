@@ -17,7 +17,12 @@ data class VersionInfo(
 
 object UpdateChecker {
     private const val VERSION_URL = "https://lomicbourlotroche.github.io/DrawRun/version.json"
-    private val client = OkHttpClient()
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+        .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+        .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+        .retryOnConnectionFailure(true)
+        .build()
     
     suspend fun checkForUpdate(currentVersionCode: Int): VersionInfo? = withContext(Dispatchers.IO) {
         try {
