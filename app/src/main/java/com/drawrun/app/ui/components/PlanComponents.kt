@@ -28,6 +28,8 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle as JavaTextStyle
 import java.util.Locale
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 
 /**
  * Composable for displaying a single day as a detailed flashcard
@@ -234,44 +236,158 @@ fun DayFlashcard(
                 }
             }
             
-            // Completion status
-            completion?.let {
-                Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
-                
+            // Completion status & Linking
+            Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+            
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Status Text / Icon
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(
-                        imageVector = when(it.status) {
-                            CompletionStatus.COMPLETED -> Icons.Default.CheckCircle
-                            CompletionStatus.PARTIAL -> Icons.Default.Warning
-                            CompletionStatus.SKIPPED -> Icons.Default.Cancel
-                            else -> Icons.Default.RadioButtonUnchecked
+                    if (completion != null) {
+                        Icon(
+                            imageVector = when(completion.status) {
+                                CompletionStatus.COMPLETED -> Icons.Default.CheckCircle
+                                CompletionStatus.PARTIAL -> Icons.Default.Warning
+                                CompletionStatus.SKIPPED -> Icons.Default.Cancel
+                                else -> Icons.Default.RadioButtonUnchecked
+                            },
+                            contentDescription = null,
+                            tint = when(completion.status) {
+                                CompletionStatus.COMPLETED -> Color(0xFF22C55E)
+                                CompletionStatus.PARTIAL -> Color(0xFFF59E0B)
+                                CompletionStatus.SKIPPED -> Color(0xFFEF4444)
+                                else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                            },
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = when(completion.status) {
+                                CompletionStatus.COMPLETED -> "Complété"
+                                CompletionStatus.PARTIAL -> "Partiel"
+                                CompletionStatus.SKIPPED -> "Sauté"
+                                else -> "À venir"
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Medium
+                        )
+                    } else {
+                        Text(
+                            text = "Non réalisé",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        )
+                    }
+                }
+
+                // Action Buttons (Link / Unlink)
+                var showLinkingDialog by remember { mutableStateOf(false) }
+
+                if (completion == null) {
+                    Button(
+                        onClick = { showLinkingDialog = true },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            contentColor = MaterialTheme.colorScheme.primary
+                        ),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.height(32.dp)
+                    ) {
+                        Icon(Icons.Default.Link, contentDescription = null, modifier = Modifier.size(14.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("LIER", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    }
+                } else {
+                     IconButton(
+                        onClick = {
+                            val map = state.workoutCompletions.toMutableMap()
+                            map.remove(completionKey)
+                            state.workoutCompletions = map
                         },
-                        contentDescription = null,
-                        tint = when(it.status) {
-                            CompletionStatus.COMPLETED -> Color(0xFF22C55E)
-                            CompletionStatus.PARTIAL -> Color(0xFFF59E0B)
-                            CompletionStatus.SKIPPED -> Color(0xFFEF4444)
-                            else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(Icons.Default.LinkOff, contentDescription = "Délier", tint = Color.Gray, modifier = Modifier.size(16.dp))
+                    }
+                }
+
+                if (showLinkingDialog) {
+                    LinkingDialog(
+                        activities = state.activities.sortedByDescending { it.date }, // Recent first
+                        onActivitySelected = { activity ->
+                            // Create link
+                            val newCompletion = WorkoutCompletion(
+                                planWeek = weekNum,
+                                planDay = dayIndex,
+                                plannedDate = day.date.toString(),
+                                completedDate = activity.date,
+                                actualActivity = activity,
+                                status = CompletionStatus.COMPLETED, // Logic customizable
+                                completionScore = 100 // Logic customizable
+                            )
+                            val map = state.workoutCompletions.toMutableMap()
+                            map[completionKey] = newCompletion
+                            state.workoutCompletions = map
+                            showLinkingDialog = false
                         },
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        text = when(it.status) {
-                            CompletionStatus.COMPLETED -> "Séance complétée"
-                            CompletionStatus.PARTIAL -> "Partiellement effectuée"
-                            CompletionStatus.SKIPPED -> "Séance sautée"
-                            else -> "À venir"
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Medium
+                        onDismiss = { showLinkingDialog = false }
                     )
                 }
             }
         }
     }
+}
+
+@Composable
+fun LinkingDialog(
+    activities: List<ActivityItem>,
+    onActivitySelected: (ActivityItem) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Lier une activité", fontWeight = FontWeight.Bold) },
+        text = {
+            if (activities.isEmpty()) {
+                Text("Aucune activité récente trouvée.", color = Color.Gray)
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.heightIn(max = 300.dp)
+                ) {
+                    items(activities) { activity ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onActivitySelected(activity) },
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Icon(activity.icon, contentDescription = null, tint = activity.color)
+                                Column {
+                                    Text(activity.title, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
+                                    Text("${activity.date} • ${activity.dist}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Annuler") }
+        }
+    )
 }
 
 /**

@@ -4,6 +4,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -360,37 +361,16 @@ fun PlanningScreen(state: AppState) {
                             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                                 state.savedRunWorkouts.reversed().forEach { workout ->
                                      var isExpanded by remember { mutableStateOf(false) }
-                                     Card(
-                                         modifier = Modifier.fillMaxWidth().clickable { isExpanded = !isExpanded },
-                                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
-                                         shape = RoundedCornerShape(16.dp)
-                                     ) {
-                                         Column(modifier = Modifier.padding(16.dp)) {
-                                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                                 Column {
-                                                     Text(workout.name, fontWeight = FontWeight.Black, style = MaterialTheme.typography.titleMedium)
-                                                     Text("${workout.totalDistance.toInt()/1000}km • ${formatDuration(workout.totalDuration)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-                                                 }
-                                                 IconButton(onClick = { 
-                                                     val list = state.savedRunWorkouts.toMutableList()
-                                                     list.remove(workout)
-                                                     state.savedRunWorkouts = list
-                                                 }) {
-                                                     Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red.copy(alpha = 0.4f))
-                                                 }
-                                             }
-                                             if (isExpanded) {
-                                                 Spacer(modifier = Modifier.height(12.dp))
-                                                 workout.steps.forEach { step ->
-                                                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 2.dp)) {
-                                                         Icon(getIconForStep(step.type), contentDescription = null, tint = getColorForStep(step.type), modifier = Modifier.size(12.dp))
-                                                         Spacer(modifier = Modifier.width(8.dp))
-                                                         Text("${step.type} • ${formatStepDuration(step)} • ${if (step.targetValue.isNotEmpty()) "@ " + step.targetValue else ""}", style = MaterialTheme.typography.bodySmall)
-                                                     }
-                                                 }
-                                             }
-                                         }
-                                     }
+                                     CustomWorkoutCard(
+                                         workout = workout,
+                                         onDelete = {
+                                             val list = state.savedRunWorkouts.toMutableList()
+                                             list.remove(workout)
+                                             state.savedRunWorkouts = list
+                                         },
+                                         onExpandToggle = { isExpanded = !isExpanded },
+                                         isExpanded = isExpanded
+                                     )
                                 }
                             }
                         }
@@ -650,6 +630,168 @@ fun SwimPartCard(title: String, content: String, icon: androidx.compose.ui.graph
         Column {
             Text(text = title, style = MaterialTheme.typography.labelSmall, color = color, fontWeight = FontWeight.Black)
             Text(text = content, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+@Composable
+fun CustomWorkoutCard(
+    workout: CustomRunWorkout,
+    onDelete: () -> Unit,
+    onExpandToggle: () -> Unit,
+    isExpanded: Boolean
+) {
+    // Determine color based on intensity (rough heuristic)
+    val intensityColor = remember(workout) {
+         if (workout.steps.any { it.intensity == "MAX" || it.targetValue.contains("Z5") }) Color(0xFFEF4444)
+         else if (workout.steps.any { it.intensity == "HIGH" || it.targetValue.contains("Z4") }) Color(0xFFF59E0B)
+         else Color(0xFF3B82F6) // Default Blue
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(32.dp))
+            .background(
+                brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                    colors = listOf(
+                        intensityColor.copy(alpha = 0.15f),
+                        MaterialTheme.colorScheme.surface
+                    )
+                )
+            )
+            .border(1.dp, intensityColor.copy(alpha = 0.2f), RoundedCornerShape(32.dp))
+            .clickable { onExpandToggle() }
+            .padding(24.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Surface(
+                        color = intensityColor.copy(alpha = 0.2f),
+                        shape = CircleShape,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.DirectionsRun,
+                                contentDescription = null,
+                                tint = intensityColor,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                    Text(
+                        text = "SÉANCE PERSONNALISÉE",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = intensityColor,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+                }
+
+                IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
+                    Icon(Icons.Default.Delete, contentDescription = "Supprimer", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.5f))
+                }
+            }
+
+            // Title
+            Column {
+                Text(
+                    text = workout.name,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Black
+                )
+                if (workout.description.isNotBlank()) {
+                     Text(
+                        text = workout.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        fontStyle = FontStyle.Italic
+                    )
+                }
+            }
+
+             // Metrics Row (Summary)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Distance
+                Surface(
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                         Text("DISTANCE", style = MaterialTheme.typography.labelSmall, fontSize = 8.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha=0.5f))
+                         Text("${(workout.totalDistance/1000).toInt()}km", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    }
+                }
+                 // Duration
+                Surface(
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                         Text("DURÉE ESTIMÉE", style = MaterialTheme.typography.labelSmall, fontSize = 8.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha=0.5f))
+                         Text(formatDuration(workout.totalDuration), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
+            // Structure (Always visible or expandable?) - Let's show a preview always
+             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = "STRUCTURE",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+                workout.steps.forEach { step ->
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .offset(y = 6.dp)
+                                .background(getColorForStep(step.type), CircleShape)
+                        )
+                         Column {
+                             Text(
+                                text = "${getStepTypeLabel(step.type)} • ${formatStepDuration(step)}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
+                                fontWeight = FontWeight.Bold
+                            )
+                             if (step.targetValue.isNotBlank()) {
+                                 Text(
+                                    text = if (step.type == "PPG") step.targetValue else "@ ${step.targetValue}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                )
+                             }
+                             // Show substeps for blocks
+                             if (step.steps.isNotEmpty()) {
+                                 Text(
+                                     text = "${step.repeatCount}x (${step.steps.joinToString(" + ") { formatStepDuration(it) }})",
+                                      style = MaterialTheme.typography.bodySmall,
+                                      color = MaterialTheme.colorScheme.primary
+                                 )
+                             }
+                         }
+                    }
+                }
+            }
         }
     }
 }

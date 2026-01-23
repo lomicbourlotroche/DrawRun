@@ -308,7 +308,24 @@ fun WorkoutStepEditorDialog(
                     listOf("WARMUP" to "Échauf", "RUN" to "Run", "REST" to "Récup", "PPG" to "Renfo", "COOL" to "Cool").forEach { (type, label) ->
                         FilterChip(
                             selected = stepType == type,
-                            onClick = { stepType = type },
+                            onClick = { 
+                                stepType = type
+                                // Reset defaults based on type
+                                if (type == "PPG") {
+                                    durationType = "REPS"
+                                    durationValue = "10"
+                                    targetType = "NONE"
+                                    targetValue = ""
+                                } else if (type == "REST" || type == "COOL") {
+                                    durationType = "TIME"
+                                    targetType = "NONE" 
+                                    targetValue = ""
+                                } else {
+                                    // RUN / WARMUP
+                                    if (durationType == "REPS") durationType = "DISTANCE"
+                                    if (targetType == "NONE") targetType = "PACE"
+                                }
+                            },
                             label = { Text(label, fontSize = 12.sp) }
                         )
                     }
