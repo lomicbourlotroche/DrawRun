@@ -69,6 +69,7 @@ class AppState {
     
     // Saved Swim Sessions
     var savedSwimSessions by mutableStateOf<List<SwimSession>>(emptyList())
+    var savedRunWorkouts by mutableStateOf<List<CustomRunWorkout>>(emptyList())
 
     // Real Data Metrics
     var activities by mutableStateOf<List<ActivityItem>>(emptyList())
@@ -100,6 +101,56 @@ class AppState {
     var swimmingProfile by mutableStateOf<String?>(null)
     var cyclingProfile by mutableStateOf<String?>(null)
     var rai by mutableStateOf<Double?>(null) // Run Activity Index
+    
+    // Swim Metrics
+    var css by mutableStateOf<Double?>(null) // Critical Swim Speed (m/min)
+    var swimVo2 by mutableStateOf<Double?>(null)
+    var swimEfficiency by mutableStateOf<Double?>(null) // Swolf
+    
+    // Advanced Health/Load
+    var acwr by mutableStateOf<Double?>(null) // Acute Chronic Workload Ratio
+    var monotony by mutableStateOf<Double?>(null)
+    var trainingStrain by mutableStateOf<Double?>(null)
+    
+    // Metabolic Estimates
+    var fatMaxHr by mutableStateOf<Int?>(null)
+    var crossoverPwr by mutableStateOf<Int?>(null) // Bike
+    var crossoverHr by mutableStateOf<Int?>(null) // Run/Swim
+    
+    // Detailed Performance Metrics (Calculated)
+    var riegelPrediction by mutableStateOf("--")
+    var enduranceIndex by mutableStateOf<Double?>(null)
+    var wPrimeBalance by mutableStateOf<Double?>(null)
+    var ageGradingScore by mutableStateOf<Double?>(null)
+    var fatMax by mutableStateOf<Int?>(null)
+    
+    // Bike Specific
+    var bikeWKg by mutableStateOf<Double?>(null)
+    var bikeVo2 by mutableStateOf<Double?>(null)
+    var bikeCp by mutableStateOf<Int?>(null)
+    var bikePhenotype by mutableStateOf("--")
+    var bikeFrc by mutableStateOf<Int?>(null)
+    var bikePmax by mutableStateOf<Int?>(null)
+    var bikePdCurve by mutableStateOf("--")
+    var bikeCogganLevel by mutableStateOf("--")
+    var bikeVlamax by mutableStateOf<Double?>(null)
+
+    // Run Specific
+    var runCp by mutableStateOf<Double?>(null) // W/kg
+    var runDurability by mutableStateOf<Double?>(null)
+    var runMercierScore by mutableStateOf<Int?>(null)
+    var runIaafScore by mutableStateOf<Int?>(null)
+
+    // Swim Specific
+    var swimCp by mutableStateOf<Int?>(null)
+    var swimRiegel by mutableStateOf("--")
+    var swimIe by mutableStateOf<Double?>(null)
+    var swimWPrime by mutableStateOf<Int?>(null)
+    var swimPyne by mutableStateOf("--")
+    var swimFinaPoints by mutableStateOf<Int?>(null)
+    
+    // Personal Records
+    var records by mutableStateOf<Map<String, String>>(emptyMap())
 
     val fcm by derivedStateOf {
         if (userProfileComplete) com.drawrun.app.logic.ScienceEngine.calculateFCM(age.toIntOrNull() ?: 30, sex, weight.toDoubleOrNull() ?: 70.0) else 0
@@ -288,4 +339,29 @@ data class WorkoutCompletion(
     val actualActivity: ActivityItem?,
     val status: CompletionStatus,
     val completionScore: Int // 0-100% match quality
+)
+
+// --- Custom Workouts Data Model ---
+
+data class WorkoutStep(
+    val id: String = java.util.UUID.randomUUID().toString(),
+    val type: String, // "WARMUP", "RUN", "REST", "COOL", "INTERVAL_BLOCK"
+    val durationType: String, // "DISTANCE", "TIME", "OPEN"
+    val durationValue: Double, // meters or seconds
+    val targetType: String, // "NONE", "PACE", "HR_ZONE", "POWER"
+    val targetValue: String, // "5:00", "Z2", "250"
+    val intensity: String = "LOW", // LOW, MODERATE, HIGH, MAX
+    // For blocks (repeats)
+    val steps: List<WorkoutStep> = emptyList(),
+    val repeatCount: Int = 1
+)
+
+data class CustomRunWorkout(
+    val id: String = java.util.UUID.randomUUID().toString(),
+    val name: String,
+    val description: String,
+    val steps: List<WorkoutStep>,
+    val totalDistance: Double, // Est meters
+    val totalDuration: Int, // Est seconds
+    val createdAt: Long = System.currentTimeMillis()
 )

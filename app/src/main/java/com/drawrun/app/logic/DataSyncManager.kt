@@ -205,59 +205,71 @@ class DataSyncManager(val context: Context, val state: AppState) {
      */
     suspend fun syncHealthData() = withContext(Dispatchers.IO) {
         try {
-            val allGranted = healthConnectManager.hasPermissions(permissions as Set<String>)
-            withContext(Dispatchers.Main) {
-                state.healthConnectPermissionsGranted = allGranted
-            }
-            
-            if (!allGranted) {
-                 android.util.Log.w("DrawRun", "Health Connect: Missing permissions")
-                 return@withContext
-            }
-
-            val endTime = Instant.now()
-            val startTime = endTime.minus(30, ChronoUnit.DAYS)
-            
-            // 1. Sync Resting HR & Readiness
-            try {
-                val latestResting = healthConnectManager.readRestingHeartRate(startTime, endTime).lastOrNull()
-                if (latestResting != null) {
-                    withContext(Dispatchers.Main) {
-                        state.restingHR = latestResting.beatsPerMinute.toString()
-                    }
-                    android.util.Log.d("DrawRun", "Health Connect: Synced RHR = ${latestResting.beatsPerMinute}")
-                } else {
-                    android.util.Log.w("DrawRun", "Health Connect: No RHR data found")
+            android.util.Log.d("DrawRun", "Health Connect: syncHealthData started. Checking permissions...")
+                val allGranted = healthConnectManager.hasPermissions(permissions as Set<String>)
+                
+                withContext(Dispatchers.Main) {
+                    state.healthConnectPermissionsGranted = allGranted
                 }
-            } catch (e: Exception) { 
-                android.util.Log.e("DrawRun", "Health Connect: RHR sync failed", e)
-            }
-
-            try {
-                // Look back 48 hours to ensure we catch the last sleep session even if synced late
-                val recentSleep = healthConnectManager.readSleepSessions(endTime.minus(48, ChronoUnit.HOURS), endTime)
-                    .sortedByDescending { it.endTime }
-                    .firstOrNull() // Take the most recent sleep session
-
-                if (recentSleep != null) {
-                    val totalSleepMinutes = ChronoUnit.MINUTES.between(recentSleep.startTime, recentSleep.endTime)
-                    withContext(Dispatchers.Main) {
-                        state.sleepDuration = "%dh%02d".format(totalSleepMinutes / 60, totalSleepMinutes % 60)
-                        state.sleepScore = (totalSleepMinutes.toFloat() / 480f * 100).coerceAtMost(100f).toInt().toString()
-                    }
-                    android.util.Log.d("DrawRun", "Health Connect: Synced Sleep = ${totalSleepMinutes}min from ${recentSleep.startTime}")
+                android.util.Log.d("DrawRun", "Health Connect: Permissions granted? $allGranted")
+                
+                if (!allGranted) {
+                     android.util.Log.w("DrawRun", "Health Connect: Missing permissions")
+                     return@withContext
                 }
-            } catch (e: Exception) { 
-                android.util.Log.e("DrawRun", "Health Connect: Sleep sync failed", e)
-            }
+
+                val endTime = Instant.now()
+                val startTime = endTime.minus(30, ChronoUnit.DAYS)
+                android.util.Log.d("DrawRun", "Health Connect: Syncing from $startTime to $endTime")
+                
+                // 1. Sync Resting HR & Readiness
+                try {
+                    val latestResting = healthConnectManager.readRestingHeartRate(startTime, endTime).lastOrNull()
+                    if (latestResting != null) {
+                        withContext(Dispatchers.Main) {
+                            state.restingHR = latestResting.beatsPerMinute.toString()
+                        }
+                        android.util.Log.d("DrawRun", "Health Connect: Synced RHR = ${latestResting.beatsPerMinute}")
+                    } else {
+                        android.util.Log.w("DrawRun", "Health Connect: No RHR data found")
+                    }
+                } catch (e: Exception) { 
+                    android.util.Log.e("DrawRun", "Health Connect: RHR sync failed", e)
+                }
+
+                try {
+                    // Look back 48 hours to ensure we catch the last sleep session even if synced late
+                    val sleepStartTime = endTime.minus(48, ChronoUnit.HOURS)
+                    android.util.Log.d("DrawRun", "Health Connect: Fetching sleep from $sleepStartTime")
+                    
+                    val recentSleep = healthConnectManager.readSleepSessions(sleepStartTime, endTime)
+                        .sortedByDescending { it.endTime }
+                        .firstOrNull() // Take the most recent sleep session
+
+                    if (recentSleep != null) {
+                        val totalSleepMinutes = ChronoUnit.MINUTES.between(recentSleep.startTime, recentSleep.endTime)
+                        withContext(Dispatchers.Main) {
+                            state.sleepDuration = "%dh%02d".format(totalSleepMinutes / 60, totalSleepMinutes % 60)
+                            state.sleepScore = (totalSleepMinutes.toFloat() / 480f * 100).coerceAtMost(100f).toInt().toString()
+                        }
+                        android.util.Log.d("DrawRun", "Health Connect: Synced Sleep = ${totalSleepMinutes}min from ${recentSleep.startTime}")
+                    } else {
+                        android.util.Log.w("DrawRun", "Health Connect: No sleep sessions found in last 48h")
+                    }
+                } catch (e: Exception) { 
+                    android.util.Log.e("DrawRun", "Health Connect: Sleep sync failed", e)
+                }
 
             try {
+                android.util.Log.d("DrawRun", "Health Connect: Fetching HRV (last 7 days)")
                 val latestHRV = healthConnectManager.readHRV(endTime.minus(7, ChronoUnit.DAYS), endTime).lastOrNull()
                 if (latestHRV != null) {
                     withContext(Dispatchers.Main) {
                         state.hrv = "%.0f".format(latestHRV.heartRateVariabilityMillis)
                     }
                     android.util.Log.d("DrawRun", "Health Connect: Synced HRV = ${latestHRV.heartRateVariabilityMillis}")
+                } else {
+                    android.util.Log.w("DrawRun", "Health Connect: No HRV data found in last 7 days")
                 }
             } catch (e: Exception) { 
                 android.util.Log.e("DrawRun", "Health Connect: HRV sync failed", e)
@@ -426,6 +438,78 @@ class DataSyncManager(val context: Context, val state: AppState) {
             // Perform all heavy computations in IO context
             val pmcData = PerformanceAnalyzer.calculatePMC(allActivities)
             val latestPmc = pmcData.lastOrNull()
+            
+            // Calc Advanced Metrics
+            val computedCSS = PerformanceAnalyzer.calculateEstimatedCSS(allActivities)
+            val computedMonotony = PerformanceAnalyzer.calculateMonotony(allActivities)
+            val computedACWR = PerformanceAnalyzer.calculateACWR(allActivities)
+            val computedRecords = PerformanceAnalyzer.calculateRecordStats(allActivities)
+
+            withContext(Dispatchers.Main) {
+                // Fix: State activities is immutable list ref, so we assign a new list
+                state.activities = allActivities
+                state.banisterPmcData = pmcData
+                
+                if (latestPmc != null) {
+                    state.ctl = "%.0f".format(latestPmc.ctl)
+                    state.fatigueATL = latestPmc.atl.toInt()
+                    state.formTSB = latestPmc.tsb.toInt()
+                }
+                
+                state.css = computedCSS
+                state.monotony = computedMonotony
+                state.acwr = computedACWR
+                state.records = computedRecords
+                
+                // Estimate VO2 Swim roughly if missing
+                if (state.swimVo2 == null && computedCSS != null) {
+                    state.swimVo2 = (95.0 - 30.0 * computedCSS).coerceIn(20.0, 75.0)
+                }
+                
+                // Calculate Detailed Metrics
+                val detailed = PerformanceAnalyzer.calculateDetailedMetrics(
+                    state.activities,
+                    state.age.toIntOrNull() ?: 30,
+                    state.sex,
+                    state.fcm,
+                    state.vma
+                )
+                
+                state.riegelPrediction = detailed["riegel"] as? String ?: "--"
+                state.enduranceIndex = detailed["ie"] as? Double
+                state.ageGradingScore = detailed["ageGrading"] as? Double
+                state.fatMax = detailed["fatMax"] as? Int
+                state.crossoverHr = detailed["crossover"] as? Int
+                
+                // Populate detailed metrics
+                state.runCp = detailed["runCp"] as? Double
+                state.runDurability = detailed["runDurability"] as? Double
+                state.runMercierScore = detailed["runMercierScore"] as? Int
+                state.runIaafScore = detailed["runIaafScore"] as? Int
+                
+                state.swimCp = detailed["swimCp"] as? Int
+                state.swimRiegel = detailed["swimRiegel"] as? String ?: "--"
+                state.swimIe = detailed["swimIe"] as? Double
+                state.swimWPrime = detailed["swimWPrime"] as? Int
+                state.swimPyne = detailed["swimPyne"] as? String ?: "--"
+                state.swimFinaPoints = detailed["swimFinaPoints"] as? Int
+                
+                state.bikeCp = detailed["bikeCp"] as? Int
+                state.bikePhenotype = detailed["bikePhenotype"] as? String ?: "--"
+                state.bikeFrc = detailed["bikeFrc"] as? Int
+                state.bikePmax = detailed["bikePmax"] as? Int
+                state.bikePdCurve = detailed["bikePdCurve"] as? String ?: "--"
+                state.bikeCogganLevel = detailed["bikeCogganLevel"] as? String ?: "--"
+                state.bikeVlamax = detailed["bikeVlamax"] as? Double
+                
+                // Bike Metrics
+                val ftp = state.ftp.toDoubleOrNull() ?: 250.0
+                val w = state.weight.toDoubleOrNull() ?: 70.0
+                state.bikeWKg = if (w > 0) ftp / w else 0.0
+                state.bikeVo2 = state.bikeWKg?.let { it * 12.0 + 3.5 } // Approx formula for cycling VO2
+                
+                // Save to cache
+            }
             
             // Prepare cache data
             val prefs = context.getSharedPreferences("drawrun_prefs", Context.MODE_PRIVATE)

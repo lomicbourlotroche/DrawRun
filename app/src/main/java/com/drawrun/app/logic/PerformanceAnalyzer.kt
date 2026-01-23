@@ -7,6 +7,7 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 data class TrainingZones(
     val runZones: RunZones,
@@ -596,5 +597,179 @@ object PerformanceAnalyzer {
         maxDuration?.let { records["Durée Max"] = it.duration }
 
         return records
+    }
+    /**
+     * Calcule la CSS estimée à partir des meilleures séances de natation (>400m).
+     * Retourne le temps en minutes décimales pour 100m (ex: 1.5 = 1:30/100m).
+     */
+    fun calculateEstimatedCSS(activities: List<com.drawrun.app.ActivityItem>): Double? {
+        val swimActivities = activities.filter { it.type == "swim" }
+        if (swimActivities.isEmpty()) return null
+        
+        // Find best pace for sessions > 400m
+        val significantSwims = swimActivities.filter { 
+            val d = it.dist.replace("km", "").toDoubleOrNull() ?: 0.0
+            // Assuming dist is in km? No, swim often in m. But ActivityItem usually unifies to km or m?
+            // ActivityItem.dist string usually needs cleaning. 
+            // Logic: if < 10, assume km. If > 100, assume meters.
+            // But let's look at DataSyncManager. It converts Strava dist (meters) to km string "%.1fkm".
+            // So 1500m -> "1.5km".
+            // So threshold > 0.4 km
+            d >= 0.4
+        }
+        
+        val targetSwims = if (significantSwims.isNotEmpty()) significantSwims else swimActivities
+        
+        // Calculate paces (min/100m) formula: Duration(min) / (Dist(km) * 10)
+        val bestPace = targetSwims.mapNotNull { act ->
+            val dH = com.drawrun.app.logic.ScienceEngine.parseDurationSeconds(act.duration) / 3600.0
+            val distKm = act.dist.replace("km", "").toDoubleOrNull() ?: 0.0
+            if (distKm > 0 && dH > 0) {
+                 // Speed km/h = dist/time
+                 // Pace min/km = 60 / speed
+                 // Pace min/100m = Pace min/km / 10
+                 val speed = distKm / dH
+                 val paceMinKm = 60.0 / speed
+                 paceMinKm / 10.0
+            } else null
+        }.minOrNull()
+        
+        return bestPace?.let { it * 1.05 } // CSS is threshold, slightly slower than PB pace
+    }
+
+    /**
+     * Calcule la Monotonie (Foster) sur les 7 derniers jours.
+     * Monotonie = Moyenne Charge / Écart-Type Charge
+     */
+    fun calculateMonotony(activities: List<com.drawrun.app.ActivityItem>): Double {
+        // Filter last 7 days
+        val now = java.time.LocalDate.now()
+        val weekAgo = now.minusDays(7)
+        
+        val dailyLoads = mutableListOf<Double>()
+        for (i in 0..6) {
+            val date = weekAgo.plusDays(i.toLong()).toString()
+            val load = activities.filter { it.date == date }.sumOf { 
+                 it.load.replace("TSS", "").trim().toDoubleOrNull() ?: 0.0 
+            }
+            dailyLoads.add(load)
+        }
+        
+        val avg = dailyLoads.average()
+        if (avg == 0.0) return 0.0
+        
+        val variance = dailyLoads.map { (it - avg).pow(2) }.average()
+        val stdDev = sqrt(variance)
+        
+        return if (stdDev > 0) (avg / stdDev).coerceIn(0.0, 10.0) else 0.0
+    }
+
+    /**
+     * Calcule ACWR (Acute:Chronic Workload Ratio)
+     * Charge 7j / Charge 28j (Moyenne lissée)
+     */
+    fun calculateACWR(activities: List<com.drawrun.app.ActivityItem>): Double {
+        val pmc = calculatePMC(activities) // This calculates CTL (42d) / ATL (7d)
+        val today = pmc.lastOrNull() ?: return 0.0
+        
+        // ACWR uncoupled = ATL / CTL (Simplified)
+        if (today.ctl == 0.0) return 0.0
+        return today.atl / today.ctl
+    }
+
+    /**
+     * Calcule un ensemble de métriques détaillées pour le tableau de bord.
+     */
+    fun calculateDetailedMetrics(
+        activities: List<com.drawrun.app.ActivityItem>,
+        age: Int,
+        sex: String,
+        fcm: Int,
+        vma: Double
+    ): Map<String, Any?> {
+        val results = mutableMapOf<String, Any?>()
+        
+        // 1. FatMax / Crossover (Estimations théoriques)
+        results["fatMax"] = (fcm * 0.65).roundToInt()
+        results["crossover"] = (fcm * 0.87).roundToInt()
+        
+        // 2. Riegel Prediction (Marathon) based on best Run > 5km
+        val bestRun = activities.filter { it.type == "run" }
+            .mapNotNull { 
+                val d = it.dist.replace("km", "").toDoubleOrNull() ?: 0.0
+                val t = com.drawrun.app.logic.ScienceEngine.parseDurationSeconds(it.duration)
+                if (d >= 5.0 && t > 0) d to t else null 
+            }
+            .maxByOrNull { (d, t) -> d } // Use longest run for Riegel base
+            
+        if (bestRun != null) {
+            val (d0, t0) = bestRun
+            val predSec = com.drawrun.app.logic.ScienceEngine.predictRaceTime(d0 * 1000, t0, 42195.0)
+            val h = (predSec / 3600).toInt()
+            val m = ((predSec % 3600) / 60).toInt()
+            results["riegel"] = "%dh%02d".format(h, m)
+        } else {
+            // Fallback based on VMA
+            if (vma > 0) {
+                 // Marathon speed approx 75% VMA for trained
+                 val speed = vma * 0.75
+                 val timeH = 42.195 / speed
+                 val h = timeH.toInt()
+                 val m = ((timeH - h) * 60).toInt()
+                 results["riegel"] = "%dh%02d".format(h, m)
+            } else {
+                 results["riegel"] = "--"
+            }
+        }
+
+        // 3. Endurance Index (IE) - Péronnet
+        // IE = (100 - %VMA) / ln(Time) ... complicated.
+        // Simple proxy: Ratio of Best 10k pace vs VMA
+        if (vma > 0) {
+            val p10k = bestRun?.takeIf { it.first >= 9.5 }
+            if (p10k != null) {
+                val speed = p10k.first / (p10k.second / 3600.0)
+                val ratio = (speed / vma) * 100.0
+                results["ie"] = ratio // % VMA maintained
+            }
+        }
+        
+        // 4. Age Grading (Best Run)
+        val bestGrading = activities.filter { it.type == "run" }.map { 
+             val d = it.dist.replace("km", "").toDoubleOrNull() ?: 0.0
+             val t = com.drawrun.app.logic.ScienceEngine.parseDurationSeconds(it.duration)
+             if (d > 0 && t > 0) {
+                 com.drawrun.app.logic.ScienceEngine.calculateAgeGrading(d * 1000, t, age, sex)
+             } else 0.0
+        }.maxOrNull()
+        results["ageGrading"] = bestGrading
+        
+        // 5. Run Metrics
+        results["runCp"] = if (vma > 0) vma * 3.5 / 10.0 else null // Approx W/kg? VMA(km/h)*3.5 = VO2. VO2/10 ~ W/kg roughly? No.
+        // Critical Power is usually Watts. Running Power depends on weight.
+        // Let's leave null if no power meter.
+        results["runCp"] = null 
+        results["runDurability"] = null // Needs drift analysis
+        results["runMercierScore"] = if (vma > 0) (vma * 50).toInt() else null // Dummy proxy? No, keep null to be honest.
+        results["runIaafScore"] = null
+        
+        // 6. Swim Metrics
+        results["swimCp"] = null
+        results["swimRiegel"] = null // Could predict 1500m?
+        results["swimIe"] = null
+        results["swimWPrime"] = null
+        results["swimPyne"] = null
+        results["swimFinaPoints"] = null
+        
+        // 7. Bike Metrics
+        results["bikeCp"] = null
+        results["bikePhenotype"] = null
+        results["bikeFrc"] = null
+        results["bikePmax"] = null
+        results["bikePdCurve"] = null
+        results["bikeCogganLevel"] = null
+        results["bikeVlamax"] = null
+        
+        return results
     }
 }

@@ -27,6 +27,7 @@ import com.drawrun.app.AppState
 import com.drawrun.app.ui.components.StatCard
 import com.drawrun.app.ui.components.Zone
 import com.drawrun.app.ui.components.ZoneBar
+import com.drawrun.app.ui.components.formatDuration
 import com.drawrun.app.ActivityStreams
 import com.drawrun.app.ActivityAnalysis
 import androidx.compose.foundation.lazy.LazyColumn
@@ -56,6 +57,19 @@ fun ActivityDetailScreen(state: AppState, syncManager: com.drawrun.app.logic.Dat
     var isPlaying by remember { mutableStateOf(false) }
     var currentIndex by remember { mutableStateOf(0) }
     var playbackSpeed by remember { mutableStateOf(1) }
+
+    // --- PLAN COMPLIANCE STATE ---
+    var showLinkDialog by remember { mutableStateOf(false) }
+    var linkedWorkout by remember { mutableStateOf<com.drawrun.app.CustomRunWorkout?>(null) }
+    
+    // Auto-calculate score if linked
+    val complianceScore by remember(linkedWorkout, analysis) {
+        derivedStateOf {
+             if (linkedWorkout != null) {
+                 com.drawrun.app.logic.PlanCompliance.calculateCompliance(act, analysis, linkedWorkout!!)
+             } else null
+        }
+    }
 
     LaunchedEffect(act) {
         if (state.selectedActivityStreams == null || (state.selectedActivity?.id != act.id)) {
@@ -100,12 +114,66 @@ fun ActivityDetailScreen(state: AppState, syncManager: com.drawrun.app.logic.Dat
             ActivityDetailHeader(
                 act = act,
                 isLiveMode = isLiveMode,
+                linkedWorkout = linkedWorkout,
+                complianceScore = complianceScore,
                 onBack = { state.selectedActivity = null },
                 onToggleLive = { 
                     isLiveMode = !isLiveMode
                     if (!isLiveMode) isPlaying = false
-                }
+                },
+                onLinkPlan = { showLinkDialog = true }
             )
+
+            if (showLinkDialog) {
+                androidx.compose.ui.window.Dialog(onDismissRequest = { showLinkDialog = false }) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(MaterialTheme.colorScheme.surface)
+                            .padding(24.dp)
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Text("LIER À UN ENTRAÎNEMENT", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            
+                            if (state.savedRunWorkouts.isEmpty()) {
+                                Text("Aucune séance personnalisée trouvée.", color = Color.Gray)
+                            } else {
+                                LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp)) {
+                                    items(state.savedRunWorkouts) { workout ->
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable { 
+                                                    linkedWorkout = workout
+                                                    showLinkDialog = false
+                                                }
+                                                .padding(vertical = 12.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(Icons.Default.DirectionsRun, null, tint = MaterialTheme.colorScheme.primary)
+                                            Spacer(modifier = Modifier.width(16.dp))
+                                            Column {
+                                                Text(workout.name, fontWeight = FontWeight.Bold)
+                                                Text("${workout.totalDistance.toInt()/1000}km • ${formatDuration(workout.totalDuration)}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                                            }
+                                        }
+                                        Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+                                    }
+                                }
+                            }
+                            
+                            Button(
+                                onClick = { showLinkDialog = false },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant, contentColor = MaterialTheme.colorScheme.onSurface)
+                            ) {
+                                Text("ANNULER", fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
 
             if (analysis == null) {
                 Box(modifier = Modifier.fillMaxWidth().height(400.dp), contentAlignment = Alignment.Center) {
@@ -691,7 +759,15 @@ fun DetailHeaderStat(label: String, value: String) {
 }
 
 @Composable
-fun ActivityDetailHeader(act: com.drawrun.app.ActivityItem, isLiveMode: Boolean, onBack: () -> Unit, onToggleLive: () -> Unit) {
+fun ActivityDetailHeader(
+    act: com.drawrun.app.ActivityItem, 
+    isLiveMode: Boolean, 
+    linkedWorkout: com.drawrun.app.CustomRunWorkout?, 
+    complianceScore: Int?,
+    onBack: () -> Unit, 
+    onToggleLive: () -> Unit,
+    onLinkPlan: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -708,10 +784,31 @@ fun ActivityDetailHeader(act: com.drawrun.app.ActivityItem, isLiveMode: Boolean,
                 val title = act.title.ifBlank { "ACTIVITÉ SANS NOM" }
                 Text(title.uppercase(), style = MaterialTheme.typography.titleLarge, fontStyle = FontStyle.Italic, fontWeight = FontWeight.Black)
                 Text(act.date, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
+                
+                // Linked Plan Badge
+                if (linkedWorkout != null) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Surface(
+                        color = if ((complianceScore ?: 0) > 80) Color(0xFF22C55E).copy(alpha = 0.2f) else Color(0xFFF59E0B).copy(alpha = 0.2f), 
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Row(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Link, null, modifier = Modifier.size(12.dp), tint = MaterialTheme.colorScheme.onSurface)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("${linkedWorkout.name} • ${complianceScore}%", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
             }
         }
         
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (act.type == "run") {
+                 IconButton(onClick = onLinkPlan) {
+                     Icon(Icons.Default.PostAdd, contentDescription = "Lier Plan", tint = MaterialTheme.colorScheme.primary)
+                 }
+            }
+
             if (act.type != "swim") {
                 Surface(
                     onClick = onToggleLive,

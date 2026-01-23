@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.drawrun.app.*
 import com.drawrun.app.data.PlanRepository
 import com.drawrun.app.ui.components.*
+import com.drawrun.app.ui.components.formatDuration
 import com.drawrun.app.logic.TrainingPlanGenerator
 import com.drawrun.app.logic.PerformanceAnalyzer
 import java.time.LocalDate
@@ -74,7 +75,20 @@ fun PlanningScreen(state: AppState) {
             ) {
                 Text(text = "SÉANCE SWIM", style = MaterialTheme.typography.labelSmall, color = if (planningSport == "swim") Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), fontWeight = FontWeight.Black)
             }
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(if (planningSport == "custom") MaterialTheme.colorScheme.primary else Color.Transparent)
+                    .clickable { planningSport = "custom" },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "CRÉATION", style = MaterialTheme.typography.labelSmall, color = if (planningSport == "custom") Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), fontWeight = FontWeight.Black)
+            }
         }
+
+        var showWorkoutCreator by remember { mutableStateOf(false) }
 
         if (planningSport == "run") {
             Box(
@@ -303,6 +317,86 @@ fun PlanningScreen(state: AppState) {
                     }
                 }
             }
+        } else if (planningSport == "custom") {
+             if (showWorkoutCreator) {
+                  WorkoutCreator(
+                      onSave = { workout ->
+                           state.savedRunWorkouts = state.savedRunWorkouts + workout
+                           showWorkoutCreator = false
+                      },
+                      onCancel = { showWorkoutCreator = false }
+                  )
+             } else {
+                 Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(32.dp))
+                        .background(MaterialTheme.colorScheme.surface)
+                        .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f), RoundedCornerShape(32.dp))
+                        .padding(24.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                            Text(text = "MES SÉANCES", style = MaterialTheme.typography.headlineMedium, fontStyle = FontStyle.Italic, fontWeight = FontWeight.Black)
+                            Button(
+                                onClick = { showWorkoutCreator = true },
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            ) {
+                                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("CRÉER", fontWeight = FontWeight.Bold)
+                            }
+                        }
+
+                        if (state.savedRunWorkouts.isEmpty()) {
+                             Box(modifier = Modifier.fillMaxWidth().height(150.dp).background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.3f), RoundedCornerShape(16.dp)), contentAlignment = Alignment.Center) {
+                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                     Icon(Icons.Default.Edit, contentDescription = null, tint = Color.Gray)
+                                     Text("Aucune séance personnalisée", color = Color.Gray)
+                                 }
+                             }
+                        } else {
+                            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                state.savedRunWorkouts.reversed().forEach { workout ->
+                                     var isExpanded by remember { mutableStateOf(false) }
+                                     Card(
+                                         modifier = Modifier.fillMaxWidth().clickable { isExpanded = !isExpanded },
+                                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+                                         shape = RoundedCornerShape(16.dp)
+                                     ) {
+                                         Column(modifier = Modifier.padding(16.dp)) {
+                                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                                 Column {
+                                                     Text(workout.name, fontWeight = FontWeight.Black, style = MaterialTheme.typography.titleMedium)
+                                                     Text("${workout.totalDistance.toInt()/1000}km • ${formatDuration(workout.totalDuration)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                                                 }
+                                                 IconButton(onClick = { 
+                                                     val list = state.savedRunWorkouts.toMutableList()
+                                                     list.remove(workout)
+                                                     state.savedRunWorkouts = list
+                                                 }) {
+                                                     Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red.copy(alpha = 0.4f))
+                                                 }
+                                             }
+                                             if (isExpanded) {
+                                                 Spacer(modifier = Modifier.height(12.dp))
+                                                 workout.steps.forEach { step ->
+                                                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 2.dp)) {
+                                                         Icon(getIconForStep(step.type), contentDescription = null, tint = getColorForStep(step.type), modifier = Modifier.size(12.dp))
+                                                         Spacer(modifier = Modifier.width(8.dp))
+                                                         Text("${step.type} • ${formatStepDuration(step)} • ${if (step.targetValue.isNotEmpty()) "@ " + step.targetValue else ""}", style = MaterialTheme.typography.bodySmall)
+                                                     }
+                                                 }
+                                             }
+                                         }
+                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+             }
         } else {
             Box(
                 modifier = Modifier
@@ -312,6 +406,7 @@ fun PlanningScreen(state: AppState) {
                     .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f), RoundedCornerShape(32.dp))
                     .padding(24.dp)
             ) {
+                // ... Existing Swim Content ...
                 Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
                     Text(text = "SWIM COACH IA", style = MaterialTheme.typography.headlineMedium, fontStyle = FontStyle.Italic, fontWeight = FontWeight.Black)
                     

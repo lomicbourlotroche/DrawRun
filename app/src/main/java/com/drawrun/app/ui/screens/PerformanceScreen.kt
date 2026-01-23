@@ -102,14 +102,15 @@ fun PerformanceScreen(state: AppState) {
                     trend = listOf(14f, 14.2f, 14.5f, 14.8f, 15f, 15.2f)
                 ))
             } else if (selectedSport == "swim") {
-                // Determine CSS level (default 1.6 = 1:36/100m)
-                val cssVal = 1.6 // Placeholder or from state
+                // Determine CSS level (from State)
+                val cssVal = state.css ?: 0.0
                 val cssLevel = PerformanceAnalyzer.getPerformanceLevel("CSS", cssVal)
+                val cssDisplay = if (cssVal > 0) String.format("%.2f", cssVal).replace(".", ":") else "--"
                 
                 list.add(MetricData(
                     id = "css",
-                    title = "CSS (400/200)",
-                    value = "--",
+                    title = "CSS (PROJ.)",
+                    value = cssDisplay,
                     unit = "min/100m",
                     category = cssLevel.first,
                     color = Color(cssLevel.second), // Dynamic color
@@ -118,28 +119,51 @@ fun PerformanceScreen(state: AppState) {
                     trend = emptyList()
                 ))
                 
-                // Reuse VO2MAX logic for Aqua
-                val vo2AquaVal = 60.0 // Placeholder matched to screenshot
+                // VO2 MAX Aqua (from State)
+                val vo2AquaVal = state.swimVo2 ?: 0.0
                 val vo2AquaLevel = PerformanceAnalyzer.getPerformanceLevel("VO2MAX", vo2AquaVal)
+                val vo2Display = if (vo2AquaVal > 0) "%.0f".format(vo2AquaVal) else "--"
                 
-                list.add(MetricData("vo2_swim", "VO2 MAX AQUA", "--", "ml/kg/min", vo2AquaLevel.first, Color(vo2AquaLevel.second), Icons.Default.Air, 0.0f, emptyList()))
-                list.add(MetricData("cp_swim", "PUISSANCE CRIT", "--", "Watts", "NIVEAU", Color(0xFF10B981), Icons.Default.Bolt, 0.0f, emptyList()))
-                list.add(MetricData("riegel_swim", "RIEGEL (1500m)", "--", "h:mm:ss", "PRÉDICTION", Color(0xFF3B82F6), Icons.Default.Timeline, 0.0f, emptyList()))
-                list.add(MetricData("ie_swim", "INDICE ENDURANCE", "--", "% Vmax", "PROFIL", Color(0xFF3B82F6), Icons.Default.TrendingDown, 0.0f, emptyList()))
-                list.add(MetricData("w_prime_swim", "RÉSERVOIR W'", "--", "Joules", "PROFIL", Color(0xFF3B82F6), Icons.Default.BatteryChargingFull, 0.0f, emptyList()))
-                list.add(MetricData("pyne", "MODÈLE PYNE", "--", "% Dérive", "PROFIL", Color(0xFF3B82F6), Icons.Default.Analytics, 0.0f, emptyList()))
-                list.add(MetricData("fina", "POINTS FINA", "--", "pts", "ÉQUITÉ", Color(0xFF8B5CF6), Icons.Default.EmojiEvents, 0.0f, emptyList()))
-                list.add(MetricData("masters", "AGE GRADING", "--", "Coeff", "ÉQUITÉ", Color(0xFF8B5CF6), Icons.Default.Elderly, 0.0f, emptyList()))
-                list.add(MetricData("fatmax_swim", "FAT MAX", "--", "bpm", "MÉTABO", Color(0xFFF59E0B), Icons.Default.LocalFireDepartment, 0.0f, emptyList()))
-                list.add(MetricData("crossover_swim", "CROSSOVER PT", "--", "bpm", "MÉTABO", Color(0xFFF59E0B), Icons.Default.SwapHoriz, 0.0f, emptyList()))
-                list.add(MetricData("acwr_swim", "ACWR (ÉPAULE)", "--", "Ratio", "SANTÉ", Color(0xFFEF4444), Icons.Default.MonitorHeart, 0.0f, emptyList()))
-                list.add(MetricData("monotony_swim", "MONOTONIE", "--", "Foster", "SANTÉ", Color(0xFFEF4444), Icons.Default.HorizontalRule, 0.0f, emptyList()))
-                list.add(MetricData("ctl_swim", "CTL (FITNESS)", "--", "TSS/j", "CHARGE", Color(0xFFEF4444), Icons.Default.FitnessCenter, 0.0f, emptyList()))
+                list.add(MetricData("vo2_swim", "VO2 MAX AQUA", vo2Display, "ml/kg/min", vo2AquaLevel.first, Color(vo2AquaLevel.second), Icons.Default.Air, 0.0f, emptyList()))
+                val swimCp = state.swimCp?.toString() ?: "--"
+                val swimRiegel = state.swimRiegel // String already
+                val swimIe = state.swimIe?.let { "%.1f".format(it) } ?: "--"
+                val swimWPrime = state.swimWPrime?.toString() ?: "--"
+                val swimPyne = state.swimPyne // String
+                val swimFina = state.swimFinaPoints?.toString() ?: "--"
+
+                list.add(MetricData("cp_swim", "PUISSANCE CRIT", swimCp, "Watts", "NIVEAU", Color(0xFF10B981), Icons.Default.Bolt, 0.0f, emptyList()))
+                list.add(MetricData("riegel_swim", "RIEGEL (1500m)", swimRiegel, "h:mm:ss", "PRÉDICTION", Color(0xFF3B82F6), Icons.Default.Timeline, 0.0f, emptyList()))
+                list.add(MetricData("ie_swim", "INDICE ENDURANCE", swimIe, "% Vmax", "PROFIL", Color(0xFF3B82F6), Icons.Default.TrendingDown, 0.0f, emptyList()))
+                list.add(MetricData("w_prime_swim", "RÉSERVOIR W'", swimWPrime, "Joules", "PROFIL", Color(0xFF3B82F6), Icons.Default.BatteryChargingFull, 0.0f, emptyList()))
+                list.add(MetricData("pyne", "MODÈLE PYNE", swimPyne, "% Dérive", "PROFIL", Color(0xFF3B82F6), Icons.Default.Analytics, 0.0f, emptyList()))
+                list.add(MetricData("fina", "POINTS FINA", swimFina, "pts", "ÉQUITÉ", Color(0xFF8B5CF6), Icons.Default.EmojiEvents, 0.0f, emptyList()))
+                val agVal = state.ageGradingScore?.let { "%.1f".format(it) } ?: "--"
+                val fmtMax = state.fatMax?.toString() ?: "--"
+                val crossHr = state.crossoverHr?.toString() ?: "--"
+
+                list.add(MetricData("masters", "AGE GRADING", agVal, "Coeff", "ÉQUITÉ", Color(0xFF8B5CF6), Icons.Default.Elderly, 0.0f, emptyList()))
+                list.add(MetricData("fatmax_swim", "FAT MAX", fmtMax, "bpm", "MÉTABO", Color(0xFFF59E0B), Icons.Default.LocalFireDepartment, 0.0f, emptyList()))
+                list.add(MetricData("crossover_swim", "CROSSOVER PT", crossHr, "bpm", "MÉTABO", Color(0xFFF59E0B), Icons.Default.SwapHoriz, 0.0f, emptyList()))
+                
+                // Advanced Health
+                val acwr = state.acwr?.let { "%.1f".format(it) } ?: "--"
+                val mono = state.monotony?.let { "%.1f".format(it) } ?: "--"
+                
+                list.add(MetricData("acwr_swim", "ACWR (ÉPAULE)", acwr, "Ratio", "SANTÉ", Color(0xFFEF4444), Icons.Default.MonitorHeart, 0.0f, emptyList()))
+                list.add(MetricData("monotony_swim", "MONOTONIE", mono, "Foster", "SANTÉ", Color(0xFFEF4444), Icons.Default.HorizontalRule, 0.0f, emptyList()))
+                list.add(MetricData("ctl_swim", "CTL (FITNESS)", state.ctl, "TSS/j", "CHARGE", Color(0xFFEF4444), Icons.Default.FitnessCenter, 0.0f, emptyList()))
             } else {
                 val ftpVal = state.ftp.toDoubleOrNull() ?: 0.0
                 val weight = state.weight.toDoubleOrNull() ?: 70.0
-                val wkg = if (weight > 0) ftpVal / weight else 0.0
+                val wkg = state.bikeWKg ?: if (weight > 0) ftpVal / weight else 0.0
                 val ftpLevel = PerformanceAnalyzer.getPerformanceLevel("W/KG", wkg)
+                val vo2Val = state.bikeVo2
+                
+                // Bike Calculated
+                val fatMaxWatts = (ftpVal * 0.65).toInt()
+                val crossoverWatts = (ftpVal * 0.88).toInt() 
+                val acwr = state.acwr?.let { "%.1f".format(it) } ?: "--"
                 
                 list.add(MetricData(
                     id = "ftp",
@@ -152,22 +176,30 @@ fun PerformanceScreen(state: AppState) {
                     percentage = ((state.ftp.toFloatOrNull() ?: 0f) / 400f).coerceIn(0f, 1f),
                     trend = listOf(200f, 210f, 220f, 225f, 230f, 240f)
                 ))
-                list.add(MetricData("w_kg", "RAPPORT W/KG", "--", "W/kg", "NIVEAU", Color(0xFF10B981), Icons.Default.Scale, 0.0f, emptyList()))
-                list.add(MetricData("cp_bike", "PUISSANCE CRIT", "--", "Watts", "NIVEAU", Color(0xFF10B981), Icons.Default.Bolt, 0.0f, emptyList()))
-                list.add(MetricData("vo2_bike", "VO2 MAX CYCLO", "--", "ml/kg/min", "NIVEAU", Color(0xFF007AFF), Icons.Default.Air, 0.0f, emptyList()))
-                list.add(MetricData("phenotype", "PROFIL PUISSANCE", "--", "Start", "PROFIL", Color(0xFF3B82F6), Icons.Default.Person, 0.0f, emptyList()))
-                list.add(MetricData("frc", "FRC (RÉSERVE)", "--", "Joules", "PROFIL", Color(0xFF3B82F6), Icons.Default.BatteryChargingFull, 0.0f, emptyList()))
-                list.add(MetricData("pmax", "PMAX (SPRINT)", "--", "Watts", "PROFIL", Color(0xFF3B82F6), Icons.Default.Speed, 0.0f, emptyList()))
-                list.add(MetricData("pd_curve", "COURBE P-D", "--", "Skiba", "PROFIL", Color(0xFF3B82F6), Icons.Default.ShowChart, 0.0f, emptyList()))
-                list.add(MetricData("coggan_level", "NIVEAU COGGAN", "--", "Cat.", "ÉQUITÉ", Color(0xFF8B5CF6), Icons.Default.Star, 0.0f, emptyList()))
+                list.add(MetricData("w_kg", "RAPPORT W/KG", if (wkg > 0) "%.1f".format(wkg) else "--", "W/kg", "NIVEAU", Color(0xFF10B981), Icons.Default.Scale, 0.0f, emptyList()))
+                val bikeCp = state.bikeCp?.toString() ?: "--"
+                val bikePheno = state.bikePhenotype // String
+                val bikeFrc = state.bikeFrc?.toString() ?: "--"
+                val bikePmax = state.bikePmax?.toString() ?: "--"
+                val bikePd = state.bikePdCurve // String
+                val bikeCoggan = state.bikeCogganLevel // String
+                val bikeVla = state.bikeVlamax?.let { "%.1f".format(it) } ?: "--"
+
+                list.add(MetricData("cp_bike", "PUISSANCE CRIT", bikeCp, "Watts", "NIVEAU", Color(0xFF10B981), Icons.Default.Bolt, 0.0f, emptyList()))
+                list.add(MetricData("vo2_bike", "VO2 MAX CYCLO", if (vo2Val != null) "%.0f".format(vo2Val) else "--", "ml/kg/min", "NIVEAU", Color(0xFF007AFF), Icons.Default.Air, 0.0f, emptyList()))
+                list.add(MetricData("phenotype", "PROFIL PUISSANCE", bikePheno, "Start", "PROFIL", Color(0xFF3B82F6), Icons.Default.Person, 0.0f, emptyList()))
+                list.add(MetricData("frc", "FRC (RÉSERVE)", bikeFrc, "Joules", "PROFIL", Color(0xFF3B82F6), Icons.Default.BatteryChargingFull, 0.0f, emptyList()))
+                list.add(MetricData("pmax", "PMAX (SPRINT)", bikePmax, "Watts", "PROFIL", Color(0xFF3B82F6), Icons.Default.Speed, 0.0f, emptyList()))
+                list.add(MetricData("pd_curve", "COURBE P-D", bikePd, "Skiba", "PROFIL", Color(0xFF3B82F6), Icons.Default.ShowChart, 0.0f, emptyList()))
+                list.add(MetricData("coggan_level", "NIVEAU COGGAN", bikeCoggan, "Cat.", "ÉQUITÉ", Color(0xFF8B5CF6), Icons.Default.Star, 0.0f, emptyList()))
                 list.add(MetricData("age_grading_bike", "AGE GRADING", "--", "Coeff", "ÉQUITÉ", Color(0xFF8B5CF6), Icons.Default.Elderly, 0.0f, emptyList()))
-                list.add(MetricData("vlamax", "VLaMAX", "--", "mmol/L/s", "MÉTABO", Color(0xFFF59E0B), Icons.Default.Science, 0.0f, emptyList()))
-                list.add(MetricData("fatmax_bike", "FAT MAX", "--", "Watts", "MÉTABO", Color(0xFFF59E0B), Icons.Default.LocalFireDepartment, 0.0f, emptyList()))
-                list.add(MetricData("crossover_bike", "CROSSOVER PT", "--", "Watts", "MÉTABO", Color(0xFFF59E0B), Icons.Default.SwapHoriz, 0.0f, emptyList()))
+                list.add(MetricData("vlamax", "VLaMAX", bikeVla, "mmol/L/s", "MÉTABO", Color(0xFFF59E0B), Icons.Default.Science, 0.0f, emptyList()))
+                list.add(MetricData("fatmax_bike", "FAT MAX", "$fatMaxWatts", "Watts", "MÉTABO", Color(0xFFF59E0B), Icons.Default.LocalFireDepartment, 0.0f, emptyList()))
+                list.add(MetricData("crossover_bike", "CROSSOVER PT", "$crossoverWatts", "Watts", "MÉTABO", Color(0xFFF59E0B), Icons.Default.SwapHoriz, 0.0f, emptyList()))
                 list.add(MetricData("ctl_bike", "CTL (FORME)", state.ctl, "TSS/j", "CHARGE", Color(0xFFEF4444), Icons.Default.FitnessCenter, (state.ctl.toFloatOrNull() ?: 0f / 100f).coerceIn(0f, 1f), emptyList()))
                 list.add(MetricData("atl_bike", "ATL (FATIGUE)", state.fatigueATL?.toString() ?: "--", "TSS/j", "CHARGE", Color(0xFFEF4444), Icons.Default.BatteryAlert, (state.fatigueATL?.toFloat() ?: 0f / 100f).coerceIn(0f, 1f), emptyList()))
                 list.add(MetricData("tsb_bike", "TSB (FRAÎCHEUR)", state.formTSB?.toString() ?: "--", "TSS", "CHARGE", Color(0xFFEF4444), Icons.Default.Balance, 0.5f, emptyList()))
-                list.add(MetricData("acwr_bike", "ACWR", "--", "Ratio", "SANTÉ", Color(0xFFEF4444), Icons.Default.MonitorHeart, 0.0f, emptyList()))
+                list.add(MetricData("acwr_bike", "ACWR", acwr, "Ratio", "SANTÉ", Color(0xFFEF4444), Icons.Default.MonitorHeart, 0.0f, emptyList()))
             }
 
             // 2. VO2 Max
@@ -200,28 +232,42 @@ fun PerformanceScreen(state: AppState) {
                 list.add(MetricData(
                     id = "rai",
                     title = "RAI SCORE",
-                    value = "%.1f".format(state.calculatedRai),
+                    value = "%.1f".format(state.calculatedRai ?: state.vdot), // Fallback to VDOT if RAI null
                     unit = "Huawei",
                     category = "NIVEAU",
                     color = Color(0xFFEC4899), // Pink
                     icon = Icons.Default.TrendingUp,
-                    percentage = (state.calculatedRai.toFloat() / 80f).coerceIn(0f, 1f),
+                    percentage = (state.calculatedRai?.toFloat() ?: state.vdot.toFloat() / 80f).coerceIn(0f, 1f),
                     trend = listOf(48f, 49f, 50f, 51f, 52f, 53f)
                 ))
-                list.add(MetricData("cs", "VITESSE CRITIQUE", "--", "km/h", "NIVEAU", Color(0xFF10B981), Icons.Default.Speed, 0.7f, emptyList()))
-                list.add(MetricData("cp", "PUISSANCE CRIT.", "--", "Watts/kg", "NIVEAU", Color(0xFF10B981), Icons.Default.Bolt, 0.6f, emptyList()))
-                list.add(MetricData("tanda", "TANDA (MARATHON)", "--", "h:mm:ss", "PRÉDICTION", Color(0xFF3B82F6), Icons.Default.Timer, 0.0f, emptyList()))
-                list.add(MetricData("riegel", "RIEGEL (ENDURANCE)", "--", "Coeff", "PRÉDICTION", Color(0xFF3B82F6), Icons.Default.Timeline, 0.0f, emptyList()))
-                list.add(MetricData("ie", "INDICE ENDURANCE", "--", "Péronnet", "PROFIL", Color(0xFF3B82F6), Icons.Default.TrendingDown, 0.0f, emptyList()))
-                list.add(MetricData("durability", "DURABILITÉ", "--", "% Dérive", "PROFIL", Color(0xFF3B82F6), Icons.Default.BatteryStd, 0.0f, emptyList()))
-                list.add(MetricData("w_prime", "RÉSERVOIR W'", "--", "Joules", "PROFIL", Color(0xFF3B82F6), Icons.Default.BatteryChargingFull, 0.0f, emptyList()))
-                list.add(MetricData("age_grading", "AGE GRADING", "--", "% WMA", "ÉQUITÉ", Color(0xFF8B5CF6), Icons.Default.Elderly, 0.0f, emptyList()))
-                list.add(MetricData("mercier", "SCORE MERCIER", "--", "pts", "ÉQUITÉ", Color(0xFF8B5CF6), Icons.Default.Star, 0.0f, emptyList()))
-                list.add(MetricData("iaaf", "POINTS IAAF", "--", "pts", "ÉQUITÉ", Color(0xFF8B5CF6), Icons.Default.EmojiEvents, 0.0f, emptyList()))
-                list.add(MetricData("fatmax", "FAT MAX", "--", "bpm", "MÉTABO", Color(0xFFF59E0B), Icons.Default.LocalFireDepartment, 0.4f, emptyList()))
-                list.add(MetricData("crossover", "CROSSOVER PT", "--", "bpm", "MÉTABO", Color(0xFFF59E0B), Icons.Default.SwapHoriz, 0.5f, emptyList()))
-                list.add(MetricData("acwr", "ACWR", "1.1", "Ratio", "SANTÉ", Color(0xFFEF4444), Icons.Default.MonitorHeart, 0.4f, listOf(0.8f, 0.9f, 1.1f, 1.2f, 1.0f)))
-                list.add(MetricData("monotony", "MONOTONIE", "1.3", "Foster", "SANTÉ", Color(0xFFEF4444), Icons.Default.HorizontalRule, 0.3f, emptyList()))
+                
+                val ieVal = state.enduranceIndex?.let { "%.1f".format(it) } ?: "--"
+                val agVal = state.ageGradingScore?.let { "%.1f".format(it) } ?: "--"
+                val fmtMax = state.fatMax?.toString() ?: "--"
+                val crossHr = state.crossoverHr?.toString() ?: "--"
+                val acwr = state.acwr?.let { "%.1f".format(it) } ?: "--"
+                val mono = state.monotony?.let { "%.1f".format(it) } ?: "--"
+                
+                val rCp = state.runCp?.let { "%.1f".format(it) } ?: "--"
+                val dura = state.runDurability?.let { "%.1f".format(it) } ?: "--"
+                val merc = state.runMercierScore?.toString() ?: "--"
+                val iaaf = state.runIaafScore?.toString() ?: "--"
+                val wPrime = state.wPrimeBalance?.let { "%.0f".format(it) } ?: "--"
+
+                list.add(MetricData("cs", "VITESSE CRITIQUE", "%.1f".format(state.vma * 0.92), "km/h", "NIVEAU", Color(0xFF10B981), Icons.Default.Speed, 0.7f, emptyList()))
+                list.add(MetricData("cp", "PUISSANCE CRIT.", rCp, "Watts/kg", "NIVEAU", Color(0xFF10B981), Icons.Default.Bolt, 0.6f, emptyList())) 
+                list.add(MetricData("tanda", "TANDA (MARATHON)", state.riegelPrediction, "h:mm:ss", "PRÉDICTION", Color(0xFF3B82F6), Icons.Default.Timer, 0.0f, emptyList()))
+                list.add(MetricData("riegel", "RIEGEL (ENDURANCE)", state.riegelPrediction, "Coeff", "PRÉDICTION", Color(0xFF3B82F6), Icons.Default.Timeline, 0.0f, emptyList()))
+                list.add(MetricData("ie", "INDICE ENDURANCE", ieVal, "% Vmax", "PROFIL", Color(0xFF3B82F6), Icons.Default.TrendingDown, 0.0f, emptyList()))
+                list.add(MetricData("durability", "DURABILITÉ", dura, "% Dérive", "PROFIL", Color(0xFF3B82F6), Icons.Default.BatteryStd, 0.0f, emptyList()))
+                list.add(MetricData("w_prime", "RÉSERVOIR W'", wPrime, "Joules", "PROFIL", Color(0xFF3B82F6), Icons.Default.BatteryChargingFull, 0.0f, emptyList()))
+                list.add(MetricData("age_grading", "AGE GRADING", agVal, "% WMA", "ÉQUITÉ", Color(0xFF8B5CF6), Icons.Default.Elderly, 0.0f, emptyList()))
+                list.add(MetricData("mercier", "SCORE MERCIER", merc, "pts", "ÉQUITÉ", Color(0xFF8B5CF6), Icons.Default.Star, 0.0f, emptyList()))
+                list.add(MetricData("iaaf", "POINTS IAAF", iaaf, "pts", "ÉQUITÉ", Color(0xFF8B5CF6), Icons.Default.EmojiEvents, 0.0f, emptyList()))
+                list.add(MetricData("fatmax", "FAT MAX", fmtMax, "bpm", "MÉTABO", Color(0xFFF59E0B), Icons.Default.LocalFireDepartment, 0.4f, emptyList()))
+                list.add(MetricData("crossover", "CROSSOVER PT", crossHr, "bpm", "MÉTABO", Color(0xFFF59E0B), Icons.Default.SwapHoriz, 0.5f, emptyList()))
+                list.add(MetricData("acwr", "ACWR", acwr, "Ratio", "SANTÉ", Color(0xFFEF4444), Icons.Default.MonitorHeart, 0.4f, listOf(0.8f, 0.9f, 1.1f, 1.2f, 1.0f)))
+                list.add(MetricData("monotony", "MONOTONIE", mono, "Foster", "SANTÉ", Color(0xFFEF4444), Icons.Default.HorizontalRule, 0.3f, emptyList()))
                 list.add(MetricData("ctl", "CTL (FITNESS)", state.ctl, "TSS/j", "CHARGE", Color(0xFFEF4444), Icons.Default.FitnessCenter, (state.ctl.toFloatOrNull() ?: 0f / 100f).coerceIn(0f, 1f), emptyList()))
                 list.add(MetricData("atl", "ATL (FATIGUE)", state.fatigueATL?.toString() ?: "--", "TSS/j", "CHARGE", Color(0xFFEF4444), Icons.Default.BatteryAlert, (state.fatigueATL?.toFloat() ?: 0f / 120f).coerceIn(0f, 1f), emptyList()))
                 list.add(MetricData("tsb", "TSB (FORM)", state.formTSB?.toString() ?: "--", "TSS", "CHARGE", Color(0xFFEF4444), Icons.Default.Balance, 0.5f, emptyList()))
