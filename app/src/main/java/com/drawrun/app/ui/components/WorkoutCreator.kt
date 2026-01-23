@@ -167,7 +167,7 @@ fun WorkoutCreator(
                             }
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    getStepTypeLabel(step.type),
+                                    if (step.type == "PPG") step.targetValue else getStepTypeLabel(step.type),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface
@@ -250,6 +250,9 @@ fun WorkoutCreator(
                         steps = listOf(run, rest)
                     )
                 }
+                ToolButton("RENFO", Icons.Default.FitnessCenter, Color(0xFF8B5CF6)) {
+                    steps = steps + WorkoutStep(type = "PPG", durationType = "REPS", durationValue = 20.0, targetType = "NONE", targetValue = "Squats")
+                }
             }
         }
         
@@ -301,8 +304,8 @@ fun WorkoutStepEditorDialog(
             ) {
                 // Type de Step
                 Text("Type d'Étape", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("WARMUP" to "Échauf", "RUN" to "Run", "REST" to "Récup", "COOL" to "Cool").forEach { (type, label) ->
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                    listOf("WARMUP" to "Échauf", "RUN" to "Run", "REST" to "Récup", "PPG" to "Renfo", "COOL" to "Cool").forEach { (type, label) ->
                         FilterChip(
                             selected = stepType == type,
                             onClick = { stepType = type },
@@ -313,32 +316,57 @@ fun WorkoutStepEditorDialog(
                 
                 Spacer(modifier = Modifier.height(4.dp))
                 
-                // Distance ou Durée
-                Text("Duration", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                // Distance, Durée ou REPS
+                Text("Durée / Répétitions", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    FilterChip(
-                        selected = durationType == "DISTANCE",
-                        onClick = { durationType = "DISTANCE" },
-                        label = { Text("Distance", fontSize = 12.sp) }
-                    )
-                    FilterChip(
-                        selected = durationType == "TIME",
-                        onClick = { durationType = "TIME" },
-                        label = { Text("Durée", fontSize = 12.sp) }
-                    )
+                    if (stepType == "PPG") {
+                        FilterChip(
+                            selected = durationType == "REPS",
+                            onClick = { durationType = "REPS" },
+                            label = { Text("Reps", fontSize = 12.sp) }
+                        )
+                        FilterChip(
+                            selected = durationType == "TIME",
+                            onClick = { durationType = "TIME" },
+                            label = { Text("Temps", fontSize = 12.sp) }
+                        )
+                    } else {
+                        FilterChip(
+                            selected = durationType == "DISTANCE",
+                            onClick = { durationType = "DISTANCE" },
+                            label = { Text("Distance", fontSize = 12.sp) }
+                        )
+                        FilterChip(
+                            selected = durationType == "TIME",
+                            onClick = { durationType = "TIME" },
+                            label = { Text("Durée", fontSize = 12.sp) }
+                        )
+                    }
                 }
                 OutlinedTextField(
                     value = durationValue,
                     onValueChange = { durationValue = it.filter { c -> c.isDigit() } },
-                    label = { Text(if (durationType == "DISTANCE") "Mètres" else "Secondes") },
+                    label = { Text(when(durationType) { "DISTANCE" -> "Mètres"; "TIME" -> "Secondes"; else -> "Répétitions" }) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
                 
                 Spacer(modifier = Modifier.height(4.dp))
                 
-                // Type de Cible
-                Text("Cible", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                if (stepType == "PPG") {
+                     // Nom de l'exercice pour PPG
+                    Text("Exercice", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    OutlinedTextField(
+                        value = targetValue,
+                        onValueChange = { targetValue = it },
+                        label = { Text("Nom de l'exercice") },
+                        placeholder = { Text("Ex: Squats, Gainage...") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                } else {
+                    // Type de Cible (Classique)
+                    Text("Cible", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier.horizontalScroll(rememberScrollState())
@@ -415,6 +443,7 @@ fun WorkoutStepEditorDialog(
                         }
                     }
                 }
+                } // End if not PPG
             }
         },
         confirmButton = {
@@ -466,6 +495,7 @@ fun getColorForStep(type: String): Color = when(type) {
     "RUN" -> Color(0xFF22C55E)
     "REST" -> Color(0xFFF59E0B)
     "COOL" -> Color(0xFF8B5CF6)
+    "PPG" -> Color(0xFFEC4899)
     else -> Color.Gray
 }
 
@@ -474,6 +504,7 @@ fun getIconForStep(type: String): androidx.compose.ui.graphics.vector.ImageVecto
     "RUN" -> Icons.Default.DirectionsRun
     "REST" -> Icons.Default.SelfImprovement
     "COOL" -> Icons.Default.AcUnit
+    "PPG" -> Icons.Default.FitnessCenter
     else -> Icons.Default.Circle
 }
 
@@ -483,14 +514,17 @@ fun getStepTypeLabel(type: String): String = when(type) {
     "REST" -> "Récupération"
     "COOL" -> "Retour au calme"
     "INTERVAL_BLOCK" -> "Répétitions"
+    "PPG" -> "Renforcement"
     else -> type
 }
 
 fun formatStepDuration(step: WorkoutStep): String {
-    return if (step.durationType == "DISTANCE") {
-        "${step.durationValue.toInt()}m"
+    if (step.durationType == "REPS") {
+        return "${step.durationValue.toInt()} reps"
+    } else if (step.durationType == "DISTANCE") {
+        return "${step.durationValue.toInt()}m"
     } else {
-        formatDuration(step.durationValue.toInt())
+        return formatDuration(step.durationValue.toInt())
     }
 }
 
