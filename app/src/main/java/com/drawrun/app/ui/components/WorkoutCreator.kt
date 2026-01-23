@@ -282,6 +282,14 @@ fun WorkoutStepEditorDialog(
     var targetType by remember { mutableStateOf(step.targetType) }
     var targetValue by remember { mutableStateOf(step.targetValue) }
     var stepType by remember { mutableStateOf(step.type) }
+    var metricDialogInfo by remember { mutableStateOf<MetricInfo?>(null) }
+    
+    if (metricDialogInfo != null) {
+        MetricInfoDialog(
+            info = metricDialogInfo!!,
+            onDismiss = { metricDialogInfo = null }
+        )
+    }
     
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -343,12 +351,32 @@ fun WorkoutStepEditorDialog(
                     FilterChip(
                         selected = targetType == "HR_ZONE",
                         onClick = { targetType = "HR_ZONE"; targetValue = "Z3" },
-                        label = { Text("Zone FC", fontSize = 12.sp) }
+                        label = { 
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text("Zone FC", fontSize = 12.sp)
+                                Icon(
+                                    Icons.Default.Info, 
+                                    contentDescription = null, 
+                                    modifier = Modifier.size(12.dp).clickable { metricDialogInfo = MetricDefinitions.HRZones },
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
                     )
                     FilterChip(
                         selected = targetType == "PACE_ZONE",
                         onClick = { targetType = "PACE_ZONE"; targetValue = "ZA3" },
-                        label = { Text("Zone Allure", fontSize = 12.sp) }
+                        label = { 
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text("Zone Allure", fontSize = 12.sp)
+                                Icon(
+                                    Icons.Default.Info, 
+                                    contentDescription = null, 
+                                    modifier = Modifier.size(12.dp).clickable { metricDialogInfo = MetricDefinitions.PaceZones },
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
                     )
                     FilterChip(
                         selected = targetType == "NONE",
