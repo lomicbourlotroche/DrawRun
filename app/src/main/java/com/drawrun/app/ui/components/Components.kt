@@ -124,7 +124,8 @@ fun MiniChart(color: Color) {
 fun ZoneBar(
     title: String,
     zones: List<Zone>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(zones) {
@@ -138,6 +139,7 @@ fun ZoneBar(
             .clip(RoundedCornerShape(32.dp))
             .background(MaterialTheme.colorScheme.surface)
             .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f), RoundedCornerShape(32.dp))
+            .let { if (onClick != null) it.clickable { onClick() } else it }
             .padding(20.dp)
             .animateContentSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)

@@ -191,7 +191,7 @@ fun HomeScreen(state: AppState) {
 
         // Banister Chart (PMC)
         if (state.banisterPmcData.isNotEmpty()) {
-            PmcChart(state.banisterPmcData)
+            PmcChart(state.banisterPmcData, state)
         }
 
         // Recent Activity
@@ -744,7 +744,7 @@ fun TrainingCard(recommendation: CoachAI.TrainingRecommendation, isTomorrow: Boo
 }
 
 @Composable
-fun PmcChart(data: List<PmcDataPoint>) {
+fun PmcChart(data: List<PmcDataPoint>, state: AppState) {
     var scrubX by remember { mutableStateOf<Float?>(null) }
     var selectedIndex by remember { mutableStateOf<Int?>(null) }
 
@@ -758,18 +758,27 @@ fun PmcChart(data: List<PmcDataPoint>) {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    state.explanationTitle = "Gestion de Performance (PMC)"
+                    state.explanationContent = "Le Performance Management Chart (PMC) suit votre condition physique (CTL), votre fatigue (ATL) et votre fraîcheur (TSB). L'objectif est de monter le CTL progressivement tout en gérant le TSB pour arriver frais le jour de la course."
+                    state.showExplanation = true
+                },
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(
-                    text = "GESTION DE PERFORMANCE",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                    letterSpacing = 2.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "GESTION DE PERFORMANCE",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                        letterSpacing = 2.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), modifier = Modifier.size(12.dp))
+                }
                 if (selectedIndex != null && data.isNotEmpty()) {
                     val pt = data[selectedIndex!!]
                     Text(

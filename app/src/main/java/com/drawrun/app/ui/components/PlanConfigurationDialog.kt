@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -60,7 +62,7 @@ fun PlanConfigurationDialog(
             modifier = Modifier.fillMaxWidth().padding(16.dp)
         ) {
             Column(
-                modifier = Modifier.padding(24.dp),
+                modifier = Modifier.padding(24.dp).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 // Header
@@ -79,7 +81,7 @@ fun PlanConfigurationDialog(
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("DISTANCE CIBLE", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf(5.0 to "5K", 10.0 to "10K", 21.1 to "SEMI", 42.195 to "MARATHON").forEach { (dist, label) ->
+                        listOf(5.0 to "5K", 10.0 to "10K", 21.097 to "SEMI", 42.195 to "MARATHON").forEach { (dist, label) ->
                             val selected = selectedDistance == dist
                             Box(
                                 modifier = Modifier
@@ -111,7 +113,7 @@ fun PlanConfigurationDialog(
                     ) {
                         OutlinedTextField(
                             value = targetH,
-                            onValueChange = { if (it.length <= 1) targetH = it.filter { c -> c.isDigit() } },
+                            onValueChange = { if (it.length <= 2) targetH = it.filter { c -> c.isDigit() } },
                             label = { Text("H") },
                             modifier = Modifier.weight(1f),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

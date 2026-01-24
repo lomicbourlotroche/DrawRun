@@ -28,8 +28,8 @@ data class BikeZones(
 )
 
 data class SwimZones(
-    val css: Double, // Critical Swim Speed (m/min)
-    val pace: List<Pair<String, String>> // min/100m
+    val css: Double, // Critical Swim Speed (decimal min/100m)
+    val pace: List<Pair<Double, Double>> // min/100m
 )
 
 object PerformanceAnalyzer {
@@ -67,11 +67,11 @@ object PerformanceAnalyzer {
             }
             
             listOf(
-                p(com.drawrun.app.logic.ScienceEngine.VdotZones.E_LOW) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.E_HIGH),
-                p(com.drawrun.app.logic.ScienceEngine.VdotZones.M * 0.97) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.M * 1.03),
-                p(com.drawrun.app.logic.ScienceEngine.VdotZones.T * 0.97) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.T * 1.03),
-                p(com.drawrun.app.logic.ScienceEngine.VdotZones.I * 0.98) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.I * 1.02),
-                p(com.drawrun.app.logic.ScienceEngine.VdotZones.R * 0.98) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.R * 1.02)
+                p(com.drawrun.app.logic.ScienceEngine.VdotZones.E_HIGH) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.E_LOW),
+                p(com.drawrun.app.logic.ScienceEngine.VdotZones.M * 1.03) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.M * 0.97),
+                p(com.drawrun.app.logic.ScienceEngine.VdotZones.T * 1.03) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.T * 0.97),
+                p(com.drawrun.app.logic.ScienceEngine.VdotZones.I * 1.02) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.I * 0.98),
+                p(com.drawrun.app.logic.ScienceEngine.VdotZones.R * 1.02) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.R * 0.98)
             )
         } else {
              // Fallback VMA
@@ -104,9 +104,10 @@ object PerformanceAnalyzer {
         )
 
         // 3. Swim Zones
+        val cssVal = state.css ?: 1.6 // Fallback to 1:40/100m if no history
         val swimZones = SwimZones(
-            css = 1.6, // Default 1:40/100m
-            pace = calculateSwimZones(1.6)
+            css = cssVal,
+            pace = calculateSwimZones(cssVal)
         )
 
         return TrainingZones(runZones, bikeZones, swimZones)
@@ -202,28 +203,28 @@ object PerformanceAnalyzer {
      * Basé sur une allure CSS (m/min) ou temps/100m
      * Zones: Easy, Steady, Threshold, Sprint
      */
-    fun calculateSwimZones(cssPaceMinPer100m: Double): List<Pair<String, String>> {
+    fun calculateSwimZones(cssPaceMinPer100m: Double): List<Pair<Double, Double>> {
         // CSS Pace in seconds per 100m
         val cssSec = cssPaceMinPer100m * 60
         
         // Zones based on deviation from CSS (Maglischo)
-        // Z1 (Recup): CSS + 10s+
-        // Z2 (Endurance): CSS + 5-8s
-        // Z3 (Seuil): CSS +/- 2s
-        // Z4 (Vitesse): CSS - 4s+
+        // Z1 (Recup): CSS + 15s+ to CSS + 10s
+        // Z2 (Aerobic): CSS + 10s to CSS + 4s
+        // Z3 (Threshold): CSS + 4s to CSS - 2s
+        // Z4 (Sprint): CSS - 2s to CSS - 10s
         
-        fun fmt(s: Double): String {
-            val m = (s / 60).toInt()
-            val sec = (s % 60).toInt()
-            return "%d:%02d".format(m, sec)
-        }
+        fun sToMin(s: Double) = s / 60.0
 
         return listOf(
-            fmt(cssSec + 15.0) to fmt(cssSec + 10.0), // Z1: Easy
-            fmt(cssSec + 10.0) to fmt(cssSec + 4.0), // Z2: Aerobic
-            fmt(cssSec + 4.0) to fmt(cssSec - 2.0),  // Z3: Threshold (CSS)
-            fmt(cssSec - 2.0) to fmt(cssSec - 10.0)  // Z4: Sprint/Anaerobic
-        )
+            sToMin(cssSec + 15.0) to sToMin(cssSec + 10.0), // Z1: Easy (Shorter duration first? No, calcZoneDist needs min to max)
+            // Wait, pace: smaller is faster. So (cssSec + 10) is smaller than (cssSec + 15).
+            // calculateZoneDistribution needs value >= zones[i].first && value <= zones[i].second.
+            // So zones[i].first should be the smaller value (faster pace).
+            sToMin(cssSec + 10.0) to sToMin(cssSec + 15.0), // Z1 (Slowest)
+            sToMin(cssSec + 4.0) to sToMin(cssSec + 10.0),  // Z2
+            sToMin(cssSec - 2.0) to sToMin(cssSec + 4.0),   // Z3 (Threshold)
+            sToMin(cssSec - 10.0) to sToMin(cssSec - 2.0)   // Z4 (Fastest)
+        ).reversed().map { it.first to it.second } // We want Z1, Z2, Z3, Z4 order
     }
 
     /**
@@ -324,7 +325,7 @@ object PerformanceAnalyzer {
     /**
      * Analyse complète d'une séance (Court Terme)
      */
-    fun analyzeActivity(type: String, streams: ActivityStreams, zones: TrainingZones? = null): ActivityAnalysis {
+    fun analyzeActivity(type: String, streams: ActivityStreams, zones: TrainingZones? = null, userFCM: Int = 190): ActivityAnalysis {
         val time = streams.time
         val hr = streams.heartRate?.map { it.toDouble() }
         val pace = streams.pace
@@ -367,7 +368,15 @@ object PerformanceAnalyzer {
         // 4. Distributions
         val hrDist = hr?.let { calculateZoneDistribution(it, zones?.runZones?.fc?.map { it.first.toDouble() to it.second.toDouble() } ?: emptyList()) }
         val pwrDist = power?.let { calculateZoneDistribution(it.map { it.toDouble() }, zones?.bikeZones?.power?.map { it.first.toDouble() to it.second.toDouble() } ?: emptyList()) }
-        val paceDist = pace?.let { calculateZoneDistribution(it, zones?.runZones?.pace ?: emptyList()) }
+        
+        // Convert pace (m/s) to decimal minutes to match zone units
+        val paceDist = if (type == "run") {
+            val paceDecimalMinKm = pace?.map { if (it > 0) 1000.0 / (it * 60.0) else 0.0 }
+            paceDecimalMinKm?.let { calculateZoneDistribution(it, zones?.runZones?.pace ?: emptyList()) }
+        } else if (type == "swim") {
+            val paceDecimalMin100m = pace?.map { if (it > 0) 100.0 / (it * 60.0) else 0.0 }
+            paceDecimalMin100m?.let { calculateZoneDistribution(it, zones?.swimZones?.pace ?: emptyList()) }
+        } else null
 
         val gapAvg = streams.gradAdjustedPace?.average() ?: (pace?.average() ?: 0.0)
         val variabilityIndex = if (type == "bike") {
@@ -420,12 +429,12 @@ object PerformanceAnalyzer {
             lapData = laps,
             normalizedPower = normalizedPower,
             normalizedSpeed = normalizedSpeed,
-            trimp = calculateEdwardsTRIMP(durationSec, avgHR.toInt(), calculateFCM(30, "H", 70.0)), // Use FCM logic
+            trimp = calculateEdwardsTRIMP(durationSec, avgHR.toInt(), userFCM),
             vam = streams.vam?.average(),
             hrZoneDistribution = hrDist,
             powerZoneDistribution = pwrDist,
             paceZoneDistribution = paceDist,
-            swolf = if (type == "swim") (60 / (pace?.average() ?: 1.0)).toInt() + 20 else null, // Placeholder Swolf
+            swolf = if (type == "swim" && pace?.isNotEmpty() == true) (6000 / (pace.average() * 60)).toInt() + 20 else null,
             strokeRate = if (type == "swim") 32 else null
         )
     }

@@ -636,7 +636,7 @@ class DataSyncManager(val context: Context, val state: AppState) {
                 android.util.Log.w("DrawRun", "syncActivityDetail: TrainingZones are MISSING. Analysis might be inaccurate or incomplete.")
             }
             
-            val analysis = PerformanceAnalyzer.analyzeActivity(type, activityStreams, state.zones)
+            val analysis = PerformanceAnalyzer.analyzeActivity(type, activityStreams, state.zones, state.fcm)
             android.util.Log.d("DrawRun", "syncActivityDetail: Analysis complete - IF=${analysis.intensityFactor}, TSS=${analysis.tss}, HR Dist=${analysis.hrZoneDistribution != null}")
             
             withContext(Dispatchers.Main) {
@@ -767,7 +767,7 @@ class DataSyncManager(val context: Context, val state: AppState) {
                 gradAdjustedPace = null
             )
 
-            val analysis = PerformanceAnalyzer.analyzeActivity(type, streams, state.zones)
+            val analysis = PerformanceAnalyzer.analyzeActivity(type, streams, state.zones, state.fcm)
 
             withContext(Dispatchers.Main) {
                 state.selectedActivityStreams = streams

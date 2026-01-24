@@ -311,7 +311,7 @@ fun PerformanceScreen(state: AppState) {
                 items = levelMetrics,
                 modifier = Modifier.height(420.dp)
             ) { metric, _ ->
-                MetricCard(metric = metric)
+                MetricCard(metric = metric, state = state)
             }
         }
 
@@ -346,7 +346,8 @@ fun PerformanceScreen(state: AppState) {
                             
                             BentoMetricCard(
                                 metric = metric,
-                                modifier = Modifier.weight(weight)
+                                modifier = Modifier.weight(weight),
+                                state = state
                             )
                         }
                     }
@@ -388,12 +389,12 @@ fun PerformanceScreen(state: AppState) {
                             2 -> "Z3 Seuil"
                             else -> "Z4 Vitesse"
                         }
-                        Zone(label, "${pair.first}-${pair.second}", 0.2f, getColorForZone(index))
+                        Zone(label, "${formatPace(pair.first)}-${formatPace(pair.second)}", 0.2f, getColorForZone(index))
                      }
                 } else {
                      listOf(
-                        Zone("Endurance", "1:45/100M", 0.6f, Color(0xFF3B82F6)),
-                        Zone("CSS Seuil", "1:22/100M", 0.2f, Color(0xFFF97316))
+                        Zone("Endurance", "1:45-2:00", 0.6f, Color(0xFF3B82F6)),
+                        Zone("CSS Seuil", "1:22-1:35", 0.2f, Color(0xFFF97316))
                     )
                 }
             }
@@ -411,7 +412,15 @@ fun PerformanceScreen(state: AppState) {
                  }
             }
         }
-        ZoneBar(title = "Zones d'Allure (Pace)", zones = zones)
+        ZoneBar(
+            title = "Zones d'Allure (Pace)", 
+            zones = zones,
+            onClick = {
+                state.explanationTitle = "Zones d'Allure"
+                state.explanationContent = "Vos zones de vitesse basées sur votre Vdot ou VMA. Z1: Endurance, Z2: Marathon, Z3: Seuil, Z4: Intervalle, Z5: Vitesse répétition."
+                state.showExplanation = true
+            }
+        )
 
         // Heart Rate Zones
         // Heart Rate Zones
@@ -431,7 +440,15 @@ fun PerformanceScreen(state: AppState) {
                     Zone("Z5", "175-190", 0.2f, getColorForZone(4))
                 )
             }
-            ZoneBar(title = "Zones Cardiaques (FC)", zones = fcZones)
+            ZoneBar(
+                title = "Zones Cardiaques (FC)", 
+                zones = fcZones,
+                onClick = {
+                    state.explanationTitle = "Zones Cardiaques"
+                    state.explanationContent = "Calculées selon la méthode Karvonen (FC de réserve). Z1: Récupération, Z2: Endurance, Z3: Aérobie (Tempo), Z4: Seuil (Anaérobie), Z5: VO2Max."
+                    state.showExplanation = true
+                }
+            )
 
             // Power Zones (Watts) - Only for Bike or if we had Stryd for Run (but here defaulting to Bike logic for simplicity or if Bike selected)
             if (selectedSport == "bike") {
@@ -456,7 +473,15 @@ fun PerformanceScreen(state: AppState) {
                         Zone("Z3 Tempo", "200-240W", 0.15f, getColorForZone(2))
                     )
                 }
-                ZoneBar(title = "Zones de Puissance (Watts)", zones = powerZones)
+                ZoneBar(
+                    title = "Zones de Puissance (Watts)", 
+                    zones = powerZones,
+                    onClick = {
+                        state.explanationTitle = "Zones de Puissance"
+                        state.explanationContent = "Zones de Coggan basées sur votre FTP. Permettent de calibrer précisément l'intensité à vélo indépendamment de la fatigue ou du vent."
+                        state.showExplanation = true
+                    }
+                )
             }
         }
 
@@ -505,12 +530,17 @@ fun PerformanceScreen(state: AppState) {
 // --- Flashcard Components ---
 
 @Composable
-fun BentoMetricCard(metric: MetricData, modifier: Modifier = Modifier) {
+fun BentoMetricCard(metric: MetricData, modifier: Modifier = Modifier, state: AppState? = null) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(32.dp))
             .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)) // Glass
             .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f), RoundedCornerShape(32.dp))
+            .then(if (state != null) Modifier.clickable {
+                state.explanationTitle = metric.title
+                state.explanationContent = getMetricExplanation(metric.id)
+                state.showExplanation = true
+            } else Modifier)
             .padding(20.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -539,9 +569,15 @@ fun BentoMetricCard(metric: MetricData, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun MetricCard(metric: MetricData) {
+fun MetricCard(metric: MetricData, state: AppState? = null) {
     Card(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .then(if (state != null) Modifier.clickable {
+                state.explanationTitle = metric.title
+                state.explanationContent = getMetricExplanation(metric.id)
+                state.showExplanation = true
+            } else Modifier),
         shape = RoundedCornerShape(40.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)),
@@ -566,6 +602,7 @@ fun MetricCard(metric: MetricData) {
                      }
                      Text(text = metric.title.uppercase(), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), letterSpacing = 1.sp)
                 }
+                Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), modifier = Modifier.size(16.dp))
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -612,6 +649,33 @@ fun MetricCard(metric: MetricData) {
                 Sparkline(data = metric.trend, color = metric.color)
             }
         }
+    }
+}
+
+fun getMetricExplanation(id: String): String {
+    return when (id) {
+        "vma" -> "Vitesse Maximale Aérobie. C'est la vitesse à laquelle vous consommez le maximum d'oxygène. Base de vos allures d'entraînement."
+        "vo2max", "vo2_swim", "vo2_bike" -> "Volume maximum d'oxygène consommé par minute et par kg. C'est le reflet de votre 'moteur' aérobie."
+        "fcm" -> "Fréquence Cardiaque Maximale. Utilisée pour définir vos zones d'intensité cardiaques."
+        "ftp" -> "Functional Threshold Power. La puissance maximale que vous pouvez tenir pendant environ une heure à vélo."
+        "w_kg" -> "Rapport Puissance/Poids. Indicateur clé de performance, surtout en montée."
+        "css" -> "Critical Swim Speed. Votre allure de seuil en natation, utilisée pour calibrer vos séries."
+        "vdot" -> "Indice de performance Jack Daniels combinant VO2max et économie de course pour prédire vos allures."
+        "rai" -> "Running Ability Index. Score de capacité de course évalué par les algorithmes de mouvement."
+        "ctl", "ctl_swim", "ctl_bike" -> "Chronic Training Load. Votre condition physique à long terme (moyenne pondérée sur 42 jours)."
+        "atl", "atl_bike" -> "Acute Training Load. Votre fatigue à court terme (moyenne pondérée sur 7 jours)."
+        "tsb", "tsb_bike" -> "Training Stress Balance. Différence entre forme et fatigue. Un score positif indique une bonne fraîcheur."
+        "acwr", "acwr_swim", "acwr_bike" -> "Acute:Chronic Workload Ratio. Ratio entre charge récente et charge habituelle. Doit être entre 0.8 et 1.3 pour limiter le risque de blessure."
+        "ie", "ie_swim" -> "Indice d'Endurance. Capacité à maintenir un haut pourcentage de votre VMA (ou Vmax) sur de longues durées."
+        "fatmax", "fatmax_swim", "fatmax_bike" -> "Intensité à laquelle vous brûlez le plus de graisses. Idéal pour l'endurance fondamentale."
+        "crossover", "crossover_swim", "crossover_bike" -> "Point d'intensité où le métabolisme passe d'une dominance Lipidique (graisses) à Glucidique (sucres)."
+        "cp", "cs", "cp_swim", "cp_bike" -> "Critical Power/Speed. Puissance ou vitesse maximale que vous pouvez maintenir sans fatigue exponentielle (seuil lactique)."
+        "riegel", "riegel_swim", "tanda" -> "Prédiction de performance basée sur la loi de puissance de Riegel."
+        "w_prime", "w_prime_swim", "frc" -> "Réserve de capacité anaérobie. Votre réservoir pour les efforts au-dessus du seuil."
+        "age_grading", "age_grading_bike", "masters" -> "Performance normalisée par rapport au record du monde de votre catégorie d'âge."
+        "vlamax" -> "Taux maximal de production de lactate. Définit si vous êtes plutôt un sprinteur ou un coureur d'endurance."
+        "efficiency", "durability" -> "Capacité à maintenir une efficacité gestuelle stable malgré la fatigue."
+        else -> "Indicateur de performance calculé à partir de vos entraînements récents."
     }
 }
 

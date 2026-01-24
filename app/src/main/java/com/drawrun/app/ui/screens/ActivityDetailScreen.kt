@@ -451,13 +451,13 @@ fun ActivityDetailScreen(state: AppState, syncManager: com.drawrun.app.logic.Dat
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         analysis.hrZoneDistribution?.let { 
-                            ZoneDistributionCard("ZONES CARDIO", it, Color(0xFFEF4444), Modifier.weight(1f).widthIn(min = 280.dp))
+                            ZoneDistributionCard("ZONES CARDIO", it, Color(0xFFEF4444), Modifier.weight(1f).widthIn(min = 280.dp), state = state)
                         }
                         analysis.powerZoneDistribution?.let { 
-                            ZoneDistributionCard("ZONES PUISSANCE", it, Color(0xFFF59E0B), Modifier.weight(1f).widthIn(min = 280.dp))
+                            ZoneDistributionCard("ZONES PUISSANCE", it, Color(0xFFF59E0B), Modifier.weight(1f).widthIn(min = 280.dp), state = state)
                         }
                         analysis.paceZoneDistribution?.let { 
-                            ZoneDistributionCard("ZONES D'ALLURE", it, Color(0xFF3B82F6), Modifier.weight(1f).widthIn(min = 280.dp))
+                            ZoneDistributionCard("ZONES D'ALLURE", it, Color(0xFF3B82F6), Modifier.weight(1f).widthIn(min = 280.dp), state = state)
                         }
                     }
                 }
@@ -482,21 +482,21 @@ fun ActivityDetailScreen(state: AppState, syncManager: com.drawrun.app.logic.Dat
                             TechItem("TSS (Stress Score)", "${analysis.tss?.toInt() ?: "--"}", "pts", Icons.Default.History),
                             TechItem("IF (Intensité)", "%.2f".format(analysis.intensityFactor ?: 0.0), "", Icons.Default.TrendingUp),
                             TechItem("TRIMP", "${analysis.trimp?.toInt() ?: "--"}", "pts", Icons.Default.Favorite)
-                        ), Modifier.weight(1f).widthIn(min = 300.dp))
+                        ), Modifier.weight(1f).widthIn(min = 300.dp), state = state)
 
                         TechnicalSection("Efficacité & Stabilité", listOf(
                             TechItem("EF (Efficacité)", "%.2f".format(analysis.efficiencyFactor ?: 0.0), "pts", Icons.Default.Speed),
                             TechItem("Découplage Pw:Hr", "%.1f".format((analysis.aerobicDecoupling ?: 0.0) * 100), "%", Icons.Default.Height),
                             TechItem("Variabilité (VI)", "%.2f".format(analysis.variabilityIndex ?: 1.0), "idx", Icons.Default.Timeline),
                             TechItem("VAM Ascension", "${analysis.vam?.toInt() ?: "--"}", "m/h", Icons.Default.Terrain)
-                        ), Modifier.weight(1f).widthIn(min = 300.dp))
+                        ), Modifier.weight(1f).widthIn(min = 300.dp), state = state)
 
                         TechnicalSection("Dynamique & Technique", 
                             if (act.type == "swim") {
                                 listOf(
                                     TechItem("SWOLF (Bassin)", "${analysis.swolf ?: "--"}", "", Icons.Default.Waves),
                                     TechItem("Stroke Rate", "${analysis.strokeRate ?: "--"}", "spm", Icons.Default.Timer),
-                                    TechItem("Cadence", "--", "rpm", Icons.Default.DirectionsBike), // Placeholder if needed or remove
+                                    TechItem("Cadence", "--", "rpm", Icons.Default.DirectionsBike), 
                                     TechItem("Efficacité", "--", "idx", Icons.Default.Speed)
                                 )
                             } else {
@@ -506,7 +506,7 @@ fun ActivityDetailScreen(state: AppState, syncManager: com.drawrun.app.logic.Dat
                                     TechItem("Oscillation Vert.", "${analysis.verticalOscillation?.let { "%.1f".format(it) } ?: "--"}", "cm", Icons.Default.Height),
                                     TechItem("Temps Contact Sol", "${analysis.groundContactTime?.toInt() ?: "--"}", "ms", Icons.Default.Timer)
                                 )
-                            }, Modifier.weight(1f).widthIn(min = 300.dp))
+                            }, Modifier.weight(1f).widthIn(min = 300.dp), state = state)
                     }
                 }
 
@@ -942,16 +942,28 @@ fun TelemetryCard(
 }
 
 @Composable
-fun ZoneDistributionCard(title: String, distribution: List<Double>, color: Color, modifier: Modifier = Modifier) {
+fun ZoneDistributionCard(title: String, distribution: List<Double>, color: Color, modifier: Modifier = Modifier, state: AppState? = null) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(24.dp))
             .background(MaterialTheme.colorScheme.surface)
             .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f), RoundedCornerShape(24.dp))
+            .then(if (state != null) Modifier.clickable {
+                state.explanationTitle = title
+                state.explanationContent = when {
+                    title.contains("CARDIO") -> "Distribution de votre temps selon vos zones de fréquence cardiaque (Z1 à Z5)."
+                    title.contains("PUISSANCE") -> "Distribution de votre puissance selon les zones de Coggan (Watt)."
+                    else -> "Distribution de votre allure selon vos zones de vitesse personnalisées."
+                }
+                state.showExplanation = true
+            } else Modifier)
             .padding(20.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text(title, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(title, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black)
+                Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), modifier = Modifier.size(12.dp))
+            }
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 distribution.forEachIndexed { idx, pct ->
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -968,7 +980,7 @@ fun ZoneDistributionCard(title: String, distribution: List<Double>, color: Color
 }
 
 @Composable
-fun TechnicalSection(title: String, items: List<TechItem>, modifier: Modifier = Modifier) {
+fun TechnicalSection(title: String, items: List<TechItem>, modifier: Modifier = Modifier, state: AppState? = null) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(24.dp))
@@ -979,7 +991,18 @@ fun TechnicalSection(title: String, items: List<TechItem>, modifier: Modifier = 
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(title.uppercase(), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Black)
             items.forEach { item ->
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .then(if (state != null) Modifier.clickable {
+                            state.explanationTitle = item.label
+                            state.explanationContent = getTechnicalExplanation(item.label)
+                            state.showExplanation = true
+                        } else Modifier)
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Icon(item.icon, null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), modifier = Modifier.size(16.dp))
                         Text(item.label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
@@ -991,6 +1014,25 @@ fun TechnicalSection(title: String, items: List<TechItem>, modifier: Modifier = 
                 }
             }
         }
+    }
+}
+
+fun getTechnicalExplanation(label: String): String {
+    return when {
+        label.contains("TSS") -> "Training Stress Score. Mesure la charge de travail globale basée sur l'intensité et la durée de la séance."
+        label.contains("IF") -> "Intensity Factor. Rapport entre votre intensité normalisée et votre seuil fonctionnel."
+        label.contains("TRIMP") -> "Training Impulse. Charge d'entraînement calculée à partir de la fréquence cardiaque (méthode de Edwards)."
+        label.contains("EF") -> "Efficiency Factor. Rapport entre votre vitesse/puissance et votre fréquence cardiaque. Plus il est élevé, plus vous êtes efficace."
+        label.contains("Découplage") -> "Dérive de l'efficacité (Pa:Hr ou Pw:Hr) entre la première et la seconde moitié de séance. Une valeur < 5% indique une bonne endurance aérobie."
+        label.contains("VI") -> "Variability Index. Rapport entre puissance normalisée et moyenne. Indique si l'effort était régulier (proche de 1.0) ou saccadé."
+        label.contains("VAM") -> "Vitesse Ascensionnelle Moyenne. Vitesse de montée exprimée en mètres verticaux par heure."
+        label.contains("NGP") -> "Normalized Graded Pace. Allure ajustée selon la pente pour refléter le coût métabolique réel sur terrain vallonné."
+        label.contains("SWOLF") -> "Score d'efficacité en natation : Temps + Nombre de mouvements par longueur. Plus le score est bas, plus vous êtes efficace."
+        label.contains("Cadence") -> "Nombre de pas par minute (course) ou de coups de pédale (vélo)."
+        label.contains("Foulée") -> "Longueur moyenne de chaque pas. Dépend de votre vitesse et de votre technique."
+        label.contains("Oscillation") -> "Amplitude du mouvement vertical de votre buste à chaque pas. Une oscillation réduite améliore l'économie de course."
+        label.contains("Contact") -> "Temps durant lequel votre pied reste au sol à chaque foulée. Un temps court est souvent signe d'une meilleure économie."
+        else -> "Indicateur technique avancé analysant la biomécanique ou la physiologie de votre effort."
     }
 }
 

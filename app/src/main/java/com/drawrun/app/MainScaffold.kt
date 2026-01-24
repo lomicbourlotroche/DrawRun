@@ -48,7 +48,7 @@ fun MainScaffold(state: AppState, syncManager: DataSyncManager) {
                             "home" -> "TABLEAU"
                             "activities" -> "JOURNAL"
                             "performance" -> "CAPACITÉ"
-                            "planning" -> "PLANNING"
+                            "planning" -> "COACH"
                             else -> "PROFIL"
                         },
                         style = MaterialTheme.typography.displayMedium,

@@ -200,19 +200,19 @@ fun WorkoutCreator(
                 modifier = Modifier.fillMaxWidth().padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                ToolButton("ÉCHAUF", Icons.Default.Waves, Color(0xFF60A5FA)) {
+                ToolButton("ÉCHAUF", Icons.Default.Waves, Color(0xFF60A5FA), Modifier.weight(1f)) {
                     steps = steps + WorkoutStep(type = "WARMUP", durationType = "TIME", durationValue = 600.0, targetType = "HR_ZONE", targetValue = "Z1")
                 }
-                ToolButton("RUN", Icons.Default.DirectionsRun, Color(0xFF22C55E)) {
+                ToolButton("RUN", Icons.Default.DirectionsRun, Color(0xFF22C55E), Modifier.weight(1f)) {
                     steps = steps + WorkoutStep(type = "RUN", durationType = "DISTANCE", durationValue = 1000.0, targetType = "PACE", targetValue = "5:00")
                 }
-                ToolButton("RÉCUP", Icons.Default.SelfImprovement, Color(0xFFF59E0B)) {
+                ToolButton("RÉCUP", Icons.Default.SelfImprovement, Color(0xFFF59E0B), Modifier.weight(1f)) {
                     steps = steps + WorkoutStep(type = "REST", durationType = "TIME", durationValue = 120.0, targetType = "NONE", targetValue = "")
                 }
-                ToolButton("COOL", Icons.Default.AcUnit, Color(0xFF3B82F6)) {
+                ToolButton("COOL", Icons.Default.AcUnit, Color(0xFF3B82F6), Modifier.weight(1f)) {
                     steps = steps + WorkoutStep(type = "COOL", durationType = "TIME", durationValue = 300.0, targetType = "HR_ZONE", targetValue = "Z1")
                 }
-                ToolButton("RÉPÉT.", Icons.Default.Repeat, Color(0xFFEC4899)) {
+                ToolButton("RÉPÉT.", Icons.Default.Repeat, Color(0xFFEC4899), Modifier.weight(1f)) {
                     val run = WorkoutStep(type = "RUN", durationType = "DISTANCE", durationValue = 400.0, targetType = "PACE", targetValue = "4:00")
                     val rest = WorkoutStep(type = "REST", durationType = "TIME", durationValue = 60.0, targetType = "NONE", targetValue = "")
                     steps = steps + WorkoutStep(
@@ -225,7 +225,7 @@ fun WorkoutCreator(
                         steps = listOf(run, rest)
                     )
                 }
-                ToolButton("RENFO", Icons.Default.FitnessCenter, Color(0xFF8B5CF6)) {
+                ToolButton("RENFO", Icons.Default.FitnessCenter, Color(0xFF8B5CF6), Modifier.weight(1f)) {
                     steps = steps + WorkoutStep(type = "PPG", durationType = "REPS", durationValue = 20.0, targetType = "NONE", targetValue = "Squats")
                 }
             }
@@ -275,29 +275,29 @@ fun StepCard(
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(16.dp)
     ) {
         Row(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Reorder Controls
             Column {
-                IconButton(onClick = onMoveUp, enabled = index > 0, modifier = Modifier.size(24.dp)) {
-                    Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Up", tint = if (index > 0) Color.Gray else Color.Transparent)
+                IconButton(onClick = onMoveUp, enabled = index > 0, modifier = Modifier.size(32.dp)) {
+                    Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Up", modifier = Modifier.size(24.dp), tint = if (index > 0) Color.Gray else Color.Transparent)
                 }
-                IconButton(onClick = onMoveDown, enabled = index < totalSteps - 1, modifier = Modifier.size(24.dp)) {
-                     Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Down", tint = if (index < totalSteps - 1) Color.Gray else Color.Transparent)
+                IconButton(onClick = onMoveDown, enabled = index < totalSteps - 1, modifier = Modifier.size(32.dp)) {
+                     Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Down", modifier = Modifier.size(24.dp), tint = if (index < totalSteps - 1) Color.Gray else Color.Transparent)
                 }
             }
             
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(12.dp))
             
             // Icon
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(14.dp))
                     .background(getColorForStep(step.type).copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
@@ -305,36 +305,45 @@ fun StepCard(
                     getIconForStep(step.type),
                     contentDescription = null,
                     tint = getColorForStep(step.type),
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
             
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(20.dp))
             
             // Content
             Column(modifier = Modifier.weight(1f)) {
                  Text(
                     if (step.type == "PPG") "PPG: ${step.targetValue}" else getStepTypeLabel(step.type),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Black,
                     color = if (step.type == "PPG") Color(0xFFE040FB) else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     formatStepDuration(step),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                 )
                 if (step.targetValue.isNotBlank() && step.type != "PPG") {
-                     Text(
-                        "${step.targetType}: ${step.targetValue}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = getColorForStep(step.type)
-                    )
+                      Surface(
+                          color = getColorForStep(step.type).copy(alpha = 0.1f),
+                          shape = RoundedCornerShape(4.dp),
+                          modifier = Modifier.padding(top = 4.dp)
+                      ) {
+                        Text(
+                            "${step.targetType}: ${step.targetValue}",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = getColorForStep(step.type),
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                      }
                 }
             }
             
-            IconButton(onClick = onRemove) {
-                Icon(Icons.Default.Delete, contentDescription = "Supprimer", tint = MaterialTheme.colorScheme.error.copy(alpha=0.6f))
+            IconButton(onClick = onRemove, modifier = Modifier.size(40.dp)) {
+                Icon(Icons.Default.Delete, contentDescription = "Supprimer", tint = MaterialTheme.colorScheme.error.copy(alpha=0.7f), modifier = Modifier.size(24.dp))
             }
         }
     }
@@ -417,23 +426,23 @@ fun BlockCard(
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Row(
-                            modifier = Modifier.padding(8.dp),
+                            modifier = Modifier.padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(getIconForStep(subStep.type), contentDescription = null, tint = getColorForStep(subStep.type), modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(getIconForStep(subStep.type), contentDescription = null, tint = getColorForStep(subStep.type), modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
                             val label = if (subStep.type == "PPG") "PPG: ${subStep.targetValue}" else getStepTypeLabel(subStep.type)
-                            Text("$label • ${formatStepDuration(subStep)}", style = MaterialTheme.typography.bodySmall, color = if (subStep.type == "PPG") Color(0xFFE040FB) else MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+                            Text("$label • ${formatStepDuration(subStep)}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = if (subStep.type == "PPG") Color(0xFFE040FB) else MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
                              if (subStep.targetValue.isNotBlank()) {
-                                 Text("@ ${subStep.targetValue}", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                                 Text("@ ${subStep.targetValue}", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = getColorForStep(subStep.type).copy(alpha = 0.8f))
                              }
-                             Spacer(modifier = Modifier.width(8.dp))
+                             Spacer(modifier = Modifier.width(12.dp))
                              IconButton(onClick = {
                                  val newSubList = step.steps.toMutableList()
                                  newSubList.removeAt(subIndex)
                                  onUpdate(step.copy(steps = newSubList))
-                             }, modifier = Modifier.size(20.dp)) {
-                                 Icon(Icons.Default.Close, contentDescription = null, tint = Color.Red.copy(alpha = 0.4f))
+                             }, modifier = Modifier.size(24.dp)) {
+                                 Icon(Icons.Default.Close, contentDescription = null, tint = Color.Red.copy(alpha = 0.5f), modifier = Modifier.size(20.dp))
                              }
                         }
                     }
@@ -707,15 +716,28 @@ fun WorkoutStepEditorDialog(
 }
 
 @Composable
-fun ToolButton(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, onClick: () -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable(onClick = onClick).padding(8.dp)) {
+fun ToolButton(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally, 
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp, horizontal = 4.dp)
+    ) {
         Box(
-            modifier = Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(color),
+            modifier = Modifier.size(44.dp).clip(RoundedCornerShape(14.dp)).background(color),
             contentAlignment = Alignment.Center
         ) {
             Icon(icon, contentDescription = null, tint = Color.White)
         }
-        Text(label, style = MaterialTheme.typography.labelSmall, fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 4.dp))
+        Text(
+            text = label, 
+            style = MaterialTheme.typography.labelSmall, 
+            fontSize = 9.sp, 
+            fontWeight = FontWeight.Black, 
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            modifier = Modifier.padding(top = 6.dp)
+        )
     }
 }
 

@@ -321,11 +321,21 @@ fun PlanningScreen(state: AppState) {
         } else if (planningSport == "custom") {
              if (showWorkoutCreator) {
                   WorkoutCreator(
+                      initialWorkout = workoutToEdit,
                       onSave = { workout ->
-                           state.savedRunWorkouts = state.savedRunWorkouts + workout
+                           val index = state.savedRunWorkouts.indexOfFirst { it.id == workout.id }
+                           if (index != null && index != -1) {
+                               state.savedRunWorkouts = state.savedRunWorkouts.toMutableList().also { it[index] = workout }
+                           } else {
+                               state.savedRunWorkouts = state.savedRunWorkouts + workout
+                           }
                            showWorkoutCreator = false
+                           workoutToEdit = null
                       },
-                      onCancel = { showWorkoutCreator = false }
+                      onCancel = { 
+                          showWorkoutCreator = false
+                          workoutToEdit = null
+                      }
                   )
              } else {
                  Box(
