@@ -59,6 +59,9 @@ class MainActivity : ComponentActivity() {
                     appState.generatedRunPlan = savedPlan.first
                     appState.runPlanObjective = savedPlan.second
                 }
+
+                // Load custom workouts
+                appState.savedRunWorkouts = com.drawrun.app.data.WorkoutRepository.loadWorkouts(this@MainActivity)
                 
                 // Navigate to splash then trigger heavy sync operations in background
                 appState.currentScreen = Screen.WelcomeSplash

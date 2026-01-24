@@ -329,6 +329,7 @@ fun PlanningScreen(state: AppState) {
                            } else {
                                state.savedRunWorkouts = state.savedRunWorkouts + workout
                            }
+                           com.drawrun.app.data.WorkoutRepository.saveWorkouts(context, state.savedRunWorkouts)
                            showWorkoutCreator = false
                            workoutToEdit = null
                       },
@@ -377,6 +378,7 @@ fun PlanningScreen(state: AppState) {
                                              val list = state.savedRunWorkouts.toMutableList()
                                              list.remove(workout)
                                              state.savedRunWorkouts = list
+                                             com.drawrun.app.data.WorkoutRepository.saveWorkouts(context, state.savedRunWorkouts)
                                          },
                                          onEdit = {
                                              workoutToEdit = workout

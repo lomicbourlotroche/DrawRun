@@ -210,9 +210,7 @@ class AppState {
     }
 
     val zones by derivedStateOf {
-        if (userProfileComplete) {
-            PerformanceAnalyzer.getPersonalizedZones(this)
-        } else null
+        PerformanceAnalyzer.getPersonalizedZones(this)
     }
 }
 

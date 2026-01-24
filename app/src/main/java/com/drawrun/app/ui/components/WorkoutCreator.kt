@@ -75,43 +75,87 @@ fun WorkoutCreator(
             }
         }
         
-        // Metadata Card
+        // Fixed Tools Row at the top
         Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            shape = RoundedCornerShape(16.dp)
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+            shape = RoundedCornerShape(12.dp)
         ) {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
-                    value = workoutName,
-                    onValueChange = { workoutName = it },
-                    label = { Text("Nom de la séance") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
-                )
-                OutlinedTextField(
-                    value = workoutDesc,
-                    onValueChange = { workoutDesc = it },
-                    label = { Text("Description (optionnel)") },
-                   modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    maxLines = 2
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    BadgeInfo(icon = Icons.Default.Straighten, text = "%.1f km".format(totalDist / 1000))
-                    BadgeInfo(icon = Icons.Default.Timer, text = formatDuration(totalDuration.toInt()))
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(4.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                ToolButton("ÉCHAUF", Icons.Default.Waves, Color(0xFF60A5FA), Modifier.weight(1f)) {
+                    steps = steps + WorkoutStep(type = "WARMUP", durationType = "TIME", durationValue = 600.0, targetType = "HR_ZONE", targetValue = "Z1")
+                }
+                ToolButton("RUN", Icons.Default.DirectionsRun, Color(0xFF22C55E), Modifier.weight(1f)) {
+                    steps = steps + WorkoutStep(type = "RUN", durationType = "DISTANCE", durationValue = 1000.0, targetType = "PACE", targetValue = "5:00")
+                }
+                ToolButton("RÉCUP", Icons.Default.SelfImprovement, Color(0xFFF59E0B), Modifier.weight(1f)) {
+                    steps = steps + WorkoutStep(type = "REST", durationType = "TIME", durationValue = 120.0, targetType = "NONE", targetValue = "")
+                }
+                ToolButton("COOL", Icons.Default.AcUnit, Color(0xFF3B82F6), Modifier.weight(1f)) {
+                    steps = steps + WorkoutStep(type = "COOL", durationType = "TIME", durationValue = 300.0, targetType = "HR_ZONE", targetValue = "Z1")
+                }
+                ToolButton("RÉPÉT.", Icons.Default.Repeat, Color(0xFFEC4899), Modifier.weight(1f)) {
+                    val run = WorkoutStep(type = "RUN", durationType = "DISTANCE", durationValue = 400.0, targetType = "PACE", targetValue = "4:00")
+                    val rest = WorkoutStep(type = "REST", durationType = "TIME", durationValue = 60.0, targetType = "NONE", targetValue = "")
+                    steps = steps + WorkoutStep(
+                        type = "INTERVAL_BLOCK", 
+                        durationType = "OPEN", 
+                        durationValue = 0.0, 
+                        targetType = "NONE", 
+                        targetValue = "", 
+                        repeatCount = 10,
+                        steps = listOf(run, rest)
+                    )
+                }
+                ToolButton("RENFO", Icons.Default.FitnessCenter, Color(0xFF8B5CF6), Modifier.weight(1f)) {
+                    steps = steps + WorkoutStep(type = "PPG", durationType = "REPS", durationValue = 20.0, targetType = "NONE", targetValue = "Squats")
                 }
             }
         }
+
         
         // Steps List
         LazyColumn(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp) // Normal vertical spacing
         ) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        OutlinedTextField(
+                            value = workoutName,
+                            onValueChange = { workoutName = it },
+                            label = { Text("Nom de la séance") },
+                            modifier = Modifier.fillMaxWidth().height(56.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            singleLine = true
+                        )
+                        OutlinedTextField(
+                            value = workoutDesc,
+                            onValueChange = { workoutDesc = it },
+                            label = { Text("Description (optionnel)") },
+                            modifier = Modifier.fillMaxWidth().height(56.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            singleLine = true
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            BadgeInfo(icon = Icons.Default.Straighten, text = "%.1f km".format(totalDist / 1000))
+                            BadgeInfo(icon = Icons.Default.Timer, text = formatDuration(totalDuration.toInt()))
+                        }
+                    }
+                }
+            }
+
             if (steps.isEmpty()) {
                 item {
                     Card(
@@ -190,48 +234,6 @@ fun WorkoutCreator(
             }
         }
         
-        // Tools Row
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                ToolButton("ÉCHAUF", Icons.Default.Waves, Color(0xFF60A5FA), Modifier.weight(1f)) {
-                    steps = steps + WorkoutStep(type = "WARMUP", durationType = "TIME", durationValue = 600.0, targetType = "HR_ZONE", targetValue = "Z1")
-                }
-                ToolButton("RUN", Icons.Default.DirectionsRun, Color(0xFF22C55E), Modifier.weight(1f)) {
-                    steps = steps + WorkoutStep(type = "RUN", durationType = "DISTANCE", durationValue = 1000.0, targetType = "PACE", targetValue = "5:00")
-                }
-                ToolButton("RÉCUP", Icons.Default.SelfImprovement, Color(0xFFF59E0B), Modifier.weight(1f)) {
-                    steps = steps + WorkoutStep(type = "REST", durationType = "TIME", durationValue = 120.0, targetType = "NONE", targetValue = "")
-                }
-                ToolButton("COOL", Icons.Default.AcUnit, Color(0xFF3B82F6), Modifier.weight(1f)) {
-                    steps = steps + WorkoutStep(type = "COOL", durationType = "TIME", durationValue = 300.0, targetType = "HR_ZONE", targetValue = "Z1")
-                }
-                ToolButton("RÉPÉT.", Icons.Default.Repeat, Color(0xFFEC4899), Modifier.weight(1f)) {
-                    val run = WorkoutStep(type = "RUN", durationType = "DISTANCE", durationValue = 400.0, targetType = "PACE", targetValue = "4:00")
-                    val rest = WorkoutStep(type = "REST", durationType = "TIME", durationValue = 60.0, targetType = "NONE", targetValue = "")
-                    steps = steps + WorkoutStep(
-                        type = "INTERVAL_BLOCK", 
-                        durationType = "OPEN", 
-                        durationValue = 0.0, 
-                        targetType = "NONE", 
-                        targetValue = "", 
-                        repeatCount = 10,
-                        steps = listOf(run, rest)
-                    )
-                }
-                ToolButton("RENFO", Icons.Default.FitnessCenter, Color(0xFF8B5CF6), Modifier.weight(1f)) {
-                    steps = steps + WorkoutStep(type = "PPG", durationType = "REPS", durationValue = 20.0, targetType = "NONE", targetValue = "Squats")
-                }
-            }
-        }
-    }
-    
     // Editor Dialogs
     editingStep?.let { (index, step) ->
         WorkoutStepEditorDialog(
@@ -257,6 +259,7 @@ fun WorkoutCreator(
             }
         )
     }
+}
 }
 
 @Composable
@@ -296,8 +299,8 @@ fun StepCard(
             // Icon
             Box(
                 modifier = Modifier
-                    .size(84.dp) // Massively enlarged (XL)
-                    .clip(RoundedCornerShape(20.dp))
+                    .size(56.dp) // Normal size
+                    .clip(RoundedCornerShape(14.dp))
                     .background(getColorForStep(step.type).copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
@@ -305,7 +308,7 @@ fun StepCard(
                     getIconForStep(step.type),
                     contentDescription = null,
                     tint = getColorForStep(step.type),
-                    modifier = Modifier.size(42.dp) // Enlarged (XL)
+                    modifier = Modifier.size(28.dp) // Normal size
                 )
             }
             
@@ -315,13 +318,13 @@ fun StepCard(
             Column(modifier = Modifier.weight(1f)) {
                  Text(
                     if (step.type == "PPG") "PPG: ${step.targetValue}" else getStepTypeLabel(step.type),
-                    style = MaterialTheme.typography.headlineMedium, // XL Header
+                    style = MaterialTheme.typography.titleMedium, // Normal Title
                     fontWeight = FontWeight.Black,
                     color = if (step.type == "PPG") Color(0xFFE040FB) else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     formatStepDuration(step),
-                    style = MaterialTheme.typography.headlineSmall, // XL Subtext
+                    style = MaterialTheme.typography.bodyLarge, // Normal Body
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                 )
@@ -333,10 +336,10 @@ fun StepCard(
                       ) {
                         Text(
                             "${step.targetType}: ${step.targetValue}",
-                            style = MaterialTheme.typography.titleLarge, // XL Badge Text
-                            fontWeight = FontWeight.Black,
+                            style = MaterialTheme.typography.labelMedium, // Normal Badge
+                            fontWeight = FontWeight.Bold,
                             color = getColorForStep(step.type),
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                         )
                       }
                 }
@@ -382,7 +385,7 @@ fun BlockCard(
                 
                 Text(
                     "${step.repeatCount} SÉRIES", 
-                    style = MaterialTheme.typography.headlineLarge, // XL Block Header
+                    style = MaterialTheme.typography.titleMedium, // Normal Block Header
                     fontWeight = FontWeight.Black,
                     color = Color(0xFFEC4899)
                 )
@@ -430,9 +433,9 @@ fun BlockCard(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             val label = if (subStep.type == "PPG") "PPG: ${subStep.targetValue}" else getStepTypeLabel(subStep.type)
-                            Text("$label • ${formatStepDuration(subStep)}", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black, color = if (subStep.type == "PPG") Color(0xFFE040FB) else MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+                            Text("$label • ${formatStepDuration(subStep)}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = if (subStep.type == "PPG") Color(0xFFE040FB) else MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
                              if (subStep.targetValue.isNotBlank()) {
-                                 Text("@ ${subStep.targetValue}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, color = getColorForStep(subStep.type).copy(alpha = 0.8f))
+                                 Text("@ ${subStep.targetValue}", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = getColorForStep(subStep.type).copy(alpha = 0.8f))
                              }
                              Spacer(modifier = Modifier.width(12.dp))
                              IconButton(onClick = {

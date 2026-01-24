@@ -17,7 +17,8 @@ data class TrainingZones(
 
 data class RunZones(
     val fc: List<Pair<Int, Int>>, // Karvonen
-    val pace: List<Pair<Double, Double>>, // VDOT based (min/km)
+    val paceVdot: List<Pair<Double, Double>>, // VDOT based (min/km)
+    val paceVma: List<Pair<Double, Double>>, // VMA % based (min/km)
     val vma: Double
 )
 
@@ -85,9 +86,21 @@ object PerformanceAnalyzer {
             speeds.map { (60.0/it.second) to (60.0/it.first) }
         }
         
+        // Mode VMA Zones (Strict adherence to User Reference: 60-70, 75-80, 80-90, 90-95, 95-105)
+        val vmaPaces = if (vma > 0) {
+            listOf(
+                (vma * 0.70) to (vma * 0.60), // Z1: 60-70% (Endurance Fondamentale)
+                (vma * 0.80) to (vma * 0.75), // Z2: 75-80% (Endurance Active / Marathon)
+                (vma * 0.90) to (vma * 0.80), // Z3: 80-90% (Seuil / Semi)
+                (vma * 0.95) to (vma * 0.90), // Z4: 90-95% (Allure 10km)
+                (vma * 1.05) to (vma * 0.95)  // Z5: 95-105% (VMA / Fractionné)
+            ).map { (60.0 / it.first) to (60.0 / it.second) } // Pace min/km
+        } else emptyList()
+
         val runZones = RunZones(
             fc = runFC,
-            pace = paceZones,
+            paceVdot = paceZones,
+            paceVma = vmaPaces,
             vma = vma
         )
 
@@ -372,7 +385,7 @@ object PerformanceAnalyzer {
         // Convert pace (m/s) to decimal minutes to match zone units
         val paceDist = if (type == "run") {
             val paceDecimalMinKm = pace?.map { if (it > 0) 1000.0 / (it * 60.0) else 0.0 }
-            paceDecimalMinKm?.let { calculateZoneDistribution(it, zones?.runZones?.pace ?: emptyList()) }
+            paceDecimalMinKm?.let { calculateZoneDistribution(it, zones?.runZones?.paceVdot ?: emptyList()) }
         } else if (type == "swim") {
             val paceDecimalMin100m = pace?.map { if (it > 0) 100.0 / (it * 60.0) else 0.0 }
             paceDecimalMin100m?.let { calculateZoneDistribution(it, zones?.swimZones?.pace ?: emptyList()) }

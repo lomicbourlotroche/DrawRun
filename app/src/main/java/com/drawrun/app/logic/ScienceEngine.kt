@@ -15,15 +15,15 @@ object ScienceEngine {
     // 1. DATA STRUCTURES & CONSTANTS
     // ============================================================================================
 
-    // VDOT Intensity Zones (% of VDOT Velocity)
+    // VDOT Intensity Zones (% of VO2Max velocity)
     object VdotZones {
-        // Calibrated against Jack Daniels VDOT Tables (Edition 2/3)
-        const val E_LOW = 0.62  // Easy/Recup Lower
-        const val E_HIGH = 0.72 // Easy/Recup Higher
-        const val M = 0.85      // Marathon Pace
-        const val T = 0.92      // Threshold Pace (LT)
-        const val I = 1.02      // Interval Pace (VO2Max)
-        const val R = 1.15      // Repetition Pace
+        // Calibrated against Jack Daniels VDOT Tables
+        const val E_LOW = 0.62  // Easy (62-72%)
+        const val E_HIGH = 0.72 
+        const val M = 0.84      // Marathon (~84%)
+        const val T = 0.88      // Threshold (88-90%)
+        const val I = 0.98      // Interval (97-100%)
+        const val R = 1.12      // Repetition (110-115% - VDOT based)
     }
 
     data class ZoneRange(val min: Double, val max: Double, val label: String)
@@ -184,12 +184,11 @@ object ScienceEngine {
         val pE_fast = getPaceSeconds(vdot, VdotZones.E_HIGH)
 
         return mapOf(
-            "E" to "${formatPace(pE_fast)} - ${formatPace(pE_slow)}", // Fast to Slow (lower value first) ?? Usually people want min/km.. lower is faster. 
-            // formatPace(300) = 5:00. formatPace(360) = 6:00. So pE_fast is smaller number.
-            "M" to formatPace(pM),
-            "T" to formatPace(pT),
-            "I" to formatPace(pI),
-            "R" to formatPace(pR)
+            "E (Easy)" to "${formatPace(pE_fast)} - ${formatPace(pE_slow)}",
+            "M (Marathon)" to formatPace(pM),
+            "T (Threshold)" to formatPace(pT),
+            "I (Interval)" to formatPace(pI),
+            "R (Repetition)" to formatPace(pR)
         )
     }
 

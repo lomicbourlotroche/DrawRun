@@ -358,26 +358,35 @@ fun PerformanceScreen(state: AppState) {
 
         // Training Zones
         // Training Zones
+        var runPaceModeVdot by remember { mutableStateOf(true) }
+        
         val zones = when(selectedSport) {
             "run" -> {
                 val runZones = state.zones?.runZones
-                if (runZones != null) {
-                    runZones.pace.mapIndexed { index, pair ->
-                        val label = when(index) {
-                            0 -> "Z1 Récup"
-                            1 -> "Z2 Easy"
-                            2 -> "Z3 Tempo"
-                            3 -> "Z4 Seuil"
-                            else -> "Z5 Interval"
+                val activePaceZones = if (runPaceModeVdot) runZones?.paceVdot else runZones?.paceVma
+                
+                if (activePaceZones != null) {
+                    activePaceZones.mapIndexed { index, pair ->
+                        val label = if (runPaceModeVdot) {
+                            when(index) {
+                                0 -> "E (Easy)"
+                                1 -> "M (Marathon)"
+                                2 -> "T (Threshold)"
+                                3 -> "I (Interval)"
+                                else -> "R (Repetition)"
+                            }
+                        } else {
+                            when(index) {
+                                0 -> "Endur. Fond."
+                                1 -> "Endur. Active"
+                                2 -> "Seuil / Semi"
+                                3 -> "Allure 10km"
+                                else -> "VMA / Fract."
+                            }
                         }
                         Zone(label, "${formatPace(pair.first)}-${formatPace(pair.second)}", (index + 1) * 0.2f, getColorForZone(index))
                     }
-                } else {
-                    listOf(
-                        Zone("Z2 Endurance", "5:15-5:45", 0.6f, Color(0xFF3B82F6)),
-                        Zone("Z4 Seuil", "4:12-4:25", 0.2f, Color(0xFFF97316))
-                    )
-                }
+                } else emptyList()
             }
             "swim" -> {
                 val swimZones = state.zones?.swimZones
@@ -392,10 +401,7 @@ fun PerformanceScreen(state: AppState) {
                         Zone(label, "${formatPace(pair.first)}-${formatPace(pair.second)}", 0.2f, getColorForZone(index))
                      }
                 } else {
-                     listOf(
-                        Zone("Endurance", "1:45-2:00", 0.6f, Color(0xFF3B82F6)),
-                        Zone("CSS Seuil", "1:22-1:35", 0.2f, Color(0xFFF97316))
-                    )
+                     emptyList()
                 }
             }
             else -> {
@@ -405,20 +411,21 @@ fun PerformanceScreen(state: AppState) {
                         Zone("Z${index+1}", "${pair.first}-${pair.second}W", 0.15f, getColorForZone(index))
                      }
                  } else {
-                     listOf(
-                        Zone("Z4 FTP", "280-310W", 0.15f, Color(0xFFF97316)),
-                        Zone("Z2 Endurance", "180-220W", 0.5f, Color(0xFF3B82F6))
-                    )
+                     emptyList()
                  }
             }
         }
         ZoneBar(
-            title = "Zones d'Allure (Pace)", 
+            title = if (selectedSport == "run") "Zones Allure (${if (runPaceModeVdot) "VDOT" else "VMA"})" else "Zones d'Allure (Pace)", 
             zones = zones,
             onClick = {
-                state.explanationTitle = "Zones d'Allure"
-                state.explanationContent = "Vos zones de vitesse basées sur votre Vdot ou VMA. Z1: Endurance, Z2: Marathon, Z3: Seuil, Z4: Intervalle, Z5: Vitesse répétition."
-                state.showExplanation = true
+                if (selectedSport == "run") {
+                    runPaceModeVdot = !runPaceModeVdot // Simple toggle on click for easier use
+                } else {
+                    state.explanationTitle = "Zones d'Allure"
+                    state.explanationContent = "Vos zones de vitesse basées sur votre Vdot ou VMA. Z1: Endurance, Z2: Marathon, Z3: Seuil, Z4: Intervalle, Z5: Vitesse répétition."
+                    state.showExplanation = true
+                }
             }
         )
 
@@ -431,14 +438,7 @@ fun PerformanceScreen(state: AppState) {
                     Zone("Z${index+1}", "${pair.first}-${pair.second}", 0.2f, getColorForZone(index))
                 }
             } else {
-                // Default placeholders if data missing
-                listOf(
-                    Zone("Z1", "100-120", 0.2f, getColorForZone(0)),
-                    Zone("Z2", "120-140", 0.2f, getColorForZone(1)),
-                    Zone("Z3", "140-160", 0.2f, getColorForZone(2)),
-                    Zone("Z4", "160-175", 0.2f, getColorForZone(3)),
-                    Zone("Z5", "175-190", 0.2f, getColorForZone(4))
-                )
+                emptyList()
             }
             ZoneBar(
                 title = "Zones Cardiaques (FC)", 
@@ -467,11 +467,7 @@ fun PerformanceScreen(state: AppState) {
                         Zone("Z${index+1}", "${pair.first}-${pair.second}W", weight, getColorForZone(index))
                     }
                 } else {
-                     listOf(
-                        Zone("Z1 Recup", "<150W", 0.5f, getColorForZone(0)),
-                        Zone("Z2 Endur", "150-200W", 0.2f, getColorForZone(1)),
-                        Zone("Z3 Tempo", "200-240W", 0.15f, getColorForZone(2))
-                    )
+                emptyList()
                 }
                 ZoneBar(
                     title = "Zones de Puissance (Watts)", 
