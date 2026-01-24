@@ -29,6 +29,8 @@ import com.drawrun.app.*
 import com.drawrun.app.data.PlanRepository
 import com.drawrun.app.ui.components.*
 import com.drawrun.app.ui.components.formatDuration
+import com.drawrun.app.utils.ShareUtils
+import com.drawrun.app.utils.WorkoutImageGenerator
 import com.drawrun.app.logic.TrainingPlanGenerator
 import com.drawrun.app.logic.PerformanceAnalyzer
 import java.time.LocalDate
@@ -447,11 +449,23 @@ fun PlanningScreen(state: AppState) {
                     if (state.generatedSwimSession != null) {
                         val session = state.generatedSwimSession!!
                         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Surface(color = Color(0xFF0EA5E9).copy(alpha = 0.15f), shape = RoundedCornerShape(8.dp)) {
-                                    Text(text = session.focus.uppercase(), color = Color(0xFF0EA5E9), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black, modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Surface(color = Color(0xFF0EA5E9).copy(alpha = 0.15f), shape = RoundedCornerShape(8.dp)) {
+                                        Text(text = session.focus.uppercase(), color = Color(0xFF0EA5E9), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Black, modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp))
+                                    }
+                                    Text(text = "${session.totalDistance}m • ${session.estimatedDuration} min", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
                                 }
-                                Text(text = "${session.totalDistance}m • ${session.estimatedDuration} min", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
+                                IconButton(onClick = {
+                                    val bitmap = WorkoutImageGenerator.generateSwimWorkoutImage(session)
+                                    ShareUtils.shareBitmap(context, bitmap, "Swim_${session.focus}")
+                                }, modifier = Modifier.size(32.dp)) {
+                                    Icon(Icons.Default.Share, contentDescription = "Partager", tint = Color(0xFF0EA5E9), modifier = Modifier.size(18.dp))
+                                }
                             }
 
                             // Display all exercises
@@ -580,11 +594,17 @@ fun PlanningScreen(state: AppState) {
                                                 Text("${session.data.focus} • ${session.data.totalDistance}m", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
                                             }
                                             Row {
+                                                IconButton(onClick = {
+                                                    val bitmap = WorkoutImageGenerator.generateSwimWorkoutImage(session.data)
+                                                    ShareUtils.shareBitmap(context, bitmap, "Swim_${session.data.focus}")
+                                                }, modifier = Modifier.size(32.dp)) {
+                                                    Icon(Icons.Default.Share, contentDescription = "Partager", tint = Color(0xFF0EA5E9), modifier = Modifier.size(16.dp))
+                                                }
                                                 IconButton(onClick = { 
                                                     val current = state.savedSwimSessions.toMutableList()
                                                     current.removeAll { s: SwimSession -> s.id == session.id }
                                                     state.savedSwimSessions = current
-                                                }) {
+                                                }, modifier = Modifier.size(32.dp)) {
                                                     Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color(0xFFFF3B30).copy(alpha = 0.4f), modifier = Modifier.size(16.dp))
                                                 }
                                                 Icon(
@@ -713,6 +733,13 @@ fun CustomWorkoutCard(
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    val context = LocalContext.current
+                    IconButton(onClick = {
+                        val bitmap = WorkoutImageGenerator.generateRunWorkoutImage(workout)
+                        ShareUtils.shareBitmap(context, bitmap, "Workout_${workout.name}")
+                    }, modifier = Modifier.size(32.dp)) {
+                        Icon(Icons.Default.Share, contentDescription = "Partager", tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f), modifier = Modifier.size(18.dp))
+                    }
                     IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
                         Icon(Icons.Default.Edit, contentDescription = "Modifier", tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
                     }

@@ -456,7 +456,13 @@ fun ActivityDetailScreen(state: AppState, syncManager: com.drawrun.app.logic.Dat
                         analysis.powerZoneDistribution?.let { 
                             ZoneDistributionCard("ZONES PUISSANCE", it, Color(0xFFF59E0B), Modifier.weight(1f).widthIn(min = 280.dp), state = state)
                         }
-                        analysis.paceZoneDistribution?.let { 
+                        val distToShow = if (act.type == "run") {
+                            if (state.runPaceModeVdot) analysis.paceZoneDistributionVdot else analysis.paceZoneDistributionVma
+                        } else if (act.type == "swim") {
+                            analysis.paceZoneDistributionSwim
+                        } else analysis.paceZoneDistribution
+
+                        distToShow?.let { 
                             ZoneDistributionCard("ZONES D'ALLURE", it, Color(0xFF3B82F6), Modifier.weight(1f).widthIn(min = 280.dp), state = state)
                         }
                     }
@@ -966,8 +972,26 @@ fun ZoneDistributionCard(title: String, distribution: List<Double>, color: Color
             }
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 distribution.forEachIndexed { idx, pct ->
+                    val zoneLabel = if (title.contains("ALLURE") && state?.runPaceModeVdot == true) {
+                        when(idx) {
+                            0 -> "E"
+                            1 -> "M"
+                            2 -> "T"
+                            3 -> "I"
+                            else -> "R"
+                        }
+                    } else if (title.contains("ALLURE") && state?.runPaceModeVdot == false) {
+                         when(idx) {
+                            0 -> "Z1"
+                            1 -> "Z2"
+                            2 -> "Z3"
+                            3 -> "Z4"
+                            else -> "Z5"
+                        }
+                    } else "Z${idx + 1}"
+
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text("Z${idx + 1}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), modifier = Modifier.width(20.dp))
+                        Text(zoneLabel, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), modifier = Modifier.width(20.dp))
                         Box(modifier = Modifier.weight(1f).height(6.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant)) {
                             Box(modifier = Modifier.fillMaxHeight().fillMaxWidth((pct.toFloat() / 100f).coerceIn(0f, 1f)).background(color.copy(alpha = 0.3f + (idx * 0.15f).coerceAtMost(0.7f))))
                         }

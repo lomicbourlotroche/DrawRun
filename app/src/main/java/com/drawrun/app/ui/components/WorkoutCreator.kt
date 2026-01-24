@@ -20,6 +20,9 @@ import androidx.compose.ui.unit.sp
 import com.drawrun.app.WorkoutStep
 import com.drawrun.app.CustomRunWorkout
 import com.drawrun.app.AppState
+import com.drawrun.app.utils.ShareUtils
+import com.drawrun.app.utils.WorkoutImageGenerator
+import androidx.compose.ui.platform.LocalContext
 import java.util.UUID
 
 @Composable
@@ -56,8 +59,24 @@ fun WorkoutCreator(
                 Icon(Icons.Default.Close, contentDescription = "Close")
             }
             Text(if (initialWorkout != null) "MODIFIER SÉANCE" else "CRÉATEUR SÉANCE", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Black)
-            Button(
-                onClick = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                val context = LocalContext.current
+                IconButton(onClick = {
+                    val tempWorkout = CustomRunWorkout(
+                        name = workoutName,
+                        description = workoutDesc,
+                        steps = steps,
+                        totalDistance = totalDist.toDouble(),
+                        totalDuration = totalDuration.toInt()
+                    )
+                    val bitmap = WorkoutImageGenerator.generateRunWorkoutImage(tempWorkout)
+                    ShareUtils.shareBitmap(context, bitmap, "Export_${workoutName}")
+                }) {
+                    Icon(Icons.Default.Share, contentDescription = "Exporter en image", tint = MaterialTheme.colorScheme.primary)
+                }
+                
+                Button(
+                    onClick = {
                     val workout = CustomRunWorkout(
                         id = initialWorkout?.id ?: UUID.randomUUID().toString(),
                         name = workoutName,
@@ -74,6 +93,7 @@ fun WorkoutCreator(
                 Text("SAUVER", fontWeight = FontWeight.Bold)
             }
         }
+    }
         
         // Fixed Tools Row at the top
         Card(

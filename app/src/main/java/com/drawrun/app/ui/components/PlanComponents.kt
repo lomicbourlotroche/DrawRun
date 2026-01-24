@@ -18,10 +18,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.platform.LocalContext
 import com.drawrun.app.*
 import com.drawrun.app.ui.components.*
+import com.drawrun.app.utils.ShareUtils
+import com.drawrun.app.utils.WorkoutImageGenerator
 import com.drawrun.app.logic.TrainingPlanGenerator
 import com.drawrun.app.logic.PerformanceAnalyzer
 import java.time.LocalDate
@@ -89,30 +91,44 @@ fun DayFlashcard(
                     )
                 }
                 
-                // Type badge
-                Surface(
-                    color = when(day.type) {
-                        "E" -> Color(0xFF10B981).copy(alpha = 0.15f)
-                        "M" -> Color(0xFF3B82F6).copy(alpha = 0.15f)
-                        "T" -> Color(0xFFF59E0B).copy(alpha = 0.15f)
-                        "I", "R" -> Color(0xFFA855F7).copy(alpha = 0.15f)
-                        else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                    },
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(
-                        text = day.type,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Black,
+                // Action row
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    IconButton(
+                        onClick = {
+                            val bitmap = com.drawrun.app.utils.WorkoutImageGenerator.generatePlanDayImage(day)
+                            com.drawrun.app.utils.ShareUtils.shareBitmap(context, bitmap, "Entrainement_${day.date}")
+                        },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(Icons.Default.Share, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                    }
+
+                    // Type badge
+                    Surface(
                         color = when(day.type) {
-                            "E" -> Color(0xFF10B981)
-                            "M" -> Color(0xFF3B82F6)
-                            "T" -> Color(0xFFF59E0B)
-                            "I", "R" -> Color(0xFFA855F7)
-                            else -> MaterialTheme.colorScheme.onSurface
-                        }
-                    )
+                            "E" -> Color(0xFF10B981).copy(alpha = 0.15f)
+                            "M" -> Color(0xFF3B82F6).copy(alpha = 0.15f)
+                            "T" -> Color(0xFFF59E0B).copy(alpha = 0.15f)
+                            "I", "R" -> Color(0xFFA855F7).copy(alpha = 0.15f)
+                            else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                        },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = day.type,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Black,
+                            color = when(day.type) {
+                                "E" -> Color(0xFF10B981)
+                                "M" -> Color(0xFF3B82F6)
+                                "T" -> Color(0xFFF59E0B)
+                                "I", "R" -> Color(0xFFA855F7)
+                                else -> MaterialTheme.colorScheme.onSurface
+                            }
+                        )
+                    }
                 }
             }
             

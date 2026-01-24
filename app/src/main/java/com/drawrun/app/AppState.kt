@@ -25,6 +25,7 @@ class AppState {
     var currentScreen by mutableStateOf(Screen.WelcomeSplash)
     var appTheme by mutableStateOf(AppTheme.ONYX)
     var activeTab by mutableStateOf("home")
+    var runPaceModeVdot by mutableStateOf(true) // Global preference VMA vs VDOT
     
     // User Data
     var firstName by mutableStateOf("")
@@ -258,7 +259,10 @@ data class ActivityAnalysis(
     val vam: Double? = null,
     val hrZoneDistribution: List<Double>? = null, // Percentages per zone
     val powerZoneDistribution: List<Double>? = null,
-    val paceZoneDistribution: List<Double>? = null,
+    val paceZoneDistribution: List<Double>? = null, // Legacy / Generic
+    val paceZoneDistributionVdot: List<Double>? = null,
+    val paceZoneDistributionVma: List<Double>? = null,
+    val paceZoneDistributionSwim: List<Double>? = null,
     // Biomechanical (Sport Specific)
     val groundContactTime: Double? = null,
     val verticalOscillation: Double? = null,

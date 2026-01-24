@@ -1,9 +1,20 @@
 -- Merging decision tree log ---
+provider#androidx.core.content.FileProvider
+INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:142:9-150:20
+	android:grantUriPermissions
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:146:13-47
+	android:authorities
+		INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:144:13-64
+	android:exported
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:145:13-37
+	android:name
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:143:13-62
 manifest
-ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:2:1-142:12
-INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:2:1-142:12
-INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:2:1-142:12
-INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:2:1-142:12
+ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:2:1-153:12
+INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:2:1-153:12
+INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:2:1-153:12
+INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:2:1-153:12
 MERGED from [androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:17:1-35:12
 MERGED from [androidx.navigation:navigation-common:2.7.6] C:\Users\lomic\.gradle\caches\8.10.2\transforms\d09d2ba122e07c7ae5fa1677a155c727\transformed\navigation-common-2.7.6\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.navigation:navigation-runtime:2.7.6] C:\Users\lomic\.gradle\caches\8.10.2\transforms\b52e992ab85e47142d6ca8749c090629\transformed\navigation-runtime-2.7.6\AndroidManifest.xml:17:1-22:12
@@ -171,8 +182,8 @@ ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:30:9-
 	android:name
 		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:30:18-67
 application
-ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:33:5-140:19
-INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:33:5-140:19
+ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:33:5-151:19
+INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:33:5-151:19
 MERGED from [androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:23:5-33:19
 MERGED from [androidx.health.connect:connect-client:1.1.0-alpha10] C:\Users\lomic\.gradle\caches\8.10.2\transforms\fc0f78737c45cbf5d9e5e7d5ee0627eb\transformed\jetified-connect-client-1.1.0-alpha10\AndroidManifest.xml:23:5-33:19
 MERGED from [androidx.compose.ui:ui-tooling-android:1.5.4] C:\Users\lomic\.gradle\caches\8.10.2\transforms\34cb6146333b4979903ef89bb0c3fd9c\transformed\jetified-ui-tooling-release\AndroidManifest.xml:22:5-26:19
@@ -339,6 +350,12 @@ category#android.intent.category.HEALTH_PERMISSIONS
 ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:137:17-87
 	android:name
 		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:137:27-84
+meta-data#android.support.FILE_PROVIDER_PATHS
+ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:147:13-149:54
+	android:resource
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:149:17-51
+	android:name
+		ADDED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml:148:17-67
 uses-sdk
 INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\lomic\Desktop\DrawRun\app\src\main\AndroidManifest.xml

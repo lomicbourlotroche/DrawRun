@@ -357,8 +357,8 @@ fun PerformanceScreen(state: AppState) {
 
 
         // Training Zones
-        // Training Zones
-        var runPaceModeVdot by remember { mutableStateOf(true) }
+        // Use global state from AppState to keep it synced with Activity Analysis
+        val runPaceModeVdot = state.runPaceModeVdot
         
         val zones = when(selectedSport) {
             "run" -> {
@@ -420,7 +420,7 @@ fun PerformanceScreen(state: AppState) {
             zones = zones,
             onClick = {
                 if (selectedSport == "run") {
-                    runPaceModeVdot = !runPaceModeVdot // Simple toggle on click for easier use
+                    state.runPaceModeVdot = !state.runPaceModeVdot // Simple toggle on click for easier use
                 } else {
                     state.explanationTitle = "Zones d'Allure"
                     state.explanationContent = "Vos zones de vitesse basées sur votre Vdot ou VMA. Z1: Endurance, Z2: Marathon, Z3: Seuil, Z4: Intervalle, Z5: Vitesse répétition."

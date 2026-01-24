@@ -383,13 +383,18 @@ object PerformanceAnalyzer {
         val pwrDist = power?.let { calculateZoneDistribution(it.map { it.toDouble() }, zones?.bikeZones?.power?.map { it.first.toDouble() to it.second.toDouble() } ?: emptyList()) }
         
         // Convert pace (m/s) to decimal minutes to match zone units
-        val paceDist = if (type == "run") {
+        var paceDistVdot: List<Double>? = null
+        var paceDistVma: List<Double>? = null
+        var paceDistSwim: List<Double>? = null
+
+        if (type == "run") {
             val paceDecimalMinKm = pace?.map { if (it > 0) 1000.0 / (it * 60.0) else 0.0 }
-            paceDecimalMinKm?.let { calculateZoneDistribution(it, zones?.runZones?.paceVdot ?: emptyList()) }
+            paceDistVdot = paceDecimalMinKm?.let { calculateZoneDistribution(it, zones?.runZones?.paceVdot ?: emptyList()) }
+            paceDistVma = paceDecimalMinKm?.let { calculateZoneDistribution(it, zones?.runZones?.paceVma ?: emptyList()) }
         } else if (type == "swim") {
             val paceDecimalMin100m = pace?.map { if (it > 0) 100.0 / (it * 60.0) else 0.0 }
-            paceDecimalMin100m?.let { calculateZoneDistribution(it, zones?.swimZones?.pace ?: emptyList()) }
-        } else null
+            paceDistSwim = paceDecimalMin100m?.let { calculateZoneDistribution(it, zones?.swimZones?.pace ?: emptyList()) }
+        }
 
         val gapAvg = streams.gradAdjustedPace?.average() ?: (pace?.average() ?: 0.0)
         val variabilityIndex = if (type == "bike") {
@@ -446,7 +451,10 @@ object PerformanceAnalyzer {
             vam = streams.vam?.average(),
             hrZoneDistribution = hrDist,
             powerZoneDistribution = pwrDist,
-            paceZoneDistribution = paceDist,
+            paceZoneDistribution = paceDistVdot, // Set VDOT as default legacy
+            paceZoneDistributionVdot = paceDistVdot,
+            paceZoneDistributionVma = paceDistVma,
+            paceZoneDistributionSwim = paceDistSwim,
             swolf = if (type == "swim" && pace?.isNotEmpty() == true) (6000 / (pace.average() * 60)).toInt() + 20 else null,
             strokeRate = if (type == "swim") 32 else null
         )

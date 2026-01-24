@@ -25,6 +25,9 @@ import com.drawrun.app.ui.components.StatCard
 import com.drawrun.app.logic.CoachAI
 import com.drawrun.app.logic.PerformanceAnalyzer
 import com.drawrun.app.PmcDataPoint
+import com.drawrun.app.utils.ShareUtils
+import com.drawrun.app.utils.WorkoutImageGenerator
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Fill
@@ -459,7 +462,22 @@ fun TrainingCard(recommendation: CoachAI.TrainingRecommendation, isTomorrow: Boo
                         letterSpacing = 1.sp
                     )
                 }
-                
+
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    val context = LocalContext.current
+                    if (recommendation.type != "REST") {
+                        IconButton(
+                            onClick = {
+                                val bitmap = WorkoutImageGenerator.generateRecommendationImage(recommendation)
+                                ShareUtils.shareBitmap(context, bitmap, "Suggestion_${recommendation.title}")
+                            },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(Icons.Default.Share, contentDescription = "Partager", tint = intensityColor, modifier = Modifier.size(16.dp))
+                        }
+                    }
+                }
+                    
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (recommendation.duration > 0) {
                         Surface(

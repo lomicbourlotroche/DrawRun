@@ -8,6 +8,10 @@
         "source": "com.drawrun.app-main-59:/drawable/ic_launcher_background.xml"
     },
     {
+        "merged": "com.drawrun.app-debug-57:/xml_file_paths.xml.flat",
+        "source": "com.drawrun.app-main-59:/xml/file_paths.xml"
+    },
+    {
         "merged": "com.drawrun.app-debug-57:/drawable_ic_launcher_ruby.xml.flat",
         "source": "com.drawrun.app-main-59:/drawable/ic_launcher_ruby.xml"
     },

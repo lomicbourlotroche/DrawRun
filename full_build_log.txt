@@ -1,0 +1,129 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by net.rubygrapefruit.platform.internal.NativeLibraryLoader in an unnamed module (file:/C:/Users/lomic/.gradle/wrapper/dists/gradle-8.10.2-bin/a04bxjujx95o3nb99gddekhwo/gradle-8.10.2/lib/native-platform-0.22-milestone-26.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:mergeDebugShaders UP-TO-DATE
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:compressDebugAssets UP-TO-DATE
+> Task :app:checkDebugDuplicateClasses UP-TO-DATE
+> Task :app:desugarDebugFileDependencies UP-TO-DATE
+> Task :app:mergeDebugStartupProfile UP-TO-DATE
+> Task :app:mergeExtDexDebug UP-TO-DATE
+> Task :app:mergeLibDexDebug UP-TO-DATE
+> Task :app:mergeDebugJniLibFolders UP-TO-DATE
+> Task :app:mergeDebugNativeLibs NO-SOURCE
+> Task :app:stripDebugDebugSymbols NO-SOURCE
+> Task :app:validateSigningDebug UP-TO-DATE
+> Task :app:writeDebugAppMetadata UP-TO-DATE
+> Task :app:writeDebugSigningConfigVersions UP-TO-DATE
+
+> Task :app:compileDebugKotlin
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:831:2 Expecting '}'
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:42:45 None of the following functions can be called with the arguments supplied: 
+public inline fun <T> Iterable<TypeVariable(T)>.sumOf(selector: (TypeVariable(T)) -> BigDecimal): BigDecimal defined in kotlin.collections
+public inline fun <T> Iterable<TypeVariable(T)>.sumOf(selector: (TypeVariable(T)) -> BigInteger): BigInteger defined in kotlin.collections
+public inline fun <T> Iterable<TypeVariable(T)>.sumOf(selector: (TypeVariable(T)) -> Double): Double defined in kotlin.collections
+public inline fun <T> Iterable<TypeVariable(T)>.sumOf(selector: (TypeVariable(T)) -> Int): Int defined in kotlin.collections
+public inline fun <T> Iterable<TypeVariable(T)>.sumOf(selector: (TypeVariable(T)) -> Long): Long defined in kotlin.collections
+public inline fun <T> Iterable<TypeVariable(T)>.sumOf(selector: (TypeVariable(T)) -> UInt): UInt defined in kotlin.collections
+public inline fun <T> Iterable<TypeVariable(T)>.sumOf(selector: (TypeVariable(T)) -> ULong): ULong defined in kotlin.collections
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:42:53 Unresolved reference: calculateStepDist
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:43:49 None of the following functions can be called with the arguments supplied: 
+public inline fun <T> Iterable<TypeVariable(T)>.sumOf(selector: (TypeVariable(T)) -> BigDecimal): BigDecimal defined in kotlin.collections
+public inline fun <T> Iterable<TypeVariable(T)>.sumOf(selector: (TypeVariable(T)) -> BigInteger): BigInteger defined in kotlin.collections
+public inline fun <T> Iterable<TypeVariable(T)>.sumOf(selector: (TypeVariable(T)) -> Double): Double defined in kotlin.collections
+public inline fun <T> Iterable<TypeVariable(T)>.sumOf(selector: (TypeVariable(T)) -> Int): Int defined in kotlin.collections
+public inline fun <T> Iterable<TypeVariable(T)>.sumOf(selector: (TypeVariable(T)) -> Long): Long defined in kotlin.collections
+public inline fun <T> Iterable<TypeVariable(T)>.sumOf(selector: (TypeVariable(T)) -> UInt): UInt defined in kotlin.collections
+public inline fun <T> Iterable<TypeVariable(T)>.sumOf(selector: (TypeVariable(T)) -> ULong): ULong defined in kotlin.collections
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:43:57 Unresolved reference: calculateStepDuration
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:69:51 Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
+public inline fun String.toDouble(): Double defined in kotlin.text
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:70:41 Type mismatch: inferred type is Unit but Int was expected
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:85:41 Type mismatch: inferred type is Unit but Double was expected
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:86:55 Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
+public inline fun String.toInt(): Int defined in kotlin.text
+public inline fun String.toInt(radix: Int): Int defined in kotlin.text
+private fun Iterable<FlagEnum>.toInt(): Int defined in kotlin.text
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:107:17 Unresolved reference: ToolButton
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:110:17 Unresolved reference: ToolButton
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:113:17 Unresolved reference: ToolButton
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:116:17 Unresolved reference: ToolButton
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:119:17 Unresolved reference: ToolButton
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:132:17 Unresolved reference: ToolButton
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:171:29 Unresolved reference: BadgeInfo
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:171:106 Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
+public inline operator fun BigDecimal.div(other: BigDecimal): BigDecimal defined in kotlin
+public inline operator fun BigInteger.div(other: BigInteger): BigInteger defined in kotlin
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:172:29 Unresolved reference: BadgeInfo
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:172:74 Unresolved reference: formatDuration
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:172:103 Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
+public inline fun String.toInt(): Int defined in kotlin.text
+public inline fun String.toInt(radix: Int): Int defined in kotlin.text
+private fun Iterable<FlagEnum>.toInt(): Int defined in kotlin.text
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:202:21 Unresolved reference: BlockCard
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:206:38 Cannot infer a type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:226:43 Cannot infer a type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:226:53 Cannot infer a type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:231:21 Unresolved reference: StepCard
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:258:9 Unresolved reference: WorkoutStepEditorDialog
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:261:24 Cannot infer a type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:269:10 Unresolved reference: WorkoutStepEditorDialog
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:272:24 Cannot infer a type for this parameter. Please specify it explicitly.
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:323:33 Unresolved reference: getColorForStep
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:327:21 Unresolved reference: getIconForStep
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:329:28 Unresolved reference: getColorForStep
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:339:77 Unresolved reference: getStepTypeLabel
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:345:21 Unresolved reference: formatStepDuration
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:352:35 Unresolved reference: getColorForStep
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:360:37 Unresolved reference: getColorForStep
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:454:103 Unresolved reference: getStepTypeLabel
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:455:46 Unresolved reference: formatStepDuration
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:457:151 Unresolved reference: getColorForStep
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/components/WorkoutCreator.kt:807:16 Unresolved reference: formatDuration
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/screens/PlanningScreen.kt:31:38 Unresolved reference: formatDuration
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/screens/PlanningScreen.kt:793:31 Unresolved reference: formatDuration
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/screens/PlanningScreen.kt:816:45 Unresolved reference: getColorForStep
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/screens/PlanningScreen.kt:820:43 Unresolved reference: getStepTypeLabel
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/screens/PlanningScreen.kt:820:76 Unresolved reference: formatStepDuration
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/screens/PlanningScreen.kt:835:101 Type mismatch: inferred type is Unit but CharSequence was expected
+e: file:///C:/Users/lomic/Desktop/DrawRun/app/src/main/java/com/drawrun/app/ui/screens/PlanningScreen.kt:835:103 Unresolved reference: formatStepDuration
+
+> Task :app:compileDebugKotlin FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 8s
+28 actionable tasks: 2 executed, 26 up-to-date

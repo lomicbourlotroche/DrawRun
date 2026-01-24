@@ -115,6 +115,7 @@ com.drawrun.app:id/chronometer = 0x7f050029
 com.drawrun.app:string/time_picker_pm = 0x7f08004f
 com.drawrun.app:id/blocking = 0x7f050028
 com.drawrun.app:id/action_text = 0x7f050024
+com.drawrun.app:xml/file_paths = 0x7f0b0000
 com.drawrun.app:drawable/ic_launcher_ruby = 0x7f04000c
 com.drawrun.app:id/hide_in_inspector_tag = 0x7f050031
 com.drawrun.app:string/call_notification_answer_action = 0x7f080005
