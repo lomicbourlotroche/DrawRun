@@ -68,9 +68,9 @@ object PerformanceAnalyzer {
             
             listOf(
                 p(com.drawrun.app.logic.ScienceEngine.VdotZones.E_HIGH) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.E_LOW),
-                p(com.drawrun.app.logic.ScienceEngine.VdotZones.M + 0.03) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.M - 0.03),
-                p(com.drawrun.app.logic.ScienceEngine.VdotZones.T + 0.02) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.T - 0.02),
-                p(com.drawrun.app.logic.ScienceEngine.VdotZones.I + 0.02) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.I - 0.02),
+                p(com.drawrun.app.logic.ScienceEngine.VdotZones.M + 0.01) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.M - 0.01),
+                p(com.drawrun.app.logic.ScienceEngine.VdotZones.T + 0.01) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.T - 0.01),
+                p(com.drawrun.app.logic.ScienceEngine.VdotZones.I + 0.01) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.I - 0.01),
                 p(com.drawrun.app.logic.ScienceEngine.VdotZones.R + 0.02) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.R - 0.02)
             )
         } else {

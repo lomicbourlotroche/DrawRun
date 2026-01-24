@@ -17,12 +17,13 @@ object ScienceEngine {
 
     // VDOT Intensity Zones (% of VDOT Velocity)
     object VdotZones {
-        const val E_LOW = 0.59
-        const val E_HIGH = 0.74
-        const val M = 0.82 // Avg Marathon intensity
-        const val T = 0.88 // Threshold intensity
-        const val I = 0.98 // VO2Max (approx)
-        const val R = 1.08 // Repetition speed
+        // Calibrated against Jack Daniels VDOT Tables (Edition 2/3)
+        const val E_LOW = 0.62  // Easy/Recup Lower
+        const val E_HIGH = 0.72 // Easy/Recup Higher
+        const val M = 0.85      // Marathon Pace
+        const val T = 0.92      // Threshold Pace (LT)
+        const val I = 1.02      // Interval Pace (VO2Max)
+        const val R = 1.15      // Repetition Pace
     }
 
     data class ZoneRange(val min: Double, val max: Double, val label: String)
