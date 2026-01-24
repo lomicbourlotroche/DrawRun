@@ -17,12 +17,12 @@ object ScienceEngine {
 
     // VDOT Intensity Zones (% of VDOT Velocity)
     object VdotZones {
-        const val E_LOW = 0.65
-        const val E_HIGH = 0.79
-        const val M = 0.84
-        const val T = 0.90
-        const val I = 0.98
-        const val R = 1.08 // Repetition speed commonly ~105-110% of VO2Max speed
+        const val E_LOW = 0.59
+        const val E_HIGH = 0.74
+        const val M = 0.82 // Avg Marathon intensity
+        const val T = 0.88 // Threshold intensity
+        const val I = 0.98 // VO2Max (approx)
+        const val R = 1.08 // Repetition speed
     }
 
     data class ZoneRange(val min: Double, val max: Double, val label: String)
@@ -197,7 +197,7 @@ object ScienceEngine {
      * We stick to the one used in PerformanceAnalyzer for consistency but cleaner.
      */
     fun calculateMaxHR(age: Int): Int {
-        // Simple Tanaka: 208 - 0.7 * age
+        // Tanaka Formula: 208 - 0.7 * age (More accurate than 220-age)
         return (208 - 0.7 * age).roundToInt()
     }
 

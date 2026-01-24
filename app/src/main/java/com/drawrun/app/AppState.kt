@@ -153,7 +153,13 @@ class AppState {
     var records by mutableStateOf<Map<String, String>>(emptyMap())
 
     val fcm by derivedStateOf {
-        if (userProfileComplete) com.drawrun.app.logic.ScienceEngine.calculateFCM(age.toIntOrNull() ?: 30, sex, weight.toDoubleOrNull() ?: 70.0) else 0
+        if (userProfileComplete) {
+            com.drawrun.app.logic.ScienceEngine.calculateFCM(
+                age.toIntOrNull() ?: 30, 
+                sex, 
+                weight.toDoubleOrNull() ?: 70.0
+            )
+        } else 0
     }
 
     val vo2Max by derivedStateOf {

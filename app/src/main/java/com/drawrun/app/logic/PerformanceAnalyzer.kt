@@ -68,10 +68,10 @@ object PerformanceAnalyzer {
             
             listOf(
                 p(com.drawrun.app.logic.ScienceEngine.VdotZones.E_HIGH) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.E_LOW),
-                p(com.drawrun.app.logic.ScienceEngine.VdotZones.M * 1.03) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.M * 0.97),
-                p(com.drawrun.app.logic.ScienceEngine.VdotZones.T * 1.03) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.T * 0.97),
-                p(com.drawrun.app.logic.ScienceEngine.VdotZones.I * 1.02) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.I * 0.98),
-                p(com.drawrun.app.logic.ScienceEngine.VdotZones.R * 1.02) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.R * 0.98)
+                p(com.drawrun.app.logic.ScienceEngine.VdotZones.M + 0.03) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.M - 0.03),
+                p(com.drawrun.app.logic.ScienceEngine.VdotZones.T + 0.02) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.T - 0.02),
+                p(com.drawrun.app.logic.ScienceEngine.VdotZones.I + 0.02) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.I - 0.02),
+                p(com.drawrun.app.logic.ScienceEngine.VdotZones.R + 0.02) to p(com.drawrun.app.logic.ScienceEngine.VdotZones.R - 0.02)
             )
         } else {
              // Fallback VMA
@@ -158,11 +158,11 @@ object PerformanceAnalyzer {
     fun calculateKarvonenZones(fcm: Int, restingHR: Int): List<Pair<Int, Int>> {
         val hrReserve = fcm - restingHR
         return listOf(
-            (restingHR + hrReserve * 0.50).roundToInt() to (restingHR + hrReserve * 0.60).roundToInt(),
-            (restingHR + hrReserve * 0.60).roundToInt() to (restingHR + hrReserve * 0.70).roundToInt(),
-            (restingHR + hrReserve * 0.70).roundToInt() to (restingHR + hrReserve * 0.80).roundToInt(),
-            (restingHR + hrReserve * 0.80).roundToInt() to (restingHR + hrReserve * 0.90).roundToInt(),
-            (restingHR + hrReserve * 0.90).roundToInt() to fcm
+            (restingHR + hrReserve * 0.50).roundToInt() to (restingHR + hrReserve * 0.60).roundToInt(), // Z1: 50-60%
+            (restingHR + hrReserve * 0.60).roundToInt() to (restingHR + hrReserve * 0.70).roundToInt(), // Z2: 60-70%
+            (restingHR + hrReserve * 0.70).roundToInt() to (restingHR + hrReserve * 0.80).roundToInt(), // Z3: 70-80%
+            (restingHR + hrReserve * 0.80).roundToInt() to (restingHR + hrReserve * 0.90).roundToInt(), // Z4: 80-90%
+            (restingHR + hrReserve * 0.90).roundToInt() to fcm // Z5: 90-100%
         )
     }
 

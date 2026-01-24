@@ -296,8 +296,8 @@ fun StepCard(
             // Icon
             Box(
                 modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(14.dp))
+                    .size(72.dp) // Massively enlarged
+                    .clip(RoundedCornerShape(18.dp))
                     .background(getColorForStep(step.type).copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
@@ -305,7 +305,7 @@ fun StepCard(
                     getIconForStep(step.type),
                     contentDescription = null,
                     tint = getColorForStep(step.type),
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(36.dp) // Enlarged
                 )
             }
             
@@ -315,13 +315,13 @@ fun StepCard(
             Column(modifier = Modifier.weight(1f)) {
                  Text(
                     if (step.type == "PPG") "PPG: ${step.targetValue}" else getStepTypeLabel(step.type),
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.headlineSmall, // Bigger header
                     fontWeight = FontWeight.Black,
                     color = if (step.type == "PPG") Color(0xFFE040FB) else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     formatStepDuration(step),
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.titleLarge, // Much bigger subtext
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                 )
@@ -333,10 +333,10 @@ fun StepCard(
                       ) {
                         Text(
                             "${step.targetType}: ${step.targetValue}",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleSmall, // Bigger badge text
+                            fontWeight = FontWeight.Black,
                             color = getColorForStep(step.type),
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                         )
                       }
                 }
@@ -382,7 +382,7 @@ fun BlockCard(
                 
                 Text(
                     "${step.repeatCount} SÉRIES", 
-                    style = MaterialTheme.typography.titleMedium, 
+                    style = MaterialTheme.typography.headlineSmall, // Bigger block header
                     fontWeight = FontWeight.Black,
                     color = Color(0xFFEC4899)
                 )
@@ -429,12 +429,10 @@ fun BlockCard(
                             modifier = Modifier.padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(getIconForStep(subStep.type), contentDescription = null, tint = getColorForStep(subStep.type), modifier = Modifier.size(20.dp))
-                            Spacer(modifier = Modifier.width(12.dp))
                             val label = if (subStep.type == "PPG") "PPG: ${subStep.targetValue}" else getStepTypeLabel(subStep.type)
-                            Text("$label • ${formatStepDuration(subStep)}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = if (subStep.type == "PPG") Color(0xFFE040FB) else MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+                            Text("$label • ${formatStepDuration(subStep)}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = if (subStep.type == "PPG") Color(0xFFE040FB) else MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
                              if (subStep.targetValue.isNotBlank()) {
-                                 Text("@ ${subStep.targetValue}", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = getColorForStep(subStep.type).copy(alpha = 0.8f))
+                                 Text("@ ${subStep.targetValue}", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Black, color = getColorForStep(subStep.type).copy(alpha = 0.8f))
                              }
                              Spacer(modifier = Modifier.width(12.dp))
                              IconButton(onClick = {
