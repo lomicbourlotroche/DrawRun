@@ -1,4 +1,7 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+export const API_BASE_URL =
+  typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? '' // Use relative URLs in production (nginx handles proxying)
+    : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 export const API_ENDPOINTS = {
   auth: {

@@ -51,7 +51,7 @@ router.post('/friends/request', verifyToken, async (req, res) => {
 router.get('/friends/pending', verifyToken, async (req, res) => {
     try {
         const requests = await social.getPendingRequests(req.user.id);
-        res.json({ success: true, requests });
+        res.json(requests || []);
     } catch (error) {
         logger.error('Get pending requests error:', { error: error.message });
         res.status(500).json({ error: 'Failed to get pending requests' });
@@ -170,7 +170,7 @@ router.get('/groups/:id/members', verifyToken, async (req, res) => {
             return res.status(400).json({ error: 'Invalid group ID' });
         }
         const members = await social.getGroupMembers(groupId);
-        res.json({ success: true, members });
+        res.json(members);
     } catch (error) {
         logger.error('Get group members error:', { error: error.message });
         res.status(500).json({ error: 'Failed to get group members' });
@@ -246,7 +246,7 @@ router.delete('/activities/:activityId/like', verifyToken, async (req, res) => {
 router.get('/liked-activities', verifyToken, async (req, res) => {
     try {
         const activities = await social.getUserLikedActivities(req.user.id);
-        res.json({ success: true, activities });
+        res.json(activities);
     } catch (error) {
         logger.error('Get liked activities error:', { error: error.message });
         res.status(500).json({ error: 'Failed to get liked activities' });
@@ -283,7 +283,7 @@ router.get('/feed', verifyToken, async (req, res) => {
         friendIds.push(req.user.id);
 
         if (friendIds.length === 0) {
-            return res.json({ success: true, feed: [] });
+            return res.json([]);
         }
 
         // Activities are in per-user DBs, users table is in main.db.
@@ -299,7 +299,8 @@ router.get('/feed', verifyToken, async (req, res) => {
                 const friendDb = await getUserDbByEmail(friendUser.email);
                 const activities = await dbAllUser(friendDb, `
                     SELECT id, name, type, start_date, distance, moving_time,
-                           total_elevation_gain, user_id
+                           total_elevation_gain, average_speed, average_heartrate, max_heartrate,
+                           map_summary_polyline, source
                     FROM activities
                     ORDER BY start_date DESC
                     LIMIT 50
@@ -308,9 +309,8 @@ router.get('/feed', verifyToken, async (req, res) => {
                 for (const act of activities) {
                     allActivities.push({
                         ...act,
-                        user_id: friendId,
-                        user_name: friendUser.name || friendUser.email.split('@')[0],
-                        draw_count: 0,
+                        owner_name: friendUser.name || friendUser.email.split('@')[0],
+                        like_count: 0,
                         comment_count: 0,
                         photo_count: 0,
                     });
@@ -324,10 +324,7 @@ router.get('/feed', verifyToken, async (req, res) => {
         allActivities.sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
         const paginated = allActivities.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
 
-        res.json({
-            success: true,
-            feed: paginated
-        });
+        res.json(paginated);
     } catch (error) {
         logger.error('Get feed error:', { error: error.message });
         res.status(500).json({ error: 'Failed to get feed' });
@@ -658,7 +655,7 @@ router.get('/users/search', verifyToken, async (req, res) => {
               AND id != ?
             LIMIT 20
         `, [searchTerm, searchTerm, req.user.id]);
-        res.json({ success: true, users });
+        res.json(users || []);
     } catch (error) {
         logger.error('Search users error:', { error: error.message });
         res.status(500).json({ error: 'Failed to search users' });
@@ -678,7 +675,7 @@ router.get('/profile/:id', verifyToken, async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        res.json({ success: true, profile: user });
+        res.json(user);
     } catch (error) {
         logger.error('Get public profile error:', { error: error.message });
         res.status(500).json({ error: 'Failed to get profile' });
@@ -757,9 +754,9 @@ router.get('/activities/:activityId/comments', verifyToken, async (req, res) => 
                 WHERE ac.activity_id = ?
                 ORDER BY ac.created_at ASC
             `, [activityId]);
-            res.json({ success: true, comments });
+            res.json(comments);
         } catch (_) {
-            res.json({ success: true, comments: [] });
+            res.json([]);
         }
     } catch (error) {
         logger.error('Get comments error:', { error: error.message });
@@ -861,9 +858,9 @@ router.get('/activities/:activityId/reactions', verifyToken, async (req, res) =>
                 WHERE activity_id = ?
                 GROUP BY reaction_type
             `, [activityId]);
-            res.json({ success: true, reactions });
+            res.json(reactions);
         } catch (_) {
-            res.json({ success: true, reactions: [] });
+            res.json([]);
         }
     } catch (error) {
         logger.error('Get reactions error:', { error: error.message });
@@ -882,9 +879,9 @@ router.get('/activities/:activityId/reactions/user', verifyToken, async (req, re
                 SELECT reaction_type FROM activity_reactions
                 WHERE activity_id = ? AND user_id = ?
             `, [activityId, req.user.id]);
-            res.json({ success: true, reactions: reactions.map(r => r.reaction_type) });
+            res.json(reactions.map(r => r.reaction_type));
         } catch (_) {
-            res.json({ success: true, reactions: [] });
+            res.json([]);
         }
     } catch (error) {
         logger.error('Get user reactions error:', { error: error.message });
@@ -1124,9 +1121,9 @@ router.get('/challenges/public', verifyToken, async (req, res) => {
                 ORDER BY c.created_at DESC
                 LIMIT ?
             `, [parseInt(limit)]);
-            res.json({ success: true, challenges });
+            res.json(challenges);
         } catch (_) {
-            res.json({ success: true, challenges: [] });
+            res.json([]);
         }
     } catch (error) {
         logger.error('Get public challenges error:', { error: error.message });

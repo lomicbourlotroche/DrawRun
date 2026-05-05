@@ -156,7 +156,6 @@ describe('Activities Routes', () => {
         expect.any(Object),
         expect.stringContaining('INSERT INTO activities'),
         expect.arrayContaining([
-          1, // user_id
           expect.stringContaining('manual-'), // source_id
           'Test Run',
           'Run',

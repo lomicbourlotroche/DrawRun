@@ -220,11 +220,11 @@ router.post('/create', verifyToken, validateBody(validateActivityBody), async (r
         const userDb = await getUserDb(req.user.id);
         
         await dbRunUser(userDb, `
-            INSERT INTO activities (user_id, source, source_id, name, type, start_date, distance, moving_time,
+            INSERT INTO activities (source, source_id, name, type, start_date, distance, moving_time,
                         average_speed, average_heartrate, max_heartrate, calories,
                         map_polyline, elev_high, elev_low, is_manual)
-            VALUES (?, 'manual', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
-        `, [req.user.id, 'manual-' + Date.now(), name, type, start_date, distance, moving_time, 
+            VALUES ('manual', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+        `, ['manual-' + Date.now(), name, type, start_date, distance, moving_time, 
              average_speed, average_heartrate, max_heartrate, calories,
              map_polyline, elev_high, elev_low]);
         

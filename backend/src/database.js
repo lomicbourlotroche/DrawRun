@@ -657,7 +657,8 @@ async function runMigrations(db) {
         // Check if already applied
         const stmt = db.prepare('SELECT version FROM schema_migrations WHERE version = ?');
         stmt.bind([migration.version]);
-        const existing = stmt.getAsObject();
+        const hasRow = stmt.step();
+        const existing = hasRow ? stmt.getAsObject() : {};
         stmt.free();
 
         if (Object.keys(existing).length > 0) {
@@ -1087,6 +1088,63 @@ function ensureUserSchemaCompatibility(userDb) {
         }
     }
 
+    // Ensure missing tables are created for existing user databases
+    const missingTables = [
+        `CREATE TABLE IF NOT EXISTS user_preferences (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL UNIQUE,
+            theme TEXT DEFAULT 'system',
+            units TEXT DEFAULT 'metric',
+            dashboard_widgets TEXT,
+            notification_settings TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`,
+        `CREATE TABLE IF NOT EXISTS notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            type TEXT NOT NULL,
+            message TEXT,
+            data TEXT,
+            read_at DATETIME,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`,
+        `CREATE TABLE IF NOT EXISTS friends (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            friend_id INTEGER NOT NULL,
+            status TEXT DEFAULT 'pending',
+            accepted_at DATETIME,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(user_id, friend_id)
+        )`,
+        `CREATE TABLE IF NOT EXISTS groups (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            description TEXT,
+            invite_code TEXT UNIQUE,
+            is_private INTEGER DEFAULT 1,
+            created_by INTEGER NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`,
+        `CREATE TABLE IF NOT EXISTS group_members (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            group_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            role TEXT DEFAULT 'member',
+            joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(group_id, user_id)
+        )`,
+    ];
+
+    for (const stmt of missingTables) {
+        try {
+            userDb.run(stmt);
+        } catch (_) {
+            // Table already exists
+        }
+    }
+
     // Only run UPDATE when there are rows that actually need migration
     try {
         const checkStmt = userDb.prepare(
@@ -1168,7 +1226,8 @@ async function getUserDb(userId) {
     try {
         const stmt = mainDb.prepare('SELECT email FROM users WHERE id = ?');
         stmt.bind([userId]);
-        const result = stmt.getAsObject();
+        const hasRow = stmt.step();
+        const result = hasRow ? stmt.getAsObject() : {};
         stmt.free();
         
         if (!result || !result.email) {
@@ -1209,12 +1268,22 @@ function dbRunMain(query, params = []) {
             mainDb.run(query, params);
             saveMainDb();
             
-            // Get last insert ID
+            // Get last insert ID (sql.js last_insert_rowid() can return 0, use MAX(id) fallback)
             const stmt = mainDb.prepare('SELECT last_insert_rowid() as id');
             stmt.step();
             const result = stmt.getAsObject();
             stmt.free();
-            resolve({ lastID: result.id });
+            
+            // If last_insert_rowid() returns 0 or undefined, fall back to MAX(id)
+            let lastID = result.id;
+            if (!lastID || lastID === 0) {
+                const maxStmt = mainDb.prepare('SELECT MAX(id) as id FROM users');
+                maxStmt.step();
+                const maxResult = maxStmt.getAsObject();
+                maxStmt.free();
+                lastID = maxResult.id;
+            }
+            resolve({ lastID });
         } catch (err) {
             reject(err);
         }

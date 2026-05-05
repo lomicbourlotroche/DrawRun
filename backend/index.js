@@ -248,7 +248,7 @@ const database = require('./src/database');
         
         // Auth & API
         app.use('/api/auth', authRouter);
-        app.use('/api', apiRoutes);
+        app.use('/api/algo', apiRoutes);
         
         // Feature routes - using user-based rate limiting + cache
         // Routes avec cache long (données qui changent peu)

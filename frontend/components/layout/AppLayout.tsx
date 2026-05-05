@@ -11,9 +11,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    console.log('[AppLayout] isAuthenticated:', isAuthenticated);
     if (!isAuthenticated) {
-      console.log('[AppLayout] Redirecting to /login');
       router.push('/login');
     }
   }, [isAuthenticated, router]);

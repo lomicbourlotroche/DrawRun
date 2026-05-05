@@ -66,7 +66,6 @@ export const useAuthStore = create<AuthState>()(
           if (response.refreshToken) {
             api.setRefreshToken(response.refreshToken);
           }
-          logger.info('Login successful, setting auth state', { userId: response.userId });
 
           const hasStrava =
             response.has_strava !== undefined ? !!response.has_strava : !!response.user?.has_strava;
@@ -108,7 +107,6 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             ...syncStatus,
           });
-          logger.info('Auth state set, isAuthenticated=true', { userId: response.userId });
         } catch (error) {
           set({
             isLoading: false,
@@ -176,7 +174,6 @@ export const useAuthStore = create<AuthState>()(
         has_suunto: state.has_suunto,
       }),
       onRehydrateStorage: () => (state) => {
-        console.log('[AuthStore] Rehydrated:', { isAuthenticated: state?.isAuthenticated, hasToken: !!state?.token });
         if (state?.token) api.setToken(state.token);
       },
     }

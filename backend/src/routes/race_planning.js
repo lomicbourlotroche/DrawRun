@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../auth');
 const { logger } = require('../logger');
-const { getUserDb } = require('../database');
+const { getUserDb, dbGetMain } = require('../database');
 const { RunningPerformance } = require('../algorithms/index');
 
 /**
@@ -63,20 +63,26 @@ router.post('/calculate', verifyToken, async (req, res) => {
             });
         }
 
-        // Get user profile for VDOT and FCM
-        const userDb = await getUserDb(userId);
-        const userProfile = userDb.exec(
-            `SELECT 
-                json_extract(profile_data, '$.fcm') as fcm,
-                json_extract(profile_data, '$.age') as age,
-                json_extract(profile_data, '$.vma') as vma,
-                json_extract(profile_data, '$.vdot') as vdot
-            FROM users WHERE id = ?`
+        // Get user profile from main.db (not user DB)
+        const profile = await dbGetMain(
+            'SELECT profile_data FROM users WHERE id = ?',
+            [userId]
         );
 
-        const profile = userProfile[0]?.values?.[0];
-        const fcm = profile?.[0] || (profile?.[1] ? 220 - profile[1] : 180);
-        const userVdot = profile?.[3];
+        let fcm = 180;
+        let userVdot = null;
+        let age = 30;
+        let vma = null;
+
+        if (profile?.profile_data) {
+            try {
+                const data = JSON.parse(profile.profile_data);
+                fcm = data.fcm || fcm;
+                age = data.age || age;
+                vma = data.vma || null;
+                userVdot = data.vdot || null;
+            } catch (_) {}
+        }
 
         // Parse target time to seconds if provided
         let targetPaceSec = targetPace;
@@ -98,31 +104,27 @@ router.post('/calculate', verifyToken, async (req, res) => {
         // Generate splits
         const splits = [];
         const numSplits = Math.ceil(distance);
-        const conservativeStartPercent = 0.2; // First 20% km are conservative
+        const conservativeStartPercent = 0.2;
         const numConservativeKms = Math.max(1, Math.ceil(numSplits * conservativeStartPercent));
 
         for (let km = 1; km <= numSplits; km++) {
             const isLastKm = km === numSplits;
             const kmDistance = isLastKm ? distance - (km - 1) : 1;
             
-            // Apply pacing strategy: conservative start (103% of target pace)
             let kmPaceFactor = 1.0;
             if (km <= numConservativeKms) {
-                kmPaceFactor = 1.03; // 3% slower for first 20%
+                kmPaceFactor = 1.03;
             }
 
-            // Apply elevation (alternate up/down every 2km for rolling/mountainous)
             let elevationFactor = 1.0;
             if (elevationProfile !== 'flat') {
                 const isUphill = Math.floor((km - 1) / 2) % 2 === 0;
                 elevationFactor = isUphill ? factors.up : factors.down;
             }
 
-            // Calculate split pace
             const splitPace = targetPaceSec * kmPaceFactor * elevationFactor;
             const splitTime = splitPace * kmDistance;
 
-            // Calculate HR zone based on race phase
             let hrZone, hrMin, hrMax;
             const phase = km <= numConservativeKms ? 'start' : 
                          km <= numSplits * 0.8 ? 'middle' : 'final';
@@ -145,26 +147,21 @@ router.post('/calculate', verifyToken, async (req, res) => {
                     break;
             }
 
-            // Nutrition strategy
             const nutrition = [];
             
-            // Water every 5km starting at km 5
             if (km >= 5 && km % 5 === 0) {
                 nutrition.push({ type: 'water', label: 'Eau', quantity: '150-200ml' });
             }
 
-            // Calculate cumulative time for gel schedule
             const cumulativeTime = splits.reduce((acc, s) => acc + s.splitTime, 0) + splitTime;
             
-            // Gel every 45min starting at 45min (for races > 60min)
             const totalRaceTime = targetPaceSec * distance;
             if (totalRaceTime > 3600) {
                 const gelTimes = [];
-                for (let t = 2700; t <= totalRaceTime; t += 2700) { // Every 45min
+                for (let t = 2700; t <= totalRaceTime; t += 2700) {
                     gelTimes.push(t);
                 }
                 
-                // Check if this km contains a gel point
                 const prevCumulative = splits.reduce((acc, s) => acc + s.splitTime, 0);
                 for (const gelTime of gelTimes) {
                     if (prevCumulative < gelTime && cumulativeTime >= gelTime) {
@@ -186,7 +183,7 @@ router.post('/calculate', verifyToken, async (req, res) => {
             });
         }
 
-        // Calculate race prediction using VDOT if available
+        // Race prediction using VDOT if available
         let racePrediction = null;
         if (userVdot) {
             try {
@@ -195,8 +192,7 @@ router.post('/calculate', verifyToken, async (req, res) => {
                 const labels = ['5K', '10K', 'Half', 'Marathon'];
                 
                 distances.forEach((dist, idx) => {
-                    if (dist <= distance * 1.5) { // Only predict for similar or shorter distances
-                        // Simple estimation based on current target pace
+                    if (dist <= distance * 1.5) {
                         const estTime = targetPaceSec * dist;
                         predictions[labels[idx]] = {
                             distance: dist,
@@ -214,9 +210,10 @@ router.post('/calculate', verifyToken, async (req, res) => {
             }
         }
 
-        // Calculate TSB warning
+        // TSB warning
         let tsbWarning = null;
         try {
+            const userDb = await getUserDb(userId);
             const pmcResult = userDb.exec(`
                 SELECT 
                     COALESCE(
@@ -248,6 +245,8 @@ router.post('/calculate', verifyToken, async (req, res) => {
         } catch {
             // Ignore PMC calculation errors
         }
+
+        const totalRaceTime = targetPaceSec * distance;
 
         // Nutrition strategy summary
         const nutritionStrategy = {

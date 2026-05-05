@@ -53,11 +53,7 @@ const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
  */
 router.get('/zones', (req, res) => {
     try {
-        const { age, fcm, restingHR = 60, vma, vdot, sex = 'M' } = req.query;
-        
-        if (!age) {
-            return res.status(400).json({ error: 'Paramètre age requis' });
-        }
+        const { age = 30, fcm, restingHR = 60, vma, vdot, sex = 'M' } = req.query;
         
         const ageNum = parseInt(age);
         const fcmNum = fcm ? parseInt(fcm) : Cardiovascular.calculateMaxHR(ageNum);

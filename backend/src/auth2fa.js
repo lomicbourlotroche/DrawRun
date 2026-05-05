@@ -22,9 +22,7 @@ const { encrypt, decrypt } = require('./crypto_utils');
 async function generate2FASecret(userId, userEmail) {
     const issuer = process.env.TOTP_ISSUER || 'DrawRun';
 
-    const secret = OTPAuth.Secret.fromBase32(
-        OTPAuth.Secret.generateRandom(20).base32
-    );
+    const secret = new OTPAuth.Secret({ size: 20 });
 
     const totp = new OTPAuth.TOTP({
         issuer,
