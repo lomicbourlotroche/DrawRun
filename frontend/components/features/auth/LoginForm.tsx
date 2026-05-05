@@ -50,11 +50,14 @@ export default function LoginForm() {
     try {
       if (isLogin) {
         await login(email, password);
+        console.log('[LoginForm] Login successful, redirecting to /app');
       } else {
         await register(email, password, name);
+        console.log('[LoginForm] Register successful, redirecting to /app');
       }
       router.push('/app');
     } catch (err: unknown) {
+      console.error('[LoginForm] Login/Register error:', err);
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     } finally {
       setIsLoading(false);

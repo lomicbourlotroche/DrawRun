@@ -63,10 +63,11 @@ export const useAuthStore = create<AuthState>()(
         try {
           const response = await api.login(email, password);
           api.setToken(response.token);
+          if (response.refreshToken) {
+            api.setRefreshToken(response.refreshToken);
+          }
+          logger.info('Login successful, setting auth state', { userId: response.userId });
 
-          // Primary source: has_strava/has_garmin/has_suunto from the login response
-          // (based on whether credentials are stored — more reliable than last_sync timestamps)
-          // Use top-level response fields first, fall back to user object fields
           const hasStrava =
             response.has_strava !== undefined ? !!response.has_strava : !!response.user?.has_strava;
           const hasGarmin =
@@ -80,24 +81,19 @@ export const useAuthStore = create<AuthState>()(
             has_suunto: hasSuunto,
           };
 
-          // Secondary enrichment: getSyncStatus can override if it provides more up-to-date info
           try {
             const status = await api.getSyncStatus();
             syncStatus = {
-              // Prefer login response flags (credential-based) over last_sync presence
-              // but fall back to last_sync if login response didn't include the flags
               has_strava: hasStrava || !!status.strava_last_sync,
               has_garmin: hasGarmin || !!status.garmin_last_sync,
               has_suunto: hasSuunto || !!status.suunto_last_sync,
             };
           } catch (syncError) {
-            // Non-blocking: keep the values from the login response
             logger.warn('Could not fetch sync status after login', {
               error: syncError instanceof Error ? syncError.message : 'Unknown error',
             });
           }
 
-          // Merge sync flags into the user object so consumers of user.has_strava etc. are consistent
           const userWithSyncFlags = {
             ...response.user,
             has_strava: syncStatus.has_strava,
@@ -112,6 +108,7 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             ...syncStatus,
           });
+          logger.info('Auth state set, isAuthenticated=true', { userId: response.userId });
         } catch (error) {
           set({
             isLoading: false,
@@ -179,6 +176,7 @@ export const useAuthStore = create<AuthState>()(
         has_suunto: state.has_suunto,
       }),
       onRehydrateStorage: () => (state) => {
+        console.log('[AuthStore] Rehydrated:', { isAuthenticated: state?.isAuthenticated, hasToken: !!state?.token });
         if (state?.token) api.setToken(state.token);
       },
     }
