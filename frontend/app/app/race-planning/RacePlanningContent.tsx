@@ -256,12 +256,18 @@ export function RacePlanningContent() {
                   <p className="text-lg font-semibold">{result.summary.distance.toFixed(2)} km</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted">Temps total estimé</p>
+                  <p className="text-xs text-muted">Temps estimé</p>
                   <p className="text-lg font-semibold">{formatDuration(result.summary.totalTime)}</p>
+                  {result.summary.correctedTotalTime && result.summary.correctedTotalTime !== result.summary.totalTime && (
+                    <p className="text-xs text-warning">Corrigé: {formatDuration(result.summary.correctedTotalTime)}</p>
+                  )}
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted">Allure moyenne</p>
+                  <p className="text-xs text-muted">Allure</p>
                   <p className="text-lg font-semibold">{racePlanningApi.formatPace(result.summary.targetPace)}</p>
+                  {result.summary.correctedPace && result.summary.correctedPace !== result.summary.targetPace && (
+                    <p className="text-xs text-warning">Corrigée: {racePlanningApi.formatPace(result.summary.correctedPace)}</p>
+                  )}
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50">
                   <p className="text-xs text-muted">FCM</p>
@@ -269,28 +275,123 @@ export function RacePlanningContent() {
                 </div>
               </div>
 
+              {/* Additional metrics */}
+              {(result.summary.vdot || result.summary.tsb != null || result.summary.ctl != null) && (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                  {result.summary.vdot && (
+                    <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
+                      <p className="text-xs text-muted">VDOT</p>
+                      <p className="text-lg font-semibold">{result.summary.vdot}</p>
+                    </div>
+                  )}
+                  {result.summary.ctl != null && (
+                    <div className="p-3 rounded-lg bg-success/10 border border-success/30">
+                      <p className="text-xs text-muted">CTL (Fitness)</p>
+                      <p className="text-lg font-semibold">{result.summary.ctl}</p>
+                    </div>
+                  )}
+                  {result.summary.tsb != null && (
+                    <div className={`p-3 rounded-lg border ${result.summary.tsb < -10 ? 'bg-error/10 border-error/30' : 'bg-info/10 border-info/30'}`}>
+                      <p className="text-xs text-muted">TSB (Forme)</p>
+                      <p className="text-lg font-semibold">{result.summary.tsb}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Warnings */}
               {result.warnings.length > 0 && (
                 <div className="mt-4 space-y-2">
-                  {result.warnings.map((warning, idx) => (
-                    <div
-                      key={idx}
-                      className={`p-3 rounded-lg flex items-start gap-2 ${
-                        warning.type === 'fatigue'
-                          ? 'bg-warning/10 border border-warning/30'
-                          : 'bg-success/10 border border-success/30'
-                      }`}
-                    >
-                      <AlertTriangle className={`w-5 h-5 flex-shrink-0 ${
-                        warning.type === 'fatigue' ? 'text-warning' : 'text-success'
-                      }`} />
-                      <p className="text-sm">{warning.message}</p>
-                    </div>
-                  ))}
+                  {result.warnings.map((warning, idx) => {
+                    const severityColors: Record<string, string> = {
+                      info: 'bg-info/10 border-info/30',
+                      moderate: 'bg-warning/10 border-warning/30',
+                      high: 'bg-error/10 border-error/30',
+                      critical: 'bg-error/20 border-error/50',
+                    };
+                    const severityIconColors: Record<string, string> = {
+                      info: 'text-info',
+                      moderate: 'text-warning',
+                      high: 'text-error',
+                      critical: 'text-error',
+                    };
+                    const colorKey = warning.severity || (warning.type === 'fatigue' ? 'moderate' : 'info');
+                    return (
+                      <div
+                        key={idx}
+                        className={`p-3 rounded-lg flex items-start gap-2 border ${severityColors[colorKey]}`}
+                      >
+                        <AlertTriangle className={`w-5 h-5 flex-shrink-0 ${severityIconColors[colorKey]}`} />
+                        <p className="text-sm">{warning.message}</p>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
           </Card>
+
+          {/* Pacing Strategy */}
+          {result.pacingStrategy && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Stratégie d'allure</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
+                  <p className="font-semibold">{result.pacingStrategy.name}</p>
+                  <p className="text-sm text-muted mt-1">{result.pacingStrategy.description}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Environmental Impact */}
+          {result.environmentalImpact && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Impact environnemental</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="p-2 rounded bg-muted/50 text-center">
+                    <p className="text-xs text-muted">Température</p>
+                    <p className="font-medium">{result.environmentalImpact.temperature}</p>
+                  </div>
+                  <div className="p-2 rounded bg-muted/50 text-center">
+                    <p className="text-xs text-muted">Humidité</p>
+                    <p className="font-medium">{result.environmentalImpact.humidity}</p>
+                  </div>
+                  <div className="p-2 rounded bg-muted/50 text-center">
+                    <p className="text-xs text-muted">Altitude</p>
+                    <p className="font-medium">{result.environmentalImpact.altitude}</p>
+                  </div>
+                  <div className="p-2 rounded bg-muted/50 text-center">
+                    <p className="text-xs text-muted">Vent</p>
+                    <p className="font-medium">{result.environmentalImpact.wind}</p>
+                  </div>
+                </div>
+                {result.environmentalImpact.overall && (
+                  <p className="text-sm mt-3 text-muted">Impact global: <span className="font-medium text-foreground">{result.environmentalImpact.overall}</span></p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Taper Recommendation */}
+          {result.taperRecommendation && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Recommandation de taper</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="p-3 rounded-lg bg-info/10 border border-info/30">
+                  <p className="font-semibold">Durée: {result.taperRecommendation.duration} jours</p>
+                  <p className="text-sm text-muted mt-1">Réduction du volume progressive pour arriver frais le jour J.</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Splits Table */}
           <Card>
@@ -308,6 +409,7 @@ export function RacePlanningContent() {
                       <th className="text-left py-2 px-2">Allure</th>
                       <th className="text-left py-2 px-2">Zone FC</th>
                       <th className="text-left py-2 px-2">FC</th>
+                      <th className="text-left py-2 px-2 text-muted" title="Cardiac drift">Dérive</th>
                       <th className="text-left py-2 px-2">Ravitaillement</th>
                     </tr>
                   </thead>
@@ -325,19 +427,22 @@ export function RacePlanningContent() {
                           </Badge>
                         </td>
                         <td className="py-2 px-2 text-muted">{split.hrRange}</td>
+                        <td className="py-2 px-2 text-muted text-xs">
+                          {split.cardiacDrift != null ? `+${split.cardiacDrift} bpm` : '-'}
+                        </td>
                         <td className="py-2 px-2">
                           <div className="flex gap-1 flex-wrap">
                             {split.nutrition.map((nut, idx) => (
                               <Badge
                                 key={idx}
-                                variant={nut.type === 'water' ? 'secondary' : 'warning'}
+                                variant={nut.type === 'water' ? 'secondary' : nut.type === 'gel' ? 'warning' : 'info'}
                                 size="sm"
                               >
                                 {nut.type === 'water' ? (
                                   <Droplets className="w-3 h-3 mr-1" />
-                                ) : (
+                                ) : nut.type === 'gel' || nut.type === 'solid' ? (
                                   <Zap className="w-3 h-3 mr-1" />
-                                )}
+                                ) : null}
                                 {nut.label}
                               </Badge>
                             ))}
@@ -367,10 +472,64 @@ export function RacePlanningContent() {
                   <p className="text-lg font-semibold">{result.nutritionStrategy.totalGels}</p>
                 </div>
               </div>
-              <div className="space-y-2 text-sm">
-                <p><strong>Avant la course:</strong> {result.nutritionStrategy.preRace}</p>
-                <p><strong>Pendant:</strong> {result.nutritionStrategy.duringRace}</p>
-                <p><strong>Après:</strong> {result.nutritionStrategy.postRace}</p>
+              <div className="space-y-4 text-sm">
+                <div>
+                  <p className="font-semibold mb-1">Avant la course</p>
+                  {typeof result.nutritionStrategy.preRace === 'string' ? (
+                    <p>{result.nutritionStrategy.preRace}</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {result.nutritionStrategy.preRace?.meal && (
+                        <div className="p-2 rounded bg-muted/50">
+                          <p className="font-medium">{result.nutritionStrategy.preRace.meal.timing}</p>
+                          <p>{result.nutritionStrategy.preRace.meal.description}</p>
+                        </div>
+                      )}
+                      {result.nutritionStrategy.preRace?.topUp && (
+                        <div className="p-2 rounded bg-muted/50">
+                          <p className="font-medium">{result.nutritionStrategy.preRace.topUp.timing}</p>
+                          <p>{result.nutritionStrategy.preRace.topUp.description}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <p className="font-semibold mb-1">Pendant la course</p>
+                  {typeof result.nutritionStrategy.duringRace === 'string' ? (
+                    <p>{result.nutritionStrategy.duringRace}</p>
+                  ) : Array.isArray(result.nutritionStrategy.duringRace) ? (
+                    <div className="space-y-2">
+                      {result.nutritionStrategy.duringRace.map((item: { timing: string; type: string; amount: string; description: string }, idx: number) => (
+                        <div key={idx} className="p-2 rounded bg-muted/50">
+                          <p className="font-medium">{item.timing} — {item.amount}</p>
+                          <p>{item.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+                <div>
+                  <p className="font-semibold mb-1">Après la course</p>
+                  {typeof result.nutritionStrategy.postRace === 'string' ? (
+                    <p>{result.nutritionStrategy.postRace}</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {result.nutritionStrategy.postRace?.within30min && (
+                        <div className="p-2 rounded bg-muted/50">
+                          <p className="font-medium">Dans les 30 min</p>
+                          <p>{result.nutritionStrategy.postRace.within30min.description}</p>
+                        </div>
+                      )}
+                      {result.nutritionStrategy.postRace?.within2hours && (
+                        <div className="p-2 rounded bg-muted/50">
+                          <p className="font-medium">Dans les 2h</p>
+                          <p>{result.nutritionStrategy.postRace.within2hours.description}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>

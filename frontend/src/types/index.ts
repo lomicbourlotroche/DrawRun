@@ -641,10 +641,13 @@ export interface Split {
   splitTime: number;
   cumulativeTime: number;
   pace: number;
+  paceFactor?: number;
   hrZone: string;
   hrRange: string;
+  cardiacDrift?: number;
+  elevationFactor?: number;
   nutrition: Array<{
-    type: 'water' | 'gel';
+    type: 'water' | 'gel' | 'sodium' | 'solid';
     label: string;
     quantity: string;
   }>;
@@ -652,6 +655,18 @@ export interface Split {
 
 export interface RacePrediction {
   vdot: number;
+  dynamicVDOT?: number;
+  models?: {
+    riegelTime: number;
+    mercierTime: number;
+    cameronTime: number;
+    weightedTime: number;
+  };
+  recommendedPace?: number;
+  paceRange?: {
+    optimistic: number;
+    conservative: number;
+  };
   predictions: Record<string, {
     distance: number;
     estimatedTime: number;
@@ -665,12 +680,38 @@ export interface NutritionStop {
   quantity: string;
 }
 
+export interface NutritionMeal {
+  timing: string;
+  carbs: string;
+  description: string;
+}
+
+export interface NutritionItem {
+  timing: string;
+  type: string;
+  amount: string;
+  description: string;
+}
+
+export interface PostRaceRecovery {
+  carbs?: string;
+  protein?: string;
+  description: string;
+}
+
 export interface NutritionStrategy {
   totalWater: number;
   totalGels: number;
-  preRace: string;
-  duringRace: string;
-  postRace: string;
+  carbPerHour?: number;
+  fluidMlPerHour?: number;
+  sodiumPerHour?: number;
+  totalCarbs?: number;
+  totalFluid?: number;
+  caffeineDose?: number;
+  preRace: string | { meal: NutritionMeal; topUp: NutritionMeal };
+  duringRace: string | NutritionItem[];
+  postRace: string | { within30min: PostRaceRecovery; within2hours: PostRaceRecovery };
+  references?: string[];
 }
 
 export interface RacePlanningRequest {
@@ -679,6 +720,10 @@ export interface RacePlanningRequest {
   targetPace?: number;
   elevationProfile: 'flat' | 'rolling' | 'mountainous';
   fatigue?: number;
+  temperature?: number;
+  humidity?: number;
+  altitude?: number;
+  windSpeed?: number;
 }
 
 export interface RacePlanningResponse {
@@ -686,15 +731,34 @@ export interface RacePlanningResponse {
   racePrediction: RacePrediction | null;
   nutritionStrategy: NutritionStrategy;
   warnings: Array<{
-    type: 'fatigue' | 'freshness';
+    type: 'fatigue' | 'freshness' | 'injury_risk' | 'overtraining';
+    severity: 'info' | 'moderate' | 'high' | 'critical';
     message: string;
   }>;
+  taperRecommendation?: unknown;
+  environmentalImpact?: {
+    temperature: string;
+    humidity: string;
+    altitude: string;
+    wind: string;
+    overall: string;
+  };
+  pacingStrategy?: {
+    type: string;
+    name: string;
+    description: string;
+  };
   summary: {
     distance: number;
     targetPace: number;
+    correctedPace?: number;
     totalTime: number;
+    correctedTotalTime?: number;
     elevationProfile: string;
     fcm: number;
+    vdot?: number;
+    tsb?: number | null;
+    ctl?: number | null;
   };
 }
 
