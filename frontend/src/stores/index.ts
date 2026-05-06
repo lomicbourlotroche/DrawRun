@@ -489,3 +489,81 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
     unreadCount: Math.max(0, state.unreadCount - 1) 
   })),
 }));
+
+// ============================================================================
+// USER CONSTANTS STORE - Single source of truth for VDOT, zones, etc.
+// ============================================================================
+
+import type { UserConstantsResponse, UserProfile, UserZones } from '@/lib/api/user-constants.api';
+
+interface UserConstantsState {
+  data: UserConstantsResponse | null;
+  isLoading: boolean;
+  lastFetched: number | null;
+  
+  fetchConstants: () => Promise<UserConstantsResponse | null>;
+  invalidate: () => void;
+  
+  // Convenience getters
+  profile: UserProfile | null;
+  zones: UserZones | null;
+  vdot: number | null;
+  vma: number | null;
+  fcm: number | null;
+  ftp: number | null;
+}
+
+export const useUserConstantsStore = create<UserConstantsState>()((set, get) => ({
+  data: null,
+  isLoading: false,
+  lastFetched: null,
+
+  fetchConstants: async () => {
+    // Cache for 5 minutes
+    const { lastFetched } = get();
+    if (lastFetched && Date.now() - lastFetched < 5 * 60 * 1000 && get().data) {
+      return get().data;
+    }
+
+    set({ isLoading: true });
+    try {
+      const data = await api.getUserConstants();
+      set({ data, isLoading: false, lastFetched: Date.now() });
+      return data;
+    } catch (error) {
+      logger.error('Failed to fetch user constants', { 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+      set({ isLoading: false });
+      return null;
+    }
+  },
+
+  invalidate: () => {
+    set({ lastFetched: null });
+  },
+
+  get profile() {
+    return get().data?.profile ?? null;
+  },
+
+  get zones() {
+    return get().data?.zones ?? null;
+  },
+
+  get vdot() {
+    return get().data?.profile.vdot ?? null;
+  },
+
+  get vma() {
+    return get().data?.profile.vma ?? null;
+  },
+
+  get fcm() {
+    return get().data?.profile.fcm ?? null;
+  },
+
+  get ftp() {
+    return get().data?.profile.ftp ?? null;
+  },
+}));

@@ -116,6 +116,7 @@ const database = require('./src/database');
         const racePlanningRoutes = require('./src/routes/race_planning');
         const weatherRoutes = require('./src/routes/weather');
         const shareRoutes = require('./src/routes/share');
+        const userConstantsRoutes = require('./src/routes/user-constants');
         
         // ============================================================================
         // EXPRESS SERVER
@@ -268,6 +269,7 @@ const database = require('./src/database');
         app.use('/api/explore', verifyToken, userBasedLimiter, cacheMiddleware(600), exploreRoutes);
         app.use('/api/notifications', verifyToken, userBasedLimiter, noCacheMiddleware, notificationsRoutes);
         app.use('/api/race-planning', verifyToken, userBasedLimiter, noCacheMiddleware, racePlanningRoutes);
+        app.use('/api/user/constants', verifyToken, userBasedLimiter, cacheMiddleware(300), userConstantsRoutes);
         
         // Legacy route aliases (pour compatibilité)
         app.use('/api/recommendations', verifyToken, pmcRoutes);

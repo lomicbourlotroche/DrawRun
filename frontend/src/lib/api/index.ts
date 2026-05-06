@@ -125,6 +125,7 @@ import { notificationsApi } from './notifications.api';
 import { racePlanningApi } from './race-planning.api';
 import { weatherApi } from './weather.api';
 import { shareApi } from './share.api';
+import { userConstantsApi } from './user-constants.api';
 import { client } from './client';
 
 // Création d'un objet api unifié pour rétrocompatibilité
@@ -339,6 +340,9 @@ export const api = {
   downloadShareImage: shareApi.downloadShareImage,
   shareActivity: shareApi.shareActivity,
   copyActivityLink: shareApi.copyActivityLink,
+
+  // User Constants endpoint
+  getUserConstants: userConstantsApi.get,
 };
 
 // ============================================================================

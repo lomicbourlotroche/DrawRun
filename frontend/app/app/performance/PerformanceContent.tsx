@@ -6,16 +6,11 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
+import { useUserConstantsStore } from '@/stores';
 import { PerformanceZones, PerformanceMetrics, ProgressionChart } from '@/components/features/performance';
 import { Card, CardHeader, CardTitle, CardContent, Skeleton, Progress } from '@/components/ui';
 import { Dumbbell, Bike, Waves, Heart, Activity, TrendingUp, Gauge, Zap, BarChart3, Brain, AlertCircle, MapPin, Clock } from 'lucide-react';
-import type { Zones, PmcDataPoint, Activity as ActivityType } from '@/types';
-
-interface CoachProfile {
-  vdot?: number;
-  fcm?: number;
-  [key: string]: unknown;
-}
+import type { PmcDataPoint, Activity as ActivityType } from '@/types';
 
 interface PolarizationData {
   index: number;
@@ -58,15 +53,15 @@ function computeStats(activities: ActivityType[]): StatsData {
 export default function PerformanceContent() {
   const [sport, setSport] = useState<'run' | 'bike' | 'swim'>('run');
   const [activeTab, setActiveTab] = useState<'metrics' | 'zones' | 'stats' | 'progression' | 'analyse'>('metrics');
-  const [zones, setZones] = useState<Zones | null>(null);
   const [pmc, setPmc] = useState<PmcDataPoint[]>([]);
   const [activities, setActivities] = useState<ActivityType[]>([]);
-  const [coachProfile, setCoachProfile] = useState<CoachProfile | null>(null);
   const [polarization, setPolarization] = useState<PolarizationData | null>(null);
   const [polarizationError, setPolarizationError] = useState<string | null>(null);
   const [hrv, setHrv] = useState<HRVData | null>(null);
   const [hrvError, setHrvError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const { data: userConstants, fetchConstants, zones, profile } = useUserConstantsStore();
 
   useEffect(() => {
     if (api.isAuthenticated()) loadData();
@@ -77,17 +72,17 @@ export default function PerformanceContent() {
     setPolarizationError(null);
     setHrvError(null);
     try {
-      const [z, p, acts, profile] = await Promise.all([
-        api.getZones().catch(() => null),
+      const [constantsResult, p, acts] = await Promise.all([
+        fetchConstants(),
         api.getPmc().catch(() => []),
         api.getActivities().catch(() => []),
-        api.getCoachProfile().catch(() => null) as Promise<CoachProfile | null>,
       ]);
-      // Cast AlgoZonesResponse to Zones type
-      setZones(z as Zones | null);
       setPmc(p);
       setActivities(acts);
-      setCoachProfile(profile);
+
+      if (!constantsResult) {
+        logger.warn('User constants not available');
+      }
 
       // Polarization — requires activities with zone data
       try {
@@ -99,9 +94,6 @@ export default function PerformanceContent() {
       } catch {
         setPolarizationError('Données de polarisation non disponibles');
       }
-
-      // HRV — only fetch if user has real HRV data from device sync; skip baseline-only calls
-      // HRV data will be populated when Garmin/Strava sync provides RMSSD values
     } catch { /* silent */ }
     finally { setIsLoading(false); }
   };
@@ -185,15 +177,15 @@ export default function PerformanceContent() {
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-center">
-                      <p className="text-2xl font-bold text-red-400">{zones?.fcm || '--'}</p>
+                      <p className="text-2xl font-bold text-red-400">{profile?.fcm || '--'}</p>
                       <p className="text-xs text-muted">FCM</p>
                     </div>
                     <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-center">
-                      <p className="text-2xl font-bold text-blue-400">{coachProfile?.vdot || '--'}</p>
+                      <p className="text-2xl font-bold text-blue-400">{profile?.vdot || '--'}</p>
                       <p className="text-xs text-muted">VDOT</p>
                     </div>
                     <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
-                      <p className="text-2xl font-bold text-green-400">{zones?.vma ? `${zones.vma}` : '--'}</p>
+                      <p className="text-2xl font-bold text-green-400">{profile?.vma ? `${profile.vma.toFixed(1)}` : '--'}</p>
                       <p className="text-xs text-muted">VMA km/h</p>
                     </div>
                   </div>
