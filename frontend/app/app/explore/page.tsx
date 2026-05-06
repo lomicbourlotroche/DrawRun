@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui';
+import { GlassCard, GlassCardContent, GlassCardHeader, GlassCardTitle, Button } from '@/components/ui';
 import { Map, Route, Trophy, Compass } from 'lucide-react';
 import { SegmentList, useNearbySegments } from '@/components/features/explore/Segments';
 import { RouteList, useRoutes } from '@/components/features/explore/Routes';
@@ -64,19 +64,19 @@ export default function ExplorePage() {
         </TabsList>
 
         <TabsContent value="segments" className="space-y-4">
-          <Card>
-            <CardHeader className="pb-3">
+          <GlassCard>
+            <GlassCardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
+                <GlassCardTitle className="text-lg flex items-center gap-2">
                   <Map className="w-5 h-5" />
                   Segments à proximité
-                </CardTitle>
+                </GlassCardTitle>
                 <Button onClick={handleLocateMe} size="sm">
                   Me localiser
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent>
+            </GlassCardHeader>
+            <GlassCardContent>
               <SegmentList 
                 segments={segments} 
                 isLoading={segmentsLoading}
@@ -85,21 +85,21 @@ export default function ExplorePage() {
                   window.location.href = `/app/explore/segments/${segment.id}`;
                 }}
               />
-            </CardContent>
-          </Card>
+            </GlassCardContent>
+          </GlassCard>
         </TabsContent>
-
+        
         <TabsContent value="routes" className="space-y-4">
-          <Card>
-            <CardHeader className="pb-3">
+          <GlassCard>
+            <GlassCardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
+                <GlassCardTitle className="text-lg flex items-center gap-2">
                   <Route className="w-5 h-5" />
                   Parcours populaires
-                </CardTitle>
+                </GlassCardTitle>
               </div>
-            </CardHeader>
-            <CardContent>
+            </GlassCardHeader>
+            <GlassCardContent>
               <RouteList 
                 routes={routes} 
                 isLoading={routesLoading}
@@ -108,8 +108,8 @@ export default function ExplorePage() {
                   window.location.href = `/app/explore/routes/${route.id}`;
                 }}
               />
-            </CardContent>
-          </Card>
+            </GlassCardContent>
+          </GlassCard>
         </TabsContent>
       </Tabs>
     </div>

@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { useUserConstantsStore } from '@/stores';
 import { PerformanceZones, PerformanceMetrics, ProgressionChart } from '@/components/features/performance';
-import { Card, CardHeader, CardTitle, CardContent, Skeleton, Progress } from '@/components/ui';
+import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent, Skeleton, Progress } from '@/components/ui';
 import { Dumbbell, Bike, Waves, Heart, Activity, TrendingUp, Gauge, Zap, BarChart3, Brain, AlertCircle, MapPin, Clock } from 'lucide-react';
 import type { PmcDataPoint, Activity as ActivityType } from '@/types';
 
@@ -168,14 +168,14 @@ export default function PerformanceContent() {
           {activeTab === 'metrics' && (
             <div className="space-y-6">
               <PerformanceMetrics sport={sport} metrics={{}} />
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+              <GlassCard>
+                <GlassCardHeader>
+                  <GlassCardTitle className="flex items-center gap-2">
                     <Heart className="w-5 h-5 text-red-500" />
                     Métriques clés
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+                  </GlassCardTitle>
+                </GlassCardHeader>
+                <GlassCardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-center">
                       <p className="text-2xl font-bold text-red-400">{profile?.fcm || '--'}</p>
@@ -190,8 +190,8 @@ export default function PerformanceContent() {
                       <p className="text-xs text-muted">VMA km/h</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </GlassCardContent>
+              </GlassCard>
             </div>
           )}
           {activeTab === 'zones' && <PerformanceZones zones={zones as any} />}
@@ -200,13 +200,13 @@ export default function PerformanceContent() {
               const stats = computeStats(activities);
               if (activities.length === 0) {
                 return (
-                  <Card>
-                    <CardContent className="p-8 text-center">
+                  <GlassCard>
+                    <GlassCardContent className="p-8 text-center">
                       <BarChart3 className="w-12 h-12 mx-auto mb-4 text-muted opacity-30" />
                       <p className="text-muted">Aucune activité enregistrée</p>
                       <p className="text-xs text-muted mt-1">Synchronisez vos activités pour voir vos statistiques.</p>
-                    </CardContent>
-                  </Card>
+                    </GlassCardContent>
+                  </GlassCard>
                 );
               }
               return (
@@ -236,14 +236,14 @@ export default function PerformanceContent() {
                   </div>
 
                   {/* Répartition par type */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base flex items-center gap-2">
+                  <GlassCard>
+                    <GlassCardHeader>
+                      <GlassCardTitle className="text-base flex items-center gap-2">
                         <Activity className="w-4 h-4 text-primary" />
                         Répartition par type
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                      </GlassCardTitle>
+                    </GlassCardHeader>
+                    <GlassCardContent>
                       <div className="space-y-3">
                         {Object.entries(stats.byType).sort((a, b) => b[1] - a[1]).map(([type, count]) => {
                           const pct = Math.round((count / activities.length) * 100);
@@ -263,8 +263,8 @@ export default function PerformanceContent() {
                           );
                         })}
                       </div>
-                    </CardContent>
-                  </Card>
+                    </GlassCardContent>
+                  </GlassCard>
                 </div>
               );
             })()
@@ -299,40 +299,40 @@ interface IntensityDistributionSectionProps {
 function IntensityDistributionSection({ polarization, error }: IntensityDistributionSectionProps) {
   if (error) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <GlassCard>
+        <GlassCardHeader>
+          <GlassCardTitle className="flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-primary" />
             Distribution d&apos;intensité
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+          </GlassCardTitle>
+        </GlassCardHeader>
+        <GlassCardContent>
           <div className="flex items-center gap-2 text-muted py-4">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <p className="text-sm">{error}</p>
           </div>
-        </CardContent>
-      </Card>
+        </GlassCardContent>
+      </GlassCard>
     );
   }
 
   if (!polarization) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <GlassCard>
+        <GlassCardHeader>
+          <GlassCardTitle className="flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-primary" />
             Distribution d&apos;intensité
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+          </GlassCardTitle>
+        </GlassCardHeader>
+        <GlassCardContent>
           <div className="space-y-3">
             <Skeleton className="h-6" />
             <Skeleton className="h-6" />
             <Skeleton className="h-6" />
           </div>
-        </CardContent>
-      </Card>
+        </GlassCardContent>
+      </GlassCard>
     );
   }
 
@@ -351,14 +351,14 @@ function IntensityDistributionSection({ polarization, error }: IntensityDistribu
   const isOptimal = polarization.classification.optimal;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+    <GlassCard>
+      <GlassCardHeader>
+        <GlassCardTitle className="flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-primary" />
           Distribution d&apos;intensité
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-5">
+        </GlassCardTitle>
+      </GlassCardHeader>
+      <GlassCardContent className="space-y-5">
         {/* Classification badge */}
         <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
           isOptimal ? 'bg-green-500/15 text-green-400' : 'bg-yellow-500/15 text-yellow-400'
@@ -409,8 +409,8 @@ function IntensityDistributionSection({ polarization, error }: IntensityDistribu
             <p className="text-sm text-foreground">{polarization.recommendation.message}</p>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </GlassCardContent>
+    </GlassCard>
   );
 }
 
@@ -426,40 +426,40 @@ interface HRVRecoverySectionProps {
 function HRVRecoverySection({ hrv, error }: HRVRecoverySectionProps) {
   if (error) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <GlassCard>
+        <GlassCardHeader>
+          <GlassCardTitle className="flex items-center gap-2">
             <Heart className="w-5 h-5 text-red-500" />
             HRV &amp; Récupération
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+          </GlassCardTitle>
+        </GlassCardHeader>
+        <GlassCardContent>
           <div className="flex items-center gap-2 text-muted py-4">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <p className="text-sm">{error}</p>
           </div>
-        </CardContent>
-      </Card>
+        </GlassCardContent>
+      </GlassCard>
     );
   }
 
   if (!hrv) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <GlassCard>
+        <GlassCardHeader>
+          <GlassCardTitle className="flex items-center gap-2">
             <Heart className="w-5 h-5 text-red-500" />
             HRV &amp; Récupération
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+          </GlassCardTitle>
+        </GlassCardHeader>
+        <GlassCardContent>
           <div className="space-y-3">
             <Skeleton className="h-20" />
             <Skeleton className="h-6" />
             <Skeleton className="h-6" />
           </div>
-        </CardContent>
-      </Card>
+        </GlassCardContent>
+      </GlassCard>
     );
   }
 
@@ -476,14 +476,14 @@ function HRVRecoverySection({ hrv, error }: HRVRecoverySectionProps) {
   const scorePct = Math.min(Math.max(Math.round(hrv.score), 0), 100);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+    <GlassCard>
+      <GlassCardHeader>
+        <GlassCardTitle className="flex items-center gap-2">
           <Heart className="w-5 h-5 text-red-500" />
           HRV &amp; Récupération
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-5">
+        </GlassCardTitle>
+      </GlassCardHeader>
+      <GlassCardContent className="space-y-5">
         {/* Score principal */}
         <div className={`flex items-center gap-4 p-4 rounded-xl ${cfg.bgColor}`}>
           <div className="text-center min-w-[64px]">
@@ -531,7 +531,7 @@ function HRVRecoverySection({ hrv, error }: HRVRecoverySectionProps) {
           </div>
           <Progress value={readinessPct} className="h-2.5" />
         </div>
-      </CardContent>
-    </Card>
+      </GlassCardContent>
+    </GlassCard>
   );
 }
