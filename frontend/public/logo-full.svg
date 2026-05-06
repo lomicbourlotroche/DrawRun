@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60" width="280" height="60">
+  <defs>
+    <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#93c5fd;stop-opacity:0.6" />
+    </linearGradient>
+  </defs>
+
+  <!-- Icon circle -->
+  <circle cx="30" cy="30" r="26" fill="url(#iconGrad)"/>
+
+  <!-- Wave lines in icon -->
+  <path d="M 12 32 Q 20 24, 28 28 Q 36 32, 44 26" 
+        stroke="url(#waveGrad)" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.7"/>
+
+  <!-- DR text in icon -->
+  <text x="30" y="36" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="900" 
+        fill="white" text-anchor="middle" letter-spacing="-1">DR</text>
+
+  <!-- Runner silhouette -->
+  <circle cx="40" cy="18" r="2.5" fill="white" opacity="0.9"/>
+  <path d="M 40 20.5 L 38 25 L 34 29" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+  <path d="M 40 20.5 L 43 24 L 46 27" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+
+  <!-- DrawRun text -->
+  <text x="68" y="38" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="900" letter-spacing="-0.5">
+    <tspan fill="#1e293b">DRAW</tspan><tspan fill="#3b82f6">RUN</tspan>
+  </text>
+</svg>

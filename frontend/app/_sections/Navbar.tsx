@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Activity, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import Image from 'next/image';
 import { LanguageToggle } from '@/components/providers/LanguageToggle';
 
 const navLinks = [
@@ -36,11 +37,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <a href="#" className="flex items-center gap-2.5">
-            <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
-              scrolled ? 'bg-primary-600' : 'bg-primary-600'
-            }`}>
-              <Activity className="w-5 h-5 text-white" />
-            </div>
+            <Image src="/logo-icon.svg" alt="DrawRun" width={36} height={36} className="rounded-lg" />
             <span className={`text-lg font-bold tracking-tight transition-colors ${
               scrolled ? 'text-neutral-900' : 'text-white'
             }`}>

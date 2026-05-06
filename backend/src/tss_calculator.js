@@ -113,7 +113,7 @@ async function checkOvertraining(userId, userDb) {
 
         const ctl = calculateCTL(tssValues);
         const atl = calculateATL(tssValues);
-        const acwr = atl > 0 ? ctl / atl : 0;
+        const acwr = ctl > 0 ? atl / ctl : 0;
         const tsb = ctl - atl;
 
         let risk = 'low';

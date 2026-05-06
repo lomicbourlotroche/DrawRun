@@ -30,7 +30,7 @@ router.get('/check', verifyToken, async (req, res) => {
             return res.json({ risk: 'low', score: 0, message: 'Pas assez de données' });
         }
         
-        const acwr = pmc.ctl / pmc.atl;
+        const acwr = pmc.atl / pmc.ctl;
         let risk = 'low';
         
         if (acwr > 1.5) risk = 'high';

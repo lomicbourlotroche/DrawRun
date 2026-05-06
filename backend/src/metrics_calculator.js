@@ -166,7 +166,7 @@ async function calculateAndStoreMetrics(userId, userDb) {
                 // Calculer ACWR
                 const ctl = latest.ctl;
                 const atl = latest.atl;
-                const acwr = atl > 0 ? ctl / atl : 0;
+                const acwr = ctl > 0 ? atl / ctl : 0;
                 
                 await dbRunUser(userDb, `
                     INSERT OR REPLACE INTO performance_metrics

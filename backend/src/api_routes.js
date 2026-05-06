@@ -25,8 +25,7 @@ const {
     Taper,
     Recommendations,
     MathUtils,
-    SCIENTIFIC_CONSTANTS,
-    SportAnalysis
+    SCIENTIFIC_CONSTANTS
 } = require('./algorithms');
 
 // ============================================================================

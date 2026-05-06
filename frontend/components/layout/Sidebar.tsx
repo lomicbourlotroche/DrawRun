@@ -16,10 +16,10 @@ import {
   Menu,
   X,
   ChevronLeft,
-  Zap,
   Trophy,
   Plus,
 } from 'lucide-react';
+import Image from 'next/image';
 
 const navItems = [
   { href: '/app', label: 'Tableau de bord', icon: LayoutDashboard, exact: true },
@@ -113,9 +113,7 @@ export default function Sidebar() {
           )}
         >
           <Link href="/app" className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
-              <Zap className="w-4 h-4 text-white" />
-            </div>
+            <Image src="/logo-icon.svg" alt="DrawRun" width={32} height={32} className="rounded-lg flex-shrink-0" />
             {!isCollapsed && (
               <span className="text-base font-bold text-slate-900 truncate">DrawRun</span>
             )}

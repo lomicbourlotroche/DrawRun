@@ -256,83 +256,262 @@ const Cardiovascular = {
     },
     
     /**
-     * Calcul FCM selon différentes formules
-     * Retourne un objet avec plusieurs estimations
+     * Calcul FCM selon différentes formules avec pondération par sexe
+     * Ref: Tanaka (2001), Gellish (2007), Inbar (1994), Arena (2013), Londeree (1997)
+     * Retourne un objet avec plusieurs estimations + recommandation pondérée
      */
     estimateMaxHR: (age, sex = 'M') => {
         const a = MathUtils.clamp(age, 10, 100);
         
+        // Tanaka (2001) - référence gold standard
+        const tanaka = 208 - 0.7 * a;
+        
+        // Gellish (2007) - non-linéaire, meilleure pour jeunes/âgés
+        const gellish = 207.08 - 0.007165 * Math.pow(a, 2);
+        
+        // Inbar (1994) - validée sur athlètes
+        const inbar = 205.8 - 0.685 * a;
+        
+        // Arena (2013) - spécifique pour population entraînée
+        const arena = 211 - 0.64 * a;
+        
+        // Londeree (1997) - basée sur tests d'effort
+        const londeree = 206.3 - 0.10 * a;
+        
+        // Ajustement sexe: les femmes ont tendance à avoir FCM légèrement plus élevée
+        const sexAdjustment = sex === 'F' ? 3 : 0;
+        
+        // Pondération par âge: Tanaka meilleure pour 20-60, Gellish pour extrêmes
+        let recommended;
+        if (a < 20 || a > 60) {
+            // Gellish plus précise aux extrêmes
+            recommended = (gellish + tanaka) / 2;
+        } else if (a >= 30 && a <= 50) {
+            // Tanaka validée sur large population
+            recommended = tanaka;
+        } else {
+            // Moyenne pondérée Tanaka + Inbar
+            recommended = tanaka * 0.6 + inbar * 0.4;
+        }
+        
         return {
-            tanaka: Math.round(208 - 0.7 * a),
-            gellish: Math.round(207.08 - 0.007165 * Math.pow(a, 2)),
-            oakland: Math.round(186.6 - 0.71 * a),
-            londerer: Math.round(206.3 - 0.10 * a),
-            recommended: Math.round(208 - 0.7 * a), // Tanaka est le plus validé
+            tanaka: Math.round(tanaka + sexAdjustment),
+            gellish: Math.round(gellish + sexAdjustment),
+            inbar: Math.round(inbar + sexAdjustment),
+            arena: Math.round(arena + sexAdjustment),
+            londeree: Math.round(londeree + sexAdjustment),
+            recommended: Math.round(recommended + sexAdjustment),
+            method: a < 20 || a > 60 ? 'gellish_tanaka' : a >= 30 && a <= 50 ? 'tanaka' : 'tanaka_inbar',
         };
     },
     
     /**
-     * Zones de fréquence cardiaque selon Karvonen
+     * Estimation FCM dynamique à partir des données d'activités
+     * Utilise les FC max observées lors des séances intenses
+     * Ref: Vesterinen et al. (2016). HRmax from training data.
+     * 
+     * @param {Array} activities - Array of activities with max_heartrate
+     * @param {number} estimatedFCM - Estimated FCM from formula
+     * @returns {number} Adjusted FCM
+     */
+    estimateDynamicFCM: (activities, estimatedFCM) => {
+        if (!activities || activities.length === 0) return estimatedFCM;
+        
+        // Filter activities with HR data and sufficient intensity
+        const intenseActivities = activities.filter(a =>
+            a.max_heartrate && a.max_heartrate > 0 &&
+            (a.average_heartrate || 0) > estimatedFCM * 0.85 &&
+            (a.moving_time || 0) > 600 // At least 10 minutes
+        );
+        
+        if (intenseActivities.length < 3) return estimatedFCM;
+        
+        // Take the top 5 highest HR values (outliers removed)
+        const maxHRs = intenseActivities
+            .map(a => a.max_heartrate)
+            .sort((a, b) => b - a)
+            .slice(0, Math.min(5, intenseActivities.length));
+        
+        const observedMax = MathUtils.mean(maxHRs);
+        
+        // Blend observed (60%) with formula (40%) for stability
+        return Math.round(observedMax * 0.6 + estimatedFCM * 0.4);
+    },
+    
+    /**
+     * Zones de fréquence cardiaque selon Karvonen (HRR)
      * Ref: Karvonen, J., et al. (1957). The effects of training on heart rate.
      * Plus précis car prend en compte le repos
      * 
      * @param {number} age - Age en années
      * @param {number} restingHR - Fréquence cardiaque de repos
      * @param {string} sex - Genre 'M' ou 'F'
+     * @param {object} options - {method: 'karvonen'|'percent', observedFCM: number}
      */
-    calculateKarvonenZones: (age, restingHR = 60, _sex = 'M') => {
-        const fcm = Cardiovascular.calculateMaxHR(age);
+    calculateKarvonenZones: (age, restingHR = 60, sex = 'M', options = {}) => {
+        const fcm = options.observedFCM || Cardiovascular.calculateMaxHR(age);
         const hrr = fcm - restingHR;
 
         return [
             { 
-                zone: 1, name: 'Zone 1 - Récupération',
+                zone: 1, name: 'Zone 1 - Récupération active',
                 minHR: Math.round(restingHR + hrr * 0.50),
                 maxHR: Math.round(restingHR + hrr * 0.60),
                 percent: [50, 60],
-                description: 'Récupération active, regeneration'
+                description: 'Récupération active, regeneration',
+                physiologicalEffect: 'Récupération, circulation sanguine'
             },
             { 
-                zone: 2, name: 'Zone 2 - Endurance',
+                zone: 2, name: 'Zone 2 - Endurance fondamentale',
                 minHR: Math.round(restingHR + hrr * 0.60),
                 maxHR: Math.round(restingHR + hrr * 0.70),
                 percent: [60, 70],
-                description: 'Endurance fondamentale, conversation possible'
+                description: 'Endurance fondamentale, conversation possible',
+                physiologicalEffect: 'Développement mitochondrial, oxydation des graisses'
             },
             { 
                 zone: 3, name: 'Zone 3 - Tempo',
                 minHR: Math.round(restingHR + hrr * 0.70),
                 maxHR: Math.round(restingHR + hrr * 0.80),
                 percent: [70, 80],
-                description: 'Tempo, allure semi-marathon'
+                description: 'Tempo, allure semi-marathon',
+                physiologicalEffect: 'Amélioration capacité aérobie'
             },
             { 
-                zone: 4, name: 'Zone 4 - Seuil',
+                zone: 4, name: 'Zone 4 - Seuil anaérobie',
                 minHR: Math.round(restingHR + hrr * 0.80),
                 maxHR: Math.round(restingHR + hrr * 0.90),
                 percent: [80, 90],
-                description: 'Seuil anaérobie, 10k pace'
+                description: 'Seuil anaérobie, 10k pace',
+                physiologicalEffect: 'Augmentation seuil lactique'
             },
             { 
                 zone: 5, name: 'Zone 5a - VO2max',
                 minHR: Math.round(restingHR + hrr * 0.90),
                 maxHR: Math.round(restingHR + hrr * 0.95),
                 percent: [90, 95],
-                description: 'VMA, intervalles courts'
+                description: 'VMA, intervalles courts',
+                physiologicalEffect: 'Développement VO2max'
             },
             { 
-                zone: 6, name: 'Zone 5b - Seuil Anaérobie',
+                zone: 6, name: 'Zone 5b - Seuil maximal',
                 minHR: Math.round(restingHR + hrr * 0.95),
                 maxHR: Math.round(restingHR + hrr * 1.00),
                 percent: [95, 100],
-                description: 'Seuil maximal'
+                description: 'Seuil maximal, efforts courts',
+                physiologicalEffect: 'Puissance aérobie maximale'
             },
             { 
                 zone: 7, name: 'Zone 5c - Neuromusculaire',
                 minHR: fcm,
                 maxHR: fcm + 5,
                 percent: [100, 105],
-                description: 'Sprint, puissance'
+                description: 'Sprint, puissance',
+                physiologicalEffect: 'Recrutement fibres rapides'
+            },
+        ];
+    },
+    
+    /**
+     * Estimation VT1/VT2 (seuils ventilatoires) à partir du profil
+     * Ref: Wasserman (2012). Principles of Exercise Testing.
+     * VT1 ≈ 75% FCM, VT2 ≈ 90% FCM (estimation, nécessite test labo pour précision)
+     * 
+     * @param {number} fcm - Fréquence cardiaque max
+     * @param {number} restingHR - FC repos
+     * @param {number} vma - VMA en km/h (optionnel, pour estimation par vitesse)
+     */
+    estimateVentilatoryThresholds: (fcm, restingHR = 60, vma = null) => {
+        const hrr = fcm - restingHR;
+        
+        // VT1 (seuil aérobie) ≈ 75% FCM ou 60% HRR
+        const vt1HR = Math.round(restingHR + hrr * 0.60);
+        // VT2 (seuil anaérobie) ≈ 90% FCM ou 80% HRR
+        const vt2HR = Math.round(restingHR + hrr * 0.80);
+        
+        let vt1Speed = null, vt2Speed = null;
+        if (vma) {
+            // VT1 ≈ 65-75% VMA, VT2 ≈ 85-90% VMA
+            vt1Speed = Math.round(vma * 0.70 * 10) / 10;
+            vt2Speed = Math.round(vma * 0.88 * 10) / 10;
+        }
+        
+        return {
+            vt1: {
+                heartRate: vt1HR,
+                speed: vt1Speed,
+                percentFCM: Math.round(vt1HR / fcm * 100),
+                label: 'Seuil aérobie (VT1)',
+                description: 'Transition métabolique, début accumulation lactate'
+            },
+            vt2: {
+                heartRate: vt2HR,
+                speed: vt2Speed,
+                percentFCM: Math.round(vt2HR / fcm * 100),
+                label: 'Seuil anaérobie (VT2)',
+                description: 'Point de compensation respiratoire, effort soutenable 30-60min'
+            },
+        };
+    },
+    
+    /**
+     * Zones de puissance selon Coggan (7 zones basées sur FTP)
+     * Ref: Coggan, A. (2006). Training and Racing with a Power Meter.
+     * 
+     * @param {number} ftp - Functional Threshold Power (watts)
+     */
+    calculatePowerZones: (ftp) => {
+        if (!ftp || ftp <= 0) return [];
+        
+        return [
+            {
+                zone: 1, name: 'Active Recovery',
+                minWatts: Math.round(ftp * 0.55),
+                maxWatts: Math.round(ftp * 0.75),
+                percentFTP: [55, 75],
+                description: 'Récupération active',
+            },
+            {
+                zone: 2, name: 'Endurance',
+                minWatts: Math.round(ftp * 0.76),
+                maxWatts: Math.round(ftp * 0.90),
+                percentFTP: [76, 90],
+                description: 'Endurance fondamentale',
+            },
+            {
+                zone: 3, name: 'Tempo',
+                minWatts: Math.round(ftp * 0.91),
+                maxWatts: Math.round(ftp * 1.05),
+                percentFTP: [91, 105],
+                description: 'Tempo, sweet spot',
+            },
+            {
+                zone: 4, name: 'Lactate Threshold',
+                minWatts: Math.round(ftp * 1.06),
+                maxWatts: Math.round(ftp * 1.20),
+                percentFTP: [106, 120],
+                description: 'Seuil lactique',
+            },
+            {
+                zone: 5, name: 'VO2max',
+                minWatts: Math.round(ftp * 1.21),
+                maxWatts: Math.round(ftp * 1.50),
+                percentFTP: [121, 150],
+                description: 'VO2max, intervalles',
+            },
+            {
+                zone: 6, name: 'Anaerobic Capacity',
+                minWatts: Math.round(ftp * 1.51),
+                maxWatts: Math.round(ftp * 2.00),
+                percentFTP: [151, 200],
+                description: 'Capacité anaérobie',
+            },
+            {
+                zone: 7, name: 'Neuromuscular Power',
+                minWatts: Math.round(ftp * 2.01),
+                maxWatts: null,
+                percentFTP: [201, null],
+                description: 'Puissance neuromusculaire, sprint',
             },
         ];
     },
@@ -376,7 +555,7 @@ const RunningPerformance = {
         
         if (vo2Cost <= 0) return 0;
         
-        // %VO2max souténu pour durée t
+        // %VO2max soutenu pour durée t
         // Ref: W Garry & WH Gillespie (données tables Jack Daniels)
         const t = timeMinutes;
         const percentMax = 
@@ -385,6 +564,36 @@ const RunningPerformance = {
             SCIENTIFIC_CONSTANTS.VDOT.PERCENT_MAX_E * Math.exp(-SCIENTIFIC_CONSTANTS.VDOT.PERCENT_MAX_D * t);
         
         return vo2Cost / percentMax;
+    },
+    
+    /**
+     * VDOT pondéré temporellement — performances récentes ont plus de poids
+     * Ref: Méthode de décroissance exponentielle pour VDOT dynamique
+     * 
+     * @param {Array} performances - [{distance, time, date}, ...]
+     * @param {number} daysHalfLife - Demi-vie en jours (défaut: 90)
+     */
+    calculateDynamicVDOT: (performances, daysHalfLife = 90) => {
+        if (!performances || performances.length === 0) return null;
+        
+        const now = new Date();
+        const lambda = Math.log(2) / daysHalfLife; // taux de décroissance
+        
+        let weightedVDOT = 0;
+        let totalWeight = 0;
+        
+        performances.forEach(p => {
+            const vdot = RunningPerformance.calculateVDOT(p.distance, p.timeMinutes);
+            if (vdot <= 0) return;
+            
+            const age = (now - new Date(p.date)) / (1000 * 60 * 60 * 24); // jours
+            const weight = Math.exp(-lambda * age);
+            
+            weightedVDOT += vdot * weight;
+            totalWeight += weight;
+        });
+        
+        return totalWeight > 0 ? Math.round((weightedVDOT / totalWeight) * 10) / 10 : null;
     },
     
     /**
@@ -410,32 +619,27 @@ const RunningPerformance = {
      * 
      * VO2cost = 0.182258*v + 0.000104*v² - 4.60
      * On résout: b*v² + a*v + c = targetVO2
-     * => b*v² + a*v + (c - targetVO2) = 0
      */
     getPaceSeconds: (vdot, intensityPercent) => {
         if (vdot <= 0 || intensityPercent <= 0) return 0;
         
         const targetVO2 = vdot * intensityPercent;
         
-        const a = SCIENTIFIC_CONSTANTS.VDOT.VO2_COST_A;    // 0.182258 - coefficient linéaire
-        const b = SCIENTIFIC_CONSTANTS.VDOT.VO2_COST_B;    // 0.000104 - coefficient quadratique
-        const c = -(targetVO2 - SCIENTIFIC_CONSTANTS.VDOT.VO2_COST_C); // -(targetVO2 - (-4.60))
+        const a = SCIENTIFIC_CONSTANTS.VDOT.VO2_COST_A;
+        const b = SCIENTIFIC_CONSTANTS.VDOT.VO2_COST_B;
+        const c = -(targetVO2 - SCIENTIFIC_CONSTANTS.VDOT.VO2_COST_C);
         
         const delta = a * a - 4 * b * c;
         if (delta < 0) return 0;
         
-        // v en m/min (garde la solution positive plus grande)
-        // v = (-a + sqrt(delta)) / (2*b)
         const vMetersPerMin = (-a + Math.sqrt(delta)) / (2 * b);
         if (vMetersPerMin <= 0) return 0;
         
-        // Conversion en sec/km: (1000m / v_m_min) * 60s_min
         return (1000 / vMetersPerMin) * 60;
     },
     
     /**
-     * Zones de vitesse basées sur VDOT
-     * Ref: Jack Daniels Running Formula
+     * Zones de vitesse basées sur VMA
      */
     calculateSpeedZones: (vma) => {
         if (!vma || vma <= 0) return [];
@@ -502,7 +706,6 @@ const RunningPerformance = {
     
     /**
      * Allures d'entraînement selon VDOT
-     * Ref: Jack Daniels
      */
     getTrainingPaces: (vdot) => {
         if (vdot <= 10) return {};
@@ -538,19 +741,124 @@ const RunningPerformance = {
     },
     
     /**
-     * Prédiction de temps de course
-     * Ref: Riegel (1981) - T2 = T1 × (D2/D1)^1.06
-     * Formule validée empiriquement sur des milliers de courses
+     * Exposant Riegel adaptatif selon la distance
+     * Ref: Riegel (1981) modifié — l'exposant augmente avec la distance
+     * Court (<5K): 1.06, 10K: 1.07, Semi: 1.08, Marathon: 1.10, Ultra: 1.12+
+     */
+    getRiegelExponent: (distanceKm) => {
+        if (distanceKm <= 5) return 1.06;
+        if (distanceKm <= 10) return 1.07;
+        if (distanceKm <= 21.1) return 1.08;
+        if (distanceKm <= 42.195) return 1.10;
+        if (distanceKm <= 100) return 1.12;
+        return 1.15;
+    },
+    
+    /**
+     * Prédiction de temps de course — Riegel adaptatif
+     * Ref: Riegel (1981) modifié avec exposant variable
      */
     predictRaceTime: (knownDistance, knownTimeSeconds, targetDistance) => {
         if (!knownDistance || !knownTimeSeconds || !targetDistance) return 0;
         const ratio = targetDistance / knownDistance;
-        return knownTimeSeconds * Math.pow(ratio, 1.06);
+        const exponent = RunningPerformance.getRiegelExponent(targetDistance / 1000);
+        return knownTimeSeconds * Math.pow(ratio, exponent);
+    },
+    
+    /**
+     * Prédiction multi-modèle — combine Riegel, Mercier, Cameron
+     * Retourne la moyenne pondérée pour plus de précision
+     */
+    predictRaceTimeMultiModel: (knownDistance, knownTimeSeconds, targetDistance, vdot = null) => {
+        if (!knownDistance || !knownTimeSeconds || !targetDistance) return null;
+        
+        const targetKm = targetDistance / 1000;
+        const knownKm = knownDistance / 1000;
+        
+        // Modèle 1: Riegel adaptatif
+        const riegel = RunningPerformance.predictRaceTime(knownDistance, knownTimeSeconds, targetDistance);
+        
+        // Modèle 2: Mercier (basé sur VMA)
+        const knownSpeed = knownDistance / (knownTimeSeconds / 3600); // km/h
+        const mercierExponent = Math.log(targetKm / knownKm) / Math.log(knownKm / 5) * 0.02;
+        const mercier = knownTimeSeconds * Math.pow(targetKm / knownKm, 1.06 + mercierExponent);
+        
+        // Modèle 3: Cameron (plus précis pour longues distances)
+        // T2 = T1 * (D2/D1) * (a + b * ln(D2/D1))
+        const ratio = targetDistance / knownDistance;
+        const cameron = knownTimeSeconds * ratio * (1 + 0.04 * Math.log(ratio));
+        
+        // Pondération selon la distance cible
+        let wRiegel, wMercier, wCameron;
+        if (targetKm <= 10) {
+            wRiegel = 0.5; wMercier = 0.3; wCameron = 0.2;
+        } else if (targetKm <= 21.1) {
+            wRiegel = 0.4; wMercier = 0.3; wCameron = 0.3;
+        } else if (targetKm <= 42.195) {
+            wRiegel = 0.3; wMercier = 0.2; wCameron = 0.5;
+        } else {
+            wRiegel = 0.2; wMercier = 0.1; wCameron = 0.7;
+        }
+        
+        const predicted = riegel * wRiegel + mercier * wMercier + cameron * wCameron;
+        
+        return {
+            time: Math.round(predicted),
+            riegel: Math.round(riegel),
+            mercier: Math.round(mercier),
+            cameron: Math.round(cameron),
+            confidence: targetKm >= knownKm * 0.5 && targetKm <= knownKm * 3 ? 'high' : 'medium',
+        };
+    },
+    
+    /**
+     * Correction environnementale pour la prédiction de course
+     * Ref: Ely et al. (2007). Effects of temperature on marathon performance.
+     * 
+     * @param {number} baseTimeSeconds - Temps de course sans correction
+     * @param {object} conditions - {temperature, humidity, altitude, windSpeed}
+     */
+    applyEnvironmentalCorrection: (baseTimeSeconds, conditions = {}) => {
+        const {
+            temperature = 15,    // °C (optimal: 10-15°C pour marathon)
+            humidity = 50,       // % (optimal: 40-60%)
+            altitude = 0,        // mètres
+            windSpeed = 0,       // km/h
+        } = conditions;
+        
+        let factor = 1.0;
+        
+        // Correction température (modèle Ely 2007)
+        if (temperature > 15) {
+            factor += (temperature - 15) * 0.003; // +0.3% par °C au-dessus de 15
+        } else if (temperature < 5) {
+            factor += (5 - temperature) * 0.002; // +0.2% par °C en dessous de 5
+        }
+        
+        // Correction humidité
+        if (humidity > 60) {
+            factor += (humidity - 60) * 0.001; // +0.1% par % au-dessus de 60
+        }
+        
+        // Correction altitude (modèle classique)
+        if (altitude > 500) {
+            factor += (altitude - 500) * 0.0001; // +0.01% par 100m au-dessus de 500m
+        }
+        
+        // Correction vent (vent de face)
+        if (windSpeed > 10) {
+            factor += (windSpeed - 10) * 0.002; // +0.2% par km/h au-dessus de 10
+        }
+        
+        return {
+            correctedTime: Math.round(baseTimeSeconds * factor),
+            timeLoss: Math.round(baseTimeSeconds * (factor - 1)),
+            factor: Math.round(factor * 1000) / 1000,
+        };
     },
     
     /**
      * Prédiction marathon depuis VDOT
-     * Ref: Jack Daniels tables
      */
     predictMarathon: (vdot) => {
         const paceSeconds = RunningPerformance.getPaceSeconds(vdot, SCIENTIFIC_CONSTANTS.VDOT.M);
@@ -575,35 +883,63 @@ const RunningPerformance = {
     
     /**
      * Calcul économie de course
-     * Ref: Støren et al. (2008) - VO2 à allure sous-maximale
-     * 
-     * RE (ml/kg/km) = VO2 (ml/kg/min) / vitesse (km/min) × 1000
+     * Ref: Støren et al. (2008)
      */
     calculateRunningEconomy: (vo2mlKgMin, speedKmH) => {
         if (speedKmH <= 0) return 0;
         const speedKmMin = speedKmH / 60;
-        return (vo2mlKgMin / speedKmMin) * 1000; // ml/kg/km
+        return (vo2mlKgMin / speedKmMin) * 1000;
     },
     
     /**
-     * Niveau de performance
+     * Niveau de performance selon tables IAAF/World Athletics 2022
+     * Ref: World Athletics Scoring Tables
      */
     getPerformanceLevel: (metric, value) => {
         if (metric === 'VDOT') {
-            if (value >= 60) return { level: 'ELITE', color: 'purple', percent: 95 };
-            if (value >= 52) return { level: 'EXCELLENT', color: 'green', percent: 85 };
-            if (value >= 45) return { level: 'BON', color: 'blue', percent: 70 };
-            if (value >= 38) return { level: 'MOYEN', color: 'orange', percent: 50 };
-            return { level: 'DEBUTANT', color: 'red', percent: 30 };
+            if (value >= 70) return { level: 'MONDIAL', color: 'gold', percent: 99, iaaPoints: 1200 };
+            if (value >= 63) return { level: 'ELITE', color: 'purple', percent: 95, iaaPoints: 1000 };
+            if (value >= 56) return { level: 'NATIONAL', color: 'green', percent: 85, iaaPoints: 800 };
+            if (value >= 50) return { level: 'REGIONAL', color: 'blue', percent: 70, iaaPoints: 600 };
+            if (value >= 43) return { level: 'BON', color: 'cyan', percent: 55, iaaPoints: 400 };
+            if (value >= 37) return { level: 'MOYEN', color: 'orange', percent: 40, iaaPoints: 250 };
+            return { level: 'DEBUTANT', color: 'red', percent: 20, iaaPoints: 100 };
         }
         if (metric === 'VMA') {
+            if (value >= 23) return { level: 'MONDIAL', color: 'gold', percent: 99 };
             if (value >= 20) return { level: 'ELITE', color: 'purple', percent: 95 };
-            if (value >= 18) return { level: 'EXCELLENT', color: 'green', percent: 85 };
-            if (value >= 16) return { level: 'BON', color: 'blue', percent: 70 };
-            if (value >= 14) return { level: 'MOYEN', color: 'orange', percent: 50 };
-            return { level: 'DEBUTANT', color: 'red', percent: 30 };
+            if (value >= 18) return { level: 'NATIONAL', color: 'green', percent: 85 };
+            if (value >= 16) return { level: 'REGIONAL', color: 'blue', percent: 70 };
+            if (value >= 14.5) return { level: 'BON', color: 'cyan', percent: 55 };
+            if (value >= 13) return { level: 'MOYEN', color: 'orange', percent: 40 };
+            return { level: 'DEBUTANT', color: 'red', percent: 20 };
         }
         return { level: 'NORMAL', color: 'gray', percent: 50 };
+    },
+    
+    /**
+     * Calcul du score IAAF pour une performance
+     * Ref: World Athletics Combined Events Scoring Tables
+     * Formule: Points = A * (B - T)^C (course) ou A * (D - B)^C (sauts/lancers)
+     */
+    calculateIAAAScore: (event, performance) => {
+        const tables = {
+            '100m': { A: 589.11, B: 18.00, C: 1.81 },
+            '400m': { A: 375.81, B: 60.00, C: 1.537 },
+            '800m': { A: 134.04, B: 118.00, C: 1.805 },
+            '1500m': { A: 463.83, B: 315.00, C: 1.725 },
+            '5000m': { A: 373.29, B: 900.00, C: 1.85 },
+            '10000m': { A: 177.96, B: 1800.00, C: 1.75 },
+            'Marathon': { A: 134.92, B: 10800.00, C: 1.75 },
+            'HalfMarathon': { A: 200.00, B: 5400.00, C: 1.75 },
+        };
+        
+        const table = tables[event];
+        if (!table) return null;
+        
+        // performance en secondes pour les courses
+        const points = Math.round(table.A * Math.pow(Math.abs(table.B - performance), table.C));
+        return Math.max(0, points);
     },
 };
 
@@ -617,7 +953,6 @@ const TrainingLoad = {
      * Ref: Edwards JC (1993). Heart rate: A practical guide.
      * 
      * TRIMP = Σ (temps en zone × coefficient)
-     * Coefficients multipliés par facteur genre
      */
     calculateTRIMP: (hrZonesMinutes, sex = 'M') => {
         const sexFactor = sex === 'F' ? SCIENTIFIC_CONSTANTS.TRIMP.SEX_FACTOR_FEMALE : 
@@ -635,8 +970,58 @@ const TrainingLoad = {
     },
     
     /**
-     * TRIMP simplifié à partir de FC moyenne et max
+     * TRIMP Banister exponentiel
      * Ref: Banister & Allen (1990)
+     * TRIMP = duration × HRR × e^(k × HRR)
+     * k_male = 1.92, k_female = 1.67 (différence physiologique)
+     */
+    calculateTRIMPBanister: (durationMinutes, avgHR, maxHR, restingHR = 60, sex = 'M') => {
+        if (!maxHR || maxHR <= 0 || !avgHR || durationMinutes <= 0) return 0;
+        
+        const hrr = (avgHR - restingHR) / (maxHR - restingHR);
+        const clampedHRR = MathUtils.clamp(hrr, 0, 1);
+        
+        // k exponentiel: différence homme/femme (Mujika)
+        const k = sex === 'F' ? 1.67 : 1.92;
+        
+        return durationMinutes * clampedHRR * Math.exp(k * clampedHRR);
+    },
+    
+    /**
+     * TRIMP Lucia (zones individualisées)
+     * Ref: Lucia et al. (2003). HR response during stage racing.
+     * Utilise VT1/VT2 comme bornes au lieu de %FCmax fixes
+     */
+    calculateTRIMPLucia: (durationMinutes, avgHR, vt1HR, vt2HR, sex = 'M') => {
+        if (!avgHR || !vt1HR || !vt2HR) return 0;
+        
+        let zoneFactor;
+        if (avgHR < vt1HR) {
+            zoneFactor = 1; // Zone 1: sous VT1
+        } else if (avgHR < vt2HR) {
+            zoneFactor = 2.5; // Zone 2: entre VT1 et VT2
+        } else {
+            zoneFactor = 5; // Zone 3: au-dessus de VT2
+        }
+        
+        const sexFactor = sex === 'F' ? 1.3 : 1.0;
+        return durationMinutes * zoneFactor * sexFactor;
+    },
+    
+    /**
+     * sRPE-TSS — Session RPE × duration
+     * Ref: Foster (1998). Monitoring training.
+     * Utile quand pas de données HR ou puissance
+     */
+    calculateSRPETSS: (rpe, durationMinutes) => {
+        if (!rpe || !durationMinutes) return 0;
+        // sRPE = RPE (1-10) × duration (min)
+        // Normalisé pour être comparable au TSS Coggan
+        return (rpe * durationMinutes) / 10;
+    },
+    
+    /**
+     * TRIMP simplifié à partir de FC moyenne et max
      */
     calculateTRIMPFromAvgHR: (durationMinutes, avgHR, maxHR, sex = 'M') => {
         if (!maxHR || maxHR <= 0 || !avgHR) return 0;
@@ -644,7 +1029,6 @@ const TrainingLoad = {
         const hrPercent = avgHR / maxHR;
         const sexFactor = sex === 'F' ? 1.3 : 1.0;
         
-        // Trouver le coefficient de zone
         let zoneFactor = 1;
         for (const zone of SCIENTIFIC_CONSTANTS.TRIMP.ZONES) {
             if (hrPercent >= zone.min && hrPercent < zone.max) {
@@ -662,7 +1046,6 @@ const TrainingLoad = {
      * Ref: Coggan, A. (2003). Training and Racing with a Power Meter.
      * 
      * TSS = (duration_hours × IF² × 100)
-     * IF = Intensité Factor = normalized_value / threshold_value
      */
     calculateTSS: (durationSeconds, intensityFactor) => {
         const durationHours = durationSeconds / 3600;
@@ -670,12 +1053,31 @@ const TrainingLoad = {
     },
     
     /**
+     * TSS par sport avec coefficients spécifiques
+     * Ref: Adjustements empiriques selon l'impact métabolique du sport
+     */
+    calculateSportTSS: (durationSeconds, intensityFactor, sportType = 'Run') => {
+        const baseTSS = TrainingLoad.calculateTSS(durationSeconds, intensityFactor);
+        
+        const coefficients = {
+            Run: 1.0,
+            Ride: 1.0,
+            Swim: 0.85,        // Moindre impact musculaire
+            TrailRun: 1.15,    // Dénivelé augmente la charge
+            Walk: 0.50,
+            HIIT: 1.20,        // Effort très intense
+            Strength: 0.60,    // Charge différente (musculaire vs cardio)
+            Yoga: 0.30,
+        };
+        
+        return baseTSS * (coefficients[sportType] || 1.0);
+    },
+    
+    /**
      * Estimation IF depuis FC
      * IF ≈ (%FCmax - 0.3) / 0.5
-     * Ref: Allen & Coggan (2010)
      */
     estimateIFFromHR: (avgHRPercent) => {
-        // IF = (HR% - 30%) / 50%
         const hrPercent = avgHRPercent * 100;
         return MathUtils.clamp((hrPercent - 30) / 50, 0.3, 1.5);
     },
@@ -700,6 +1102,17 @@ const TrainingLoad = {
         
         // 3. 4th root
         return Math.pow(fourthPowerAvg, 0.25);
+    },
+    
+    /**
+     * Variability Index — mesure de la régularité de l'effort
+     * Ref: Coggan — VI = NP / AP
+     * VI < 1.05 = effort régulier (contre-la-montre)
+     * VI > 1.15 = effort très variable (course, trail)
+     */
+    calculateVariabilityIndex: (normalizedPower, averagePower) => {
+        if (!averagePower || averagePower <= 0) return 0;
+        return normalizedPower / averagePower;
     },
 };
 
@@ -1504,6 +1917,13 @@ const Recommendations = {
     },
     
     /**
+     * Alias pour compatibilité — appelle generate()
+     * @deprecated Utilisez generate(profile, historyCtx, dateContext)
+     */
+    getRecommendation: (profile, historyCtx, dateContext) =>
+        Recommendations.generate(profile, historyCtx, dateContext),
+    
+    /**
      * Analyse complète de l'historique d'entraînement
      */
     analyzeTrainingHistory: (activities, options = {}) => {
@@ -1597,6 +2017,251 @@ const Recommendations = {
 };
 
 // ============================================================================
+// SPORT ANALYSIS - Analyse spécifique par type de sport
+// ============================================================================
+
+const SportAnalysis = {
+    /**
+     * Constantes spécifiques par sport
+     * Ref: Coggan (power), Daniels (running), Foster (TRIMP)
+     */
+    SPORT_CONSTANTS: {
+        Run: {
+            label: 'Course à pied',
+            tssMethod: 'hr_based',
+            thresholdHR: 0.85,
+            trimpModel: 'edwards',
+            hasPower: false,
+            hasHR: true,
+            hasPace: true,
+            hasElevation: true,
+            tssMultiplier: 1.0,
+            icon: '🏃',
+        },
+        Ride: {
+            label: 'Cyclisme',
+            tssMethod: 'power_based',
+            thresholdPower: 1.0,
+            trimpModel: 'banister',
+            hasPower: true,
+            hasHR: true,
+            hasPace: false,
+            hasElevation: true,
+            tssMultiplier: 1.0,
+            icon: '🚴',
+        },
+        Swim: {
+            label: 'Natation',
+            tssMethod: 'pace_based',
+            thresholdPace: 90,
+            trimpModel: 'banister',
+            hasPower: false,
+            hasHR: true,
+            hasPace: true,
+            hasElevation: false,
+            tssMultiplier: 0.8,
+            icon: '🏊',
+        },
+        TrailRun: {
+            label: 'Trail',
+            tssMethod: 'hr_elevation',
+            thresholdHR: 0.85,
+            trimpModel: 'edwards',
+            hasPower: false,
+            hasHR: true,
+            hasPace: true,
+            hasElevation: true,
+            tssMultiplier: 1.15,
+            elevationFactor: 0.008,
+            icon: '⛰️',
+        },
+        Walk: {
+            label: 'Marche',
+            tssMethod: 'srpe',
+            thresholdHR: 0.70,
+            trimpModel: 'edwards',
+            hasPower: false,
+            hasHR: true,
+            hasPace: true,
+            hasElevation: true,
+            tssMultiplier: 0.5,
+            icon: '🚶',
+        },
+        HIIT: {
+            label: 'HIIT',
+            tssMethod: 'hr_based',
+            thresholdHR: 0.90,
+            trimpModel: 'banister',
+            hasPower: false,
+            hasHR: true,
+            hasPace: true,
+            hasElevation: false,
+            tssMultiplier: 1.2,
+            icon: '💪',
+        },
+        Strength: {
+            label: 'Musculation',
+            tssMethod: 'srpe',
+            thresholdHR: 0.75,
+            trimpModel: 'edwards',
+            hasPower: false,
+            hasHR: true,
+            hasPace: false,
+            hasElevation: false,
+            tssMultiplier: 0.6,
+            icon: '🏋️',
+        },
+        Yoga: {
+            label: 'Yoga',
+            tssMethod: 'srpe',
+            thresholdHR: 0.60,
+            trimpModel: 'edwards',
+            hasPower: false,
+            hasHR: true,
+            hasPace: false,
+            hasElevation: false,
+            tssMultiplier: 0.3,
+            icon: '🧘',
+        },
+    },
+
+    /**
+     * Analyse complète d'une activité selon le sport
+     * @param {object} activity - Activity data
+     * @param {object} profile - User profile with fcm, restingHR, ftp, etc.
+     * @returns {object} Analysis with tss, trimp, intensityFactor, zones, etc.
+     */
+    analyze: (activity, profile) => {
+        if (!activity) return { tss: null, trimp: null, intensityFactor: null, zones: null };
+
+        const sportType = activity.type || 'Run';
+        const constants = SportAnalysis.SPORT_CONSTANTS[sportType] || SportAnalysis.SPORT_CONSTANTS.Run;
+
+        const duration = activity.moving_time || activity.elapsed_time || 0;
+        const durationMinutes = duration / 60;
+        const durationHours = duration / 3600;
+        const avgHR = activity.average_heartrate || 0;
+        const maxHR = activity.max_heartrate || 0;
+        const avgPower = activity.average_power || 0;
+        const distance = activity.distance || 0;
+        const elevation = activity.total_elevation_gain || 0;
+
+        const fcm = profile?.fcm || Cardiovascular.calculateMaxHR(profile?.age || 30);
+        const restingHR = profile?.resting_hr || 60;
+        const ftp = profile?.ftp || 0;
+        const thresholdHR = fcm * constants.thresholdHR;
+
+        // ===== TSS Calculation =====
+        let tss = null;
+        let intensityFactor = null;
+
+        if (constants.tssMethod === 'power_based' && avgPower > 0 && ftp > 0) {
+            intensityFactor = avgPower / ftp;
+            tss = durationHours * Math.pow(intensityFactor, 2) * 100;
+        } else if (avgHR > 0 && thresholdHR > 0) {
+            intensityFactor = avgHR / thresholdHR;
+            tss = durationHours * Math.pow(intensityFactor, 2) * 100;
+        } else if (activity.rpe) {
+            const srpeTSS = (activity.rpe / 10) * durationHours * 100;
+            tss = srpeTSS * constants.tssMultiplier;
+        }
+
+        // Elevation adjustment for trail/hike
+        if (elevation > 0 && constants.elevationFactor) {
+            const elevTSS = elevation * constants.elevationFactor * durationMinutes / 60;
+            tss = (tss || 0) + elevTSS;
+        }
+
+        if (tss !== null) {
+            tss = Math.round(tss * constants.tssMultiplier * 10) / 10;
+        }
+
+        // ===== TRIMP Calculation =====
+        let trimp = null;
+        if (avgHR > 0 && fcm > 0) {
+            if (constants.trimpModel === 'banister') {
+                const hrr = (avgHR - restingHR) / (fcm - restingHR);
+                const k = profile?.sex === 'F' ? 1.92 : 0.86;
+                trimp = Math.round(durationMinutes * hrr * Math.exp(k * hrr) * 10) / 10;
+            } else {
+                const hrPercent = avgHR / fcm;
+                let zoneFactor = 1;
+                for (const zone of SCIENTIFIC_CONSTANTS.TRIMP.ZONES) {
+                    if (hrPercent >= zone.min && hrPercent < zone.max) {
+                        zoneFactor = zone.coefficient;
+                        break;
+                    }
+                }
+                if (hrPercent >= 0.9) zoneFactor = 5;
+                const sexFactor = profile?.sex === 'F' ? 1.3 : 1.0;
+                trimp = Math.round(durationMinutes * zoneFactor * sexFactor * 10) / 10;
+            }
+        }
+
+        // ===== HR Zones Distribution =====
+        let zones = null;
+        if (avgHR > 0 && fcm > 0) {
+            const hrPercent = avgHR / fcm;
+            const zoneNames = ['Zone 1 - Récupération', 'Zone 2 - Endurance', 'Zone 3 - Tempo', 'Zone 4 - Seuil', 'Zone 5 - VO2max'];
+            let currentZone = 1;
+            for (let i = 0; i < 5; i++) {
+                if (hrPercent >= (i + 1) * 0.2) currentZone = i + 2;
+            }
+            currentZone = Math.min(currentZone, 5);
+            zones = {
+                current: currentZone,
+                name: zoneNames[currentZone - 1],
+                percent: Math.round(hrPercent * 100),
+            };
+        }
+
+        // ===== Pace Analysis (running/swimming) =====
+        let pace = null;
+        if (distance > 0 && duration > 0 && constants.hasPace) {
+            const paceSecPerKm = (duration / (distance / 1000));
+            pace = {
+                secPerKm: Math.round(paceSecPerKm),
+                formatted: MathUtils.formatPace(paceSecPerKm),
+                speedKmh: (distance / 1000 / (duration / 3600)).toFixed(1),
+            };
+        }
+
+        // ===== VDOT (running only) =====
+        let vdot = null;
+        if (sportType === 'Run' && distance >= 3000 && durationMinutes >= 15) {
+            vdot = Math.round(RunningPerformance.calculateVDOT(distance, durationMinutes) * 10) / 10;
+        }
+
+        // ===== Normalized Power (cycling) =====
+        let normalizedPower = null;
+        let variabilityIndex = null;
+        if (sportType === 'Ride' && activity.power_samples && activity.power_samples.length > 0) {
+            normalizedPower = Math.round(TrainingLoad.calculateNormalizedValue(activity.power_samples) * 10) / 10;
+            if (avgPower > 0) {
+                variabilityIndex = Math.round((normalizedPower / avgPower) * 100) / 100;
+            }
+        }
+
+        return {
+            sportType,
+            sportLabel: constants.label,
+            tss,
+            trimp,
+            intensityFactor: intensityFactor ? Math.round(intensityFactor * 100) / 100 : null,
+            zones,
+            pace,
+            vdot,
+            normalizedPower,
+            variabilityIndex,
+            elevationGain: elevation,
+            duration: duration,
+            durationFormatted: MathUtils.formatDuration(duration),
+            calories: activity.calories || null,
+        };
+    },
+};
+
+// ============================================================================
 // EXPORTS
 // ============================================================================
 
@@ -1613,4 +2278,5 @@ module.exports = {
     Overtraining,
     Taper,
     Recommendations,
+    SportAnalysis,
 };

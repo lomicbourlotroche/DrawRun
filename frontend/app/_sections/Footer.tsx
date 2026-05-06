@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Activity, Github, Twitter, Mail } from 'lucide-react';
+import { Github, Twitter, Mail } from 'lucide-react';
 
 const footerLinks = {
   produit: [
@@ -27,9 +27,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary rounded-xl flex items-center justify-center">
-                <Activity className="w-6 h-6 text-white" />
-              </div>
+              <Image src="/logo-icon.svg" alt="DrawRun" width={40} height={40} className="rounded-xl" />
               <span className="text-xl font-bold text-white tracking-tight">
                 DRAW<span className="text-primary-400">RUN</span>
               </span>

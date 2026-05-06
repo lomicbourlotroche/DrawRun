@@ -1,11 +1,12 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="container">
         <div className="nav-brand">
-          <div className="logo-icon">⚡</div>
+          <Image src="/logo-icon.svg" alt="DrawRun" width={32} height={32} className="logo-icon" />
           <span className="logo-text">DRAW<span className="highlight">RUN</span></span>
         </div>
         <div className="nav-links">

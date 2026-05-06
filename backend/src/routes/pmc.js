@@ -48,10 +48,11 @@ router.get('/recommendations', verifyToken, async (req, res) => {
         const pmc = await dbGetUser(userDb, `SELECT ctl, atl, tsb FROM pmc_history ORDER BY date DESC LIMIT 1`);
         const weekly = await dbGetUser(userDb, `SELECT value FROM performance_metrics WHERE metric_type = 'weekly_distance' ORDER BY date DESC LIMIT 1`);
         
-        const recommendation = Recommendations.getRecommendation({
-            profile: { fcm: profile.fcm, vma: profile.vma, age: profile.age, sex: profile.sex },
-            history: { weeklyLoad: weekly?.value || 0, chronicLoad: pmc?.ctl || 0, acwr: pmc?.atl ? (pmc.ctl / pmc.atl).toFixed(2) : 1 }
-        });
+        const recommendation = Recommendations.generate(
+            { fcm: profile.fcm, vma: profile.vma, age: profile.age, sex: profile.sex },
+            { weeklyLoad: weekly?.value || 0, chronicLoad: pmc?.ctl || 0, acwr: pmc?.atl ? (pmc.atl / pmc.ctl).toFixed(2) : 1 },
+            {}
+        );
         
         res.json(recommendation);
     } catch (error) {
