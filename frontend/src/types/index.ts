@@ -477,7 +477,7 @@ export interface Group {
   creatorId?: number;
   creatorName?: string;
   role?: string;
-  userRole?: string;
+  userRole?: string | null;
   isMember?: boolean;
   createdAt?: string;
   updatedAt?: string;
