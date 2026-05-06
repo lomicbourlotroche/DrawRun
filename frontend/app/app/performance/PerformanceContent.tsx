@@ -193,7 +193,7 @@ export default function PerformanceContent() {
               </Card>
             </div>
           )}
-          {activeTab === 'zones' && <PerformanceZones zones={zones} />}
+          {activeTab === 'zones' && <PerformanceZones zones={zones as any} />}
           {activeTab === 'stats' && (
             (() => {
               const stats = computeStats(activities);
