@@ -7,7 +7,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Button, Input, Badge, Avatar, Skeleton } from '@/components/ui';
+import { Button, Input, GradientBadge, Avatar, Skeleton, GlassCard, GlassCardContent } from '@/components/ui';
 import { api } from '@/lib/api';
 import type { SocialFeedItem } from '@/types';
 import { useNotificationsStore } from '@/stores';
@@ -133,7 +133,7 @@ function FriendsTab() {
           <h3 className="text-sm font-medium text-muted">Résultats</h3>
           <div className="space-y-2">
             {searchResults.map((user) => (
-              <div key={user.id} className="group p-4 bg-card border border-border rounded-2xl hover:border-primary/30 hover:shadow-lg transition-all">
+              <GlassCard key={user.id} padding="sm" hover>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <Avatar name={user.name} size="md" />
@@ -147,7 +147,7 @@ function FriendsTab() {
                     Ajouter
                   </Button>
                 </div>
-              </div>
+              </GlassCard>
             ))}
           </div>
         </div>
@@ -159,11 +159,11 @@ function FriendsTab() {
           <div className="flex items-center gap-2 px-1">
             <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
             <h3 className="text-sm font-semibold">Demandes en attente</h3>
-            <Badge variant="default" className="bg-orange-500 text-white">{requests.length}</Badge>
+            <GradientBadge variant="warning" size="sm">{requests.length}</GradientBadge>
           </div>
           <div className="grid gap-2">
             {requests.map((req) => (
-              <div key={req.user_id} className="p-4 bg-gradient-to-r from-orange-500/10 to-amber-500/5 border border-orange-500/20 rounded-2xl">
+              <GlassCard key={req.user_id} padding="sm" hover>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <Avatar name={req.name} size="md" />
@@ -181,7 +181,7 @@ function FriendsTab() {
                     </Button>
                   </div>
                 </div>
-              </div>
+              </GlassCard>
             ))}
           </div>
         </div>
@@ -207,7 +207,7 @@ function FriendsTab() {
         ) : (
           <div className="grid gap-2">
             {friends.map((friend) => (
-              <div key={friend.friend_id} className="group p-4 bg-card border border-border rounded-2xl hover:border-primary/30 hover:shadow-md transition-all">
+              <GlassCard key={friend.friend_id} padding="sm" hover>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="relative">
@@ -223,7 +223,7 @@ function FriendsTab() {
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
-              </div>
+              </GlassCard>
             ))}
           </div>
         )}
@@ -317,85 +317,85 @@ function FeedTab() {
     );
   }
 
-  return (
-    <div className="space-y-4">
-      {activities.map((activity) => (
-        <div key={activity.id} className="group bg-card border border-border rounded-3xl overflow-hidden hover:border-primary/30 hover:shadow-xl transition-all duration-300">
-          {/* Header gradient bar */}
-          <div className={`h-1.5 bg-gradient-to-r ${getSportGradient(activity.type || '')}`} />
-          
-          <div className="p-5">
-            {/* User header */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Avatar name={activity.owner_name} size="md" />
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-card" />
+    return (
+      <div className="space-y-4">
+        {activities.map((activity) => (
+          <GlassCard key={activity.id} hover className="overflow-hidden">
+            {/* Header gradient bar */}
+            <div className={`h-1.5 bg-gradient-to-r ${getSportGradient(activity.type || '')}`} />
+            
+            <GlassCardContent className="p-5">
+              {/* User header */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <Avatar name={activity.owner_name} size="md" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-card" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">{activity.owner_name}</p>
+                    <p className="text-xs text-muted">{activity.start_date_local ? new Date(activity.start_date_local).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) : ''}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-semibold">{activity.owner_name}</p>
-                  <p className="text-xs text-muted">{activity.start_date_local ? new Date(activity.start_date_local).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) : ''}</p>
-                </div>
+                <GradientBadge variant="primary" size="sm" className={`bg-gradient-to-r ${getSportGradient(activity.type || '')} text-white border-0`}>
+                  {activity.type}
+                </GradientBadge>
               </div>
-              <Badge className={`bg-gradient-to-r ${getSportGradient(activity.type || '')} text-white border-0 rounded-full px-3 py-1`}>
-                {activity.type}
-              </Badge>
-            </div>
-            
-            {/* Activity name */}
-            <h4 className="font-bold text-lg mb-3">{activity.name}</h4>
-            
-            {/* Stats */}
-            <div className="flex flex-wrap gap-4 mb-4">
-              {(activity.distance ?? 0) > 0 && (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/50">
-                  <MapPin className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium">{((activity.distance ?? 0) / 1000).toFixed(2)} km</span>
-                </div>
-              )}
-              {(activity.moving_time ?? 0) > 0 && (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/50">
-                  <Clock className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium">{Math.floor((activity.moving_time ?? 0) / 60)} min</span>
-                </div>
-              )}
-              {((activity.average_speed as number) ?? 0) > 0 && (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/50">
-                  <TrendingUp className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium">{formatPace(activity.average_speed as number)} /km</span>
-                </div>
-              )}
-            </div>
+             
+              {/* Activity name */}
+              <h4 className="font-bold text-lg mb-3">{activity.name}</h4>
+             
+              {/* Stats */}
+              <div className="flex flex-wrap gap-4 mb-4">
+                {(activity.distance ?? 0) > 0 && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/50">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium">{((activity.distance ?? 0) / 1000).toFixed(2)} km</span>
+                  </div>
+                )}
+                {(activity.moving_time ?? 0) > 0 && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/50">
+                    <Clock className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium">{Math.floor((activity.moving_time ?? 0) / 60)} min</span>
+                  </div>
+                )}
+                {((activity.average_speed as number) ?? 0) > 0 && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/50">
+                    <TrendingUp className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium">{formatPace(activity.average_speed as number)} /km</span>
+                  </div>
+                )}
+              </div>
 
-            {/* Actions */}
-            <div className="flex items-center justify-between pt-4 border-t border-border">
-              <button 
-                onClick={() => handleLike(activity.id, !!activity.user_liked)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
-                  activity.user_liked 
-                    ? 'bg-red-500/20 text-red-500' 
-                    : 'bg-muted text-muted hover:bg-red-500/10 hover:text-red-500'
-                }`}
-              >
-                <Heart className={`w-5 h-5 ${activity.user_liked ? 'fill-current' : ''}`} />
-                <span className="font-semibold text-sm">{activity.like_count || 0}</span>
-              </button>
-              
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="ghost" className="rounded-full">
-                  <MessageCircle className="w-4 h-4 mr-1" />
-                  Commenter
-                </Button>
-                <Button size="sm" variant="ghost" className="rounded-full">
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
+              {/* Actions */}
+              <div className="flex items-center justify-between pt-4 border-t border-border">
+                <button 
+                  onClick={() => handleLike(activity.id, !!activity.user_liked)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
+                    activity.user_liked 
+                      ? 'bg-red-500/20 text-red-500' 
+                      : 'bg-muted text-muted hover:bg-red-500/10 hover:text-red-500'
+                  }`}
+                >
+                  <Heart className={`w-5 h-5 ${activity.user_liked ? 'fill-current' : ''}`} />
+                  <span className="font-semibold text-sm">{activity.like_count || 0}</span>
+                </button>
+               
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="ghost" className="rounded-full">
+                    <MessageCircle className="w-4 h-4 mr-1" />
+                    Commenter
+                  </Button>
+                  <Button size="sm" variant="ghost" className="rounded-full">
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+            </GlassCardContent>
+          </GlassCard>
+        ))}
+      </div>
+    );
 }
 
 // ============================================================================
@@ -525,24 +525,23 @@ function LeaderboardTab() {
         const actualIndex = index + 3;
         const style = getPodiumStyle(actualIndex);
         return (
-          <div 
-            key={actualIndex} 
-            className="flex items-center justify-between p-4 bg-card border border-border rounded-2xl hover:border-primary/20 hover:shadow-md transition-all"
-          >
-            <div className="flex items-center gap-4">
-              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${style.bg} flex items-center justify-center font-bold text-sm text-white`}>
-                {actualIndex + 1}
+          <GlassCard key={actualIndex} padding="sm" hover>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${style.bg} flex items-center justify-center font-bold text-sm text-white`}>
+                  {actualIndex + 1}
+                </div>
+                <Avatar name={entry.name} size="md" />
+                <div>
+                  <p className="font-semibold">{entry.name}</p>
+                </div>
               </div>
-              <Avatar name={entry.name} size="md" />
-              <div>
-                <p className="font-semibold">{entry.name}</p>
+              <div className="text-right">
+                <p className="text-xl font-bold text-primary">{entry.value}</p>
+                <p className="text-xs text-muted">{categories.find(c => c.id === category)?.unit}</p>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-xl font-bold text-primary">{entry.value}</p>
-              <p className="text-xs text-muted">{categories.find(c => c.id === category)?.unit}</p>
-            </div>
-          </div>
+          </GlassCard>
         );
       })}
     </div>
@@ -667,7 +666,7 @@ function GroupsTab() {
           <div className="grid gap-3">
             {groups.map((group) => (
               <Link key={group.id} href={`/app/social/groups/${group.id}`} className="block">
-                <div className="p-5 bg-card border border-border rounded-2xl hover:border-primary/30 hover:shadow-lg transition-all cursor-pointer">
+                <GlassCard padding="md" hover>
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center">
@@ -679,14 +678,14 @@ function GroupsTab() {
                           <p className="text-sm text-muted mt-1 line-clamp-2">{group.description}</p>
                         )}
                         <div className="flex items-center gap-2 mt-3">
-                          <Badge variant="default" className="rounded-full">{group.member_count} membres</Badge>
+                          <GradientBadge variant="primary" size="sm" className="rounded-full">{group.member_count} membres</GradientBadge>
                           {group.is_private ? (
-                            <Badge variant="default" className="rounded-full bg-orange-500/10 text-orange-500">Privé</Badge>
+                            <GradientBadge variant="warning" size="sm" className="rounded-full">Privé</GradientBadge>
                           ) : (
-                            <Badge variant="default" className="rounded-full bg-green-500/10 text-green-500">Public</Badge>
+                            <GradientBadge variant="success" size="sm" className="rounded-full">Public</GradientBadge>
                           )}
                           {group.role === 'admin' && (
-                            <Badge variant="default" className="rounded-full bg-primary/10 text-primary">Admin</Badge>
+                            <GradientBadge variant="info" size="sm" className="rounded-full">Admin</GradientBadge>
                           )}
                         </div>
                       </div>
@@ -704,7 +703,7 @@ function GroupsTab() {
                       )}
                     </div>
                   </div>
-                </div>
+                </GlassCard>
               </Link>
             ))}
           </div>
@@ -733,7 +732,7 @@ function GroupsTab() {
         {publicGroups.length > 0 ? (
           <div className="grid gap-3">
             {publicGroups.filter(g => !groups.find(mg => mg.id === g.id)).slice(0, 5).map((group) => (
-              <div key={group.id} className="p-4 bg-card border border-border rounded-2xl">
+              <GlassCard key={group.id} padding="sm">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
@@ -748,7 +747,7 @@ function GroupsTab() {
                     Rejoindre
                   </Button>
                 </div>
-              </div>
+              </GlassCard>
             ))}
           </div>
         ) : (
@@ -895,7 +894,7 @@ function NotificationsTab() {
           <Bell className="w-5 h-5 text-primary" />
           Notifications
           {unreadCount > 0 && (
-            <Badge variant="default" className="bg-red-500 text-white rounded-full">{unreadCount}</Badge>
+            <GradientBadge variant="danger" size="sm" className="rounded-full">{unreadCount}</GradientBadge>
           )}
         </h3>
         {unreadCount > 0 && (
@@ -917,12 +916,13 @@ function NotificationsTab() {
       ) : (
         <div className="space-y-2">
           {notifications.map((notification) => (
-            <div 
+            <GlassCard 
               key={notification.id}
-              className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+              padding="sm"
+              className={`cursor-pointer ${
                 notification.unread 
-                  ? 'bg-primary/5 border-primary/20 shadow-sm' 
-                  : 'bg-card border-border hover:bg-muted/30'
+                  ? 'border-primary/20 shadow-sm' 
+                  : ''
               }`}
               onClick={() => notification.unread && handleMarkAsRead(notification.id)}
             >
@@ -942,7 +942,7 @@ function NotificationsTab() {
                   <div className="w-2.5 h-2.5 bg-primary rounded-full flex-shrink-0 mt-2" />
                 )}
               </div>
-            </div>
+            </GlassCard>
           ))}
         </div>
       )}
