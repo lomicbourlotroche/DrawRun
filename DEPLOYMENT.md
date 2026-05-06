@@ -124,22 +124,63 @@ sudo certbot --nginx -d votre-domaine.com
 
 ## Mise à Jour (Update)
 
-Pour mettre à jour le code:
+Pour mettre à jour le code après un `git push` depuis votre machine :
 
 ```bash
-cd /var/www/DrawRun
+ssh drawrun@37.69.94.253 -p 20708
+cd /home/drawrun/app
+
+# 1. Récupérer le code
 git pull origin main
 
-# Mettre à jour le backend
+# 2. Mettre à jour le backend
 cd backend
-npm install --production
-pm2 restart drawrun-backend
-
-# Mettre à jour le frontend
-cd ../frontend
 npm install
+cd ..
+
+# 3. Rebuilder et mettre à jour le frontend
+cd frontend
+npm install --legacy-peer-deps
 npm run build
-pm2 restart drawrun-frontend
+cd ..
+
+# 4. Redémarrer les services
+pm2 restart all
+
+# 5. Vérifier que tout tourne
+pm2 list
+curl http://localhost:3000/health
+```
+
+### Script de mise à jour rapide
+
+Copiez ce script sur le VPS (`/home/drawrun/update.sh`) :
+
+```bash
+#!/bin/bash
+set -e
+cd /home/drawrun/app
+
+echo "📥 Pull du code..."
+git pull origin main
+
+echo "🔧 Backend..."
+cd backend && npm install && cd ..
+
+echo "🎨 Frontend..."
+cd frontend && npm install --legacy-peer-deps && npm run build && cd ..
+
+echo "🚀 Redémarrage..."
+pm2 restart all
+
+echo "✅ Mise à jour terminée !"
+pm2 list
+```
+
+```bash
+chmod +x /home/drawrun/update.sh
+# Utilisation :
+/home/drawrun/update.sh
 ```
 
 ## Commandes Utiles
@@ -165,56 +206,28 @@ pm2 monit
 ## Structure sur le VPS
 
 ```
-/var/www/DrawRun/
-├── backend/          # Code backend
-│   ├── index.js
-│   ├── node_modules/
-│   └── ...
-├── frontend/         # Code frontend
-│   ├── .next/        # Build Next.js
-│   ├── node_modules/
-│   └── ...
-├── DrawRun-Data/     # Données SQLite (monté ou copié)
-│   └── main.db
-├── .env              # Variables d'environnement
-└── ...
+/home/drawrun/
+├── app/                      # Code source (git clone)
+│   ├── backend/
+│   │   ├── index.js
+│   │   ├── .env              # Variables d'environnement (ne pas committer)
+│   │   ├── node_modules/
+│   │   └── ...
+│   ├── frontend/
+│   │   ├── .next/            # Build Next.js
+│   │   ├── .env.local        # NEXT_PUBLIC_API_URL
+│   │   ├── node_modules/
+│   │   └── ...
+│   └── ecosystem.config.js   # Config PM2
+├── DrawRun-Data/             # Bases SQLite (hors git)
+│   ├── main.db
+│   └── user_*.db
+└── update.sh                 # Script de mise à jour
 ```
 
 ## Script de déploiement rapide
 
-Créez un script `deploy.sh` sur le VPS:
-
-```bash
-#!/bin/bash
-set -e
-
-cd /var/www/DrawRun-New
-
-echo "📥 Pulling latest code..."
-git pull origin main
-
-echo "🔧 Updating backend..."
-cd backend
-npm install --production
-cd ..
-
-echo "🎨 Building frontend..."
-cd frontend
-npm install
-npm run build
-cd ..
-
-echo "🚀 Restarting services..."
-pm2 restart drawrun-backend drawrun-frontend
-
-echo "✅ Deployment complete!"
-```
-
-Rendre exécutable:
-```bash
-chmod +x deploy.sh
-./deploy.sh
-```
+Voir la section **Mise à Jour** ci-dessus pour le script `update.sh`.
 
 ## Backup des données
 

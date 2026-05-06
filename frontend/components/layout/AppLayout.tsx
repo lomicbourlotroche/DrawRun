@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores';
 import Sidebar from './Sidebar';
@@ -10,14 +10,21 @@ import Header from './Header';
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
   const router = useRouter();
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Attendre la réhydratation du store depuis sessionStorage
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (isHydrated && !isAuthenticated) {
       router.push('/login');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isHydrated, router]);
 
-  if (!isAuthenticated) {
+  // Pendant la réhydratation, afficher le spinner sans rediriger
+  if (!isHydrated || !isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 flex items-center justify-center relative overflow-hidden">
         {/* Background Effects */}
