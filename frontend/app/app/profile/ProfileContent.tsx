@@ -23,8 +23,15 @@ import { toast } from 'sonner';
 // SERVICE CARD COMPONENT
 // ============================================================================
 
-  function ServiceCard({ 
-    service: 'strava' | 'garmin' | 'suunto' | 'decathlon'; 
+   function ServiceCard({ 
+    service, 
+    isConnected, 
+    lastSync, 
+    onConnect, 
+    onDisconnect, 
+    isDisconnecting, 
+  }: {
+    service: 'strava' | 'garmin' | 'suunto' | 'decathlon';
     isConnected: boolean; 
     lastSync: string | null; 
     onConnect: () => void; 
