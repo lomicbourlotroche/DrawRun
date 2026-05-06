@@ -20,6 +20,7 @@ import type {
   GroupDetail,
   GroupMember,
   GroupEvent,
+  GroupUpdate,
   LeaderboardEntry,
   ActivityLike,
   SocialFeedItem,
