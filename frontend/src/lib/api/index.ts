@@ -180,6 +180,8 @@ export const api = {
   sync: syncApi.sync,
   getSyncStatus: syncApi.getSyncStatus,
   getStravaUrl: syncApi.getStravaUrl,
+  getDecathlonUrl: syncApi.getDecathlonUrl,
+  disconnectDecathlon: syncApi.disconnectDecathlon,
   uploadHealthConnectActivities: syncApi.uploadHealthConnectActivities,
 
   // Algorithm endpoints
