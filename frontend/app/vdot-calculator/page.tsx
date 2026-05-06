@@ -79,7 +79,7 @@ export default function VDOTCalculatorPage() {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/vdot?distance=${distance}&time=${timeMinutes}`
+        `${API_BASE_URL}/api/algo/vdot?distance=${distance}&time=${timeMinutes}`
       );
       if (!response.ok) {
         const data = await response.json();
