@@ -2,87 +2,50 @@
 /**
  * DrawRun Service Worker
  * =====================
- * - Cache First pour les assets statiques
- * - Fallback /offline.html si hors ligne
- * - Handler push notifications
- * - Handler notificationclick
+ * - Push notifications uniquement
+ * - PAS de cache des assets Next.js (ils ont leurs propres headers immutables)
+ * - Fallback /offline.html si hors ligne pour les pages HTML seulement
  */
 
-const CACHE_NAME = 'drawrun-v1';
-const STATIC_ASSETS = [
-  '/',
-  '/app',
-  '/login',
-  '/manifest.json',
-  '/icon-192x192.png',
-  '/icon-512x512.png',
-  '/offline.html',
-];
+// Version incrémentée à chaque déploiement pour forcer le remplacement du SW
+const SW_VERSION = 'drawrun-v3';
+const CACHE_NAME = SW_VERSION;
 
 // ============================================================================
-// INSTALL — mise en cache des assets statiques
+// INSTALL — skip waiting immédiatement, pas de pré-cache
 // ============================================================================
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch((err) => {
-        // Certains assets peuvent ne pas exister encore — ignorer silencieusement
-        console.warn('[SW] Some assets could not be cached:', err.message);
-      });
-    }).then(() => self.skipWaiting())
-  );
+  // Prendre le contrôle immédiatement sans attendre
+  event.waitUntil(self.skipWaiting());
 });
 
 // ============================================================================
-// ACTIVATE — nettoyage des anciens caches
+// ACTIVATE — supprimer TOUS les anciens caches
 // ============================================================================
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+        cacheNames.map((name) => {
+          console.log('[SW] Deleting cache:', name);
+          return caches.delete(name);
+        })
       );
     }).then(() => self.clients.claim())
   );
 });
 
 // ============================================================================
-// FETCH — Cache First + fallback offline
+// FETCH — laisser passer TOUT (pas de cache SW pour les assets)
+// Next.js gère lui-même le cache des chunks via Cache-Control: immutable
 // ============================================================================
 
 self.addEventListener('fetch', (event) => {
-  // Ignorer les requêtes non-GET et les requêtes API
-  if (event.request.method !== 'GET') return;
-  if (event.request.url.includes('/api/')) return;
-
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-
-      return fetch(event.request).then((networkResponse) => {
-        // Mettre en cache les nouvelles ressources statiques
-        if (networkResponse && networkResponse.status === 200) {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return networkResponse;
-      }).catch(() => {
-        // Hors ligne — retourner la page offline pour les requêtes HTML
-        if (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html')) {
-          return caches.match('/offline.html');
-        }
-        return new Response('', { status: 503, statusText: 'Service Unavailable' });
-      });
-    })
-  );
+  // Ne rien intercepter — laisser le navigateur gérer le cache HTTP natif
+  // Cela évite les URLs malformées et les chunks périmés
+  return;
 });
 
 // ============================================================================
@@ -130,14 +93,12 @@ self.addEventListener('notificationclick', (event) => {
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Focaliser une fenêtre existante si possible
       for (const client of clientList) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
           client.navigate(url);
           return client.focus();
         }
       }
-      // Sinon ouvrir une nouvelle fenêtre
       if (clients.openWindow) {
         return clients.openWindow(url);
       }
@@ -154,3 +115,4 @@ self.addEventListener('message', (event) => {
     self.skipWaiting();
   }
 });
+
