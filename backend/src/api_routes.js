@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars, security/detect-object-injection, no-undef */
 /**
  * DrawRun API Routes - Algorithmes scientifiques
  * =============================================

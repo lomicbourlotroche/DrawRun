@@ -1,3 +1,4 @@
+/* eslint-disable no-console, no-undef */
 /**
  * DrawRun Service Worker
  * =====================

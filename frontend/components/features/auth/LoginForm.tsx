@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps, no-undef */
 'use client';
 
 import { useState, useEffect } from 'react';

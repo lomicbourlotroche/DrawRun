@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

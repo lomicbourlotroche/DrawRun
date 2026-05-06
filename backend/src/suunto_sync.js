@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-non-literal-fs-filename, unused-imports/no-unused-vars, no-constant-condition */
 /**
  * Suunto Sync Module (Unofficial - cloud.suunto.com Reverse-Engineered API)
  * =========================================================================

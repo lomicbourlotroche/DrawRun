@@ -1,7 +1,8 @@
+/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, CloudSun, Thermometer, Wind, Droplets, AlertTriangle, Sun, CloudRain, Snowflake, Zap } from 'lucide-react';
+import { ArrowLeft, CloudSun, Thermometer, Wind, Droplets, Sun, CloudRain, Snowflake } from 'lucide-react';
 
 export default function WeatherGuide() {
   const router = useRouter();

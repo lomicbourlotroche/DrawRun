@@ -1,9 +1,10 @@
+/* eslint-disable unused-imports/no-unused-vars */
 /**
  * Dialog Components - Wrapper around Modal for compatibility
  */
 
 import { Modal } from './Modal';
-import { Card, CardHeader, CardTitle, CardContent } from './Card';
+import { CardHeader, CardTitle } from './Card';
 import { ReactNode } from 'react';
 
 interface DialogProps {

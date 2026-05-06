@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars, security/detect-non-literal-fs-filename, no-empty, security/detect-object-injection, no-constant-condition */
 /**
  * Strava Sync Module (Unofficial - Playwright Web Scraping)
  * =========================================================

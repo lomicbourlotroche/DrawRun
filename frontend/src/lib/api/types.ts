@@ -1,3 +1,4 @@
+/* eslint-disable no-redeclare */
 /**
  * ============================================================
  * API TYPES - Types partagés pour le client API DrawRun

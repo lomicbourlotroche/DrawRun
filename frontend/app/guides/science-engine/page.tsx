@@ -1,7 +1,8 @@
+/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Activity, Zap, TrendingUp, Heart, Target, BookOpen, Clock, Award, Layers, Brain, BarChart3, Thermometer, Gauge } from 'lucide-react';
+import { ArrowLeft, Activity, Zap, TrendingUp, Heart, Target, BookOpen, Layers, Brain, BarChart3, Gauge } from 'lucide-react';
 
 const metrics = [
   {

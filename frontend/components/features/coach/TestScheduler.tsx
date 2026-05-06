@@ -1,9 +1,10 @@
+/* eslint-disable unused-imports/no-unused-vars */
 'use client';
 
 import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Select, Modal } from '@/components/ui';
+import { Button, Modal } from '@/components/ui';
 import { api } from '@/lib/api';
-import { Calendar, Timer, Activity, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Activity, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface TestSchedulerProps {

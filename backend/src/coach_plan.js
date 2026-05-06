@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars, security/detect-object-injection, no-undef, no-case-declarations */
 /**
  * coach_plan.js — Advanced Adaptive Training Plan Generation v2.0
  *

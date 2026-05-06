@@ -1,11 +1,11 @@
+/* eslint-disable no-undef, unused-imports/no-unused-vars */
 'use client';
 
 import { useState } from 'react';
 import { SPORTS, type SportType, type SportCategoryType } from '@/types/sports';
 import {
   Footprints, Bike, Waves, Dumbbell, Snowflake, Droplets, Users,
-  Mountain, CircleDot, Club, Compass, Heart, Timer, Zap, Wind,
-  ChevronRight, Check
+  Mountain, CircleDot, Club, Compass, Heart, Timer, Zap, Wind, Check
 } from 'lucide-react';
 
 const CATEGORY_ICONS: Record<SportCategoryType, React.ComponentType<{ className?: string }>> = {

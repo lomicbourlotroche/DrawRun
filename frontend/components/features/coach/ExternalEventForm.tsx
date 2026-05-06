@@ -1,7 +1,8 @@
+/* eslint-disable unused-imports/no-unused-vars */
 'use client';
 
 import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Select, Modal } from '@/components/ui';
+import { Button, Input, Modal } from '@/components/ui';
 import { api } from '@/lib/api';
 import { Calendar, Trophy, Plane, AlertCircle, Briefcase, Plus } from 'lucide-react';
 import { toast } from 'sonner';

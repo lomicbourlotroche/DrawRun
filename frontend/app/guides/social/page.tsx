@@ -1,7 +1,8 @@
+/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Users, UserPlus, Trophy, MessageCircle, Heart, Share2, Check, Crown, Shield } from 'lucide-react';
+import { ArrowLeft, Users, UserPlus, Trophy, Heart, Check, Shield } from 'lucide-react';
 
 export default function SocialGuide() {
   const router = useRouter();

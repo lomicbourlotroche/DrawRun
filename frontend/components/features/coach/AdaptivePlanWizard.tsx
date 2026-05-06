@@ -1,9 +1,10 @@
+/* eslint-disable unused-imports/no-unused-vars */
 'use client';
 
 import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Select } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { api } from '@/lib/api';
-import { Target, Gauge, Calendar, Activity, Heart, Zap, CheckCircle2, ChevronRight, ChevronLeft, Clock } from 'lucide-react';
+import { Target, CheckCircle2, ChevronRight, ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface WizardStep {

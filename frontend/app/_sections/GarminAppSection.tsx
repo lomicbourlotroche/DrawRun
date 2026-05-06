@@ -7,8 +7,7 @@ import {
   Activity, 
   Target, 
   Calendar, 
-  Download, 
-  Clock,
+  Download,
   ArrowRight,
   CheckCircle
 } from 'lucide-react';

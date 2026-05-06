@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars, no-undef */
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';

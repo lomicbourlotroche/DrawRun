@@ -2,15 +2,13 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Select } from '@/components/ui';
-import { api } from '@/lib/api';
 import { Activity } from '@/types';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
-  ResponsiveContainer, AreaChart, Area
+  ResponsiveContainer
 } from 'recharts';
 import { 
-  TrendingUp, Calendar, Activity as ActivityIcon, 
-  Zap, Target, ChevronDown 
+  TrendingUp, Calendar, Activity as ActivityIcon 
 } from 'lucide-react';
 
 interface ProgressionData {

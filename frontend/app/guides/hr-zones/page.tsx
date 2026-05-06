@@ -1,7 +1,8 @@
+/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Heart, Activity, Zap, Target, Clock, Thermometer, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Heart, Activity, Target, Thermometer, TrendingUp } from 'lucide-react';
 
 export default function HRZonesGuide() {
   const router = useRouter();

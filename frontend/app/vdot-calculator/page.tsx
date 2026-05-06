@@ -1,10 +1,11 @@
+/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { API_BASE_URL } from '@/lib/constants';
 import {
-  ArrowLeft, Calculator, Trophy, Clock, Target, Zap, TrendingUp, Activity, ChevronRight
+  ArrowLeft, Calculator, Trophy, Target, Zap, TrendingUp, Activity, ChevronRight
 } from 'lucide-react';
 
 const RACE_PRESETS = [

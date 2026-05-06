@@ -13,12 +13,8 @@
 
 import type {
   CreateSegmentParams,
-  GetNearbySegmentsParams,
   CreateSegmentEffortParams,
   CreateRouteParams,
-  GetPublicRoutesParams,
-  GetHeatmapParams,
-  GetPopularLocationsParams,
 } from './types';
 import { client } from './client';
 

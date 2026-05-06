@@ -40,9 +40,6 @@ import type {
   UpdateChallengeProgressParams,
   CreateEventParams,
   CreateBadgeParams,
-  AddCommentParams,
-  AddReactionParams,
-  RemoveReactionParams,
   PaginationParams,
 } from './types';
 

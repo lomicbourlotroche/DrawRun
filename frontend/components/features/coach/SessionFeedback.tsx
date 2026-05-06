@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { api } from '@/lib/api';
-import { MessageSquare, Frown, Meh, Smile, Heart, Activity, ArrowRight } from 'lucide-react';
+import { MessageSquare, Frown, Meh, Smile, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SessionFeedbackProps {

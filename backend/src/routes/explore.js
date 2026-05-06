@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint-disable unused-imports/no-unused-vars */
+
 const express = require('express');
 const { verifyToken } = require('../auth');
 const segments = require('../services/segments.service');

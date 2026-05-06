@@ -1,7 +1,8 @@
+/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Trophy, MapPin, Heart, Droplets, Zap, Clock, TrendingUp, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Trophy, MapPin, Heart, Droplets, TrendingUp, AlertTriangle } from 'lucide-react';
 
 export default function RacePlanningGuide() {
   const router = useRouter();

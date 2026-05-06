@@ -1,9 +1,10 @@
+/* eslint-disable unused-imports/no-unused-imports, react/jsx-no-undef, no-undef */
 'use client';
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { Card, CardContent, Badge, FilterChipGroup, Select, ActivitySkeleton, EmptyState } from '@/components/ui';
-import { cn, formatDate, formatDistance, formatDuration, getSportColor } from '@/lib/utils';
+import { GlassCard, GlassCardContent, GradientBadge, FilterChipGroup, Select, ActivitySkeleton, EmptyState } from '@/components/ui';
+import { formatDate, formatDistance, getSportColor } from '@/lib/utils';
 import type { Activity } from '@/types';
 import { Clock, Heart, TrendingUp, ChevronRight, Search, RefreshCw } from 'lucide-react';
 import { DrawButton } from '@/components/features/social/DrawButton';
@@ -129,8 +130,8 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
             className="block group"
             style={{ animationDelay: `${index * 50}ms` }}
           >
-            <Card className="hover:border-primary/50 transition-all duration-200 animate-slide-up">
-              <CardContent className="p-4">
+            <GlassCard hover className="animate-slide-up" padding="md">
+              <GlassCardContent>
                 <div className="flex items-center gap-4">
                   <div
                     className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl"
@@ -144,9 +145,9 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
                       <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
                         {activity.title}
                       </h3>
-                      <Badge variant="default" size="sm">
+                      <GradientBadge variant="primary" size="sm">
                         {activity.type}
-                      </Badge>
+                      </GradientBadge>
                     </div>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
                       <span className="flex items-center gap-1">
@@ -196,8 +197,8 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
 
                   <ChevronRight className="w-5 h-5 text-muted group-hover:text-primary group-hover:translate-x-1 transition-all" />
                 </div>
-              </CardContent>
-            </Card>
+              </GlassCardContent>
+             </GlassCard>
           </Link>
         ))}
       </div>

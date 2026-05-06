@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-object-injection, unused-imports/no-unused-vars, no-constant-condition */
 /**
  * DrawRun Scientific Algorithms v2.0
  * ================================

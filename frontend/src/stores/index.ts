@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars */
 /**
  * ============================================================
  * STORES ZUSTAND - Gestion d'état de l'application

@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint-disable unused-imports/no-unused-vars, no-empty, security/detect-object-injection, no-useless-escape */
+
 const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../auth');

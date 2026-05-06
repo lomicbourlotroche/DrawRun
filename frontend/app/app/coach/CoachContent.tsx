@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 /**
  * CoachContent - Contenu de la page Coach
  */
@@ -5,7 +6,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Badge, Skeleton } from '@/components/ui';
+import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent, GradientBadge, Skeleton } from '@/components/ui';
 import { api } from '@/lib/api';
 import type { Recommendation, TrainingPlan } from '@/types';
 import {
@@ -55,16 +56,16 @@ function TodayTab() {
           <Skeleton className="h-32" />
         </div>
       ) : rec ? (
-        <Card className={`border-l-4 ${style.border} bg-card/80`}>
-          <CardContent className="p-6 space-y-4">
+        <GlassCard className={`border-l-4 ${style.border}`} padding="lg">
+          <GlassCardContent>
             <div className="flex items-start gap-4">
               <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${style.bg}`}>
                 <Zap className={`w-6 h-6 ${style.icon}`} />
               </div>
               <div className="flex-1">
-                <Badge className={`${style.bg} ${style.icon}`}>
+                <GradientBadge variant="primary" size="sm" className={`${style.bg} ${style.icon}`}>
                   {rec.type}
-                </Badge>
+                </GradientBadge>
                 <h2 className="text-xl font-bold mt-2">{rec.title}</h2>
                 {rec.subtitle && (
                   <p className="text-sm text-muted">{rec.subtitle}</p>
@@ -119,26 +120,26 @@ function TodayTab() {
                 )}
               </div>
             )}
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <Zap className="w-12 h-12 mx-auto mb-4 text-muted opacity-30" />
-            <p className="text-muted">Aucune recommandation</p>
-          </CardContent>
-        </Card>
-      )}
+          </GlassCardContent>
+         </GlassCard>
+       ) : (
+          <GlassCard padding="lg">
+            <GlassCardContent className="text-center">
+             <Zap className="w-12 h-12 mx-auto mb-4 text-muted opacity-30" />
+             <p className="text-muted">Aucune recommandation</p>
+           </GlassCardContent>
+         </GlassCard>
+       )}
 
       {/* Quick Stats */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
+      <GlassCard>
+        <GlassCardHeader>
+          <GlassCardTitle className="text-base flex items-center gap-2">
             <Gauge className="w-4 h-4 text-primary" />
             Profil actuel
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+          </GlassCardTitle>
+        </GlassCardHeader>
+        <GlassCardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-center">
               <p className="text-2xl font-bold text-blue-400">
@@ -165,8 +166,8 @@ function TodayTab() {
               <p className="text-xs text-muted">Allure</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </GlassCardContent>
+      </GlassCard>
     </div>
   );
 }
@@ -177,13 +178,13 @@ function TodayTab() {
 
 function NoPlanMessage({ message }: { message: string }) {
   return (
-    <Card>
-      <CardContent className="p-8 text-center">
+    <GlassCard>
+      <GlassCardContent className="p-8 text-center">
         <Target className="w-12 h-12 mx-auto mb-4 text-muted opacity-30" />
         <p className="text-muted">{message}</p>
         <p className="text-xs text-muted mt-2">Créez un plan dans l&apos;onglet Plan pour commencer.</p>
-      </CardContent>
-    </Card>
+      </GlassCardContent>
+    </GlassCard>
   );
 }
 

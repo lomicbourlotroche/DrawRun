@@ -1,7 +1,7 @@
 'use client';
 
-import { Card, CardHeader, CardTitle, CardContent, StatCard } from '@/components/ui';
-import { TrendingUp, TrendingDown, Minus, Activity, Zap, Target } from 'lucide-react';
+import { Card, CardContent, StatCard } from '@/components/ui';
+import { TrendingUp, TrendingDown, Activity, Target } from 'lucide-react';
 
 interface QuickStatsProps {
   stats: {

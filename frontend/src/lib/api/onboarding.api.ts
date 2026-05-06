@@ -11,7 +11,7 @@
  */
 
 import { client } from './client';
-import type { CompleteOnboardingStepParams, UpdatePreferencesParams } from './types';
+import type { UpdatePreferencesParams } from './types';
 
 export const onboardingApi = {
   /**

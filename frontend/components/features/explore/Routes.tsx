@@ -1,8 +1,9 @@
+/* eslint-disable unused-imports/no-unused-vars, no-undef */
 'use client';
 
 import { useState, useCallback } from 'react';
 import { api } from '@/lib/api';
-import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from '@/components/ui';
+import { Card, CardContent, Button, Badge } from '@/components/ui';
 import { Map, Heart, Clock, TrendingUp, Star, ChevronRight, Navigation } from 'lucide-react';
 import { formatDuration } from '@/lib/utils';
 

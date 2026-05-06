@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Button, MetricCard } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { 
   TrendingUp, 
   Heart, 

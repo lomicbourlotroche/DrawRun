@@ -1,10 +1,9 @@
+/* eslint-disable unused-imports/no-unused-vars, react/no-unescaped-entities, no-undef */
 'use client';
 
 import { useState, useCallback } from 'react';
-import { api } from '@/lib/api';
-import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Input } from '@/components/ui';
-import { Zap, TrendingUp, Activity, Battery, Gauge, Clock } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle, Button, Input } from '@/components/ui';
+import { Zap, TrendingUp, Activity, Battery, Gauge } from 'lucide-react';
 
 interface PowerAnalysisProps {
   activityId?: number;

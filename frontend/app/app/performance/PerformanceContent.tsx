@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars, react-hooks/exhaustive-deps */
 /**
  * PerformanceContent - Contenu de la page Performance
  */

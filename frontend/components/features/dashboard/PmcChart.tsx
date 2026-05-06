@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Badge } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { cn, formatDateShort } from '@/lib/utils';
 import {
   AreaChart,
@@ -15,7 +15,7 @@ import {
   ReferenceLine,
 } from 'recharts';
 import type { PmcDataPoint } from '@/types';
-import { TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
 interface PmcChartProps {
   data: PmcDataPoint[];

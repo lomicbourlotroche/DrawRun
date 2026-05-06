@@ -6,9 +6,7 @@ import {
   Users, 
   UserPlus, 
   Trophy, 
-  Check,
-  MessageCircle,
-  Heart
+  Check
 } from 'lucide-react';
 
 const socialFeatures = [

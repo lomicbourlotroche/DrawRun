@@ -1,9 +1,10 @@
+/* eslint-disable unused-imports/no-unused-vars */
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
-import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from '@/components/ui';
-import { Trophy, MapPin, Timer, TrendingUp, Users, ChevronRight } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, Badge } from '@/components/ui';
+import { Trophy, MapPin, TrendingUp, Users, ChevronRight } from 'lucide-react';
 import { formatDuration } from '@/lib/utils';
 
 interface Segment {

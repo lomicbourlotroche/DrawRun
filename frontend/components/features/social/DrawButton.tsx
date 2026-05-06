@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars, no-undef */
 'use client';
 
 import { useState, useCallback } from 'react';

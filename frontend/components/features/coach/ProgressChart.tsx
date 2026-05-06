@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { api } from '@/lib/api';
-import { TrendingUp, Activity, Flame, Zap } from 'lucide-react';
+import { TrendingUp, Zap } from 'lucide-react';
 
 interface ProgressData {
   planId: number;

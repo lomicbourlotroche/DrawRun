@@ -1,10 +1,11 @@
+/* eslint-disable unused-imports/no-unused-vars */
 'use client';
 
 import { Card, CardHeader, CardTitle, CardContent, Badge } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { Recommendation } from '@/types';
 import { TRAINING_TYPES } from '@/lib/constants';
-import { Clock, Timer, ChevronRight, Activity, TrendingUp, Zap } from 'lucide-react';
+import { ChevronRight, Activity, TrendingUp, Zap } from 'lucide-react';
 
 interface RecommendationCardProps {
   recommendation: Recommendation | null;

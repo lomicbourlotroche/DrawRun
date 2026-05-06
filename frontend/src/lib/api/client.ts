@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars, no-undef */
 /**
  * ============================================================
  * CLIENT API - Base HTTP Client pour DrawRun

@@ -4,13 +4,10 @@ import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui';
 import { 
   Smartphone, 
-  Download, 
   Bell, 
   Share2, 
   WifiOff, 
   Monitor,
-  ArrowRight,
-  CheckCircle,
   Zap
 } from 'lucide-react';
 

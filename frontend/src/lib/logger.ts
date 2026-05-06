@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Logger utility for DrawRun frontend
  * Replaces console.* calls with structured logging

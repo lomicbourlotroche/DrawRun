@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, MetricCard } from '@/components/ui';
+import { Card } from '@/components/ui';
 import { 
   Activity, 
-  Check, 
   TrendingUp, 
   Target, 
   Zap, 

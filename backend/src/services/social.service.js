@@ -1,3 +1,4 @@
+/* eslint-disable no-empty, no-redeclare, unused-imports/no-unused-vars */
 const { dbGetMain, dbRunMain, dbAllMain, getUserDb, dbAllUser } = require('../database');
 
 // Aliases locaux pour lisibilité

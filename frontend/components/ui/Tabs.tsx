@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars, no-undef */
 import { cn } from '@/lib/utils';
 import { createContext, useContext, useState, ReactNode } from 'react';
 

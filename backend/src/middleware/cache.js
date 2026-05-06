@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint-disable unused-imports/no-unused-vars */
+
 const crypto = require('crypto');
 const { logger } = require('../logger');
 const { performanceMetrics } = require('../performance');

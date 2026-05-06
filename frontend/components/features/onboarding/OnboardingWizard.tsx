@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Select } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { api } from '@/lib/api';
-import { User, Heart, Target, Activity, CheckCircle2, ChevronRight, ChevronLeft, Zap } from 'lucide-react';
+import { User, Heart, Target, CheckCircle2, ChevronRight, ChevronLeft, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface OnboardingStep {

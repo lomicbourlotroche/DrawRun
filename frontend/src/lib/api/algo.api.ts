@@ -14,8 +14,6 @@
 
 import { client } from './client';
 import type { 
-  Zones, 
-  PmcDataPoint, 
   Recommendation, 
   HRZone,
 } from '@/types';

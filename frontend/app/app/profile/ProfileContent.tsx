@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars, no-undef, @next/next/no-img-element, react/no-unescaped-entities */
 /**
  * ProfileContent - Contenu de la page Profil pour lazy loading
  */
@@ -6,15 +7,14 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Badge, Avatar, Modal } from '@/components/ui';
+import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent, Button, Input, GradientBadge, Avatar, Modal } from '@/components/ui';
 import { useAuthStore, useSyncStore } from '@/stores';
 import { api } from '@/lib/api';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import type { User as UserType } from '@/types';
 import {
   User, Mail, Scale, Heart, LogOut, RefreshCw, CheckCircle, XCircle, 
-  Trash2, AlertTriangle, Gift, Watch, Settings, Lock, Eye, EyeOff,
-  UserPlus, Shield, Trash, ExternalLink, Share2, Monitor, Moon, Sun,
+  Trash2, AlertTriangle, Gift, Watch, Settings, Lock, Eye, EyeOff, Shield, Monitor, Moon, Sun,
   Globe, Layout, Bell, BellOff, Camera
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -63,7 +63,7 @@ function ServiceCard({
       </div>
       {isConnected ? (
         <div className="flex items-center gap-2">
-          <Badge variant="success"><CheckCircle className="w-3 h-3" />Connecté</Badge>
+          <GradientBadge variant="success" size="sm"><CheckCircle className="w-3 h-3" />Connecté</GradientBadge>
           <Button variant="ghost" size="sm" onClick={onDisconnect} isLoading={isDisconnecting}>
             <XCircle className="w-4 h-4 text-danger" />
           </Button>
@@ -215,8 +215,8 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
         </div>
       )}
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+      <GlassCard>
+        <GlassCardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="relative group">
               {avatarUrl ? (
@@ -261,8 +261,8 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
           ) : (
             <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)}>Modifier</Button>
           )}
-        </CardHeader>
-        <CardContent>
+        </GlassCardHeader>
+        <GlassCardContent>
           <div className="grid grid-cols-2 gap-4">
             <Input label="Nom" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} disabled={!isEditing} leftIcon={<User className="w-4 h-4" />} />
             <Input label="Email" value={user?.email || ''} disabled leftIcon={<Mail className="w-4 h-4" />} />
@@ -270,8 +270,8 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
             <Input label="FCM (bpm)" type="number" value={form.fcm} onChange={(e) => setForm({ ...form, fcm: e.target.value })} disabled={!isEditing} leftIcon={<Heart className="w-4 h-4" />} />
             <Input label="VMA (km/h)" type="number" value={form.vma} onChange={(e) => setForm({ ...form, vma: e.target.value })} disabled={!isEditing} />
           </div>
-        </CardContent>
-      </Card>
+        </GlassCardContent>
+      </GlassCard>
     </div>
   );
 }

@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, Badge, ActivitySkeleton } from '@/components/ui';
-import { cn, formatDate, formatDistance, formatDuration, getSportColor } from '@/lib/utils';
+import { formatDate, formatDistance, formatDuration, getSportColor } from '@/lib/utils';
 import type { Activity } from '@/types';
-import { MapPin, Clock, Heart } from 'lucide-react';
+import { Clock, Heart } from 'lucide-react';
 
 interface RecentActivitiesProps {
   activities: Activity[];

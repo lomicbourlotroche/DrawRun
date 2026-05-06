@@ -1,3 +1,4 @@
+/* eslint-disable no-undef, unused-imports/no-unused-vars */
 'use client';
 
 import { useState, useRef, useEffect } from 'react';

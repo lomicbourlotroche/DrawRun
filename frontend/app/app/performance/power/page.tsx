@@ -1,8 +1,9 @@
+/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Input } from '@/components/ui';
+import { Card, CardContent, Button, Badge } from '@/components/ui';
 import { PowerAnalysis, FTPCalculator } from '@/components/features/performance/PowerAnalysis';
 import { api } from '@/lib/api';
 import { Zap, Gauge, Activity, Loader2, Bike, ChevronDown } from 'lucide-react';

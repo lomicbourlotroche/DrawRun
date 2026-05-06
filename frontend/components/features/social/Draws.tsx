@@ -1,7 +1,8 @@
+/* eslint-disable unused-imports/no-unused-vars */
 'use client';
 
 import { useState } from 'react';
-import { Button, Badge, Avatar } from '@/components/ui';
+import { Button, Avatar } from '@/components/ui';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { 

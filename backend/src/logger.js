@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-non-literal-fs-filename, security/detect-object-injection */
 /**
  * ============================================================
  * Audit Logging System

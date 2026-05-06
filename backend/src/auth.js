@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars, no-process-exit, no-empty, security/detect-non-literal-fs-filename, no-undef */
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');

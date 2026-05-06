@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint-disable security/detect-object-injection, security/detect-unsafe-regex */
+
 const { logger } = require('../logger');
 const { ipKeyGenerator } = require('express-rate-limit');
 

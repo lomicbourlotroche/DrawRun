@@ -7,10 +7,7 @@ import {
   MapPin, 
   Heart, 
   Droplets, 
-  Zap, 
   ArrowRight,
-  Download,
-  Timer,
   TrendingUp
 } from 'lucide-react';
 

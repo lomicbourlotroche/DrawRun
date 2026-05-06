@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import {
   Activity,
@@ -137,7 +138,7 @@ function ActivityRow({ activity }: ActivityRowProps) {
             <p className="text-sm font-semibold text-slate-900 tabular-nums">
               {formatDistance(distanceM)}
             </p>
-            {elevation != null && elevation > 0 && (
+            {elevation !== null && elevation !== undefined && elevation > 0 && (
               <p className="text-xs text-slate-400 flex items-center justify-end gap-0.5">
                 <Mountain className="w-3 h-3" />
                 {Math.round(elevation)} m
@@ -214,45 +215,13 @@ export function ModernDashboard() {
   }
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in space-y-6">
       {/* Background Effects */}
-      <div className="fixed inset-0 bg-gradient-to-b from-neutral-50 to-white" />
-      <div className="fixed inset-0 bg-[linear-gradient(rgba(0,102,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,102,255,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
+      <div className="fixed inset-0 bg-gradient-to-b from-neutral-50 to-white -z-10" />
+      <div className="fixed inset-0 bg-[linear-gradient(rgba(0,102,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,102,255,0.03)_1px,transparent_1px)] bg-[size:60px_60px] -z-10" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900">
-              {greeting}, <span className="text-primary-600">{firstName}</span> 👋
-            </h1>
-            <p className="text-neutral-500 mt-1">
-              {new Date().toLocaleDateString('fr-FR', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-              })}
-            </p>
-          </div>
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-100 border border-primary-200 rounded-full">
-            <span className="w-2 h-2 bg-primary-600 rounded-full animate-pulse" />
-            <span className="text-sm font-medium text-primary-700">
-              v4.1 • Performance scientifique
-            </span>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 h-64 bg-slate-200 rounded-xl animate-pulse" />
-          <div className="h-64 bg-slate-200 rounded-xl animate-pulse" />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
       {/* Greeting */}
-      <div>
+      <div className="relative">
         <h2 className="text-2xl font-bold text-slate-900">
           {greeting}, {firstName} 👋
         </h2>

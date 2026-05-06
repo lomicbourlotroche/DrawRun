@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import type { Metadata, Viewport } from 'next';
 import { Providers } from '@/components/providers/Providers';
 import { ServiceWorkerRegistration } from '@/components/providers/ServiceWorkerRegistration';

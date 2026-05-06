@@ -1,10 +1,11 @@
+/* eslint-disable unused-imports/no-unused-vars */
 'use client';
 
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, Button, Badge, Modal } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import type { TrainingPlan, TrainingWeek } from '@/types';
-import { Calendar, ChevronRight, ChevronLeft, Clock, Target, Trash2 } from 'lucide-react';
+import type { TrainingPlan } from '@/types';
+import { Calendar, ChevronRight, ChevronLeft, Target } from 'lucide-react';
 
 interface TrainingPlanCardProps {
   plan: TrainingPlan;

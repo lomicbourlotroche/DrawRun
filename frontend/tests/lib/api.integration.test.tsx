@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars, react/display-name */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { api } from '@/lib/api';

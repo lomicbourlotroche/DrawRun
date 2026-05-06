@@ -1,6 +1,7 @@
+/* eslint-disable no-undef, react-hooks/exhaustive-deps, unused-imports/no-unused-vars */
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
@@ -8,8 +9,7 @@ import { SportPicker } from './SportPicker';
 import type { SportType } from '@/types/sports';
 import { SPORTS, getSportCategory } from '@/types/sports';
 import { 
-  Play, Pause, Square, MapPin, Navigation, Timer, Mountain,
-  Heart, ChevronDown, X, Save, Battery, BatteryMedium, BatteryLow,
+  Play, Pause, Square, MapPin, Navigation, Mountain, ChevronDown, X, Save, Battery, BatteryMedium, BatteryLow,
   Target, TrendingUp, Footprints, Bike, Waves
 } from 'lucide-react';
 

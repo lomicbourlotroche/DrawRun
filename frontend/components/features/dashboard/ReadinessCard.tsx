@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardHeader, CardTitle, CardContent, CircularProgress } from '@/components/ui';
-import { cn, calculateReadinessColor } from '@/lib/utils';
+import { calculateReadinessColor } from '@/lib/utils';
 import type { Readiness } from '@/types';
 import { Heart, Brain, Moon, Activity } from 'lucide-react';
 

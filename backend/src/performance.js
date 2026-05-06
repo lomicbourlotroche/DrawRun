@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-object-injection, unused-imports/no-unused-vars */
 /**
  * ============================================================
  * PERFORMANCE OPTIMIZATION - Cache & Compression

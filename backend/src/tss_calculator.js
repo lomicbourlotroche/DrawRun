@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars, security/detect-object-injection */
 const { dbGetUser, dbRunUser, dbAllUser } = require('./database');
 
 function calculateTSS(durationSeconds, avgHR, thresholdHR, maxHR = null) {

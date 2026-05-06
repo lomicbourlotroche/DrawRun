@@ -1,7 +1,7 @@
 'use client';
 
-import { Card, CardHeader, CardTitle, CardContent, CircularProgress, Badge } from '@/components/ui';
-import { cn, calculateReadinessColor } from '@/lib/utils';
+import { Card, CardHeader, CardTitle, CardContent, CircularProgress } from '@/components/ui';
+import { calculateReadinessColor } from '@/lib/utils';
 import { TrendingUp, Zap, Activity, Heart } from 'lucide-react';
 
 interface PerformanceMetricsProps {

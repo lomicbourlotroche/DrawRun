@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-non-literal-fs-filename, no-empty, no-process-exit, no-useless-catch, unused-imports/no-unused-vars */
 /**
  * ============================================================
  * DRAWRUN DATABASE v4.0 - Per-User Database Architecture

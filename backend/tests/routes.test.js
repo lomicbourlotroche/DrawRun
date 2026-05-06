@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars, security/detect-non-literal-fs-filename, security/detect-non-literal-require */
 /**
  * ============================================================
  * ROUTES TESTS

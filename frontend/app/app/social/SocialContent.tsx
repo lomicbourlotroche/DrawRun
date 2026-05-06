@@ -7,16 +7,14 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Badge, Avatar, Skeleton } from '@/components/ui';
+import { Button, Input, Badge, Avatar, Skeleton } from '@/components/ui';
 import { api } from '@/lib/api';
 import type { SocialFeedItem } from '@/types';
-import { useAuthStore, useNotificationsStore } from '@/stores';
+import { useNotificationsStore } from '@/stores';
 import { 
-  Users, UserPlus, Search, Trophy, Target, MessageCircle, 
-  Heart, MapPin, Clock, Flame, Award, TrendingUp, Users2,
-  Loader2, X, Check, Copy, MoreHorizontal, Zap, Bell,
-  Star, Medal, Crown, Activity, ChevronRight, Sparkles,
-  Send, Eye, ThumbsUp
+  Users, UserPlus, Search, Trophy, MessageCircle, 
+  Heart, MapPin, Clock, Flame, TrendingUp, Users2,
+  Loader2, X, Check, Copy, Bell, Activity, ChevronRight, Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 

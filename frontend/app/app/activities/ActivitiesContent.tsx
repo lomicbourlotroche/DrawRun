@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /**
  * ActivitiesContent - Contenu de la page Activités pour lazy loading
  */

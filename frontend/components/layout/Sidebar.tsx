@@ -19,7 +19,6 @@ import {
   Trophy,
   Plus,
 } from 'lucide-react';
-import Image from 'next/image';
 
 const navItems = [
   { href: '/app', label: 'Tableau de bord', icon: LayoutDashboard, exact: true },

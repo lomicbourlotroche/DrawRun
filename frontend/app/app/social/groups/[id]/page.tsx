@@ -14,8 +14,7 @@ import type { GroupDetail, GroupMember, GroupEvent, Activity } from '@/types';
 import {
   Users, Settings, Activity as ActivityIcon, Calendar,
   ChevronLeft, Copy, Trash2, Edit2, UserX, Crown, Shield,
-  Plus, Clock, MapPin, Flame, TrendingUp, X, Save,
-  Loader2, Eye, MessageCircle, Bell
+  Plus, Clock, MapPin, Flame, Save, Eye
 } from 'lucide-react';
 import { toast } from 'sonner';
 
