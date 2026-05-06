@@ -332,15 +332,15 @@ export function RacePlanningContent() {
           </Card>
 
           {/* Pacing Strategy */}
-          {result.pacingStrategy && (
+          {result.pacingStrategy != null && (
             <Card>
               <CardHeader>
                 <CardTitle>Stratégie d'allure</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
-                  <p className="font-semibold">{result.pacingStrategy.name}</p>
-                  <p className="text-sm text-muted mt-1">{result.pacingStrategy.description}</p>
+                  <p className="font-semibold">{String((result.pacingStrategy as Record<string, unknown>).name ?? '')}</p>
+                  <p className="text-sm text-muted mt-1">{String((result.pacingStrategy as Record<string, unknown>).description ?? '')}</p>
                 </div>
               </CardContent>
             </Card>
@@ -386,7 +386,7 @@ export function RacePlanningContent() {
               </CardHeader>
               <CardContent>
                 <div className="p-3 rounded-lg bg-info/10 border border-info/30">
-                  <p className="font-semibold">Durée: {result.taperRecommendation.duration} jours</p>
+                  <p className="font-semibold">Durée: {(result.taperRecommendation as { duration?: number })?.duration ?? '?'} jours</p>
                   <p className="text-sm text-muted mt-1">Réduction du volume progressive pour arriver frais le jour J.</p>
                 </div>
               </CardContent>
@@ -435,7 +435,7 @@ export function RacePlanningContent() {
                             {split.nutrition.map((nut, idx) => (
                               <Badge
                                 key={idx}
-                                variant={nut.type === 'water' ? 'secondary' : nut.type === 'gel' ? 'warning' : 'info'}
+                                variant={nut.type === 'water' ? 'secondary' : nut.type === 'gel' ? 'warning' : 'outline'}
                                 size="sm"
                               >
                                 {nut.type === 'water' ? (

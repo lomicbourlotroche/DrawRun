@@ -735,7 +735,23 @@ export interface RacePlanningResponse {
     severity: 'info' | 'moderate' | 'high' | 'critical';
     message: string;
   }>;
-  taperRecommendation?: unknown;
+  taperRecommendation?: {
+    plan: Array<{
+      daysOut: number;
+      volumePercent: number;
+      targetLoad: number;
+      intensity: number;
+      frequency: number;
+      sessionType: string;
+      sessionDescription: string;
+      isCompetition: boolean;
+    }>;
+    expectedGain: number;
+    duration: number;
+    volumeReduction: number;
+    style: string;
+    reference: string;
+  };
   environmentalImpact?: {
     temperature: string;
     humidity: string;

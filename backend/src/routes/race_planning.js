@@ -261,12 +261,14 @@ router.post('/calculate', verifyToken, async (req, res) => {
         let taperRecommendation = null;
         if (distance >= 10 && ctlValue !== null) {
             const daysToRace = Math.max(7, Math.min(21, Math.ceil(totalRaceHours * 3)));
-            taperRecommendation = Taper.calculateOptimalTaper({
-                currentLoad: ctlValue,
+            const distanceLabel = distance >= 42 ? 'marathon' : distance >= 21 ? 'half' : distance >= 10 ? '10k' : '5k';
+            const athleteLevel = userVdot > 50 ? 'advanced' : userVdot > 35 ? 'intermediate' : 'beginner';
+            taperRecommendation = Taper.calculateOptimalTaper(
+                ctlValue,
                 daysToRace,
-                raceDistance: distance,
-                athleteLevel: userVdot > 50 ? 'advanced' : userVdot > 35 ? 'intermediate' : 'beginner',
-            });
+                distanceLabel,
+                athleteLevel,
+            );
         }
 
         // Scientific nutrition strategy (Jeukendrup model)
