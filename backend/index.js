@@ -12,16 +12,16 @@
 
 'use strict';
 
-// ============================================================================
+// ===========================================================================
 // CONFIGURATION
-// ============================================================================
+// ===========================================================================
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
 // Fallback: read .env manually if JWT_SECRET is still missing
 if (!process.env.JWT_SECRET) {
     try {
         const fs = require('fs');
-        const envPath = require('path').join(__dirname, '.env');
+        const envPath = '/home/drawrun/DrawRun/backend/.env';
         const envContent = fs.readFileSync(envPath, 'utf8');
         envContent.split('\n').forEach(line => {
             const [key, ...vals] = line.split('=');
