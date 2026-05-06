@@ -4,7 +4,7 @@
  * ============================================================
  * 
  * Ce fichier contient tous les endpoints liés à la synchro :
- * - Sync Strava/Garmin/Suunto
+ * - Sync Strava/Garmin/Suunto/Decathlon
  * - Status de sync
  * - Health Connect
  * 
@@ -34,6 +34,13 @@ export const syncApi = {
    */
   getStravaUrl(): Promise<{ url: string }> {
     return client.request('/api/strava/url');
+  },
+
+  /**
+   * Récupère l'URL d'autorisation Decathlon
+   */
+  getDecathlonUrl(): Promise<{ url: string }> {
+    return client.request('/api/sync/decathlon/url');
   },
 
   /**

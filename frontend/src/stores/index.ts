@@ -38,13 +38,14 @@ interface AuthState {
   has_strava: boolean;
   has_garmin: boolean;
   has_suunto: boolean;
+  has_decathlon: boolean;
   
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => void;
   clearError: () => void;
   updateUser: (data: Partial<User>) => void;
-  setSyncStatus: (status: { has_strava: boolean; has_garmin: boolean; has_suunto: boolean }) => void;
+  setSyncStatus: (status: { has_strava: boolean; has_garmin: boolean; has_suunto: boolean; has_decathlon: boolean }) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -58,6 +59,7 @@ export const useAuthStore = create<AuthState>()(
       has_strava: false,
       has_garmin: false,
       has_suunto: false,
+      has_decathlon: false,
 
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
@@ -74,11 +76,14 @@ export const useAuthStore = create<AuthState>()(
             response.has_garmin !== undefined ? !!response.has_garmin : !!response.user?.has_garmin;
           const hasSuunto =
             response.has_suunto !== undefined ? !!response.has_suunto : !!response.user?.has_suunto;
+          const hasDecathlon =
+            response.has_decathlon !== undefined ? !!response.has_decathlon : !!response.user?.has_decathlon;
 
           let syncStatus = {
             has_strava: hasStrava,
             has_garmin: hasGarmin,
             has_suunto: hasSuunto,
+            has_decathlon: hasDecathlon,
           };
 
           try {
@@ -87,6 +92,7 @@ export const useAuthStore = create<AuthState>()(
               has_strava: hasStrava || !!status.strava_last_sync,
               has_garmin: hasGarmin || !!status.garmin_last_sync,
               has_suunto: hasSuunto || !!status.suunto_last_sync,
+              has_decathlon: hasDecathlon || !!status.decathlon_last_sync,
             };
           } catch (syncError) {
             logger.warn('Could not fetch sync status after login', {

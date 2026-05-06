@@ -117,12 +117,28 @@ router.get('/decathlon/url', verifyToken, async (req, res) => {
     }
 });
 
-// POST /api/sync/decathlon/callback - OAuth callback
-router.post('/decathlon/callback', verifyToken, async (req, res) => {
+// GET /api/sync/decathlon/callback - OAuth callback (GET with query params)
+router.get('/decathlon/callback', verifyToken, async (req, res) => {
     try {
-        const { code, code_verifier } = req.body;
+        const { code, state } = req.query;
         if (!code) {
             return res.status(400).json({ error: 'Authorization code required' });
+        }
+
+        // Read code_verifier from temporary file
+        const fs = require('fs');
+        const path = require('path');
+        const { getTokenPath } = require('../decathlon_sync');
+        const tempPath = path.join(getTokenPath(req.user.id).replace('.json', '_pkce.json'));
+        
+        let codeVerifier;
+        try {
+            const tempData = JSON.parse(fs.readFileSync(tempPath, 'utf8'));
+            codeVerifier = tempData.codeVerifier;
+            // Clean up temp file
+            fs.unlinkSync(tempPath);
+        } catch (e) {
+            return res.status(400).json({ error: 'PKCE verifier not found. Restart the flow.' });
         }
 
         // Exchange code for tokens
@@ -144,6 +160,7 @@ router.post('/decathlon/callback', verifyToken, async (req, res) => {
         const { access_token, refresh_token, expires_in } = tokenResponse.data;
 
         // Save tokens to user record
+        const { dbRunMain } = require('../database');
         await dbRunMain(
             `UPDATE users SET
                 decathlon_access_token = ?,
@@ -155,10 +172,11 @@ router.post('/decathlon/callback', verifyToken, async (req, res) => {
             [access_token, refresh_token, Date.now() + (expires_in * 1000), req.user.id]
         );
 
-        res.json({ success: true, message: 'Decathlon connected successfully' });
+        // Redirect to frontend with success
+        res.redirect(process.env.FRONTEND_URL || 'http://localhost:3001/profile?decathlon=connected');
     } catch (error) {
         logger.error('Decathlon callback error:', error);
-        res.status(500).json({ error: 'Failed to connect Decathlon' });
+        res.redirect(process.env.FRONTEND_URL || 'http://localhost:3001/profile?decathlon=error');
     }
 });
 
