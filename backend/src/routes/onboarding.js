@@ -35,4 +35,29 @@ router.get('/status', verifyToken, async (req, res) => {
     }
 });
 
+// POST /api/onboarding/complete - Mark onboarding step as complete
+router.post('/complete', verifyToken, async (req, res) => {
+    try {
+        const { step } = req.body;
+        if (!step) {
+            return res.status(400).json({ error: 'step is required' });
+        }
+        
+        const { getUserDb, dbRunUser } = require('../database');
+        const userDb = await getUserDb(req.user.id);
+        
+        // Store onboarding progress in user_preferences table
+        await dbRunUser(userDb, `
+            INSERT INTO user_preferences (user_id, onboarding_completed, onboarding_data)
+            VALUES (?, 0, ?)
+            ON CONFLICT(user_id) DO UPDATE SET 
+                onboarding_data = json_patch(COALESCE(onboarding_data, '{}'), ?)
+        `, [req.user.id, JSON.stringify({ [step]: true }), JSON.stringify({ [step]: true })]);
+        
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to complete onboarding step' });
+    }
+});
+
 module.exports = router;

@@ -22,3 +22,6 @@ export { Tabs, TabsList, TabsTrigger, TabsContent, TabPanel, FilterChip, FilterC
 export { Progress, CircularProgress } from './Progress';
 export { Avatar, StatCard, EmptyState } from './Avatar';
 export { Dialog, DialogContent, DialogHeader, DialogTitle } from './Dialog';
+export { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardDescription, GlassCardContent, GlassCardFooter } from './GlassCard';
+export { GradientBadge, StatusBadge } from './GradientBadge';
+export { PrimaryButton, LinkButton } from './PrimaryButton';

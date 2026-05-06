@@ -66,13 +66,13 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-sm">
+    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-neutral-200/60 shadow-sm">
       <div className="flex items-center justify-between h-16 px-4 lg:px-6">
         {/* Left: spacer for mobile hamburger + page title */}
         <div className="flex items-center gap-3 min-w-0">
           {/* Spacer for mobile hamburger button rendered by Sidebar */}
           <div className="lg:hidden w-10 flex-shrink-0" />
-          <h1 className="text-base lg:text-lg font-semibold text-slate-900 truncate">
+          <h1 className="text-base lg:text-lg font-semibold text-neutral-900 tracking-tight truncate">
             {pageTitle}
           </h1>
         </div>
@@ -84,10 +84,11 @@ export default function Header() {
             onClick={handleSync}
             disabled={isSyncing}
             className={cn(
-              'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150',
-              'border border-slate-200 bg-white text-slate-600',
-              'hover:bg-slate-50 hover:text-slate-900',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
+              'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all duration-200',
+              'bg-white/80 border border-neutral-200 text-neutral-600',
+              'hover:bg-primary-50 hover:border-primary-200 hover:text-primary-700',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+              'hover:-translate-y-0.5'
             )}
           >
             <RefreshCw className={cn('w-4 h-4', isSyncing && 'animate-spin')} />
@@ -106,8 +107,8 @@ export default function Header() {
               aria-label="Menu utilisateur"
             >
               {/* Avatar */}
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-xs font-bold text-blue-700">{initials}</span>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-100 to-primary-50 border border-primary-200 flex items-center justify-center flex-shrink-0">
+                <span className="text-xs font-bold text-primary-700">{initials}</span>
               </div>
               <ChevronDown
                 className={cn(
@@ -125,27 +126,27 @@ export default function Header() {
                   onClick={() => setIsUserMenuOpen(false)}
                 />
                 {/* Dropdown */}
-                <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-1 animate-slide-down overflow-hidden">
+                <div className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-xl border border-neutral-200/60 rounded-2xl shadow-lg z-50 py-1 animate-slide-down overflow-hidden">
                   {/* User info */}
-                  <div className="px-4 py-3 border-b border-slate-100">
-                    <p className="text-sm font-semibold text-slate-900 truncate">{user?.name}</p>
-                    <p className="text-xs text-slate-400 truncate">{user?.email}</p>
+                  <div className="px-4 py-3 border-b border-neutral-100">
+                    <p className="text-sm font-semibold text-neutral-900 truncate">{user?.name}</p>
+                    <p className="text-xs text-neutral-400 truncate">{user?.email}</p>
                   </div>
 
                   <Link
                     href="/app/profile"
                     onClick={() => setIsUserMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-neutral-600 hover:text-neutral-900 hover:bg-primary-50/50 transition-colors"
                   >
-                    <User className="w-4 h-4 text-slate-400" />
+                    <User className="w-4 h-4 text-neutral-400" />
                     Mon profil
                   </Link>
                   <Link
                     href="/app/profile"
                     onClick={() => setIsUserMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-neutral-600 hover:text-neutral-900 hover:bg-primary-50/50 transition-colors"
                   >
-                    <Settings className="w-4 h-4 text-slate-400" />
+                    <Settings className="w-4 h-4 text-neutral-400" />
                     Paramètres
                   </Link>
 

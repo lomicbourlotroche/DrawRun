@@ -873,28 +873,26 @@ async function createTrainingPlan(userId, planData) {
     for (const session of sessions) {
         await dbRunUser(userDb, `
             INSERT INTO training_sessions (
-                plan_id, user_id, week_number, day_number, session_number, type, title, description,
-                target_distance, target_time, intensity, target_pace, target_hr_zone, 
-                expected_tss, progression_factor, phase, terrain_preference
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                plan_id, user_id, week_number, day_number, type, title, description,
+                target_distance, target_time, intensity, target_pace, target_hr_zones,
+                expected_tss, progression_factor, phase
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             session.plan_id,
             userId,
             session.week_number,
             session.day_number,
-            session.session_number || null,
             session.type,
             session.title,
             session.description,
             session.distance_target || null,
             session.time_target || null,
             session.intensity,
-            session.targetPace || null,
-            session.targetHRZone || null,
-            session.expectedTSS || null,
+            session.target_pace || null,
+            session.target_hr_zone || null,
+            session.expected_tss || null,
             session.progression_factor || 1.0,
-            session.phase || 'base',
-            preferredTerrain
+            session.phase || 'base'
         ]);
     }
     

@@ -496,6 +496,16 @@ async function clearStravaSession(userId) {
 }
 
 // ---------------------------------------------------------------------------
+// OAuth / Auth URL
+// ---------------------------------------------------------------------------
+
+async function getStravaAuthUrl(userId) {
+    // This module uses Playwright-based scraping, not OAuth
+    // Return the Strava login URL for web scraping authentication
+    return `${STRAVA_LOGIN_URL}?redirect_to=/dashboard`;
+}
+
+// ---------------------------------------------------------------------------
 // Exports
 // ---------------------------------------------------------------------------
 
@@ -504,4 +514,5 @@ module.exports = {
     getStravaSyncStatus,
     disconnectStrava,
     clearStravaSession,
+    getStravaAuthUrl,
 };

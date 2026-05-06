@@ -44,6 +44,7 @@ router.post('/start-plan', verifyToken, validateBody(validatePlanBody), async (r
     }
 });
 
+// Generate plan (legacy/simple version)
 router.post('/plan', verifyToken, async (req, res) => {
     try {
         const { type = 'endurance', level = 'intermediate', weeks = 4 } = req.body;
@@ -51,6 +52,26 @@ router.post('/plan', verifyToken, async (req, res) => {
             type,
             level,
             weeks
+        });
+        res.json(result);
+    } catch (error) {
+        logger.error('Generate plan error', { error: error.message, stack: error.stack });
+        res.status(500).json({ error: 'Failed to generate plan' });
+    }
+});
+
+// Generate plan (alias for frontend compatibility)
+router.post('/generate-plan', verifyToken, async (req, res) => {
+    try {
+        const { target, vdot, weeklyKm, includePPG = false } = req.body;
+        const result = await coachPlan.createTrainingPlan(req.user.id, {
+            targetDistance: target ? parseFloat(target) : 0,
+            vdotValue: vdot,
+            currentWeeklyKm: weeklyKm,
+            usePPG: includePPG,
+            weeks: 8,
+            sessionsPerWeek: 4,
+            goals: target || 'custom'
         });
         res.json(result);
     } catch (error) {

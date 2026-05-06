@@ -249,6 +249,7 @@ const database = require('./src/database');
         
         // Auth & API
         app.use('/api/auth', authRouter);
+        app.use('/api/strava', syncRoutes);  // /api/strava/url
         app.use('/api/algo', apiRoutes);
         
         // Feature routes - using user-based rate limiting + cache

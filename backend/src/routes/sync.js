@@ -98,4 +98,55 @@ router.post('/suunto/clear-token', verifyToken, async (req, res) => {
     }
 });
 
+// GET /api/strava/url - OAuth authorization URL
+router.get('/strava/url', verifyToken, async (req, res) => {
+    try {
+        const { getStravaAuthUrl } = require('../strava_sync');
+        const url = await getStravaAuthUrl(req.user.id);
+        res.json({ url });
+    } catch (error) {
+        logger.error('Get Strava URL error:', error);
+        res.status(500).json({ error: 'Failed to get Strava auth URL' });
+    }
+});
+
+// POST /api/sync/healthconnect - Import Health Connect activities
+router.post('/healthconnect', verifyToken, async (req, res) => {
+    try {
+        const activities = req.body;
+        if (!Array.isArray(activities)) {
+            return res.status(400).json({ error: 'Expected array of activities' });
+        }
+        
+        const { getUserDb, dbRunUser } = require('../database');
+        const userDb = await getUserDb(req.user.id);
+        
+        let imported = 0;
+        for (const activity of activities) {
+            if (!activity.type || !activity.start_time) continue;
+            
+            await dbRunUser(userDb, `
+                INSERT OR IGNORE INTO activities 
+                (source, source_id, name, type, start_date, distance, moving_time, calories, is_manual)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+            `, [
+                'healthconnect',
+                activity.id || `hc-${Date.now()}-${imported}`,
+                activity.name || 'Health Connect Activity',
+                activity.type,
+                activity.start_time,
+                activity.distance || 0,
+                activity.duration || 0,
+                activity.calories || 0
+            ]);
+            imported++;
+        }
+        
+        res.json({ success: true, imported });
+    } catch (error) {
+        logger.error('Health Connect sync error:', error);
+        res.status(500).json({ error: 'Failed to import Health Connect activities' });
+    }
+});
+
 module.exports = router;

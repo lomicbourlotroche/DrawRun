@@ -15,8 +15,9 @@ import {
   ModernDashboard,
 } from '@/components/features/dashboard';
 import { useLanguage } from '@/components/providers/LanguageProvider';
-import { Activity, Heart } from 'lucide-react';
+import { Activity, Heart, TrendingUp, Zap } from 'lucide-react';
 import Link from 'next/link';
+import { GlassCard, GradientBadge, PrimaryButton } from '@/components/ui';
 
 export default function DashboardContent() {
   const { t } = useLanguage();
@@ -103,37 +104,70 @@ export default function DashboardContent() {
   if (!isLoading && !hasData) {
     return (
       <div className="space-y-6 animate-fade-in">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">{t.dashboard.title}</h1>
-          <p className="text-muted mt-1">{t.dashboard.subtitle}</p>
+        {/* Header avec badge */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">{t.dashboard.title}</h1>
+            <p className="text-neutral-500 mt-1">{t.dashboard.subtitle}</p>
+          </div>
+          <GradientBadge variant="primary" icon={Zap} dot>
+            Prêt à commencer
+          </GradientBadge>
         </div>
 
-        <div className="bg-surface border border-border rounded-2xl p-8 text-center">
-          <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Activity className="w-8 h-8 text-primary" />
+        {/* Empty State avec GlassCard */}
+        <GlassCard className="p-8 md:p-12 text-center max-w-2xl mx-auto" hover={false}>
+          <div className="w-20 h-20 bg-gradient-to-br from-primary-100 to-primary-50 border border-primary-200 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+            <Activity className="w-10 h-10 text-primary-600" />
           </div>
-          <h2 className="text-xl font-bold text-foreground mb-2">Aucune activité</h2>
-          <p className="text-muted mb-6">
-            Connectez Strava ou Garmin pour importer vos activités et voir vos statistiques.
+          
+          <h2 className="text-xl font-bold text-neutral-900 mb-2 tracking-tight">Aucune activité</h2>
+          <p className="text-neutral-500 mb-8 max-w-md mx-auto leading-relaxed">
+            Connectez Strava ou Garmin pour importer vos activités et voir vos statistiques. 
+            Vos données seront automatiquement synchronisées.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/app/profile"
-              className="inline-flex items-center gap-2 bg-primary text-white font-medium px-6 py-3 rounded-xl hover:bg-primary/90 transition-all"
-            >
-              <Heart className="w-5 h-5" />
-              Connecter des services
+          
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link href="/app/profile">
+              <PrimaryButton variant="primary" icon={Heart} size="lg">
+                Connecter des services
+              </PrimaryButton>
+            </Link>
+            <Link href="/app/activities/new">
+              <PrimaryButton variant="secondary" icon={TrendingUp} size="lg">
+                Ajouter manuellement
+              </PrimaryButton>
             </Link>
           </div>
+        </GlassCard>
+
+        {/* Quick Tips */}
+        <div className="grid sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
+          {[
+            { title: 'Synchronisation auto', desc: 'Vos activités se mettent à jour automatiquement' },
+            { title: 'Analyse avancée', desc: 'VDOT, PMC et métriques scientifiques' },
+            { title: 'Coaching adaptatif', desc: 'Plans personnalisés selon vos objectifs' },
+          ].map((tip, i) => (
+            <GlassCard key={i} padding="md" variant="subtle">
+              <h3 className="font-semibold text-neutral-900 text-sm mb-1">{tip.title}</h3>
+              <p className="text-xs text-neutral-500">{tip.desc}</p>
+            </GlassCard>
+          ))}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="animate-fade-in space-y-4">
-      <OvertrainingAlert />
-      <ModernDashboard />
+    <div className="animate-fade-in">
+      {/* Background Effects */}
+      <div className="fixed inset-0 bg-gradient-to-b from-neutral-50 to-white" />
+      <div className="fixed inset-0 bg-[linear-gradient(rgba(0,102,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,102,255,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <OvertrainingAlert />
+        <ModernDashboard />
+      </div>
     </div>
   );
 }

@@ -18,27 +18,41 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="animate-spin w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full" />
-          <p className="text-sm text-slate-500">Chargement…</p>
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 flex items-center justify-center relative overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-primary-400/10 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-success-400/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        </div>
+        <div className="flex flex-col items-center gap-3 relative z-10">
+          <div className="animate-spin w-10 h-10 border-4 border-primary-600 border-t-transparent rounded-full" />
+          <p className="text-sm text-neutral-500">Chargement…</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 relative">
+      {/* Background Effects - Fixed position */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {/* Gradient Orbs */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-primary-400/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-success-400/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-primary-100/30 to-transparent rounded-full" />
+        
+        {/* Subtle Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,102,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,102,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
+      </div>
+
       <Sidebar />
       {/*
         The sidebar is 64px (collapsed) or 256px (expanded).
         We use lg:pl-64 as the default; the sidebar collapse state is
         managed inside Sidebar itself and doesn't affect this layout
         because the sidebar is fixed-positioned.
-        For a fully dynamic collapse-aware layout, CSS variables would be
-        needed — kept simple here to avoid over-engineering.
       */}
-      <div className="lg:pl-64 min-h-screen transition-all duration-300">
+      <div className="lg:pl-64 min-h-screen transition-all duration-300 relative z-0">
         <Header />
         <main className="p-4 lg:p-6">
           {children}

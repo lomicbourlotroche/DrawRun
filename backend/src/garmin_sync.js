@@ -66,7 +66,9 @@ async function callGarminApi(userId, options = {}) {
         if (options.limit)      args.push('--limit',      String(options.limit));
         if (options.start_date) args.push('--start_date', options.start_date);
 
-        const pythonProcess = spawn('python3', args);
+        // Try python3 first, then python (for Windows compatibility)
+        const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+        const pythonProcess = spawn(pythonCmd, args);
 
         let output = '';
         let errorOutput = '';

@@ -429,7 +429,11 @@ async function getPublicGroups(searchQuery) {
     let query = `
         SELECT g.*,
             (SELECT COUNT(*) FROM group_members WHERE group_id = g.id) as member_count,
-            json_extract(u.profile_data, '$.name') as creator_name
+            COALESCE(
+                NULLIF(json_extract(u.profile_data, '$.name'), ''),
+                u.name,
+                'Utilisateur ' || u.id
+            ) as creator_name
         FROM training_groups g
         JOIN users u ON g.creator_id = u.id
         WHERE g.is_private = 0
