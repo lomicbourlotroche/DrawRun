@@ -10,6 +10,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import type { SportType } from '@/types';
 import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { 
   Play, MapPin, Clock, Heart, Flame, Mountain, 
@@ -72,7 +73,7 @@ export default function RecordActivityPage() {
     try {
       await api.createActivity({
         name: form.name || `${SPORTS.find(s => s.id === selectedSport)?.label} - ${new Date().toLocaleDateString('fr-FR')}`,
-        type: selectedSport,
+        type: selectedSport as SportType,
         start_date: new Date().toISOString(),
         distance: parseFloat(form.distance) * 1000,
         moving_time: parseInt(form.duration) * 60,
