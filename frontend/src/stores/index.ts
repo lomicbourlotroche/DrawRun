@@ -105,6 +105,7 @@ export const useAuthStore = create<AuthState>()(
             has_strava: syncStatus.has_strava,
             has_garmin: syncStatus.has_garmin,
             has_suunto: syncStatus.has_suunto,
+            has_decathlon: syncStatus.has_decathlon,
           };
 
           set({
@@ -172,13 +173,14 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'drawrun-auth',
       storage: createJSONStorage(() => sessionStorage),
-      partialize: (state) => ({
+       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
         user: state.user,
         token: state.token,
         has_strava: state.has_strava,
         has_garmin: state.has_garmin,
         has_suunto: state.has_suunto,
+        has_decathlon: state.has_decathlon,
       }),
       onRehydrateStorage: () => (state) => {
         if (state?.token) api.setToken(state.token);

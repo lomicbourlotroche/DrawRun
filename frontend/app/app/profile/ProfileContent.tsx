@@ -23,25 +23,19 @@ import { toast } from 'sonner';
 // SERVICE CARD COMPONENT
 // ============================================================================
 
-function ServiceCard({ 
-  service, 
-  isConnected, 
-  lastSync, 
-  onConnect, 
-  onDisconnect,
-  isDisconnecting 
-}: {
-  service: 'strava' | 'garmin' | 'suunto';
-  isConnected: boolean;
-  lastSync: string | null;
-  onConnect: () => void;
-  onDisconnect: () => void;
-  isDisconnecting: boolean;
-}) {
+  function ServiceCard({ 
+    service: 'strava' | 'garmin' | 'suunto' | 'decathlon'; 
+    isConnected: boolean; 
+    lastSync: string | null; 
+    onConnect: () => void; 
+    onDisconnect: () => void; 
+    isDisconnecting: boolean; 
+  }) {
   const config = {
     strava: { name: 'Strava', color: 'orange' },
     garmin: { name: 'Garmin', color: 'blue' },
     suunto: { name: 'Suunto', color: 'green' },
+    decathlon: { name: 'Decathlon', color: 'red' },
   };
 
   const c = config[service];
@@ -287,27 +281,34 @@ function SyncTab() {
 
   // Check if services are connected (have credentials stored)
   // Use has_* flags from auth store, fallback to syncStatus dates
-  const { has_strava, has_garmin, has_suunto } = useAuthStore();
+  const { has_strava, has_garmin, has_suunto, has_decathlon } = useAuthStore();
   const stravaConnected = has_strava || !!syncStatus?.strava_last_sync;
   const garminConnected = has_garmin || !!syncStatus?.garmin_last_sync;
   const suuntoConnected = has_suunto || !!syncStatus?.suunto_last_sync;
+  const decathlonConnected = has_decathlon || !!syncStatus?.decathlon_last_sync;
 
-  const handleConnect = async (service: 'strava' | 'garmin' | 'suunto', email: string, password: string) => {
+  const handleConnect = async (service: 'strava' | 'garmin' | 'suunto' | 'decathlon', email: string, password: string) => {
     try {
       if (service === 'strava') await api.connectStrava(email, password);
       else if (service === 'garmin') await api.connectGarmin(email, password);
-      else await api.connectSuunto(email, password);
+      else if (service === 'suunto') await api.connectSuunto(email, password);
+      else if (service === 'decathlon') {
+        const { url } = await syncApi.getDecathlonUrl();
+        window.location.href = url;
+        return;
+      }
       toast.success(`${service} connecté`);
       fetchStatus();
     } catch { toast.error(`Erreur connexion ${service}`); }
   };
 
-  const handleDisconnect = async (service: 'strava' | 'garmin' | 'suunto') => {
+  const handleDisconnect = async (service: 'strava' | 'garmin' | 'suunto' | 'decathlon') => {
     setDisconnecting(service);
     try {
       if (service === 'strava') await api.disconnectStrava();
       else if (service === 'garmin') await api.disconnectGarmin();
-      else await api.disconnectSuunto();
+      else if (service === 'suunto') await api.disconnectSuunto();
+      else if (service === 'decathlon') await api.disconnectDecathlon();
       toast.success(`${service} déconnecté`);
       fetchStatus();
     } catch { toast.error(`Erreur déconnexion ${service}`); }
@@ -351,6 +352,7 @@ function SyncTab() {
             <ServiceCard service="strava" isConnected={stravaConnected} lastSync={syncStatus?.strava_last_sync || null} onConnect={() => setModalService('strava')} onDisconnect={() => handleDisconnect('strava')} isDisconnecting={disconnecting === 'strava'} />
             <ServiceCard service="garmin" isConnected={garminConnected} lastSync={syncStatus?.garmin_last_sync || null} onConnect={() => setModalService('garmin')} onDisconnect={() => handleDisconnect('garmin')} isDisconnecting={disconnecting === 'garmin'} />
             <ServiceCard service="suunto" isConnected={suuntoConnected} lastSync={syncStatus?.suunto_last_sync || null} onConnect={() => setModalService('suunto')} onDisconnect={() => handleDisconnect('suunto')} isDisconnecting={disconnecting === 'suunto'} />
+            <ServiceCard service="decathlon" isConnected={decathlonConnected} lastSync={syncStatus?.decathlon_last_sync || null} onConnect={() => handleConnect('decathlon', '', '')} onDisconnect={() => handleDisconnect('decathlon')} isDisconnecting={disconnecting === 'decathlon'} />
           </div>
         </GlassCardContent>
       </GlassCard>
