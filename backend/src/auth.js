@@ -18,12 +18,13 @@ const dbRun = (query, params = []) => dbRunMain(query, params);
 const dbAll = (query, params = []) => dbAllMain(query, params);
 
 // Background sync triggered after login (non-blocking)
-function triggerBackgroundSync(userId, hasStrava, hasGarmin, hasSuunto) {
-    if (!hasStrava && !hasGarmin && !hasSuunto) return;
+function triggerBackgroundSync(userId, hasStrava, hasGarmin, hasSuunto, hasDecathlon) {
+    if (!hasStrava && !hasGarmin && !hasSuunto && !hasDecathlon) return;
 
     const { performSync } = require('./strava_sync');
     const { performGarminSync } = require('./garmin_sync');
     const { performSuuntoSync } = require('./suunto_sync');
+    const { performDecathlonSync } = require('./decathlon_sync');
     const { calculateAndStoreMetrics } = require('./metrics_calculator');
     const { getUserDb } = require('./database');
 
@@ -56,6 +57,15 @@ function triggerBackgroundSync(userId, hasStrava, hasGarmin, hasSuunto) {
                     logger.info(`[AutoSync][User ${userId}] Suunto sync complete`);
                 } catch (err) {
                     logger.error(`[AutoSync][User ${userId}] Suunto sync error: ${err.message}`);
+                }
+            }
+
+            if (hasDecathlon) {
+                try {
+                    await performDecathlonSync(userId);
+                    logger.info(`[AutoSync][User ${userId}] Decathlon sync complete`);
+                } catch (err) {
+                    logger.error(`[AutoSync][User ${userId}] Decathlon sync error: ${err.message}`);
                 }
             }
 
@@ -191,8 +201,9 @@ router.post('/login', async (req, res) => {
         const hasStrava = !!user.strava_client_id;
         const hasGarmin = !!user.garmin_username;
         const hasSuunto = !!user.suunto_username;
-        if (hasStrava || hasGarmin || hasSuunto) {
-            triggerBackgroundSync(user.id, hasStrava, hasGarmin, hasSuunto);
+        const hasDecathlon = !!user.decathlon_access_token;
+        if (hasStrava || hasGarmin || hasSuunto || hasDecathlon) {
+            triggerBackgroundSync(user.id, hasStrava, hasGarmin, hasSuunto, hasDecathlon);
         }
         
         res.json({
@@ -699,7 +710,7 @@ router.post('/disconnect/strava', verifyToken, async (req, res) => {
 router.get('/profile', verifyToken, async (req, res) => {
     try {
         const user = await dbGet(
-            'SELECT id, email, profile_data, strava_enabled, garmin_enabled, suunto_enabled, strava_client_id, garmin_username, suunto_username, created_at, last_login FROM users WHERE id = ?',
+            'SELECT id, email, profile_data, strava_enabled, garmin_enabled, suunto_enabled, decathlon_enabled, strava_client_id, garmin_username, suunto_username, decathlon_access_token, created_at, last_login FROM users WHERE id = ?',
             [req.user.id]
         );
         
@@ -711,6 +722,7 @@ router.get('/profile', verifyToken, async (req, res) => {
         const hasStrava = !!user.strava_enabled || !!user.strava_client_id;
         const hasGarmin = !!user.garmin_enabled || !!user.garmin_username;
         const hasSuunto = !!user.suunto_enabled || !!user.suunto_username;
+        const hasDecathlon = !!user.decathlon_enabled || !!user.decathlon_access_token;
         
         res.json({
             id: user.id,
@@ -719,9 +731,11 @@ router.get('/profile', verifyToken, async (req, res) => {
             strava_enabled: hasStrava,
             garmin_enabled: hasGarmin,
             suunto_enabled: hasSuunto,
+            decathlon_enabled: hasDecathlon,
             has_strava: hasStrava,
             has_garmin: hasGarmin,
             has_suunto: hasSuunto,
+            has_decathlon: hasDecathlon,
             created_at: user.created_at,
             last_login: user.last_login
         });

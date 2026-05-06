@@ -16,6 +16,7 @@ const { verifyToken } = require('../auth');
 const { performSync: performStravaSync } = require('../strava_sync');
 const { performGarminSync } = require('../garmin_sync');
 const { performSuuntoSync } = require('../suunto_sync');
+const { performDecathlonSync } = require('../decathlon_sync');
 
 const router = express.Router();
 
@@ -34,6 +35,9 @@ router.post('/', verifyToken, async (req, res) => {
         if (!source || source === 'suunto') {
             result.suunto = await performSuuntoSync(req.user.id);
         }
+        if (!source || source === 'decathlon') {
+            result.decathlon = await performDecathlonSync(req.user.id);
+        }
 
         res.json(result);
     } catch (error) {
@@ -49,13 +53,16 @@ router.get('/status', verifyToken, async (req, res) => {
         const { getGarminSyncStatus } = require('../garmin_sync');
         const { getSuuntoSyncStatus } = require('../suunto_sync');
 
-        const [strava, garmin, suunto] = await Promise.all([
+        const { getDecathlonSyncStatus } = require('../decathlon_sync');
+
+        const [strava, garmin, suunto, decathlon] = await Promise.all([
             getStravaSyncStatus(req.user.id),
             getGarminSyncStatus(req.user.id),
             getSuuntoSyncStatus(req.user.id),
+            getDecathlonSyncStatus(req.user.id),
         ]);
 
-        res.json({ strava, garmin, suunto });
+        res.json({ strava, garmin, suunto, decathlon });
     } catch (error) {
         logger.error('Sync status error:', error);
         res.status(500).json({ error: 'Failed to get sync status' });
@@ -94,6 +101,75 @@ router.post('/suunto/clear-token', verifyToken, async (req, res) => {
         res.json(result);
     } catch (error) {
         logger.error('Clear Suunto token error:', error);
+        res.status(500).json({ error: 'Failed to clear token' });
+    }
+});
+
+// GET /api/sync/decathlon/url - OAuth authorization URL
+router.get('/decathlon/url', verifyToken, async (req, res) => {
+    try {
+        const { getDecathlonAuthUrl } = require('../decathlon_sync');
+        const url = await getDecathlonAuthUrl(req.user.id);
+        res.json({ url });
+    } catch (error) {
+        logger.error('Get Decathlon URL error:', error);
+        res.status(500).json({ error: 'Failed to get Decathlon auth URL' });
+    }
+});
+
+// POST /api/sync/decathlon/callback - OAuth callback
+router.post('/decathlon/callback', verifyToken, async (req, res) => {
+    try {
+        const { code, code_verifier } = req.body;
+        if (!code) {
+            return res.status(400).json({ error: 'Authorization code required' });
+        }
+
+        // Exchange code for tokens
+        const tokenResponse = await axios.post(
+            'https://api-eu.decathlon.net/connect/oauth/token',
+            new URLSearchParams({
+                grant_type: 'authorization_code',
+                code,
+                code_verifier,
+                client_id: process.env.DECATHLON_CLIENT_ID,
+                redirect_uri: process.env.DECATHLON_REDIRECT_URI,
+            }),
+            {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                timeout: 15000,
+            }
+        );
+
+        const { access_token, refresh_token, expires_in } = tokenResponse.data;
+
+        // Save tokens to user record
+        await dbRunMain(
+            `UPDATE users SET
+                decathlon_access_token = ?,
+                decathlon_refresh_token = ?,
+                decathlon_expires_at = ?,
+                decathlon_enabled = 1,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?`,
+            [access_token, refresh_token, Date.now() + (expires_in * 1000), req.user.id]
+        );
+
+        res.json({ success: true, message: 'Decathlon connected successfully' });
+    } catch (error) {
+        logger.error('Decathlon callback error:', error);
+        res.status(500).json({ error: 'Failed to connect Decathlon' });
+    }
+});
+
+// POST /api/sync/decathlon/clear-token
+router.post('/decathlon/clear-token', verifyToken, async (req, res) => {
+    try {
+        const { clearDecathlonToken } = require('../decathlon_sync');
+        const result = await clearDecathlonToken(req.user.id);
+        res.json(result);
+    } catch (error) {
+        logger.error('Clear Decathlon token error:', error);
         res.status(500).json({ error: 'Failed to clear token' });
     }
 });

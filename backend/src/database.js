@@ -661,6 +661,17 @@ const MIGRATIONS = [
             db.run('CREATE INDEX IF NOT EXISTS idx_race_plans_created ON race_plans(created_at DESC)');
         },
     },
+    {
+        version: '020_add_decathlon_columns',
+        description: 'Add Decathlon OAuth columns to users table',
+        up: (db) => {
+            try { db.run('ALTER TABLE users ADD COLUMN decathlon_enabled INTEGER DEFAULT 0'); } catch (_) {}
+            try { db.run('ALTER TABLE users ADD COLUMN decathlon_access_token TEXT'); } catch (_) {}
+            try { db.run('ALTER TABLE users ADD COLUMN decathlon_refresh_token TEXT'); } catch (_) {}
+            try { db.run('ALTER TABLE users ADD COLUMN decathlon_expires_at INTEGER'); } catch (_) {}
+            try { db.run('ALTER TABLE users ADD COLUMN decathlon_user_id TEXT'); } catch (_) {}
+        },
+    },
 ];
 
 async function runMigrations(db) {
@@ -798,6 +809,11 @@ async function initMainDb() {
                     suunto_enabled INTEGER DEFAULT 0,
                     suunto_username TEXT,
                     suunto_password TEXT,
+                    decathlon_enabled INTEGER DEFAULT 0,
+                    decathlon_access_token TEXT,
+                    decathlon_refresh_token TEXT,
+                    decathlon_expires_at INTEGER,
+                    decathlon_user_id TEXT,
                     twofa_enabled INTEGER DEFAULT 0,
                     totp_secret TEXT,
                     twofa_pending INTEGER DEFAULT 0,
