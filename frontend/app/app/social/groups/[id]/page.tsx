@@ -33,7 +33,7 @@ export default function GroupDetailPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showEventModal, setShowEventModal] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', description: '', isPrivate: false });
-  const [eventForm, setEventForm] = useState({ title: '', description: '', location: '', eventDate: '', isOnline: false });
+  const [eventForm, setEventForm] = useState({ title: '', description: '', location: '', event_date: '', isOnline: false });
 
   const loadGroup = useCallback(async () => {
     setIsLoading(true);
@@ -108,7 +108,7 @@ export default function GroupDetailPage() {
       await api.createEvent(groupId, eventForm);
       toast.success('Événement créé');
       setShowEventModal(false);
-      setEventForm({ title: '', description: '', location: '', eventDate: '', isOnline: false });
+      setEventForm({ title: '', description: '', location: '', event_date: '', isOnline: false });
       loadGroup();
     } catch (e) {
       toast.error('Erreur');
@@ -483,7 +483,7 @@ export default function GroupDetailPage() {
               <Input label="Titre" value={eventForm.title} onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })} />
               <Input label="Description" value={eventForm.description} onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })} />
               <Input label="Lieu" value={eventForm.location} onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })} />
-              <Input label="Date" type="datetime-local" value={eventForm.eventDate} onChange={(e) => setEventForm({ ...eventForm, eventDate: e.target.value })} />
+              <Input label="Date" type="datetime-local" value={eventForm.event_date} onChange={(e) => setEventForm({ ...eventForm, event_date: e.target.value })} />
               <div className="flex gap-3 pt-2">
                 <Button variant="secondary" onClick={() => setShowEventModal(false)} className="flex-1 rounded-xl">Annuler</Button>
                 <Button onClick={handleCreateEvent} className="flex-1 rounded-xl">Créer</Button>
