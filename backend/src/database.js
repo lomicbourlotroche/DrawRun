@@ -1141,14 +1141,16 @@ function ensureUserSchemaCompatibility(userDb) {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(user_id, friend_id)
         )`,
-        `CREATE TABLE IF NOT EXISTS groups (
+        `CREATE TABLE IF NOT EXISTS training_groups (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             description TEXT,
-            invite_code TEXT UNIQUE,
+            creator_id INTEGER NOT NULL,
             is_private INTEGER DEFAULT 1,
-            created_by INTEGER NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            invite_code TEXT UNIQUE,
+            member_count INTEGER DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`,
         `CREATE TABLE IF NOT EXISTS group_members (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1157,6 +1159,19 @@ function ensureUserSchemaCompatibility(userDb) {
             role TEXT DEFAULT 'member',
             joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(group_id, user_id)
+        )`,
+        `CREATE TABLE IF NOT EXISTS race_plans (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            distance REAL NOT NULL,
+            target_pace REAL NOT NULL,
+            total_time INTEGER NOT NULL,
+            elevation_profile TEXT DEFAULT 'flat',
+            fatigue INTEGER DEFAULT 0,
+            splits TEXT NOT NULL,
+            nutrition_strategy TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`,
     ];
 
