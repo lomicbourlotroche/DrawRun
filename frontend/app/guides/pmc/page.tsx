@@ -138,7 +138,7 @@ export default function PMCGuide() {
               <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold mb-1">Attention au CTL trop haut</h4>
-                <p className="text-sm text-neutral-600">Un CTL > 120 sans période de récupération augmente le risque de blessure et de surentraînement.</p>
+                <p className="text-sm text-neutral-600">Un CTL &gt; 120 sans période de récupération augmente le risque de blessure et de surentraînement.</p>
               </div>
             </div>
           </div>

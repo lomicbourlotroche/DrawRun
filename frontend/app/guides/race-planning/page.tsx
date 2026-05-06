@@ -142,11 +142,11 @@ export default function RacePlanningGuide() {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-amber-500 mt-1">•</span>
-              <span><strong>ACWR > 1.5 :</strong> risque de blessure, stratégie conservatrice activée</span>
+              <span><strong>ACWR &gt; 1.5 :</strong> risque de blessure, stratégie conservatrice activée</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-blue-500 mt-1">•</span>
-              <span><strong>Température > 25°C :</strong> +3-5% sur l'allure cible (dégradation thermique)</span>
+              <span><strong>Température &gt; 25°C :</strong> +3-5% sur l'allure cible (dégradation thermique)</span>
             </li>
           </ul>
         </div>
