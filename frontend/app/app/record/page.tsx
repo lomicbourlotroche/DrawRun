@@ -82,7 +82,7 @@ export default function RecordActivityPage() {
         max_heartrate: form.maxHR ? parseInt(form.maxHR) : undefined,
         calories: form.calories ? parseInt(form.calories) : undefined,
         notes: form.notes || undefined,
-      });
+      } as any);
 
       toast.success('Activité enregistrée !');
       router.push('/app/activities');
