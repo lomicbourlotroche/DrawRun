@@ -382,18 +382,6 @@ export const socialApi = {
     return client.request(`/api/social/conversations/${conversationId}/participants`);
   },
 
-  createGroupConversation(groupId: number, title?: string): Promise<{ 
-    success: boolean; 
-    conversation?: unknown; 
-    existing?: boolean; 
-    error?: string 
-  }> {
-    return client.request(`/api/social/groups/${groupId}/conversation`, {
-      method: 'POST',
-      body: JSON.stringify({ title }),
-    });
-  },
-
   // ============================================================================
   // Challenges
   // ============================================================================
