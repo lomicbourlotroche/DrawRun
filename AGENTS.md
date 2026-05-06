@@ -46,23 +46,17 @@ DrawRun-New/
 │   │   ├── db_helpers.js           # maskEmail, clamp, sleep, etc.
 │   │   ├── api_routes.js           # Scientific algorithm routes
 │   │   ├── coach_plan.js           # Adaptive coaching engine
-│   │   ├── plan_utils.js           # Plan archive / limit helpers
-│   │   ├── plan_integration.js     # Activity → session matching
 │   │   ├── metrics_calculator.js   # PMC / TSS / VDOT metrics
 │   │   ├── tss_calculator.js       # TSS route handler
 │   │   ├── strava_sync.js          # Strava OAuth2 sync
 │   │   ├── garmin_sync.js          # Garmin sync
-│   │   ├── social.js               # Social features (friends, groups, feed)
-│   │   ├── gdpr.js                 # GDPR export / delete
 │   │   ├── monitoring.js           # Performance monitoring
 │   │   ├── performance.js          # Performance analysis
 │   │   ├── sync_queue.js           # Sync queue management
-│   │   ├── strava_oauth.js         # Strava OAuth2 flow
 │   │   ├── swagger.js              # Swagger/OpenAPI setup
 │   │   ├── algorithms/
 │   │   │   ├── index.js            # Cardiovascular, PMC, TrainingLoad, etc.
 │   │   │   ├── tss.js              # TSS/TRIMP calculation
-│   │   │   ├── metrics.js          # Calculated metrics
 │   │   │   └── sports.js           # Sports management
 │   │   ├── routes/
 │   │   │   ├── activities.js       # GET/POST /api/activities
@@ -79,24 +73,20 @@ DrawRun-New/
 │   │   ├── services/
 │   │   │   ├── cache.js            # Redis / in-memory cache
 │   │   │   ├── metrics.js          # Prometheus metrics
-│   │   │   ├── strava.js           # Strava service
-│   │   │   ├── garmin.js           # Garmin service
-│   │   │   ├── suunto_sync.js      # Suunto sync
-│   │   │   ├── suunto_sync_v2.js   # Suunto sync v2
-│   │   │   ├── polar_sync.js       # Polar sync
-│   │   │   ├── samsung_health_sync.js
-│   │   │   ├── apple_health_sync.js
-│   │   │   └── adidas_sync.js
+│   │   │   ├── draws.service.js    # DrawRun kudos system
+│   │   │   ├── push.service.js     # Push notifications
+│   │   │   ├── queryOptimizer.js   # Query optimization
+│   │   │   ├── routes.service.js   # Routes service
+│   │   │   ├── segments.service.js # Segments service
+│   │   │   └── social.service.js   # Social features (friends, groups, feed, challenges)
 │   │   ├── middleware/
 │   │   │   ├── auth.js             # JWT verification middleware
+│   │   │   ├── cache.js            # Cache middleware
 │   │   │   └── security.js         # Helmet, rate limiting, CORS, CSP
 │   │   ├── utils/
-│   │   │   ├── crypto.js
-│   │   │   ├── db.js
 │   │   │   ├── planIntegration.js
 │   │   │   ├── plans.js
 │   │   │   └── validation.js
-│   │   └── social.service.js       # Social notification service
 │   ├── tests/
 │   │   ├── setup.js                # Jest global setup (env vars, console mocks)
 │   │   ├── algorithms.test.js      # Scientific algorithm tests (55 tests)
