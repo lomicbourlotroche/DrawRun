@@ -79,7 +79,9 @@ export default function PerformanceContent() {
         api.getActivities().catch(() => []),
       ]);
       setPmc(p);
-      setActivities(acts);
+      // Garantir que acts est toujours un tableau
+      const actsArray = Array.isArray(acts) ? acts : [];
+      setActivities(actsArray);
 
       if (!constantsResult) {
         // User constants not available — will use defaults
@@ -87,7 +89,7 @@ export default function PerformanceContent() {
 
       // Polarization — requires activities with zone data
       try {
-        const activitiesWithZones = (acts as ActivityType[]).map((a) => ({
+        const activitiesWithZones = (actsArray as ActivityType[]).map((a) => ({
           zonePercent: (a as ActivityType & { zonePercent?: { 1?: number; 2?: number; 3?: number; 4?: number; 5?: number } }).zonePercent,
         }));
         const polData = await api.getAlgoPolarization(activitiesWithZones);

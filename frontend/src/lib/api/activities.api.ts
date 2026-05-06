@@ -20,8 +20,11 @@ export const activitiesApi = {
   /**
    * Liste toutes les activités
    */
-  getActivities(): Promise<Activity[]> {
-    return client.request('/api/activities');
+  async getActivities(): Promise<Activity[]> {
+    const res = await client.request<Activity[] | { data: Activity[] }>('/api/activities');
+    // Le backend retourne { data: [...], pagination: {...} }
+    if (res && !Array.isArray(res) && 'data' in res) return res.data;
+    return Array.isArray(res) ? res : [];
   },
 
   /**
