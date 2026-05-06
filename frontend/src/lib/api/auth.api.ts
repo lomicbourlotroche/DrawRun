@@ -30,6 +30,8 @@ export interface LoginResponse {
   has_garmin?: boolean;
   /** Whether the user has Suunto credentials stored (from login response) */
   has_suunto?: boolean;
+  /** Whether the user has Decathlon credentials stored (from login response) */
+  has_decathlon?: boolean;
   twofa_enabled?: boolean;
 }
 
