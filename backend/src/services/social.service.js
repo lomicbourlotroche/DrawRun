@@ -1,4 +1,4 @@
-const { dbGetMain, dbRunMain, dbAllMain } = require('../database');
+const { dbGetMain, dbRunMain, dbAllMain, getUserDb, dbAllUser } = require('../database');
 
 // Aliases locaux pour lisibilité
 const dbGet  = (q, p) => dbGetMain(q, p);
@@ -332,29 +332,55 @@ async function getGroupActivities(groupId, limit = 20, offset = 0) {
 
     if (memberIds.length === 0) return [];
 
-    const ids = memberIds.map(m => m.user_id).join(',');
-    const activities = await dbAllMain(`
-        SELECT a.*, u.name as owner_name
-        FROM activities a
-        JOIN users u ON a.user_id = u.id
-        WHERE a.user_id IN (${ids})
-        ORDER BY a.start_date DESC
-        LIMIT ? OFFSET ?
-    `, [limit, offset]);
+    const allActivities = [];
+    for (const member of memberIds) {
+        try {
+            const userDb = await getUserDb(member.user_id);
+            const activities = await dbAllUser(userDb, `
+                SELECT a.*, u.name as owner_name
+                FROM activities a
+                JOIN users u ON a.user_id = u.id
+                WHERE a.user_id = ?
+                ORDER BY a.start_date DESC
+            `, [member.user_id]);
+            allActivities.push(...activities);
+        } catch (_) {
+            // Skip users whose DB is unavailable
+        }
+    }
 
-    return activities;
+    // Sort globally and apply pagination
+    allActivities.sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
+    return allActivities.slice(offset, offset + limit);
 }
 
 async function getGroupEvents(groupId) {
-    const events = await dbAll(`
-        SELECT e.*,
-            (SELECT COUNT(*) FROM event_participants WHERE event_id = e.id AND status = 'going') as attendee_count
-        FROM events e
-        WHERE e.group_id = ? AND e.event_date >= datetime('now')
-        ORDER BY e.event_date ASC
+    const memberIds = await dbAll(`
+        SELECT user_id FROM group_members WHERE group_id = ?
     `, [groupId]);
 
-    return events;
+    if (memberIds.length === 0) return [];
+
+    const allEvents = [];
+    for (const member of memberIds) {
+        try {
+            const userDb = await getUserDb(member.user_id);
+            const events = await dbAllUser(userDb, `
+                SELECT e.*,
+                    (SELECT COUNT(*) FROM event_participants WHERE event_id = e.id AND status = 'going') as attendee_count
+                FROM events e
+                WHERE e.group_id = ? AND e.event_date >= datetime('now')
+                ORDER BY e.event_date ASC
+            `, [groupId]);
+            allEvents.push(...events);
+        } catch (_) {
+            // Skip users whose DB is unavailable
+        }
+    }
+
+    // Sort globally by date
+    allEvents.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
+    return allEvents;
 }
 
 async function createEvent(userId, groupId, title, description, location, eventDate, endDate, isOnline, maxAttendees) {
@@ -1269,22 +1295,6 @@ async function createEvent(userId, groupId, title, description, location, eventD
     `, [eventId]);
     
     return { success: true, event };
-}
-
-async function getGroupEvents(userId, groupId) {
-    
-    
-    
-    const events = await dbAll(`
-        SELECT e.*, 
-               (SELECT COUNT(*) FROM event_attendees WHERE event_id = e.id AND status = 'going') as attendee_count,
-               (SELECT status FROM event_attendees WHERE event_id = e.id AND user_id = ?) as user_status
-        FROM events e
-        WHERE e.group_id = ? AND e.event_date > datetime('now')
-        ORDER BY e.event_date ASC
-    `, [userId, groupId]);
-    
-    return events;
 }
 
 async function joinEvent(userId, eventId, status = 'going') {
