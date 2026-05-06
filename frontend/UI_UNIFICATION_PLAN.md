@@ -223,16 +223,17 @@ Dans `globals.css` ou `tailwind.config.js`:
 
 ## ✅ Checklist de Validation
 
-- [ ] Fond gradient présent sur toutes les pages app
-- [ ] Effets de lumière floutés visibles
-- [ ] Header avec glassmorphism (backdrop-blur)
-- [ ] Cartes avec fond blanc/90 + border subtile
-- [ ] Boutons primaires avec dégradé et shadow
-- [ ] Badges avec couleurs pastel et bordures
-- [ ] Animations hover fluides (300ms)
-- [ ] Typographie bold pour les titres
-- [ ] Grille subtile en background
-- [ ] Cohérence des couleurs primary-600 partout
+- [x] Fond gradient présent sur toutes les pages app
+- [x] Effets de lumière floutés visibles
+- [x] Header avec glassmorphism (backdrop-blur)
+- [x] Cartes avec fond blanc/90 + border subtile (GlassCard)
+- [x] Boutons primaires avec dégradé et shadow
+- [x] Badges avec couleurs pastel et bordures (GradientBadge)
+- [x] Animations hover fluides (300ms)
+- [x] Typographie bold pour les titres
+- [x] Grille subtile en background
+- [x] Cohérence des couleurs primary-600 partout
+- [x] Build Next.js OK (aucune erreur)
 
 ---
 
