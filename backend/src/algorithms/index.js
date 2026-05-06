@@ -27,21 +27,31 @@
 // ============================================================================
 
 const SCIENTIFIC_CONSTANTS = {
-    // Banister Model - Tau constants (Hellard et al. 2006)
-    // τa (fitness time constant): 30-60 jours selon individu
-    // τf (fatigue time constant): 4-12 jours selon individu
+    // ============================================================================
+    // BANISTER IMPULSE-RESPONSE MODEL (1975)
+    // ============================================================================
+    // Modèle mathématique de la réponse à l'entraînement
+    // Formule: Performance(t) = P0 + k1*CTL(t) - k2*ATL(t)
+    // où CTL = Chronic Training Load (fitness), ATL = Acute Training Load (fatigue)
+    // 
+    // Tau constants (Hellard et al. 2006):
+    // - τf (fitness): constante de temps pour l'adaptation positive (30-60 jours)
+    // - τa (fatigue): constante de temps pour la fatigue (4-12 jours)
+    // - Plus τ est élevé, plus l'effet persiste longtemps
+    // ============================================================================
     PMC: {
-        TAU_FITNESS_DEFAULT: 42,      // jours - chronic training load
-        TAU_FATIGUE_DEFAULT: 7,        // jours - acute training load
-        TAU_FITNESS_MIN: 30,
-        TAU_FITNESS_MAX: 60,
-        TAU_FATIGUE_MIN: 4,
-        TAU_FATIGUE_MAX: 12,
+        TAU_FITNESS_DEFAULT: 42,      // jours - temps pour atteindre 63% de l'adaptation
+        TAU_FATIGUE_DEFAULT: 7,        // jours - temps pour dissiper 63% de la fatigue
+        TAU_FITNESS_MIN: 30,          // Athlètes très rapides à s'adapter
+        TAU_FITNESS_MAX: 60,          // Athlètes très lents à s'adapter
+        TAU_FATIGUE_MIN: 4,           // Récupération très rapide
+        TAU_FATIGUE_MAX: 12,          // Récupération très lente
         
-        // Pour le calcul: α = 1 - e^(-1/τ)
-        ALPHA_FITNESS: 1 - Math.exp(-1 / 42),
-        ALPHA_FATIGUE: 1 - Math.exp(-1 / 7),
-        ALPHA_STABILITY: 1 - Math.exp(-1 / 14), // Stability Balance
+        // Facteurs de décroissance exponentielle: α = 1 - e^(-1/τ)
+        // Représente la proportion de charge qui reste après 1 jour
+        ALPHA_FITNESS: 1 - Math.exp(-1 / 42),    // ~2.3% de perte par jour
+        ALPHA_FATIGUE: 1 - Math.exp(-1 / 7),      // ~13.3% de perte par jour
+        ALPHA_STABILITY: 1 - Math.exp(-1 / 14),   // Balance stabilité (6.7%)
     },
 
     // ACWR - Seuil scientifiquement validés

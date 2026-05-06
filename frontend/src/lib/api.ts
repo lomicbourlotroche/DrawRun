@@ -1,30 +1,18 @@
 /**
  * ============================================================
- * API CLIENT - Wrapper de rétrocompatibilité
+ * API CLIENT - Export Direct (Migration Terminée)
  * ============================================================
  * 
- * CE FICHIER EST UN WRAPPER pour maintenir la compatibilité.
+ * L'API client a été complètement modularisée.
+ * Import direct depuis le module modulaire.
  * 
- * Le code a été migré vers une architecture modulaire dans:
- *   src/lib/api/
+ * Usage recommandé:
+ *   import { authApi, activitiesApi } from '@/lib/api';
+ *   import api from '@/lib/api';
  * 
- * Ce fichier réexporte simplement tout depuis le nouveau module
- * pour que les anciens imports continuent de fonctionner.
- * 
- * @deprecated Utilisez directement '@/lib/api' (module index.ts)
  * @module lib/api
  */
 
-// Réexporte tout depuis le nouveau module modulaire
+// Export direct depuis le module modulaire
 export * from './api/index';
 export { default } from './api/index';
-
-// Log de migration en développement
-if (process.env.NODE_ENV === 'development') {
-  // eslint-disable-next-line no-console
-  console.log(
-    '[API] Note: Le client API a été modularisé. ' +
-    'Vous pouvez maintenant importer par domaine: ' +
-    'import { authApi } from "@/lib/api"'
-  );
-}

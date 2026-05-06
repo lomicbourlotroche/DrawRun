@@ -12,7 +12,7 @@
 
 const express = require('express');
 const { verifyToken } = require('../auth');
-const social = require('../services/social.service');
+const social = require('../services/social');
 const draws = require('../services/draws.service');
 const { dbRunMain, dbAllMain, dbGetMain, getUserDbByEmail } = require('../database');
 const { logger } = require('../logger');

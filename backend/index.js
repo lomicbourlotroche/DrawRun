@@ -13,6 +13,22 @@
 'use strict';
 
 // ===========================================================================
+// OPEN TELEMETRY INITIALIZATION - Must be first
+// ===========================================================================
+const { initializeTracing } = require('./src/monitoring/tracing');
+
+// Initialize tracing before anything else
+initializeTracing({
+  serviceName: 'drawrun-backend',
+  serviceVersion: '4.1.0',
+  enablePrometheus: true,
+  enableJaeger: process.env.NODE_ENV === 'production',
+}).catch(error => {
+  console.error('Failed to initialize tracing:', error);
+  // Continue without tracing in development
+});
+
+// ===========================================================================
 // CONFIGURATION
 // ===========================================================================
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
