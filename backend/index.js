@@ -31,7 +31,7 @@ initializeTracing({
 // ===========================================================================
 // CONFIGURATION
 // ===========================================================================
-require('dotenv').config({ path: require('path').join(__dirname, '.env') });
+require('dotenv').config({ path: require('path').join(__dirname, '.env'), override: false });
 
 // Fallback: read .env manually if JWT_SECRET is still missing
 if (!process.env.JWT_SECRET) {
