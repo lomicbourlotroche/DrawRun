@@ -44,6 +44,13 @@ export const syncApi = {
   },
 
   /**
+   * Déconnecte Decathlon
+   */
+  disconnectDecathlon(): Promise<{ success: boolean }> {
+    return client.request('/api/sync/decathlon/disconnect', { method: 'POST' });
+  },
+
+  /**
    * Upload d'activités Health Connect
    */
   uploadHealthConnectActivities(activities: unknown[]): Promise<{ success: boolean; imported: number }> {
