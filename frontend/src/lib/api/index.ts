@@ -244,7 +244,6 @@ export const api = {
   getGroupEvents: socialApi.getGroupEvents,
   createGroupEvent: socialApi.createEvent,
   joinGroupEvent: socialApi.joinEvent,
-  getGroupEvents: socialApi.getGroupEvents,
   likeActivity: socialApi.likeActivity,
   unlikeActivity: socialApi.unlikeActivity,
   getActivityLikes: socialApi.getActivityLikes,
