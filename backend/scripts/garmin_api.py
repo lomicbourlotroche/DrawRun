@@ -50,8 +50,8 @@ def main():
     # Read credentials from stdin
     if args.creds == "-":
         creds_data = json.loads(sys.stdin.read())
-        username = creds_data.get("username")
-        password = creds_data.get("password")
+        username = creds_data.get('username')
+        password = creds_data.get('password')
     else:
         print(json.dumps({"error": "Credentials required via stdin"}))
         sys.exit(1)
