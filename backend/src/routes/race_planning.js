@@ -277,4 +277,92 @@ router.post('/calculate', verifyToken, async (req, res) => {
     }
 });
 
+/**
+ * POST /api/race-planning/save
+ * Save a race plan for the user
+ */
+router.post('/save', verifyToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { name, distance, targetPace, totalTime, elevationProfile, fatigue, splits, nutritionStrategy } = req.body;
+
+        if (!distance || !targetPace || !splits) {
+            return res.status(400).json({ error: 'Distance, targetPace, and splits are required' });
+        }
+
+        const { getUserDb, dbRunUser } = require('../database');
+        const userDb = await getUserDb(userId);
+
+        await dbRunUser(userDb, `
+            INSERT INTO race_plans (user_id, name, distance, target_pace, total_time, elevation_profile, fatigue, splits, nutrition_strategy)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            userId,
+            name || `Plan ${distance}km - ${new Date().toLocaleDateString('fr-FR')}`,
+            distance,
+            targetPace,
+            totalTime || Math.round(targetPace * distance),
+            elevationProfile || 'flat',
+            fatigue || 0,
+            JSON.stringify(splits),
+            nutritionStrategy ? JSON.stringify(nutritionStrategy) : null,
+        ]);
+
+        res.json({ success: true, message: 'Race plan saved' });
+    } catch (error) {
+        logger.error('[RacePlanning] Save error', { error: error.message });
+        res.status(500).json({ error: 'Failed to save race plan' });
+    }
+});
+
+/**
+ * GET /api/race-planning/list
+ * List all saved race plans for the user
+ */
+router.get('/list', verifyToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { getUserDb, dbAllUser } = require('../database');
+        const userDb = await getUserDb(userId);
+
+        const plans = await dbAllUser(userDb, `
+            SELECT * FROM race_plans WHERE user_id = ? ORDER BY created_at DESC
+        `, [userId]);
+
+        // Parse JSON fields
+        const parsedPlans = plans.map(p => ({
+            ...p,
+            splits: p.splits ? JSON.parse(p.splits) : [],
+            nutrition_strategy: p.nutrition_strategy ? JSON.parse(p.nutrition_strategy) : null,
+        }));
+
+        res.json(parsedPlans);
+    } catch (error) {
+        logger.error('[RacePlanning] List error', { error: error.message });
+        res.status(500).json({ error: 'Failed to list race plans' });
+    }
+});
+
+/**
+ * DELETE /api/race-planning/:id
+ * Delete a saved race plan
+ */
+router.delete('/:id', verifyToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const planId = parseInt(req.params.id);
+        const { getUserDb, dbRunUser } = require('../database');
+        const userDb = await getUserDb(userId);
+
+        await dbRunUser(userDb, `
+            DELETE FROM race_plans WHERE id = ? AND user_id = ?
+        `, [planId, userId]);
+
+        res.json({ success: true, message: 'Race plan deleted' });
+    } catch (error) {
+        logger.error('[RacePlanning] Delete error', { error: error.message });
+        res.status(500).json({ error: 'Failed to delete race plan' });
+    }
+});
+
 module.exports = router;

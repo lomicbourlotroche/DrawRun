@@ -637,6 +637,29 @@ const MIGRATIONS = [
             db.run('CREATE INDEX IF NOT EXISTS idx_weather_activity ON weather_cache(activity_id)');
         },
     },
+    {
+        version: '019_add_race_plans',
+        description: 'Add race_plans table for saved race planning strategies',
+        up: (db) => {
+            db.run(`
+                CREATE TABLE IF NOT EXISTS race_plans (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    name TEXT NOT NULL,
+                    distance REAL NOT NULL,
+                    target_pace REAL NOT NULL,
+                    total_time INTEGER NOT NULL,
+                    elevation_profile TEXT DEFAULT 'flat',
+                    fatigue INTEGER DEFAULT 0,
+                    splits TEXT NOT NULL,
+                    nutrition_strategy TEXT,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            `);
+            db.run('CREATE INDEX IF NOT EXISTS idx_race_plans_user ON race_plans(user_id)');
+            db.run('CREATE INDEX IF NOT EXISTS idx_race_plans_created ON race_plans(created_at DESC)');
+        },
+    },
 ];
 
 async function runMigrations(db) {

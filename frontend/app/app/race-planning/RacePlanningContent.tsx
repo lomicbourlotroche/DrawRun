@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Input, Badge } from '
 import { api } from '@/lib/api';
 import { racePlanningApi } from '@/lib/api/race-planning.api';
 import type { RacePlanningResponse, RacePlanningRequest } from '@/types';
-import { Trophy, Download, AlertTriangle, MapPin, Heart, Zap, Droplets } from 'lucide-react';
+import { Trophy, Download, AlertTriangle, MapPin, Heart, Zap, Droplets, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ELEVATION_PROFILES = [
@@ -65,6 +65,28 @@ export function RacePlanningContent() {
     const filename = `race-plan-${form.distance}km-${new Date().toISOString().split('T')[0]}.csv`;
     racePlanningApi.downloadCsv(result.splits, filename);
     toast.success('Plan exporté en CSV');
+  };
+
+  const handleSavePlan = async () => {
+    if (!result) return;
+    try {
+      await api.request('/api/race-planning/save', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: `${form.distance}km - ${new Date().toLocaleDateString('fr-FR')}`,
+          distance: form.distance,
+          targetPace: result.summary.targetPace,
+          totalTime: result.summary.totalTime,
+          elevationProfile: form.elevationProfile,
+          fatigue: form.fatigue,
+          splits: result.splits,
+          nutritionStrategy: result.nutritionStrategy,
+        }),
+      });
+      toast.success('Plan de course enregistré !');
+    } catch (error) {
+      toast.error('Erreur lors de l\'enregistrement');
+    }
   };
 
   const formatDuration = (seconds: number): string => {
@@ -216,9 +238,14 @@ export function RacePlanningContent() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Résumé</span>
-                <Button variant="secondary" size="sm" onClick={handleExportCsv} leftIcon={<Download className="w-4 h-4" />}>
-                  Exporter CSV
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="secondary" size="sm" onClick={handleSavePlan} leftIcon={<Save className="w-4 h-4" />}>
+                    Enregistrer
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={handleExportCsv} leftIcon={<Download className="w-4 h-4" />}>
+                    Exporter CSV
+                  </Button>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
