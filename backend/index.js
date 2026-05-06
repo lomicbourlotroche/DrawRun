@@ -276,6 +276,55 @@ const database = require('./src/database');
         app.use('/api/recommendations', verifyToken, pmcRoutes);
         
         // ============================================================================
+        // GITHUB WEBHOOK — Auto-deploy on push
+        // ============================================================================
+        
+        app.post('/webhook', express.json({ limit: '10mb' }), (req, res) => {
+            const signature = req.headers['x-hub-signature-256'];
+            const secret = process.env.WEBHOOK_SECRET || 'Drawrun';
+            
+            if (!signature) {
+                logger.warn('Webhook: No signature provided');
+                return res.status(401).send('No signature');
+            }
+            
+            const hmac = require('crypto').createHmac('sha256', secret);
+            hmac.update(JSON.stringify(req.body));
+            const digest = 'sha256=' + hmac.digest('hex');
+            
+            if (signature !== digest) {
+                logger.warn('Webhook: Invalid signature');
+                return res.status(401).send('Invalid signature');
+            }
+            
+            // Verify this is a push to main branch
+            const payload = req.body;
+            if (payload.ref !== 'refs/heads/main') {
+                logger.info(`Webhook: Ignoring push to ${payload.ref}`);
+                return res.status(200).send('Ignored');
+            }
+            
+            logger.info('Webhook: Deploy triggered by GitHub push');
+            
+            // Trigger deploy script
+            const { exec } = require('child_process');
+            const deployScript = '/home/drawrun/deploy.sh';
+            
+            exec(`bash ${deployScript}`, (error, stdout, stderr) => {
+                if (error) {
+                    logger.error(`Webhook deploy error: ${error.message}`);
+                    return;
+                }
+                if (stderr) {
+                    logger.error(`Webhook deploy stderr: ${stderr}`);
+                }
+                logger.info(`Webhook deploy success: ${stdout}`);
+            });
+            
+            res.status(200).send('Deploy triggered');
+        });
+        
+        // ============================================================================
         // ERROR HANDLER
         // ============================================================================
         
