@@ -17,7 +17,9 @@ import type {
   Friend,
   FriendRequest,
   Group,
+  GroupDetail,
   GroupMember,
+  GroupEvent,
   LeaderboardEntry,
   ActivityLike,
   SocialFeedItem,
@@ -25,6 +27,7 @@ import type {
   PublicProfile,
   Comment,
   Reaction,
+  Activity,
 } from '@/types';
 import type {
   CreateGroupParams,
