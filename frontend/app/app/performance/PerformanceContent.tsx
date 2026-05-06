@@ -81,7 +81,7 @@ export default function PerformanceContent() {
       setActivities(acts);
 
       if (!constantsResult) {
-        logger.warn('User constants not available');
+        // User constants not available — will use defaults
       }
 
       // Polarization — requires activities with zone data
