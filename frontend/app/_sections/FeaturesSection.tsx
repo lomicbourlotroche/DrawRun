@@ -24,7 +24,7 @@ const features = [
     description: '15+ métriques scientifiques : TSS, VDOT dynamique, TRIMP, NP, Age Grading, W\', et profils athlétiques complets.',
     color: 'primary',
     size: 'large',
-    link: '/app/performance',
+    link: '/guides/science-engine',
   },
   {
     icon: Calendar,
@@ -32,7 +32,7 @@ const features = [
     description: 'Plans personnalisés (5K, 10K, Semi, Marathon) ajustés automatiquement selon votre forme et récupération.',
     color: 'success',
     size: 'normal',
-    link: '/app/coach',
+    link: '/guides/coaching-adaptatif',
   },
   {
     icon: Trophy,
@@ -40,7 +40,7 @@ const features = [
     description: 'Stratégie de course avec splits km par km, zones FC et plan nutrition pour chaque compétition.',
     color: 'warning',
     size: 'normal',
-    link: '/app/race-planning',
+    link: '/guides/race-planning',
   },
   {
     icon: CloudSun,
@@ -48,7 +48,7 @@ const features = [
     description: 'Conditions météo de chaque activité avec impact estimé sur votre allure.',
     color: 'primary',
     size: 'normal',
-    link: '#weather',
+    link: '/guides/weather',
   },
   {
     icon: TrendingUp,
@@ -56,7 +56,7 @@ const features = [
     description: 'Suivi de la charge d\'entraînement avec modèle Banister et prédiction de forme.',
     color: 'peak',
     size: 'normal',
-    link: '/app/performance',
+    link: '/guides/pmc',
   },
   {
     icon: Heart,
@@ -64,7 +64,7 @@ const features = [
     description: 'Zones de fréquence cardiaque basées sur votre FCM réelle et seuils lactate.',
     color: 'danger',
     size: 'normal',
-    link: '/vdot-calculator',
+    link: '/guides/hr-zones',
   },
   {
     icon: Users,
@@ -72,7 +72,7 @@ const features = [
     description: 'Amis, groupes, classements, draws et commentaires pour interagir avec la communauté.',
     color: 'recovery',
     size: 'normal',
-    link: '#social',
+    link: '/guides/social',
   },
   {
     icon: Bell,
@@ -80,7 +80,7 @@ const features = [
     description: 'Alertes en temps réel sur vos activités, draws et demandes d\'ami.',
     color: 'warning',
     size: 'normal',
-    link: '/login?mode=register',
+    link: '/guides/social',
   },
   {
     icon: Share2,
@@ -88,7 +88,7 @@ const features = [
     description: 'Générez une image résumée de votre sortie et partagez-la en un clic.',
     color: 'success',
     size: 'normal',
-    link: '/app/activities',
+    link: '/guides/science-engine',
   },
 ];
 
@@ -124,14 +124,7 @@ export default function FeaturesSection() {
   }, []);
 
   const handleFeatureClick = (link: string) => {
-    if (link.startsWith('#')) {
-      const element = document.querySelector(link);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    } else {
-      router.push(link);
-    }
+    router.push(link);
   };
 
   return (
