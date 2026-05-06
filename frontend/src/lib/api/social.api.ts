@@ -471,28 +471,6 @@ export const socialApi = {
   },
 
   // ============================================================================
-  // Events
-  // ============================================================================
-
-  createEvent(params: CreateEventParams): Promise<{ 
-    success: boolean; 
-    event?: unknown; 
-    error?: string 
-  }> {
-    return client.request('/api/social/events', {
-      method: 'POST',
-      body: JSON.stringify(params),
-    });
-  },
-
-  joinEvent(eventId: number, status = 'going'): Promise<{ success: boolean; message?: string; error?: string }> {
-    return client.request(`/api/social/events/${eventId}/join`, {
-      method: 'POST',
-      body: JSON.stringify({ status }),
-    });
-  },
-
-  // ============================================================================
   // Badges & XP
   // ============================================================================
 
