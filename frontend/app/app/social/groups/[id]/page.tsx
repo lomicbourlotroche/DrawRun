@@ -247,14 +247,14 @@ export default function GroupDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {activities.slice(0, 5).map((activity) => (
+                  {activities.slice(0, 5).map((activity: any) => (
                     <div key={activity.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                           <Flame className="w-5 h-5 text-primary" />
                         </div>
                         <div>
-                          <p className="font-medium text-sm">{activity.name}</p>
+                          <p className="font-medium text-sm">{activity.name || activity.type || 'Activité'}</p>
                           <p className="text-xs text-muted">{activity.type} - {new Date(activity.start_date).toLocaleDateString('fr-FR')}</p>
                         </div>
                       </div>
@@ -346,11 +346,11 @@ export default function GroupDetailPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {activities.map((activity) => (
+              {activities.map((activity: any) => (
                 <div key={activity.id} className="p-4 bg-card border border-border rounded-2xl">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-semibold">{activity.name}</p>
+                      <p className="font-semibold">{activity.name || activity.type || 'Activité'}</p>
                       <p className="text-sm text-muted">{activity.type} - {new Date(activity.start_date).toLocaleDateString('fr-FR')}</p>
                     </div>
                     <div className="text-right">
