@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui';
 import { 
   Activity, 
@@ -23,6 +24,7 @@ const features = [
     description: '15+ métriques scientifiques : TSS, VDOT dynamique, TRIMP, NP, Age Grading, W\', et profils athlétiques complets.',
     color: 'primary',
     size: 'large',
+    link: '/app/performance',
   },
   {
     icon: Calendar,
@@ -30,6 +32,7 @@ const features = [
     description: 'Plans personnalisés (5K, 10K, Semi, Marathon) ajustés automatiquement selon votre forme et récupération.',
     color: 'success',
     size: 'normal',
+    link: '/app/coach',
   },
   {
     icon: Trophy,
@@ -37,6 +40,7 @@ const features = [
     description: 'Stratégie de course avec splits km par km, zones FC et plan nutrition pour chaque compétition.',
     color: 'warning',
     size: 'normal',
+    link: '/app/race-planning',
   },
   {
     icon: CloudSun,
@@ -44,6 +48,7 @@ const features = [
     description: 'Conditions météo de chaque activité avec impact estimé sur votre allure.',
     color: 'primary',
     size: 'normal',
+    link: '#weather',
   },
   {
     icon: TrendingUp,
@@ -51,6 +56,7 @@ const features = [
     description: 'Suivi de la charge d\'entraînement avec modèle Banister et prédiction de forme.',
     color: 'peak',
     size: 'normal',
+    link: '/app/performance',
   },
   {
     icon: Heart,
@@ -58,6 +64,7 @@ const features = [
     description: 'Zones de fréquence cardiaque basées sur votre FCM réelle et seuils lactate.',
     color: 'danger',
     size: 'normal',
+    link: '/vdot-calculator',
   },
   {
     icon: Users,
@@ -65,6 +72,7 @@ const features = [
     description: 'Amis, groupes, classements, draws et commentaires pour interagir avec la communauté.',
     color: 'recovery',
     size: 'normal',
+    link: '#social',
   },
   {
     icon: Bell,
@@ -72,6 +80,7 @@ const features = [
     description: 'Alertes en temps réel sur vos activités, draws et demandes d\'ami.',
     color: 'warning',
     size: 'normal',
+    link: '/login?mode=register',
   },
   {
     icon: Share2,
@@ -79,6 +88,7 @@ const features = [
     description: 'Générez une image résumée de votre sortie et partagez-la en un clic.',
     color: 'success',
     size: 'normal',
+    link: '/app/activities',
   },
 ];
 
@@ -92,6 +102,7 @@ const iconColors: Record<string, string> = {
 };
 
 export default function FeaturesSection() {
+  const router = useRouter();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -111,6 +122,17 @@ export default function FeaturesSection() {
 
     return () => observer.disconnect();
   }, []);
+
+  const handleFeatureClick = (link: string) => {
+    if (link.startsWith('#')) {
+      const element = document.querySelector(link);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      router.push(link);
+    }
+  };
 
   return (
     <section id="features" className="py-20 lg:py-32 bg-gradient-to-b from-neutral-50 to-white">
@@ -165,7 +187,10 @@ export default function FeaturesSection() {
                   </p>
                   
                   <div className="mt-5 pt-5 border-t border-neutral-100">
-                    <button className="inline-flex items-center gap-2 text-sm font-semibold text-primary-600 hover:text-primary-700 transition-colors">
+                    <button 
+                      onClick={() => feature.link && handleFeatureClick(feature.link)}
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-primary-600 hover:text-primary-700 transition-colors"
+                    >
                       En savoir plus
                       <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
