@@ -3,9 +3,74 @@ import { Providers } from '@/components/providers/Providers';
 import { ServiceWorkerRegistration } from '@/components/providers/ServiceWorkerRegistration';
 import './globals.css';
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.drawrun.fr';
+
 export const metadata: Metadata = {
-  title: 'DrawRun - Smart Training',
-  description: 'Plateforme d\'entraînement sportif avec coaching intelligent',
+  title: {
+    default: 'DrawRun — Coaching sportif intelligent & analyse de performance',
+    template: '%s | DrawRun',
+  },
+  description: 'Optimisez vos entraînements avec le moteur Jack Daniels VDOT, un coaching adaptatif personnalisé, la météo en temps réel et des stratégies de course scientifiques. Course à pied, vélo, natation — suivez vos progrès avec 15+ métriques avancées.',
+  keywords: [
+    'coaching sportif',
+    'entraînement course à pied',
+    'VDOT Jack Daniels',
+    'analyse performance sportive',
+    'planification course',
+    'suivi entraînement',
+    'VO2 max',
+    'fréquence cardiaque',
+    'allure course',
+    'application sport',
+    'running app',
+    'training plan',
+  ],
+  authors: [{ name: 'DrawRun' }],
+  creator: 'DrawRun',
+  publisher: 'DrawRun',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL(APP_URL),
+  alternates: {
+    canonical: APP_URL,
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'fr_FR',
+    url: APP_URL,
+    siteName: 'DrawRun',
+    title: 'DrawRun — Coaching sportif intelligent & analyse de performance',
+    description: 'Optimisez vos entraînements avec le moteur Jack Daniels VDOT, un coaching adaptatif personnalisé, la météo en temps réel et des stratégies de course scientifiques.',
+    images: [
+      {
+        url: '/logo-icon.svg',
+        width: 512,
+        height: 512,
+        alt: 'DrawRun Logo',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary',
+    site: '@drawrun',
+    title: 'DrawRun — Coaching sportif intelligent & analyse de performance',
+    description: 'Optimisez vos entraînements avec le moteur Jack Daniels VDOT, un coaching adaptatif personnalisé et des stratégies de course scientifiques.',
+    images: ['/logo-icon.svg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   manifest: '/manifest.json',
   icons: {
     icon: [
@@ -21,6 +86,7 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'DrawRun',
   },
+  category: 'sports',
 };
 
 export const viewport: Viewport = {

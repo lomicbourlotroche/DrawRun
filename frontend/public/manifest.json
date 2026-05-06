@@ -1,7 +1,7 @@
 {
-  "name": "DrawRun - Smart Training",
+  "name": "DrawRun — Coaching sportif intelligent & analyse de performance",
   "short_name": "DrawRun",
-  "description": "Plateforme d'entraînement sportif avec coaching intelligent",
+  "description": "Coaching sportif intelligent avec Jack Daniels VDOT, plans adaptatifs et stratégies de course",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",

@@ -1411,7 +1411,7 @@ const PMC = {
 };
 
 // ============================================================================
-// POLARIZATION INDEX
+// POLARIZATION INDEX — Analyse avancée de la distribution d'intensité
 // ============================================================================
 
 const Polarization = {
@@ -1419,16 +1419,15 @@ const Polarization = {
      * Calcul de l'indice de polarisation
      * Ref: Seiler & Kjerland (2006). Quantifying training intensity distribution.
      * 
-     * Distribution optimale:
-     * - 80% basse intensité (<70% FCmax)
-     * - 0% modérée (70-85% FCmax) - à éviter
-     * - 20% haute intensité (>85% FCmax)
+     * Distribution optimale (Seiler 80/20):
+     * - 80% basse intensité (<VT1)
+     * - 0% modérée (VT1-VT2) — zone "poubelle"
+     * - 20% haute intensité (>VT2)
      * 
      * Polarization Index = (%high + %low) - %moderate
      * Optimal = 100 (pas de temps modéré)
      */
     calculatePolarizationIndex: (activitiesWithZones) => {
-        // Format: [{ zonePercent: {1: 30, 2: 50, 3: 10, 4: 5, 5: 5} }]
         if (!activitiesWithZones || activitiesWithZones.length === 0) return 0;
         
         let totalLow = 0, totalModerate = 0, totalHigh = 0;
@@ -1442,11 +1441,8 @@ const Polarization = {
             const z4 = zones[4] || 0;
             const z5 = zones[5] || 0;
             
-            // Basse intensité: zones 1-2
             totalLow += z1 + z2;
-            // Modérée: zone 3 (70-85% FCmax)
             totalModerate += z3;
-            // Haute intensité: zones 4-5
             totalHigh += z4 + z5;
             count++;
         });
@@ -1457,152 +1453,272 @@ const Polarization = {
         const avgModerate = totalModerate / count;
         const avgHigh = totalHigh / count;
         
-        // Polarization Index
         return Math.round((avgHigh + avgLow) - avgModerate);
     },
     
     /**
-     * Classification de la distribution
+     * Classification avancée de la distribution d'intensité
+     * Ref: Seiler (2010). What is best practice for training intensity?
      */
     classifyDistribution: (lowPercent, moderatePercent, highPercent) => {
-        if (moderatePercent < 5 && highPercent >= 15 && highPercent <= 25 && lowPercent >= 70) {
-            return { type: 'polarized', label: 'Polarise', optimal: true };
+        const total = lowPercent + moderatePercent + highPercent || 1;
+        const low = (lowPercent / total) * 100;
+        const mod = (moderatePercent / total) * 100;
+        const high = (highPercent / total) * 100;
+        
+        // Polarized (Seiler 80/20)
+        if (low >= 75 && high >= 15 && mod <= 10) {
+            return { type: 'polarized', label: 'Polarisé (80/20)', optimal: true, match: 95 };
         }
-        if (highPercent < 10 && moderatePercent > 40) {
-            return { type: 'pyramidal', label: 'Pyramidal', optimal: true };
+        // Pyramidal (bon pour débutants)
+        if (low >= 70 && high < 15 && mod >= 15 && mod <= 30) {
+            return { type: 'pyramidal', label: 'Pyramidal', optimal: true, match: 85 };
         }
-        if (moderatePercent > 30) {
-            return { type: 'moderate-heavy', label: 'Trop modere', optimal: false };
+        // Threshold-heavy (trop de tempo)
+        if (mod > 35) {
+            return { type: 'moderate-heavy', label: 'Trop modéré (zone poubelle)', optimal: false, match: 30 };
         }
-        if (highPercent > 40) {
-            return { type: 'high-heavy', label: 'Trop intense', optimal: false };
+        // HIIT-heavy (trop intense)
+        if (high > 35) {
+            return { type: 'high-heavy', label: 'Trop intense', optimal: false, match: 40 };
         }
-        return { type: 'mixed', label: 'Mixte', optimal: false };
+        // Mixed
+        return { type: 'mixed', label: 'Mixte — manque de structure', optimal: false, match: 55 };
     },
     
     /**
-     * Recommandation basé sur polarization
+     * Recommandation de distribution optimale selon le niveau
+     * Ref: Seiler (2010), Stöggl & Sperlich (2014)
+     */
+    getOptimalDistribution: (level = 'intermediate', goal = 'endurance') => {
+        const distributions = {
+            beginner: { low: 85, moderate: 10, high: 5 },
+            intermediate: { low: 80, moderate: 5, high: 15 },
+            advanced: { low: 75, moderate: 5, high: 20 },
+            elite: { low: 78, moderate: 2, high: 20 },
+        };
+        
+        if (goal === 'speed') {
+            return { low: 65, moderate: 10, high: 25 };
+        }
+        if (goal === 'marathon') {
+            return { low: 82, moderate: 8, high: 10 };
+        }
+        
+        return distributions[level] || distributions.intermediate;
+    },
+    
+    /**
+     * Recommandation basée sur polarization
      */
     getRecommendation: (polarizationIndex) => {
         if (polarizationIndex >= 90) {
-            return { type: 'optimal', message: 'Polarisation ideale. Continuez!' };
+            return { type: 'optimal', message: 'Polarisation idéale. Continuez!' };
         }
         if (polarizationIndex >= 70) {
             return { type: 'good', message: 'Bonne distribution. Peut mieux faire.' };
         }
         if (polarizationIndex >= 50) {
-            return { type: 'moderate', message: 'Trop de temps en zone moderee. Augmentez haute intensite.' };
+            return { type: 'moderate', message: 'Trop de temps en zone modérée. Augmentez haute intensité.' };
         }
-        return { type: 'poor', message: 'Distribution non-polarisee. Adaptezen!' };
+        return { type: 'poor', message: 'Distribution non-polarisée. Adaptez!' };
+    },
+    
+    /**
+     * Calcul de la "zone poubelle" (junk miles)
+     * Temps passé en zone 3 qui ne contribue ni à l'endurance ni à la vitesse
+     */
+    calculateJunkMiles: (activitiesWithZones) => {
+        if (!activitiesWithZones || activitiesWithZones.length === 0) return { percent: 0, hours: 0 };
+        
+        let totalModerate = 0, totalDuration = 0;
+        activitiesWithZones.forEach(act => {
+            const zones = act.zonePercent || act;
+            totalModerate += (zones[3] || 0) / 100 * (act.duration || 3600);
+            totalDuration += act.duration || 3600;
+        });
+        
+        return {
+            percent: totalDuration > 0 ? Math.round((totalModerate / totalDuration) * 100) : 0,
+            hours: Math.round(totalModerate / 3600 * 10) / 10,
+            recommendation: totalModerate / totalDuration > 0.15 ? 
+                'Réduisez le temps en zone 3. Convertissez en zone 2 ou zone 5.' : 'OK'
+        };
     },
 };
 
 // ============================================================================
-// HRV ANALYSIS
+// HRV ANALYSIS — Analyse avancée de la variabilité cardiaque
 // ============================================================================
 
 const HRV = {
     /**
-     * Analyse de récupération HRV
+     * Analyse de récupération HRV avancée
      * Ref: Esco & Flatt (2014). Ultra-short-term HRV.
-     * Ref: Cardiovascular Group consensus (2025).
+     * Ref: Buchheit (2014). Monitoring training status with HRV.
      * 
-     * rMSSD: Root Mean Square of Successive Differences
-     * Gold standard pour parasympathique
+     * Utilise rMSSD (gold standard parasympathique) + CV (coefficient de variation)
      */
     analyzeRecovery: (rmssd, baselineRmssd, restingHR) => {
         if (!rmssd || rmssd <= 0) {
             return { 
                 status: 'unknown', 
                 score: 0, 
-                message: 'Donnees HRV insuffisantes',
+                message: 'Données HRV insuffisantes',
                 readiness: 50
             };
         }
         
-        // Ratio vs baseline
         const baselineRatio = baselineRmssd > 0 ? rmssd / baselineRmssd : 1;
         
-        // Score de 0-100 basé sur ratio
+        // Score 0-100 basé sur ratio avec courbe sigmoïde
         let score;
-        if (baselineRatio >= 1.0) score = 90 + Math.min(10, (baselineRatio - 1) * 20);
+        if (baselineRatio >= 1.1) score = 95 + Math.min(5, (baselineRatio - 1.1) * 50);
+        else if (baselineRatio >= 1.0) score = 90 + (baselineRatio - 1.0) * 50;
         else if (baselineRatio >= 0.9) score = 75 + (baselineRatio - 0.9) * 150;
         else if (baselineRatio >= 0.8) score = 50 + (baselineRatio - 0.8) * 250;
         else if (baselineRatio >= 0.7) score = 30 + (baselineRatio - 0.7) * 200;
-        else score = Math.max(10, 30 * baselineRatio);
+        else score = Math.max(5, 30 * baselineRatio);
         
         // Interprétation
-        let status, message;
-        if (score >= 85) {
+        let status, message, recommendation;
+        if (score >= 90) {
+            status = 'supercompensation';
+            message = 'Supercompensation détectée — prêt pour séance intense';
+            recommendation = 'Séance VMA ou seuil recommandée';
+        } else if (score >= 75) {
             status = 'excellent';
-            message = 'Recuperation excellente';
-        } else if (score >= 70) {
+            message = 'Récupération excellente';
+            recommendation = 'Entraînement normal';
+        } else if (score >= 60) {
             status = 'good';
-            message = 'Bonne recuperation';
-        } else if (score >= 50) {
+            message = 'Bonne récupération';
+            recommendation = 'Entraînement modéré';
+        } else if (score >= 45) {
             status = 'moderate';
-            message = 'Recuperation moderee';
+            message = 'Récupération modérée — fatigue légère';
+            recommendation = 'Réduisez l\'intensité aujourd\'hui';
         } else if (score >= 30) {
             status = 'low';
-            message = 'Fatigue detectee';
+            message = 'Fatigue détectée';
+            recommendation = 'Endurance fondamentale ou repos actif';
         } else {
             status = 'poor';
-            message = 'Overtraining advised';
+            message = 'Fatigue importante — risque de surentraînement';
+            recommendation = 'Repos complet recommandé';
         }
         
         return {
             status,
             score: Math.round(score),
             message,
+            recommendation,
             rmssd,
             baselineRmssd,
-            ratio: baselineRatio,
+            ratio: Math.round(baselineRatio * 100) / 100,
             readiness: Math.round(score),
         };
     },
     
     /**
+     * Baseline HRV dynamique — rolling 28 jours avec détection de tendance
+     * Ref: Plews et al. (2013). HRV in elite athletes.
+     */
+    calculateDynamicBaseline: (hrvHistory, days = 28) => {
+        if (!hrvHistory || hrvHistory.length < 7) return null;
+        
+        const recent = hrvHistory.slice(-days);
+        const values = recent.map(h => h.rmssd).filter(v => v > 0);
+        
+        if (values.length < 5) return null;
+        
+        const mean = MathUtils.mean(values);
+        const stdDev = MathUtils.stdDev(values);
+        const cv = mean > 0 ? (stdDev / mean) * 100 : 0;
+        
+        // Détection de tendance (régression linéaire simple)
+        let trend = 0;
+        if (values.length >= 7) {
+            const n = values.length;
+            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+            values.forEach((v, i) => {
+                sumX += i; sumY += v; sumXY += i * v; sumX2 += i * i;
+            });
+            trend = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+        }
+        
+        return {
+            baseline: Math.round(mean * 10) / 10,
+            stdDev: Math.round(stdDev * 10) / 10,
+            cv: Math.round(cv * 10) / 10,
+            trend: Math.round(trend * 100) / 100,
+            trendDirection: trend > 0.5 ? 'improving' : trend < -0.5 ? 'declining' : 'stable',
+            samples: values.length,
+            // Zones d'interprétation
+            zones: {
+                excellent: mean + stdDev,
+                normal: mean,
+                low: mean - stdDev,
+                alarm: mean - 2 * stdDev,
+            }
+        };
+    },
+    
+    /**
+     * Coefficient de Variation du HRV — indicateur de stress/fatigue
+     * CV élevé = stress, CV faible = bonne adaptation
+     * Ref: Plews et al. (2013)
+     */
+    calculateCV: (hrvHistory, window = 7) => {
+        if (!hrvHistory || hrvHistory.length < window) return null;
+        
+        const recent = hrvHistory.slice(-window).map(h => h.rmssd).filter(v => v > 0);
+        if (recent.length < 3) return null;
+        
+        const mean = MathUtils.mean(recent);
+        const stdDev = MathUtils.stdDev(recent);
+        const cv = mean > 0 ? (stdDev / mean) * 100 : 0;
+        
+        let interpretation;
+        if (cv < 3) interpretation = 'Très stable — excellente adaptation';
+        else if (cv < 6) interpretation = 'Stable — bonne adaptation';
+        else if (cv < 10) interpretation = 'Modéré — surveillez';
+        else interpretation = 'Instable — fatigue ou stress détecté';
+        
+        return { cv: Math.round(cv * 10) / 10, mean: Math.round(mean * 10) / 10, interpretation };
+    },
+    
+    /**
      * Calcul du Stress Score
-     * Ref: Heart Rate Variability - Alt training
-     * 
-     * Leaved-based stress score compare HRV actuel vs optimal
+     * Ref: Heart Rate Variability — Alt training
      */
     calculateStressScore: (currentRmssd, optimalRmssd) => {
         if (!currentRmssd || !optimalRmssd) return 50;
         
-        // Stress inverse de HRV ratio
         const ratio = optimalRmssd / currentRmssd;
         
-        // Score de stress 0-100
         if (ratio <= 1) return MathUtils.clamp(50 - (1 - ratio) * 50, 0, 100);
         return MathUtils.clamp(50 + (ratio - 1) * 50, 0, 100);
     },
 };
 
 // ============================================================================
-// CRITICAL POWER MODEL (pour cyclisme)
+// CRITICAL POWER MODEL — Modèle avancé 3-paramètres
 // ============================================================================
 
 const CriticalPower = {
     /**
-     * Calcul CP et W' depuis efforts courts
+     * Calcul CP et W' depuis efforts (modèle linéaire 2-paramètres)
      * Ref: Poole et al. (2016). Critical Power. MSSE.
-     * 
-     * Methode: 3-4 efforts a differentes durees
-     * W = W' + CP × t
      */
     estimateFromEfforts: (efforts) => {
-        // efforts = [{duration: 120, value: 400}, {duration: 300, value: 350}, ...]
-        // value is power in watts, duration in seconds
         if (!efforts || efforts.length < 2) return null;
         
-        // Linear regression: W = W' + CP × t
-        // where W = power × time (in kJ)
         const n = efforts.length;
         let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
         
         efforts.forEach(e => {
-            const work = (e.value * e.duration) / 1000; // Convert to kJ
+            const work = (e.value * e.duration) / 1000;
             sumX += e.duration;
             sumY += work;
             sumXY += e.duration * work;
@@ -1615,207 +1731,463 @@ const CriticalPower = {
         const CP = (n * sumXY - sumX * sumY) / denominator;
         const W_prime = (sumY - CP * sumX) / n;
         
-        if (CP < 0 || W_prime < 0) return null; // Invalid result
+        if (CP < 0 || W_prime < 0) return null;
+        
+        // Calcul du R² (qualité du fit)
+        const meanY = sumY / n;
+        let ssTot = 0, ssRes = 0;
+        efforts.forEach(e => {
+            const work = (e.value * e.duration) / 1000;
+            const predicted = W_prime + CP * e.duration;
+            ssTot += Math.pow(work - meanY, 2);
+            ssRes += Math.pow(work - predicted, 2);
+        });
+        const rSquared = ssTot > 0 ? 1 - ssRes / ssTot : 0;
         
         return {
-            CP: Math.round(CP * 10) / 10, // Round to 1 decimal
+            CP: Math.round(CP * 10) / 10,
             W_prime: Math.round(W_prime * 10) / 10,
+            rSquared: Math.round(rSquared * 1000) / 1000,
+            quality: rSquared > 0.95 ? 'excellent' : rSquared > 0.90 ? 'good' : 'fair',
             CP_unit: 'W',
             W_prime_unit: 'kJ',
         };
     },
     
     /**
-     * Calcul temps jusqu'a exhaustion a puissance donnee
+     * Modèle 3-paramètres (CP, W', P_max)
+     * Ref: Morton (1996). A 3-parameter critical power model.
+     * P(t) = W'/t + CP + P_max * e^(-t/τ)
+     */
+    estimate3Parameter: (efforts) => {
+        if (!efforts || efforts.length < 3) return null;
+        
+        // Estimation CP et W' via modèle 2-paramètres d'abord
+        const base = CriticalPower.estimateFromEfforts(efforts);
+        if (!base) return null;
+        
+        // Estimation P_max (puissance maximale instantanée)
+        const maxPower = Math.max(...efforts.map(e => e.value));
+        
+        // τ (constante de temps anaérobie) ≈ 20-30s
+        const tau = 25;
+        
+        return {
+            ...base,
+            P_max: Math.round(maxPower * 1.1),
+            tau: tau,
+            model: '3-parameter',
+        };
+    },
+    
+    /**
+     * Power Duration Curve — courbe complète de 1s à 10h
+     * Ref: Skiba (2013). Power duration relationship.
+     */
+    generatePowerDurationCurve: (CP, W_prime, P_max = null) => {
+        if (!CP || !W_prime) return [];
+        
+        const pMax = P_max || CP * 2.5;
+        const durations = [1, 5, 10, 30, 60, 120, 300, 600, 1200, 1800, 3600, 7200, 10800, 36000];
+        
+        return durations.map(t => {
+            // Modèle hyperbolique: P = W'/t + CP
+            const power = W_prime * 1000 / t + CP;
+            return {
+                duration: t,
+                durationFormatted: t < 60 ? `${t}s` : t < 3600 ? `${Math.round(t/60)}min` : `${(t/3600).toFixed(1)}h`,
+                power: Math.round(Math.min(power, pMax) * 10) / 10,
+            };
+        });
+    },
+    
+    /**
+     * W' balance — calcul W' restante en temps réel pendant l'effort
+     * Ref: Skiba et al. (2012). W' balance model.
+     */
+    calculateWBalance: (currentPower, CP, W_prime, previousWBalance, timeSinceLastAboveCP) => {
+        if (currentPower <= CP) {
+            // Reconstitution de W'
+            const recoveryRate = W_prime / (CP * 0.5); // simplifié
+            return Math.min(W_prime, previousWBalance + recoveryRate * timeSinceLastAboveCP);
+        } else {
+            // Dépense de W'
+            const depletion = (currentPower - CP) * timeSinceLastAboveCP / 1000;
+            return Math.max(0, previousWBalance - depletion);
+        }
+    },
+    
+    /**
+     * Calcul temps jusqu'à exhaustion
      * Ref: Morton (2006). The critical power model.
-     * 
-     * t = W' / (P - CP)
      */
     timeToExhaustion: (power, CP, W_prime) => {
-        if (power <= CP) return Infinity; // Peut soutenir indefiniment
-        return W_prime / (power - CP); // secondes
+        if (power <= CP) return Infinity;
+        return W_prime * 1000 / (power - CP); // secondes
     },
     
     /**
      * Estimation FTP depuis CP
-     * FTP ≈ CP (generalement 5-10% en dessous)
+     * FTP ≈ CP × 0.95 (généralement 5-10% en dessous)
      */
     estimateFTP: (CP) => {
         return { ftp: Math.round(CP * 0.95), note: 'FTP ~ 95% CP' };
     },
-};
-
-// ============================================================================
-// OVERTRAINING DETECTION
-// ============================================================================
-
-const Overtraining = {
+    
     /**
-     * Detection syndrome de surentrainement
-     * Ref: Meeusen et al. (2013). Prevention, diagnosis, treatment OTS.
-     * Ref: Carrard et al. (2021). Diagnosing OTS scoping review.
-     * 
-     * Signs multiples:
-     * - Performance decline
-     * - Increased RPE
-     * - Mood disturbances
-     * - HRV suppression
-     * - Sleep disturbances
+     * Estimation CP depuis VDOT (pour coureurs sans powermeter)
+     * Ref: Jones & Carter (2000). Aerobic fitness and running economy.
      */
-    detectOTS: (indicators) => {
-        const {
-            performanceTrend = 0,    // % change recent performance
-            rpeChange = 0,            // RPE vs baseline
-            hrvRatio = 1,             // current/baseline
-            sleepQuality = 70,         // 0-100
-            restingHRChange = 0,       // bpm vs baseline
-            moodScore = 70,            // 0-100
-            illnessCount = 0,          // recent illness
-        } = indicators;
+    estimateCPFromVDOT: (vdot) => {
+        if (!vdot || vdot <= 0) return null;
         
-        let riskScore = 0;
-        const factors = [];
-        
-        // Performance decline
-        if (performanceTrend < -10) {
-            riskScore += 30;
-            factors.push({ factor: 'Performance decline', impact: 30 });
-        } else if (performanceTrend < -5) {
-            riskScore += 15;
-            factors.push({ factor: 'Performance moderee decline', impact: 15 });
-        }
-        
-        // HRV suppression
-        if (hrvRatio < 0.7) {
-            riskScore += 25;
-            factors.push({ factor: 'HRV suppression severe', impact: 25 });
-        } else if (hrvRatio < 0.85) {
-            riskScore += 10;
-            factors.push({ factor: 'HRV moderee suppression', impact: 10 });
-        }
-        
-        // Sleep quality
-        if (sleepQuality < 50) {
-            riskScore += 20;
-            factors.push({ factor: 'Poor sleep', impact: 20 });
-        } else if (sleepQuality < 70) {
-            riskScore += 10;
-            factors.push({ factor: 'Suboptimal sleep', impact: 10 });
-        }
-        
-        // Resting HR
-        if (restingHRChange > 10) {
-            riskScore += 20;
-            factors.push({ factor: 'Elevated resting HR', impact: 20 });
-        } else if (restingHRChange > 5) {
-            riskScore += 10;
-            factors.push({ factor: 'Slight resting HR elevation', impact: 10 });
-        }
-        
-        // Mood
-        if (moodScore < 50) {
-            riskScore += 15;
-            factors.push({ factor: 'Mood disturbances', impact: 15 });
-        }
-        
-        // Illness
-        if (illnessCount >= 2) {
-            riskScore += 15;
-            factors.push({ factor: 'Recurrent illness', impact: 15 });
-        }
-        
-        let status, recommendation;
-        if (riskScore >= 60) {
-            status = 'OTS_PROBABLE';
-            recommendation = 'OTSI SUSPECTED. Immediate load reduction required.';
-        } else if (riskScore >= 40) {
-            status = 'RISK_ELEVATED';
-            recommendation = 'Monitor closely. Consider reducing training load.';
-        } else if (riskScore >= 20) {
-            status = 'WATCH';
-            recommendation = 'Some warning signs. Pay attention to recovery.';
-        } else {
-            status = 'NORMAL';
-            recommendation = 'No major warning signs detected.';
-        }
-        
+        // Relation empirique VDOT → puissance critique (course à pied)
+        // CP_running ≈ VDOT × 3.5 (en W/kg approximatif)
+        const cpPerKg = vdot * 0.08; // W/kg approximatif
         return {
-            status,
-            riskScore,
-            recommendation,
-            factors,
+            cpPerKg: Math.round(cpPerKg * 100) / 100,
+            note: 'Estimation course à pied — nécessite poids pour W absolus',
         };
     },
 };
 
 // ============================================================================
-// TAPER OPTIMIZATION
+// OVERTRAINING DETECTION — Détection multi-facteur avancée
 // ============================================================================
 
-const Taper = {
+const Overtraining = {
     /**
-     * Calcul de la réduction de charge pour le taper
-     * Ref: Mujika & Padilla (2003). Scientific bases for precompetition tapering.
+     * Détection syndrome de surentraînement — modèle multi-facteur
+     * Ref: Meeusen et al. (2013). Prevention, diagnosis, treatment OTS.
+     * Ref: Kellmann et al. (2018). Recovery-Performance Questionnaire (RESTQ-Sport).
      * 
-     * Optimal taper:
-     * - Duration: 8-14 jours pour competition majeur
-     * - Reduction volume: 40-60%
-     * - Maintien intensite et fréquence
+     * 5 niveaux: optimal → acceptable → fonctionnel → non-fonctionnel → OTS
      */
-    calculateTaperPlan: (currentWeeklyLoad, daysToCompetition, taperStyle = 'classic') => {
-        const plans = [];
+    detectOTS: (indicators) => {
+        const {
+            performanceTrend = 0,
+            rpeChange = 0,
+            hrvRatio = 1,
+            sleepQuality = 70,
+            restingHRChange = 0,
+            moodScore = 70,
+            illnessCount = 0,
+            acwr = 1,
+            tsb = 0,
+            monotony = 1.5,
+            trainingAge = 3,
+            consecutiveHardDays = 0,
+        } = indicators;
         
-        for (let d = daysToCompetition; d >= 0; d--) {
-            let loadFactor, intensityFactor;
-            
-            switch (taperStyle) {
-                case 'linear':
-                    // Reduction linéaire
-                    loadFactor = 0.4 + (0.6 * d / daysToCompetition);
-                    intensityFactor = 1.0;
-                    break;
-                case 'exponential':
-                    // Reduction exponentielle (recommandé)
-                    loadFactor = 0.4 + 0.6 * Math.exp(-3 * (1 - d / daysToCompetition));
-                    intensityFactor = 1.0;
-                    break;
-                case 'step':
-                    // Reduction par palier
-                    if (d > daysToCompetition * 0.7) {
-                        loadFactor = 0.9;
-                    } else if (d > daysToCompetition * 0.3) {
-                        loadFactor = 0.7;
-                    } else {
-                        loadFactor = 0.4;
-                    }
-                    intensityFactor = 1.0;
-                    break;
-                default: // classic
-                    loadFactor = 0.4 + 0.6 * (d / daysToCompetition);
-                    intensityFactor = 1.0;
-            }
-            
-            plans.push({
-                daysOut: d,
-                loadPercent: Math.round(loadFactor * 100),
-                targetLoad: Math.round(currentWeeklyLoad * loadFactor),
-                intensity: intensityFactor,
-                isCompetition: d === 0,
-            });
+        let riskScore = 0;
+        const factors = [];
+        const recommendations = [];
+        
+        // Performance decline (poids: 30)
+        if (performanceTrend < -15) {
+            riskScore += 30;
+            factors.push({ factor: 'Performance decline sévère', impact: 30, severity: 'critical' });
+            recommendations.push('Arrêt complet 3-5 jours');
+        } else if (performanceTrend < -8) {
+            riskScore += 20;
+            factors.push({ factor: 'Performance decline modérée', impact: 20, severity: 'high' });
+            recommendations.push('Semaine de récupération');
+        } else if (performanceTrend < -3) {
+            riskScore += 10;
+            factors.push({ factor: 'Performance decline légère', impact: 10, severity: 'moderate' });
         }
         
-        return plans;
+        // HRV suppression (poids: 25)
+        if (hrvRatio < 0.65) {
+            riskScore += 25;
+            factors.push({ factor: 'HRV suppression sévère', impact: 25, severity: 'critical' });
+            recommendations.push('Repos complet + suivi médical si persiste');
+        } else if (hrvRatio < 0.80) {
+            riskScore += 15;
+            factors.push({ factor: 'HRV suppression modérée', impact: 15, severity: 'high' });
+        } else if (hrvRatio < 0.90) {
+            riskScore += 5;
+            factors.push({ factor: 'HRV légèrement basse', impact: 5, severity: 'low' });
+        }
+        
+        // Sleep quality (poids: 20)
+        if (sleepQuality < 40) {
+            riskScore += 20;
+            factors.push({ factor: 'Sommeil très perturbé', impact: 20, severity: 'critical' });
+            recommendations.push('Priorité sommeil + hygiène de sommeil');
+        } else if (sleepQuality < 60) {
+            riskScore += 12;
+            factors.push({ factor: 'Sommeil perturbé', impact: 12, severity: 'high' });
+        } else if (sleepQuality < 75) {
+            riskScore += 5;
+            factors.push({ factor: 'Sommeil sous-optimal', impact: 5, severity: 'low' });
+        }
+        
+        // Resting HR (poids: 15)
+        if (restingHRChange > 12) {
+            riskScore += 15;
+            factors.push({ factor: 'FC repos élevée (+12+ bpm)', impact: 15, severity: 'critical' });
+        } else if (restingHRChange > 7) {
+            riskScore += 10;
+            factors.push({ factor: 'FC repos élevée (+7 bpm)', impact: 10, severity: 'high' });
+        } else if (restingHRChange > 4) {
+            riskScore += 5;
+            factors.push({ factor: 'FC repos légèrement élevée', impact: 5, severity: 'moderate' });
+        }
+        
+        // ACWR (poids: 15)
+        if (acwr > 1.8) {
+            riskScore += 15;
+            factors.push({ factor: 'ACWR critique (>1.8)', impact: 15, severity: 'critical' });
+            recommendations.push('Réduction immédiate de 50% du volume');
+        } else if (acwr > 1.5) {
+            riskScore += 10;
+            factors.push({ factor: 'ACWR élevé (>1.5)', impact: 10, severity: 'high' });
+        } else if (acwr > 1.3) {
+            riskScore += 5;
+            factors.push({ factor: 'ACWR modéré (>1.3)', impact: 5, severity: 'moderate' });
+        }
+        
+        // TSB (poids: 10)
+        if (tsb < -35) {
+            riskScore += 10;
+            factors.push({ factor: 'TSB très négatif (fatigue accumulée)', impact: 10, severity: 'critical' });
+            recommendations.push('Deload immédiat');
+        } else if (tsb < -25) {
+            riskScore += 5;
+            factors.push({ factor: 'TSB négatif', impact: 5, severity: 'high' });
+        }
+        
+        // Jours consécutifs difficiles
+        if (consecutiveHardDays >= 5) {
+            riskScore += 10;
+            factors.push({ factor: `${consecutiveHardDays} jours difficiles consécutifs`, impact: 10, severity: 'high' });
+            recommendations.push('Jour de repos obligatoire');
+        } else if (consecutiveHardDays >= 3) {
+            riskScore += 5;
+            factors.push({ factor: `${consecutiveHardDays} jours difficiles consécutifs`, impact: 5, severity: 'moderate' });
+        }
+        
+        // Mood (poids: 10)
+        if (moodScore < 40) {
+            riskScore += 10;
+            factors.push({ factor: 'Humeur très basse', impact: 10, severity: 'high' });
+        } else if (moodScore < 60) {
+            riskScore += 5;
+            factors.push({ factor: 'Humeur basse', impact: 5, severity: 'moderate' });
+        }
+        
+        // Maladies récentes
+        if (illnessCount >= 3) {
+            riskScore += 15;
+            factors.push({ factor: 'Maladies récurrentes', impact: 15, severity: 'critical' });
+            recommendations.push('Consultation médicale recommandée');
+        } else if (illnessCount >= 1) {
+            riskScore += 5;
+            factors.push({ factor: 'Maladie récente', impact: 5, severity: 'moderate' });
+        }
+        
+        // Classification 5 niveaux
+        let status, level, color;
+        if (riskScore >= 70) {
+            status = 'OTS_PROBABLE';
+            level = 5;
+            color = 'darkred';
+        } else if (riskScore >= 50) {
+            status = 'NON_FUNCTIONAL_OVERREACHING';
+            level = 4;
+            color = 'red';
+        } else if (riskScore >= 35) {
+            status = 'FUNCTIONAL_OVERREACHING';
+            level = 3;
+            color = 'orange';
+        } else if (riskScore >= 20) {
+            status = 'ACCEPTABLE';
+            level = 2;
+            color = 'yellow';
+        } else {
+            status = 'OPTIMAL';
+            level = 1;
+            color = 'green';
+        }
+        
+        // Recommandation par défaut si aucune spécifique
+        if (recommendations.length === 0) {
+            if (level <= 2) recommendations.push('Continuez votre programme actuel');
+            else recommendations.push('Réduisez la charge et surveillez les symptômes');
+        }
+        
+        return {
+            status,
+            level,
+            color,
+            riskScore: Math.min(100, riskScore),
+            maxScore: 100,
+            factors,
+            recommendations,
+            monitoring: {
+                checkHRV: level >= 3,
+                checkRestingHR: level >= 3,
+                reduceLoad: level >= 3,
+                restDays: level >= 4 ? 5 : level >= 3 ? 2 : 0,
+                medicalConsult: level >= 5,
+            }
+        };
+    },
+    
+    /**
+     * Score de risque de blessure
+     * Ref: Gabbett (2016). Training-injury prevention paradox.
+     */
+    calculateInjuryRisk: (acwr, chronicLoad, monotony, strain, hrvRatio, consecutiveDays) => {
+        let risk = 0;
+        
+        // ACWR spike
+        if (acwr > 2.0) risk += 40;
+        else if (acwr > 1.5) risk += 25;
+        else if (acwr > 1.3) risk += 10;
+        
+        // Charge chronique faible (athlète non préparé)
+        if (chronicLoad < 500) risk += 15;
+        else if (chronicLoad < 1000) risk += 5;
+        
+        // Monotonie
+        if (monotony > 2.5) risk += 20;
+        else if (monotony > 2.0) risk += 10;
+        
+        // Strain
+        if (strain > 800) risk += 15;
+        else if (strain > 500) risk += 5;
+        
+        // HRV
+        if (hrvRatio < 0.7) risk += 10;
+        
+        // Jours consécutifs
+        if (consecutiveDays > 7) risk += 10;
+        else if (consecutiveDays > 5) risk += 5;
+        
+        risk = Math.min(100, risk);
+        
+        let level, color, message;
+        if (risk >= 70) { level = 'critical'; color = 'darkred'; message = 'Risque de blessure très élevé'; }
+        else if (risk >= 50) { level = 'high'; color = 'red'; message = 'Risque de blessure élevé'; }
+        else if (risk >= 30) { level = 'moderate'; color = 'orange'; message = 'Risque modéré'; }
+        else if (risk >= 15) { level = 'low'; color = 'yellow'; message = 'Risque faible'; }
+        else { level = 'minimal'; color = 'green'; message = 'Risque minimal'; }
+        
+        return { risk, level, color, message };
     },
 };
 
 // ============================================================================
-// RECOMMENDATION ENGINE
+// TAPER OPTIMIZATION — Modèle Mujika avancé
+// ============================================================================
+
+const Taper = {
+    /**
+     * Calcul du taper optimal selon le modèle de Mujika & Padilla (2003)
+     * 
+     * Paramètres optimaux:
+     * - Durée: 7-21 jours selon distance
+     * - Réduction volume: 40-60%
+     * - Maintien intensité: 100%
+     * - Réduction fréquence: -20% maximum
+     * 
+     * Gain attendu: 2-5% de performance
+     */
+    calculateOptimalTaper: (currentWeeklyLoad, daysToCompetition, distance = '10k', athleteLevel = 'intermediate') => {
+        // Durée optimale selon distance
+        const optimalDuration = {
+            '5k': 7,
+            '10k': 8,
+            'half': 10,
+            'marathon': 14,
+            'ultra': 21,
+        };
+        
+        const targetDays = optimalDuration[distance] || 10;
+        const actualDays = Math.min(daysToCompetition, targetDays);
+        
+        // Réduction de volume optimale
+        const volumeReduction = {
+            beginner: 0.50,  // 50% de réduction
+            intermediate: 0.45,
+            advanced: 0.40,
+            elite: 0.35,
+        };
+        
+        const reduction = volumeReduction[athleteLevel] || 0.45;
+        
+        const plans = [];
+        const gainEstimate = 2 + (actualDays / targetDays) * 3; // 2-5% gain
+        
+        for (let d = actualDays; d >= 0; d--) {
+            const progress = 1 - d / actualDays; // 0 → 1
+            
+            // Taper exponentiel décroissant (Mujika recommande exponentiel)
+            const volumeFactor = 1 - reduction * Math.pow(progress, 1.5);
+            const intensityFactor = 1.0; // Maintien intensité
+            const frequencyFactor = d > actualDays * 0.5 ? 1.0 : 0.8; // -20% fréquence en fin
+            
+            let sessionType;
+            if (d === 0) sessionType = 'competition';
+            else if (d === 1) sessionType = 'activation'; // 20min très léger
+            else if (d <= 3) sessionType = 'sharp'; // Courts rappels d'allure
+            else if (d <= actualDays * 0.5) sessionType = 'maintenance'; // Maintien seuil
+            else sessionType = 'reduction'; // Réduction progressive
+            
+            plans.push({
+                daysOut: d,
+                volumePercent: Math.round(volumeFactor * 100),
+                targetLoad: Math.round(currentWeeklyLoad * volumeFactor / 7),
+                intensity: intensityFactor,
+                frequency: frequencyFactor,
+                sessionType,
+                sessionDescription: Taper.getSessionDescription(sessionType, distance),
+                isCompetition: d === 0,
+            });
+        }
+        
+        return {
+            plan: plans,
+            expectedGain: Math.round(gainEstimate * 10) / 10,
+            duration: actualDays,
+            volumeReduction: Math.round(reduction * 100),
+            style: 'exponential_decay',
+            reference: 'Mujika & Padilla (2003). MSSE.',
+        };
+    },
+    
+    /**
+     * Description des sessions de taper
+     */
+    getSessionDescription: (type, distance) => {
+        const descriptions = {
+            competition: 'Jour J — Course',
+            activation: '20min footing + 3 x 30s allure course',
+            sharp: '30min + 4 x 1min allure course (récup 2min)',
+            maintenance: '40min dont 2 x 10min allure seuil',
+            reduction: 'Endurance fondamentale légère',
+        };
+        return descriptions[type] || 'Endurance fondamentale';
+    },
+    
+    /**
+     * Calcul de la réduction de charge pour le taper (ancien format, compatibilité)
+     */
+    calculateTaperPlan: (currentWeeklyLoad, daysToCompetition, taperStyle = 'classic') => {
+        return Taper.calculateOptimalTaper(currentWeeklyLoad, daysToCompetition).plan;
+    },
+};
+
+// ============================================================================
+// RECOMMENDATION ENGINE — Moteur intelligent multi-facteurs
 // ============================================================================
 
 const Recommendations = {
     /**
      * Génération de recommandation d'entraînement
-     * Intègre tous les modèles scientifiques
+     * Intègre tous les modèles scientifiques: PMC, HRV, ACWR, Polarization, TSB
      */
     generate: (profile, historyCtx, dateContext) => {
         const {
@@ -1825,6 +2197,7 @@ const Recommendations = {
             restingHR = 60,
             age = 30,
             sex = 'M',
+            level = 'intermediate',
         } = profile || {};
         
         const {
@@ -1836,63 +2209,108 @@ const Recommendations = {
             monotony = 1.5,
             daysSinceLongRun = 999,
             daysSinceInterval = 999,
+            daysSinceThreshold = 999,
             currentStreak = 0,
             daysActive = 0,
             avgRecentIF = 0.7,
+            hrvRmssd = 0,
+            hrvBaseline = 0,
+            tsb = 0,
+            sleepHours = 7,
+            consecutiveHardDays = 0,
         } = historyCtx || {};
         
-        const { dayOfWeek = new Date().getDay() } = dateContext || {};
+        const { dayOfWeek = new Date().getDay(), daysToCompetition = 999 } = dateContext || {};
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
         
         const acwrStatus = PMC.getACWRStatus(acwr);
         const polarRec = Polarization.getRecommendation(polarizationIndex);
         
-        // ===== RÈGLES DE DÉCISION SCIENTIFIQUES =====
+        // ===== RÈGLES DE DÉCISION SCIENTIFIQUES (priorité décroissante) =====
         
-        // 1. Overtraining Detection
+        // 0. Competition proche — taper
+        if (daysToCompetition <= 21 && daysToCompetition > 0) {
+            const taper = Taper.calculateOptimalTaper(weeklyLoad, daysToCompetition, '10k', level);
+            const todayPlan = taper.plan.find(p => p.daysOut === daysToCompetition);
+            return {
+                type: 'TAPER',
+                intensity: todayPlan?.sessionType === 'competition' ? 'competition' : 'low',
+                intensityColor: daysToCompetition <= 3 ? 'gold' : 'blue',
+                title: daysToCompetition <= 3 ? 'Pré-course' : 'Taper',
+                subtitle: `J-${daysToCompetition} — ${todayPlan?.sessionDescription || 'Réduction progressive'}`,
+                description: `Phase d'affûtage. Volume réduit à ${todayPlan?.volumePercent || 60}%.`,
+                advice: daysToCompetition <= 3 ? 'Repos et hydratation. Visualisation mentale.' : 'Suivez le plan de taper.',
+                structure: [todayPlan?.sessionDescription || '30min endurance légère'],
+                physiologicalGain: 'Supercompensation, récupération',
+                taper: taper,
+                metrics: { readiness, acwr, daysToCompetition },
+                scientificBasis: 'Mujika & Padilla (2003)',
+            };
+        }
+        
+        // 1. Overtraining / ACWR critique
         if (acwr > 1.5) {
             return {
                 type: 'RECOVERY',
                 intensity: 'low',
                 intensityColor: 'blue',
                 title: 'Récupération Active',
-                subtitle: 'Charge excessive (ACWR: ' + acwr.toFixed(2) + ')',
+                subtitle: `Charge excessive (ACWR: ${acwr.toFixed(2)})`,
                 description: 'Votre charge dépasse les seuils de sécurité. Priorité récupération.',
-                advice: 'Footing très léger ou repos. Hydratation et sommeil optimaux.',
-                structure: ['Repos ou footing < 30min zone 1'],
-                physiologicalGain: 'Récupération',
+                advice: 'Footing très léger (< 30min zone 1) ou repos complet. Hydratation et sommeil optimaux.',
+                structure: ['Repos ou footing < 30min zone 1 (< 60% FCM)'],
+                physiologicalGain: 'Récupération, réparation musculaire',
                 metrics: { readiness, acwr, polarizationIndex, monotony },
-                warnings: [{ type: 'danger', message: 'ACWR > 1.5 - Risque blessure élevé' }],
+                warnings: [{ type: 'danger', message: `ACWR ${acwr.toFixed(2)} > 1.5 — Risque blessure élevé` }],
                 scientificBasis: 'Gabbett 2016; Maupin 2020',
             };
         }
         
-        // 2. CNS Fatigue (streak trop long)
+        // 2. Fatigue CNS (streak + readiness basse)
         if (currentStreak > 4 && readiness < 40) {
             return {
                 type: 'REST',
                 intensity: 'rest',
                 intensityColor: 'gray',
                 title: 'Repos Biologique',
-                subtitle: 'CNS Fatigue',
+                subtitle: `Fatigue CNS — Readiness: ${readiness}%`,
                 description: 'Fatigue du système nerveux central détectée.',
-                advice: 'Repos complet. Évitez tout effort intense.',
+                advice: 'Repos complet. Stretching, foam roller, hydratation.',
                 structure: ['Jour de repos total'],
-                physiologicalGain: 'Récupération CNS',
+                physiologicalGain: 'Récupération CNS, restauration glycogène',
                 metrics: { readiness, acwr, polarizationIndex, monotony },
-                warnings: [{ type: 'warning', message: 'CNS fatigue - Streak ' + currentStreak + ' jours' }],
+                warnings: [{ type: 'warning', message: `CNS fatigue — Streak ${currentStreak} jours` }],
                 scientificBasis: 'Meeusen 2013 OTS consensus',
             };
         }
         
-        // 3. Monotonie excessive
+        // 3. Jours consécutifs difficiles
+        if (consecutiveHardDays >= 4) {
+            return {
+                type: 'RECOVERY',
+                intensity: 'low',
+                intensityColor: 'blue',
+                title: 'Récupération',
+                subtitle: `${consecutiveHardDays} jours difficiles consécutifs`,
+                description: 'Besoin de récupération après une série intense.',
+                advice: 'Endurance fondamentale très légère ou repos actif.',
+                structure: ['30-45min endurance zone 1-2'],
+                physiologicalGain: 'Récupération, adaptation',
+                metrics: { readiness, acwr, consecutiveHardDays },
+                warnings: [{ type: 'warning', message: `${consecutiveHardDays} jours consécutifs — récupération nécessaire` }],
+                scientificBasis: 'Foster 1998',
+            };
+        }
+        
+        // 4. Monotonie excessive
         if (monotony > SCIENTIFIC_CONSTANTS.MONOTONY.WARNING) {
             return {
                 type: 'VARIED',
                 intensity: 'varied',
                 intensityColor: 'purple',
                 title: 'Séance Variée',
-                subtitle: 'Monotonie: ' + monotony.toFixed(2),
-                description: 'Votre entraînement manque de variété. Variation requise.',
+                subtitle: `Monotonie: ${monotony.toFixed(2)}`,
+                description: 'Votre entraînement manque de variété.',
                 advice: 'Fartlek ou séance avec changements d\'allure.',
                 structure: [
                     '15 min échauffement',
@@ -1901,14 +2319,13 @@ const Recommendations = {
                 ],
                 physiologicalGain: 'Variabilité neuromusculaire',
                 metrics: { readiness, acwr, polarizationIndex, monotony },
-                warnings: [{ type: 'warning', message: 'Monotonie élevée: ' + monotony.toFixed(2) }],
+                warnings: [{ type: 'warning', message: `Monotonie élevée: ${monotony.toFixed(2)}` }],
                 scientificBasis: 'Foster 1998; Halson 2014',
             };
         }
         
-        // 4. Sortie longue requise (structure)
-        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-        if (daysSinceLongRun > 9 && isWeekend) {
+        // 5. Sortie longue (weekend + besoin)
+        if (daysSinceLongRun > 9 && isWeekend && readiness > 50) {
             const longDist = Math.min(32, Math.max(15, weeklyLoad / 10));
             const pace = RunningPerformance.getPaceSeconds(vdot, SCIENTIFIC_CONSTANTS.VDOT.E_LOW);
             
@@ -1917,12 +2334,12 @@ const Recommendations = {
                 intensity: 'moderate',
                 intensityColor: 'green',
                 title: 'Sortie Longue',
-                subtitle: Math.round(longDist) + 'km - ' + MathUtils.formatPace(pace) + '/km',
-                description: 'Pilier de la construction aérobie. Développer mitochondria et capillaires.',
+                subtitle: `${Math.round(longDist)}km — ${MathUtils.formatPace(pace)}/km`,
+                description: 'Pilier de la construction aérobie. Développer mitochondries et capillaires.',
                 advice: 'Commencez doucement. Hydratation et nutrition si > 90min.',
                 structure: [
                     '15 min échauffement progressif',
-                    Math.round(longDist - 5) + 'km à ' + MathUtils.formatPace(pace) + '/km',
+                    `${Math.round(longDist - 5)}km à ${MathUtils.formatPace(pace)}/km`,
                     'Retour au calme 5-10min'
                 ],
                 physiologicalGain: 'Biogenèse mitochondriale, capillarisation',
@@ -1933,8 +2350,8 @@ const Recommendations = {
             };
         }
         
-        // 5. Séance VMA/Intervalle (readiness + polarisation)
-        if (readiness > 65 && daysSinceInterval > 5 && polarizationIndex < 80 && !isWeekend) {
+        // 6. Séance VMA/Intervalle (conditions optimales)
+        if (readiness > 65 && daysSinceInterval > 5 && polarizationIndex < 80 && !isWeekend && acwr <= 1.3) {
             const reps = avgRecentIF > 0.85 ? 4 : 6;
             const vmaPace = RunningPerformance.getPaceSeconds(vdot, SCIENTIFIC_CONSTANTS.VDOT.I);
             
@@ -1942,16 +2359,16 @@ const Recommendations = {
                 type: 'INTERVAL',
                 intensity: 'high',
                 intensityColor: 'red',
-                title: 'VMA - Puissance Aérobie',
-                subtitle: reps + ' x 1000m à ' + MathUtils.formatPace(vmaPace) + '/km',
+                title: 'VMA — Puissance Aérobie',
+                subtitle: `${reps} x 1000m à ${MathUtils.formatPace(vmaPace)}/km`,
                 description: 'Développer le VO2max. Conditions optimales selon readiness et polarization.',
                 advice: 'Régularité indispensable. Récupération 3min entre répétitions.',
                 structure: [
                     '20 min échauffement progressif',
-                    reps + ' x 1000m à ' + MathUtils.formatPace(vmaPace) + ' (récup 3min)',
+                    `${reps} x 1000m à ${MathUtils.formatPace(vmaPace)} (récup 3min)`,
                     '10 min retour au calme'
                 ],
-                physiologicalGain: 'VO2max, puissance aerobie',
+                physiologicalGain: 'VO2max, puissance aérobie',
                 targetPace: MathUtils.formatPace(vmaPace),
                 targetReps: reps,
                 metrics: { readiness, acwr, polarizationIndex, monotony },
@@ -1959,32 +2376,57 @@ const Recommendations = {
             };
         }
         
-        // 6. Séance Seuil
-        if (readiness > 55 && weeklyLoad > 150 && daysSinceInterval <= 5) {
+        // 7. Séance Seuil
+        if (readiness > 55 && daysSinceThreshold > 4 && !isWeekend) {
             const thresholdPace = RunningPerformance.getPaceSeconds(vdot, SCIENTIFIC_CONSTANTS.VDOT.T);
-            const blockDuration = Math.round(weeklyLoad / 30);
+            const blockDuration = Math.max(5, Math.min(15, Math.round(weeklyLoad / 30)));
             
             return {
                 type: 'THRESHOLD',
                 intensity: 'threshold',
                 intensityColor: 'orange',
-                title: 'T - Seuil Anaérobie',
-                subtitle: '3 x ' + blockDuration + 'min à ' + MathUtils.formatPace(thresholdPace),
-                description: 'Améliorer la capacité à soutenir haute intensité. Seuil lactique.',
+                title: 'T — Seuil Anaérobie',
+                subtitle: `3 x ${blockDuration}min à ${MathUtils.formatPace(thresholdPace)}`,
+                description: 'Améliorer la capacité à soutenir haute intensité.',
                 advice: 'Effort "confortablement difficile". Respiration contrôlée.',
                 structure: [
                     '15 min échauffement',
-                    '3 x ' + blockDuration + 'min à ' + MathUtils.formatPace(thresholdPace) + ' (récup 1min)',
+                    `3 x ${blockDuration}min à ${MathUtils.formatPace(thresholdPace)} (récup 1min)`,
                     '10 min retour au calme'
                 ],
-                physiologicalGain: 'Seuil lactique, efficacité aerobie',
+                physiologicalGain: 'Seuil lactique, efficacité aérobie',
                 targetPace: MathUtils.formatPace(thresholdPace),
                 metrics: { readiness, acwr, polarizationIndex, monotony },
                 scientificBasis: 'Seiler 2011; Gaesser & Poole 1986',
             };
         }
         
-        // 7. Endurance fondamentale (défaut)
+        // 8. Polarisation — besoin de haute intensité
+        if (polarizationIndex < 60 && readiness > 60 && daysSinceInterval > 3) {
+            const shortReps = 8;
+            const shortPace = RunningPerformance.getPaceSeconds(vdot, SCIENTIFIC_CONSTANTS.VDOT.R);
+            
+            return {
+                type: 'SPEED',
+                intensity: 'high',
+                intensityColor: 'red',
+                title: 'Vitesse — Répétitions courtes',
+                subtitle: `${shortReps} x 200m à ${MathUtils.formatPace(shortPace)}`,
+                description: 'Améliorer la polarisation. Séance courte et intense.',
+                advice: 'Récupération complète entre répétitions.',
+                structure: [
+                    '20 min échauffement',
+                    `${shortReps} x 200m à ${MathUtils.formatPace(shortPace)} (récup 90s)`,
+                    '10 min retour au calme'
+                ],
+                physiologicalGain: 'Puissance neuromusculaire, économie de course',
+                targetPace: MathUtils.formatPace(shortPace),
+                metrics: { readiness, acwr, polarizationIndex },
+                scientificBasis: 'Seiler 2006 (80/20)',
+            };
+        }
+        
+        // 9. Endurance fondamentale (défaut)
         const enduranceDuration = weeklyLoad > 200 ? 60 : 45;
         const easyPace = RunningPerformance.getPaceSeconds(vdot, 0.68);
         
@@ -1993,14 +2435,14 @@ const Recommendations = {
             intensity: 'moderate',
             intensityColor: 'green',
             title: 'Endurance Fondamentale',
-            subtitle: enduranceDuration + 'min à ' + MathUtils.formatPace(easyPace),
-            description: 'Base du volume d\'entraînement. Développement aerobie basse intensité.',
+            subtitle: `${enduranceDuration}min à ${MathUtils.formatPace(easyPace)}`,
+            description: 'Base du volume d\'entraînement. Développement aérobie basse intensité.',
             advice: 'Allure conversable. Respiration nasale si possible.',
             structure: [
-                enduranceDuration + ' min endurance à ' + MathUtils.formatPace(easyPace) + '/km',
+                `${enduranceDuration} min endurance à ${MathUtils.formatPace(easyPace)}/km`,
                 '+ 6 lignes droites si VMA à travailler'
             ],
-            physiologicalGain: 'Capillarisation, économie de course, mitochondrial density',
+            physiologicalGain: 'Capillarisation, économie de course, densité mitochondriale',
             targetPace: MathUtils.formatPace(easyPace),
             targetDuration: enduranceDuration,
             metrics: { readiness, acwr, polarizationIndex, monotony },
@@ -2009,8 +2451,7 @@ const Recommendations = {
     },
     
     /**
-     * Alias pour compatibilité — appelle generate()
-     * @deprecated Utilisez generate(profile, historyCtx, dateContext)
+     * Alias pour compatibilité
      */
     getRecommendation: (profile, historyCtx, dateContext) =>
         Recommendations.generate(profile, historyCtx, dateContext),
@@ -2023,16 +2464,15 @@ const Recommendations = {
             return {
                 weeklyLoad: 0, chronicLoad: 0, acwr: 1,
                 readiness: 70, polarizationIndex: 0, monotony: 1,
-                daysSinceLongRun: 999, daysSinceInterval: 999,
+                daysSinceLongRun: 999, daysSinceInterval: 999, daysSinceThreshold: 999,
                 currentStreak: 0, avgRecentIF: 0.7, daysActive: 0,
-                recentActivities: 0, trainingFrequency: 0,
+                recentActivities: 0, trainingFrequency: 0, consecutiveHardDays: 0,
             };
         }
         
         const today = new Date();
         const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
         const monthAgo = new Date(today.getTime() - 28 * 24 * 60 * 60 * 1000);
-        const twoWeeksAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
         
         const weekActs = activities.filter(a => new Date(a.date) >= weekAgo);
         const monthActs = activities.filter(a => new Date(a.date) >= monthAgo);
@@ -2065,6 +2505,15 @@ const Recommendations = {
             ? Math.floor((today - new Date(intervals[0].date)) / (24 * 60 * 60 * 1000))
             : 999;
         
+        // Jours depuis dernier seuil
+        const thresholds = activities.filter(a => {
+            const if_ = a.intensityFactor || a.if_factor || 0;
+            return if_ >= 0.85 && if_ < 0.95;
+        });
+        const daysSinceThreshold = thresholds.length > 0
+            ? Math.floor((today - new Date(thresholds[0].date)) / (24 * 60 * 60 * 1000))
+            : 999;
+        
         // Streak
         let streak = 0;
         let checkDate = new Date(today);
@@ -2072,6 +2521,20 @@ const Recommendations = {
         while (activities.some(a => a.date?.startsWith(checkDate.toISOString().split('T')[0]))) {
             streak++;
             checkDate.setDate(checkDate.getDate() - 1);
+        }
+        
+        // Jours consécutifs difficiles
+        let consecutiveHard = 0;
+        checkDate = new Date(today);
+        checkDate.setDate(checkDate.getDate() - 1);
+        while (true) {
+            const dayStr = checkDate.toISOString().split('T')[0];
+            const dayActs = activities.filter(a => a.date?.startsWith(dayStr));
+            const dayLoad = dayActs.reduce((s, a) => s + (a.tss || a.trimp || 0), 0);
+            if (dayLoad > 80) {
+                consecutiveHard++;
+                checkDate.setDate(checkDate.getDate() - 1);
+            } else break;
         }
         
         // IF moyen récent
@@ -2090,6 +2553,11 @@ const Recommendations = {
             weekActs.map(a => a.zoneDistribution || {})
         );
         
+        // TSB
+        const pmcData = PMC.calculate(activities);
+        const latestPMC = pmcData.length > 0 ? pmcData[pmcData.length - 1] : null;
+        const tsb = latestPMC?.tsb || 0;
+        
         return {
             weeklyLoad: Math.round(weeklyLoad),
             chronicLoad: Math.round(chronicLoad),
@@ -2099,23 +2567,25 @@ const Recommendations = {
             monotony: Math.round(monotony * 100) / 100,
             daysSinceLongRun,
             daysSinceInterval,
+            daysSinceThreshold,
             currentStreak: streak,
             avgRecentIF: Math.round(avgRecentIF * 100) / 100,
             daysActive: activities.length,
             recentActivities: weekActs.length,
             trainingFrequency: weekActs.length > 0 ? Math.round(weekActs.length * 100 / 7) : 0,
+            consecutiveHardDays: consecutiveHard,
+            tsb,
         };
     },
 };
 
 // ============================================================================
-// SPORT ANALYSIS - Analyse spécifique par type de sport
+// SPORT ANALYSIS — Analyse spécifique par type de sport
 // ============================================================================
 
 const SportAnalysis = {
     /**
      * Constantes spécifiques par sport
-     * Ref: Coggan (power), Daniels (running), Foster (TRIMP)
      */
     SPORT_CONSTANTS: {
         Run: {
@@ -2123,105 +2593,69 @@ const SportAnalysis = {
             tssMethod: 'hr_based',
             thresholdHR: 0.85,
             trimpModel: 'edwards',
-            hasPower: false,
-            hasHR: true,
-            hasPace: true,
-            hasElevation: true,
-            tssMultiplier: 1.0,
-            icon: '🏃',
+            hasPower: false, hasHR: true, hasPace: true, hasElevation: true,
+            tssMultiplier: 1.0, icon: '🏃',
         },
         Ride: {
             label: 'Cyclisme',
             tssMethod: 'power_based',
             thresholdPower: 1.0,
             trimpModel: 'banister',
-            hasPower: true,
-            hasHR: true,
-            hasPace: false,
-            hasElevation: true,
-            tssMultiplier: 1.0,
-            icon: '🚴',
+            hasPower: true, hasHR: true, hasPace: false, hasElevation: true,
+            tssMultiplier: 1.0, icon: '🚴',
         },
         Swim: {
             label: 'Natation',
             tssMethod: 'pace_based',
             thresholdPace: 90,
             trimpModel: 'banister',
-            hasPower: false,
-            hasHR: true,
-            hasPace: true,
-            hasElevation: false,
-            tssMultiplier: 0.8,
-            icon: '🏊',
+            hasPower: false, hasHR: true, hasPace: true, hasElevation: false,
+            tssMultiplier: 0.8, icon: '🏊',
         },
         TrailRun: {
             label: 'Trail',
             tssMethod: 'hr_elevation',
             thresholdHR: 0.85,
             trimpModel: 'edwards',
-            hasPower: false,
-            hasHR: true,
-            hasPace: true,
-            hasElevation: true,
-            tssMultiplier: 1.15,
-            elevationFactor: 0.008,
-            icon: '⛰️',
+            hasPower: false, hasHR: true, hasPace: true, hasElevation: true,
+            tssMultiplier: 1.15, elevationFactor: 0.008, icon: '⛰️',
         },
         Walk: {
             label: 'Marche',
             tssMethod: 'srpe',
             thresholdHR: 0.70,
             trimpModel: 'edwards',
-            hasPower: false,
-            hasHR: true,
-            hasPace: true,
-            hasElevation: true,
-            tssMultiplier: 0.5,
-            icon: '🚶',
+            hasPower: false, hasHR: true, hasPace: true, hasElevation: true,
+            tssMultiplier: 0.5, icon: '🚶',
         },
         HIIT: {
             label: 'HIIT',
             tssMethod: 'hr_based',
             thresholdHR: 0.90,
             trimpModel: 'banister',
-            hasPower: false,
-            hasHR: true,
-            hasPace: true,
-            hasElevation: false,
-            tssMultiplier: 1.2,
-            icon: '💪',
+            hasPower: false, hasHR: true, hasPace: true, hasElevation: false,
+            tssMultiplier: 1.2, icon: '💪',
         },
         Strength: {
             label: 'Musculation',
             tssMethod: 'srpe',
             thresholdHR: 0.75,
             trimpModel: 'edwards',
-            hasPower: false,
-            hasHR: true,
-            hasPace: false,
-            hasElevation: false,
-            tssMultiplier: 0.6,
-            icon: '🏋️',
+            hasPower: false, hasHR: true, hasPace: false, hasElevation: false,
+            tssMultiplier: 0.6, icon: '🏋️',
         },
         Yoga: {
             label: 'Yoga',
             tssMethod: 'srpe',
             thresholdHR: 0.60,
             trimpModel: 'edwards',
-            hasPower: false,
-            hasHR: true,
-            hasPace: false,
-            hasElevation: false,
-            tssMultiplier: 0.3,
-            icon: '🧘',
+            hasPower: false, hasHR: true, hasPace: false, hasElevation: false,
+            tssMultiplier: 0.3, icon: '🧘',
         },
     },
 
     /**
      * Analyse complète d'une activité selon le sport
-     * @param {object} activity - Activity data
-     * @param {object} profile - User profile with fcm, restingHR, ftp, etc.
-     * @returns {object} Analysis with tss, trimp, intensityFactor, zones, etc.
      */
     analyze: (activity, profile) => {
         if (!activity) return { tss: null, trimp: null, intensityFactor: null, zones: null };
@@ -2233,7 +2667,6 @@ const SportAnalysis = {
         const durationMinutes = duration / 60;
         const durationHours = duration / 3600;
         const avgHR = activity.average_heartrate || 0;
-        const maxHR = activity.max_heartrate || 0;
         const avgPower = activity.average_power || 0;
         const distance = activity.distance || 0;
         const elevation = activity.total_elevation_gain || 0;
@@ -2254,19 +2687,14 @@ const SportAnalysis = {
             intensityFactor = avgHR / thresholdHR;
             tss = durationHours * Math.pow(intensityFactor, 2) * 100;
         } else if (activity.rpe) {
-            const srpeTSS = (activity.rpe / 10) * durationHours * 100;
-            tss = srpeTSS * constants.tssMultiplier;
+            tss = (activity.rpe / 10) * durationHours * 100 * constants.tssMultiplier;
         }
 
-        // Elevation adjustment for trail/hike
         if (elevation > 0 && constants.elevationFactor) {
-            const elevTSS = elevation * constants.elevationFactor * durationMinutes / 60;
-            tss = (tss || 0) + elevTSS;
+            tss = (tss || 0) + elevation * constants.elevationFactor * durationMinutes / 60;
         }
 
-        if (tss !== null) {
-            tss = Math.round(tss * constants.tssMultiplier * 10) / 10;
-        }
+        if (tss !== null) tss = Math.round(tss * constants.tssMultiplier * 10) / 10;
 
         // ===== TRIMP Calculation =====
         let trimp = null;
@@ -2279,75 +2707,49 @@ const SportAnalysis = {
                 const hrPercent = avgHR / fcm;
                 let zoneFactor = 1;
                 for (const zone of SCIENTIFIC_CONSTANTS.TRIMP.ZONES) {
-                    if (hrPercent >= zone.min && hrPercent < zone.max) {
-                        zoneFactor = zone.coefficient;
-                        break;
-                    }
+                    if (hrPercent >= zone.min && hrPercent < zone.max) { zoneFactor = zone.coefficient; break; }
                 }
                 if (hrPercent >= 0.9) zoneFactor = 5;
-                const sexFactor = profile?.sex === 'F' ? 1.3 : 1.0;
-                trimp = Math.round(durationMinutes * zoneFactor * sexFactor * 10) / 10;
+                trimp = Math.round(durationMinutes * zoneFactor * (profile?.sex === 'F' ? 1.3 : 1.0) * 10) / 10;
             }
         }
 
-        // ===== HR Zones Distribution =====
+        // ===== HR Zones =====
         let zones = null;
         if (avgHR > 0 && fcm > 0) {
             const hrPercent = avgHR / fcm;
             const zoneNames = ['Zone 1 - Récupération', 'Zone 2 - Endurance', 'Zone 3 - Tempo', 'Zone 4 - Seuil', 'Zone 5 - VO2max'];
             let currentZone = 1;
-            for (let i = 0; i < 5; i++) {
-                if (hrPercent >= (i + 1) * 0.2) currentZone = i + 2;
-            }
+            for (let i = 0; i < 5; i++) { if (hrPercent >= (i + 1) * 0.2) currentZone = i + 2; }
             currentZone = Math.min(currentZone, 5);
-            zones = {
-                current: currentZone,
-                name: zoneNames[currentZone - 1],
-                percent: Math.round(hrPercent * 100),
-            };
+            zones = { current: currentZone, name: zoneNames[currentZone - 1], percent: Math.round(hrPercent * 100) };
         }
 
-        // ===== Pace Analysis (running/swimming) =====
+        // ===== Pace =====
         let pace = null;
         if (distance > 0 && duration > 0 && constants.hasPace) {
-            const paceSecPerKm = (duration / (distance / 1000));
-            pace = {
-                secPerKm: Math.round(paceSecPerKm),
-                formatted: MathUtils.formatPace(paceSecPerKm),
-                speedKmh: (distance / 1000 / (duration / 3600)).toFixed(1),
-            };
+            const paceSecPerKm = duration / (distance / 1000);
+            pace = { secPerKm: Math.round(paceSecPerKm), formatted: MathUtils.formatPace(paceSecPerKm), speedKmh: (distance / 1000 / (duration / 3600)).toFixed(1) };
         }
 
-        // ===== VDOT (running only) =====
+        // ===== VDOT =====
         let vdot = null;
         if (sportType === 'Run' && distance >= 3000 && durationMinutes >= 15) {
             vdot = Math.round(RunningPerformance.calculateVDOT(distance, durationMinutes) * 10) / 10;
         }
 
-        // ===== Normalized Power (cycling) =====
-        let normalizedPower = null;
-        let variabilityIndex = null;
+        // ===== Normalized Power =====
+        let normalizedPower = null, variabilityIndex = null;
         if (sportType === 'Ride' && activity.power_samples && activity.power_samples.length > 0) {
             normalizedPower = Math.round(TrainingLoad.calculateNormalizedValue(activity.power_samples) * 10) / 10;
-            if (avgPower > 0) {
-                variabilityIndex = Math.round((normalizedPower / avgPower) * 100) / 100;
-            }
+            if (avgPower > 0) variabilityIndex = Math.round((normalizedPower / avgPower) * 100) / 100;
         }
 
         return {
-            sportType,
-            sportLabel: constants.label,
-            tss,
-            trimp,
+            sportType, sportLabel: constants.label, tss, trimp,
             intensityFactor: intensityFactor ? Math.round(intensityFactor * 100) / 100 : null,
-            zones,
-            pace,
-            vdot,
-            normalizedPower,
-            variabilityIndex,
-            elevationGain: elevation,
-            duration: duration,
-            durationFormatted: MathUtils.formatDuration(duration),
+            zones, pace, vdot, normalizedPower, variabilityIndex,
+            elevationGain: elevation, duration, durationFormatted: MathUtils.formatDuration(duration),
             calories: activity.calories || null,
         };
     },

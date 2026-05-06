@@ -47,12 +47,12 @@ export default function HeroSection() {
 
             {/* Subtitle */}
             <p className="text-lg sm:text-xl text-neutral-600 leading-relaxed mb-8 max-w-xl">
-              Plateforme d&apos;entraînement avec le moteur
+              Coaching sportif propulsé par le moteur
               <span className="font-semibold text-neutral-900"> Jack Daniels VDOT</span>,
-              <span className="font-semibold text-neutral-900"> coaching adaptatif</span>,
-              <span className="font-semibold text-neutral-900"> météo en temps réel</span> et
-              <span className="font-semibold text-neutral-900"> stratégie de course</span>.
-              Accessible partout — web, mobile, PWA.
+              des plans d&apos;entraînement adaptatifs,
+              <span className="font-semibold text-neutral-900"> la météo en temps réel</span> et
+              <span className="font-semibold text-neutral-900"> des stratégies de course</span> personnalisées.
+              15+ métriques avancées pour optimiser chaque séance.
             </p>
 
             {/* CTA Buttons */}
