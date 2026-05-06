@@ -555,19 +555,27 @@ function LeaderboardTab() {
 // GROUPS TAB
 // ============================================================================
 
+import Link from 'next/link';
+
 function GroupsTab() {
   const [groups, setGroups] = useState<any[]>([]);
+  const [publicGroups, setPublicGroups] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
-  const [newGroup, setNewGroup] = useState({ name: '', description: '' });
+  const [newGroup, setNewGroup] = useState({ name: '', description: '', isPrivate: true });
   const [inviteCode, setInviteCode] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const loadGroups = useCallback(async () => {
     setIsLoading(true);
     try {
-      const data = await api.getGroups();
-      setGroups(data || []);
+      const [myGroups, pubGroups] = await Promise.all([
+        api.getGroups(),
+        api.getPublicGroups(),
+      ]);
+      setGroups(myGroups || []);
+      setPublicGroups(pubGroups || []);
     } catch {
       /* silent */
     } finally {
@@ -585,7 +593,7 @@ function GroupsTab() {
       await api.createGroup(newGroup);
       toast.success('Groupe créé');
       setShowCreate(false);
-      setNewGroup({ name: '', description: '' });
+      setNewGroup({ name: '', description: '', isPrivate: true });
       loadGroups();
     } catch (e) {
       toast.error('Erreur');
@@ -620,6 +628,15 @@ function GroupsTab() {
     toast.success('Code copié');
   };
 
+  const handleSearch = async () => {
+    try {
+      const results = await api.getPublicGroups(searchQuery);
+      setPublicGroups(results || []);
+    } catch {
+      /* silent */
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -629,7 +646,7 @@ function GroupsTab() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Actions */}
       <div className="flex gap-3">
         <Button variant="secondary" className="flex-1 rounded-xl" onClick={() => setShowJoin(true)}>
@@ -641,6 +658,118 @@ function GroupsTab() {
           Créer
         </Button>
       </div>
+
+      {/* My Groups */}
+      {groups.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold flex items-center gap-2">
+            <Users2 className="w-4 h-4 text-primary" />
+            Mes groupes
+          </h3>
+          <div className="grid gap-3">
+            {groups.map((group) => (
+              <Link key={group.id} href={`/app/social/groups/${group.id}`} className="block">
+                <div className="p-5 bg-card border border-border rounded-2xl hover:border-primary/30 hover:shadow-lg transition-all cursor-pointer">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center">
+                        <Users2 className="w-6 h-6 text-primary" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-lg">{group.name}</h4>
+                        {group.description && (
+                          <p className="text-sm text-muted mt-1 line-clamp-2">{group.description}</p>
+                        )}
+                        <div className="flex items-center gap-2 mt-3">
+                          <Badge variant="default" className="rounded-full">{group.member_count} membres</Badge>
+                          {group.is_private ? (
+                            <Badge variant="default" className="rounded-full bg-orange-500/10 text-orange-500">Privé</Badge>
+                          ) : (
+                            <Badge variant="default" className="rounded-full bg-green-500/10 text-green-500">Public</Badge>
+                          )}
+                          {group.role === 'admin' && (
+                            <Badge variant="default" className="rounded-full bg-primary/10 text-primary">Admin</Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      {group.invite_code && (
+                        <Button size="sm" variant="ghost" className="rounded-xl" onClick={(e) => { e.preventDefault(); copyCode(group.invite_code); }}>
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      )}
+                      {group.role !== 'admin' && (
+                        <Button size="sm" variant="ghost" className="rounded-xl text-muted hover:text-danger" onClick={(e) => { e.preventDefault(); handleLeave(group.id); }}>
+                          Quitter
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Discover Public Groups */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold flex items-center gap-2">
+            <Search className="w-4 h-4 text-primary" />
+            Découvrir des groupes
+          </h3>
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            placeholder="Rechercher..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            className="flex-1 px-4 py-2 rounded-xl bg-card border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm"
+          />
+          <Button variant="secondary" size="sm" onClick={handleSearch}>Rechercher</Button>
+        </div>
+        {publicGroups.length > 0 ? (
+          <div className="grid gap-3">
+            {publicGroups.filter(g => !groups.find(mg => mg.id === g.id)).slice(0, 5).map((group) => (
+              <div key={group.id} className="p-4 bg-card border border-border rounded-2xl">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+                      <Users2 className="w-5 h-5 text-green-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium">{group.name}</h4>
+                      <p className="text-xs text-muted">{group.member_count} membres</p>
+                    </div>
+                  </div>
+                  <Button size="sm" onClick={() => { setInviteCode(group.invite_code); setShowJoin(true); }}>
+                    Rejoindre
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-sm text-muted">Aucun groupe public trouvé</p>
+          </div>
+        )}
+      </div>
+
+      {/* Empty State */}
+      {groups.length === 0 && publicGroups.length === 0 && (
+        <div className="text-center py-16">
+          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center">
+            <Users2 className="w-12 h-12 text-primary/50" />
+          </div>
+          <p className="font-semibold text-lg">Aucun groupe</p>
+          <p className="text-sm text-muted mt-2">Créez ou rejoignez un groupe pour commencer</p>
+        </div>
+      )}
 
       {/* Create Modal */}
       {showCreate && (
@@ -661,6 +790,18 @@ function GroupsTab() {
                 onChange={(e) => setNewGroup({...newGroup, description: e.target.value})}
                 placeholder="Description du groupe..."
               />
+              <div className="flex items-center justify-between p-3 bg-muted/30 rounded-xl">
+                <div>
+                  <p className="font-medium text-sm">Groupe privé</p>
+                  <p className="text-xs text-muted">Code d&apos;invitation requis</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={newGroup.isPrivate}
+                  onChange={(e) => setNewGroup({...newGroup, isPrivate: e.target.checked})}
+                  className="w-5 h-5 rounded"
+                />
+              </div>
               <div className="flex gap-3 pt-2">
                 <Button variant="secondary" onClick={() => setShowCreate(false)} className="flex-1 rounded-xl">Annuler</Button>
                 <Button onClick={handleCreate} className="flex-1 rounded-xl">Créer</Button>
@@ -689,55 +830,6 @@ function GroupsTab() {
               </div>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Groups List */}
-      {groups.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center">
-            <Users2 className="w-12 h-12 text-primary/50" />
-          </div>
-          <p className="font-semibold text-lg">Aucun groupe</p>
-          <p className="text-sm text-muted mt-2">Créez ou rejoignez un groupe pour commencer</p>
-        </div>
-      ) : (
-        <div className="grid gap-3">
-          {groups.map((group) => (
-            <div key={group.id} className="p-5 bg-card border border-border rounded-2xl hover:border-primary/20 hover:shadow-md transition-all">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center">
-                    <Users2 className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-lg">{group.name}</h4>
-                    {group.description && (
-                      <p className="text-sm text-muted mt-1">{group.description}</p>
-                    )}
-                    <div className="flex items-center gap-2 mt-3">
-                      <Badge variant="default" className="rounded-full">{group.member_count} membres</Badge>
-                      {group.role === 'admin' && (
-                        <Badge variant="primary" className="rounded-full bg-primary/10 text-primary">Admin</Badge>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  {group.invite_code && (
-                    <Button size="sm" variant="ghost" className="rounded-xl" onClick={() => copyCode(group.invite_code)}>
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                  )}
-                  {group.role !== 'admin' && (
-                    <Button size="sm" variant="ghost" className="rounded-xl text-muted hover:text-danger" onClick={() => handleLeave(group.id)}>
-                      Quitter
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
         </div>
       )}
     </div>

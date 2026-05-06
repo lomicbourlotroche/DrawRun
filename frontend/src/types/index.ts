@@ -474,7 +474,21 @@ export interface Group {
   isPrivate?: boolean;
   memberCount?: number;
   inviteCode?: string;
+  creatorId?: number;
+  creatorName?: string;
+  role?: string;
+  userRole?: string;
+  isMember?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
   [key: string]: unknown;
+}
+
+export interface GroupDetail extends Group {
+  memberCount: number;
+  adminCount: number;
+  userRole: string | null;
+  isMember: boolean;
 }
 
 export interface GroupMember {
@@ -482,9 +496,43 @@ export interface GroupMember {
   userId: number;
   name: string;
   email: string;
-  role?: string;
-  joinedAt?: string;
-  [key: string]: unknown;
+  avatarUrl?: string;
+  role: string;
+  joinedAt: string;
+  groupId: number;
+}
+
+export interface GroupEvent {
+  id: number;
+  title: string;
+  description?: string;
+  location?: string;
+  eventDate: string;
+  endDate?: string;
+  isOnline: boolean;
+  maxAttendees?: number;
+  groupId: number;
+  createdBy: number;
+  attendeeCount: number;
+  userStatus?: string;
+  createdAt: string;
+}
+
+export interface CreateEventParams {
+  title: string;
+  description?: string;
+  location?: string;
+  eventDate: string;
+  endDate?: string;
+  isOnline?: boolean;
+  maxAttendees?: number;
+}
+
+export interface GroupUpdate {
+  name?: string;
+  description?: string;
+  isPrivate?: boolean;
+  regenerateInvite?: boolean;
 }
 
 export interface LeaderboardEntry {

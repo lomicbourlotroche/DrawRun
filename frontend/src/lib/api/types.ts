@@ -296,6 +296,23 @@ export interface CreateGroupParams {
   isPrivate?: boolean;
 }
 
+export interface GroupUpdateParams {
+  name?: string;
+  description?: string;
+  isPrivate?: boolean;
+  regenerateInvite?: boolean;
+}
+
+export interface CreateEventParams {
+  title: string;
+  description?: string;
+  location?: string;
+  eventDate: string;
+  endDate?: string;
+  isOnline?: boolean;
+  maxAttendees?: number;
+}
+
 export interface ShareStatsParams {
   statType: string;
   statValue: number;

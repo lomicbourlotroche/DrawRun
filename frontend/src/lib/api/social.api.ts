@@ -88,6 +88,11 @@ export const socialApi = {
     return client.request('/api/social/groups');
   },
 
+  getPublicGroups(search?: string): Promise<Group[]> {
+    const query = search ? `?search=${encodeURIComponent(search)}` : '';
+    return client.request(`/api/social/groups/public${query}`);
+  },
+
   createGroup(params: CreateGroupParams): Promise<{ success: boolean; group?: Group; error?: string }> {
     return client.request('/api/social/groups', {
       method: 'POST',
@@ -102,7 +107,22 @@ export const socialApi = {
     });
   },
 
-  leaveGroup(groupId: number): Promise<{ success: boolean }> {
+  getGroupDetail(groupId: number): Promise<GroupDetail> {
+    return client.request(`/api/social/groups/${groupId}`);
+  },
+
+  editGroup(groupId: number, updates: Partial<GroupUpdate>): Promise<{ success: boolean; error?: string }> {
+    return client.request(`/api/social/groups/${groupId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  },
+
+  deleteGroup(groupId: number): Promise<{ success: boolean; error?: string }> {
+    return client.request(`/api/social/groups/${groupId}`, { method: 'DELETE' });
+  },
+
+  leaveGroup(groupId: number): Promise<{ success: boolean; error?: string }> {
     return client.request(`/api/social/groups/${groupId}/leave`, { method: 'POST' });
   },
 
@@ -110,8 +130,44 @@ export const socialApi = {
     return client.request(`/api/social/groups/${groupId}/members`);
   },
 
-  getGroupEvents(groupId: number): Promise<unknown[]> {
+  kickMember(groupId: number, userId: number): Promise<{ success: boolean; error?: string }> {
+    return client.request(`/api/social/groups/${groupId}/kick`, {
+      method: 'POST',
+      body: JSON.stringify({ userId }),
+    });
+  },
+
+  promoteMember(groupId: number, userId: number, role: string): Promise<{ success: boolean; error?: string }> {
+    return client.request(`/api/social/groups/${groupId}/promote`, {
+      method: 'POST',
+      body: JSON.stringify({ userId, role }),
+    });
+  },
+
+  getGroupActivities(groupId: number, limit = 20, offset = 0): Promise<Activity[]> {
+    return client.request(`/api/social/groups/${groupId}/activities?limit=${limit}&offset=${offset}`);
+  },
+
+  getGroupEvents(groupId: number): Promise<GroupEvent[]> {
     return client.request(`/api/social/groups/${groupId}/events`);
+  },
+
+  createEvent(groupId: number, event: CreateEventParams): Promise<{ success: boolean; eventId?: number; error?: string }> {
+    return client.request(`/api/social/groups/${groupId}/events`, {
+      method: 'POST',
+      body: JSON.stringify(event),
+    });
+  },
+
+  joinEvent(eventId: number): Promise<{ success: boolean; error?: string }> {
+    return client.request(`/api/social/events/${eventId}/join`, { method: 'POST' });
+  },
+
+  createGroupConversation(groupId: number, title?: string): Promise<{ success: boolean; conversation?: unknown; existing?: boolean; error?: string }> {
+    return client.request(`/api/social/groups/${groupId}/conversation`, {
+      method: 'POST',
+      body: JSON.stringify({ title }),
+    });
   },
 
   // ============================================================================
