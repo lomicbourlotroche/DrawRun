@@ -28,7 +28,7 @@ except ImportError:
 def main():
     parser = argparse.ArgumentParser(description="Garmin API Script")
     parser.add_argument("--creds", type=str, help="Read credentials from stdin")
-    parser.add_argument("--tokenstore", type=str, help="Token store directory")
+    parser.add_argument("--tokenstore", type=str, help="Token store directory (unused, kept for compatibility)")
     parser.add_argument(
         "--mode",
         type=str,
@@ -40,26 +40,25 @@ def main():
     parser.add_argument("--start", type=str, help="Start date (YYYY-MM-DD)")
     parser.add_argument("--id", type=str, help="Activity ID")
     parser.add_argument("--format", type=str, default="json")
-
+    
     args = parser.parse_args()
-
+    
     # Read credentials from stdin
     if args.creds == "-":
         creds_data = json.loads(sys.stdin.read())
-        username = creds_data.get("username")
-        password = creds_data.get("password")
+        username = creds_data.get("username')
+        password = creds_data.get("password')
     else:
         print(json.dumps({"error": "Credentials required via stdin"}))
         sys.exit(1)
-
+    
     if not username or not password:
         print(json.dumps({"error": "Username and password required"}))
         sys.exit(1)
-
+    
     try:
-        # Initialize Garmin client
-        tokenstore = args.tokenstore if args.tokenstore else None
-        garmin = Garmin(username, password, tokenstore=tokenstore)
+        # Initialize Garmin client (token storage is handled automatically by garth module)
+        garmin = Garmin(username, password)
 
         # Login
         garmin.login()

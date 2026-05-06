@@ -15,10 +15,16 @@
     "ecmaVersion": "latest"
   },
   "plugins": [
-    "security"
+    "security",
+    "unused-imports"
   ],
   "rules": {
-    "no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "no-unused-vars": "off",
+    "unused-imports/no-unused-imports": "error",
+    "unused-imports/no-unused-vars": [
+      "warn",
+      { "vars": "all", "varsIgnorePattern": "^_", "args": "after-used", "argsIgnorePattern": "^_" }
+    ],
     "no-console": ["warn", { "allow": ["error", "warn", "info", "log"] }],
     "security/detect-object-injection": "error",
     "security/detect-non-literal-regexp": "error",

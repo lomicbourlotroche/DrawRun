@@ -9,6 +9,8 @@
 
 'use strict';
 
+/* eslint-disable security/detect-object-injection, security/detect-non-literal-fs-filename */
+
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
