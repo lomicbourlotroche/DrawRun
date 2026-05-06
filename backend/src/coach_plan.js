@@ -22,7 +22,19 @@ const {
     dbRunUser,
     dbAllUser
 } = require('./database.js');
-const { Cardiovascular, TrainingLoad, PMC, MathUtils } = require('./algorithms');
+const {
+    Cardiovascular,
+    TrainingLoad,
+    PMC,
+    MathUtils,
+    RunningPerformance,
+    Taper,
+    HRV,
+    CriticalPower,
+    Overtraining,
+    Polarization,
+    Recommendations,
+} = require('./algorithms');
 
 const SESSION_TYPES = {
     E: 'Endurance',
@@ -59,6 +71,12 @@ const PERIODIZATION = {
         taper: { volume: 0.5, intensity: 0.5, progression: -0.15 },
         race: { volume: 0.3, intensity: 0.2, progression: 0 }
     },
+    // Issurin Block Periodization
+    blocks: {
+        accumulative: { volume: 0.85, intensity: 0.4, focus: 'aerobic_capacity', duration_weeks: 4 },
+        transmutation: { volume: 0.70, intensity: 0.7, focus: 'lactate_threshold', duration_weeks: 3 },
+        realization: { volume: 0.40, intensity: 0.85, focus: 'race_specificity', duration_weeks: 2 },
+    },
     // Distribution 80/20 polarisée optimale (Seiler)
     polarized: {
         low: 0.80,
@@ -70,6 +88,12 @@ const PERIODIZATION = {
         low: 0.70,
         moderate: 0.20,
         high: 0.10
+    },
+    // Polarisation inversée pour athlètes avancés
+    reverse_periodization: {
+        low: 0.55,
+        moderate: 0.15,
+        high: 0.30
     }
 };
 
@@ -160,29 +184,57 @@ function analyzeUserHistory(history) {
             bestVDOT: null,
             lastTestDate: null,
             injuryHistory: [],
-            preferredSessionTypes: ['E', 'L']
+            preferredSessionTypes: ['E', 'L'],
+            trainingMonotony: null,
+            trainingStrain: null,
+            polarizationIndex: null,
+            hrvBaseline: null,
+            fitnessLevel: 'intermediate',
         };
     }
-    
+
     const activities = history.activities;
     const totalKm = activities.reduce((sum, a) => sum + (a.distance || 0) / 1000, 0);
     const totalHours = activities.reduce((sum, a) => sum + (a.moving_time || 0) / 3600, 0);
     const weeks = Math.max(1, activities.length / 4);
-    
+
     // Calculer la variabilité de la FC pour déterminer la résistance à la fatigue
     const hrs = activities.filter(a => a.average_heartrate).map(a => a.average_heartrate);
     const hrVariability = hrs.length > 1 ? MathUtils.stdDev(hrs) / MathUtils.mean(hrs) : 0;
-    
+
+    // Calculer la monotonie d'entraînement (Foster)
+    const dailyTSS = activities.map(a => a.tss || 50);
+    const meanTSS = MathUtils.mean(dailyTSS);
+    const stdDevTSS = MathUtils.stdDev(dailyTSS);
+    const monotony = meanTSS > 0 ? stdDevTSS / meanTSS : 1.5;
+    const strain = meanTSS * monotony;
+
+    // Analyser la polarisation
+    const intensityDist = Polarization.classifyDistribution(activities.map(a => ({
+        duration: a.moving_time || 1800,
+        averageHR: a.average_heartrate,
+        maxHR: a.max_heartrate,
+    })));
+
+    // Niveau de forme basé sur le volume et la régularité
+    const weeklyKm = totalKm / weeks;
+    const fitnessLevel = weeklyKm > 60 ? 'advanced' : weeklyKm > 30 ? 'intermediate' : 'beginner';
+
     return {
         avgWeeklyKm: Math.round(totalKm / weeks),
         avgWeeklyHours: Math.round(totalHours / weeks * 10) / 10,
         preferredIntensity: hrVariability > 0.05 ? 'high' : 'moderate',
         fatigueResistance: hrVariability > 0.08 ? 'high' : hrVariability > 0.04 ? 'normal' : 'low',
-        recoveryRate: 'normal', // À calculer avec HRV si disponible
+        recoveryRate: 'normal',
         bestVDOT: history.best_vdot || null,
         lastTestDate: history.last_test || null,
         injuryHistory: history.injuries || [],
-        preferredSessionTypes: calculatePreferredTypes(activities)
+        preferredSessionTypes: calculatePreferredTypes(activities),
+        trainingMonotony: Math.round(monotony * 100) / 100,
+        trainingStrain: Math.round(strain),
+        polarizationIndex: intensityDist,
+        hrvBaseline: history.hrv_baseline || null,
+        fitnessLevel,
     };
 }
 
@@ -237,31 +289,54 @@ function predictWeeklyFatigue(existingSessions, currentWeek, userProfile) {
     if (existingSessions.length === 0 || currentWeek < 2) {
         return { fitness: 0, fatigue: 0, form: 0, acwr: 1, risk: 'low' };
     }
-    
+
     // Calculer la charge des 4 dernières semaines
     const recentSessions = existingSessions.filter(s => s.week_number >= currentWeek - 4);
     const weeklyLoad = {};
-    
+
     recentSessions.forEach(s => {
         const week = s.week_number;
         const tss = s.expected_tss || calculateEstimatedTSS(s);
         weeklyLoad[week] = (weeklyLoad[week] || 0) + tss;
     });
-    
+
     const loads = Object.values(weeklyLoad);
     if (loads.length < 2) return { fitness: 0, fatigue: 0, form: 0, risk: 'low' };
-    
-    // Calculer ACWR
+
+    // Calculer ACWR (correct: acute/chronic)
     const acute = loads[loads.length - 1];
     const chronic = loads.slice(-4).reduce((a, b) => a + b, 0) / Math.min(4, loads.length);
     const acwr = chronic > 0 ? acute / chronic : 1;
-    
+
+    // PMC-based prediction using Banister impulse-response
+    const pmcData = loads.map((tss, i) => ({
+        date: `2024-01-${String(i + 1).padStart(2, '0')}`,
+        tss,
+    }));
+    const personalizedTau = PMC.getPersonalizedTau?.({
+        level: userProfile?.fitnessLevel || 'intermediate',
+        age: 30,
+        trainingYears: 3,
+    });
+    const pmcResult = PMC.calculate(pmcData, {
+        ctlTau: personalizedTau?.ctlTau || 42,
+        atlTau: personalizedTau?.atlTau || 7,
+    });
+
+    const lastPmc = pmcResult[pmcResult.length - 1];
+    const tsb = lastPmc.ctl - lastPmc.atl;
+
+    // Performance prediction from PMC (Busso model)
+    const predictedPerformance = PMC.predictPerformance?.(lastPmc.ctl, tsb);
+
     return {
-        fitness: chronic,
-        fatigue: acute,
-        form: chronic - acute,
+        fitness: lastPmc.ctl,
+        fatigue: lastPmc.atl,
+        form: tsb,
         acwr: acwr,
-        risk: acwr > ACWR_THRESHOLDS.danger ? 'high' : acwr > ACWR_THRESHOLDS.risky ? 'moderate' : 'low'
+        risk: acwr > ACWR_THRESHOLDS.danger ? 'high' : acwr > ACWR_THRESHOLDS.risky ? 'moderate' : 'low',
+        predictedPerformance: predictedPerformance?.performancePercent || 100,
+        tsb,
     };
 }
 
@@ -290,37 +365,51 @@ function getPhaseForWeek(week, totalWeeks) {
     return 'taper';
 }
 
-function generateWeekSessions(phase, weekNum, sessionsPerWeek, trainingDays, goal, vdot, targetDistance, isFirstWeek, usePPG = false) {
+function generateWeekSessions(phase, weekNum, sessionsPerWeek, trainingDays, goal, vdot, targetDistance, isFirstWeek, usePPG = false, userProfile = null) {
     const sessions = [];
     const baseVolume = targetDistance > 0 ? targetDistance / 12 : 30;
     const volumeMultiplier = getVolumeMultiplier(phase, weekNum);
     const weekDistance = baseVolume * volumeMultiplier;
-    
-    const typeDistribution = usePPG 
+
+    // Adjust volume based on HRV readiness if available
+    let readinessFactor = 1.0;
+    if (userProfile?.hrvBaseline) {
+        const hrvStatus = HRV.analyzeRecovery?.({
+            currentHRV: userProfile.hrvBaseline,
+            baseline: userProfile.hrvBaseline,
+            trend: 'stable',
+        });
+        if (hrvStatus?.readiness === 'low') readinessFactor = 0.8;
+        else if (hrvStatus?.readiness === 'high') readinessFactor = 1.1;
+    }
+
+    const typeDistribution = usePPG
         ? getPPGTypeDistribution(phase, sessionsPerWeek)
-        : getTypeDistribution(phase, sessionsPerWeek);
-    
+        : getTypeDistribution(phase, sessionsPerWeek, goal);
+
     let dayIndex = 0;
     for (const day of trainingDays) {
         if (dayIndex >= sessionsPerWeek) break;
-        
+
         const sessionType = typeDistribution[dayIndex % typeDistribution.length];
         const isLongDay = day === 6 || day === 0;
-        
+
         const session = createSession(
             day,
             sessionType,
-            weekDistance / sessionsPerWeek,
+            weekDistance / sessionsPerWeek * readinessFactor,
             phase,
             vdot,
             isLongDay,
-            isFirstWeek
+            isFirstWeek,
+            goal,
+            userProfile
         );
-        
+
         sessions.push(session);
         dayIndex++;
     }
-    
+
     return sessions;
 }
 
@@ -440,11 +529,19 @@ function getPPGTypeDistribution(phase, sessionsPerWeek) {
 /**
  * Crée une session d'entraînement avec spécifications avancées
  */
-function createSession(day, type, weekAvgDistance, phase, vdot, isLongDay, isFirstWeek, goal = 'improvement') {
+function createSession(day, type, weekAvgDistance, phase, vdot, isLongDay, isFirstWeek, goal = 'improvement', userProfile = null) {
     const paces = calculatePaces(vdot);
     const hrZones = calculateHRZones(vdot);
-    
+
+    // Power zones if FTP available
+    const powerZones = userProfile?.ftp ? Cardiovascular.calculatePowerZones?.(userProfile.ftp) : null;
+
+    // Dynamic VDOT-based pacing adjustments
+    const riegelExponent = RunningPerformance.getRiegelExponent?.(goal === '5k' ? 5 : goal === '10k' ? 10 : 21);
+
     let distance, time, intensity, title, description, targetPace, targetHRZone, expectedTSS;
+    let targetPower = null;
+    let steps = [];
     
     switch (type) {
         case 'E': // Endurance fondamentale
@@ -606,7 +703,10 @@ function createSession(day, type, weekAvgDistance, phase, vdot, isLongDay, isFir
         description,
         targetPace,
         targetHRZone,
-        expectedTSS
+        expectedTSS,
+        targetPower,
+        steps,
+        riegelExponent: riegelExponent || 1.06,
     };
 }
 
@@ -909,10 +1009,49 @@ function calculateEndDate(startDate, weeks) {
 
 function generatePlanRecommendations(metrics, history) {
     const recs = [];
-    
+
     if (metrics.totalVolumeKm > (history?.avgWeeklyKm || 30) * 12) {
         recs.push('Le volume total est ambitieux. Écoutez votre corps et ajustez si nécessaire.');
     }
+
+    if (metrics.expectedImprovement > 8) {
+        recs.push('Amélioration VDOT prévue significative. Considérez un test de VMA à mi-parcours.');
+    }
+
+    // Check training monotony
+    if (history?.trainingMonotony && history.trainingMonotony > 2.0) {
+        recs.push(`Monotonie d'entraînement élevée (${history.trainingMonotony}). Variez les séances pour réduire le risque de surentraînement.`);
+    }
+
+    // Check polarization
+    if (history?.polarizationIndex) {
+        const pol = Polarization.getOptimalDistribution?.(history.fitnessLevel || 'intermediate', 'improvement');
+        if (pol) {
+            recs.push(`Distribution optimale: ${Math.round(pol.low * 100)}% facile, ${Math.round(pol.moderate * 100)}% modéré, ${Math.round(pol.high * 100)}% intense.`);
+        }
+    }
+
+    // Check junk miles
+    if (history?.polarizationIndex) {
+        const junk = Polarization.calculateJunkMiles?.(history.polarizationIndex);
+        if (junk && junk.percentage > 20) {
+            recs.push(`${Math.round(junk.percentage)}% de "junk miles" détecté. Réduisez le temps en zone grise (Zone 3).`);
+        }
+    }
+
+    recs.push('Respectez les jours de repos pour optimiser l\'adaptation.');
+    recs.push('Hydratation et nutrition clés pour les sorties > 90min.');
+
+    // Use Recommendations module for additional insights
+    if (history?.activities?.length > 0) {
+        const analysis = Recommendations.analyzeTrainingHistory?.(history.activities);
+        if (analysis?.recommendations) {
+            recs.push(...analysis.recommendations.slice(0, 3));
+        }
+    }
+
+    return recs;
+}
     
     if (metrics.expectedImprovement > 8) {
         recs.push('Amélioration VDOT prévue significative. Considérez un test de VMA à mi-parcours.');
@@ -1531,6 +1670,139 @@ async function getPendingSessions(userId) {
     };
 }
 
+/**
+ * Adjust upcoming sessions based on completed session feedback and current PMC state.
+ */
+async function adaptPlanBasedOnFeedback(userId, planId, sessionId, feedback) {
+    const userDb = await getUserDb(userId);
+
+    // Get current session
+    const session = await dbGetUser(userDb,
+        'SELECT * FROM training_sessions WHERE id = ? AND plan_id = ?',
+        [sessionId, planId]
+    );
+    if (!session) return { success: false, error: 'Session not found' };
+
+    // Mark session completed
+    await markSessionCompleted(userId, sessionId, feedback);
+
+    // Get recent PMC state
+    const recentActivities = await dbAllUser(userDb, `
+        SELECT tss, start_date FROM activities
+        WHERE date(start_date) >= date('now', '-42 days')
+        ORDER BY start_date
+    `);
+
+    let adaptation = { adjustedSessions: 0, reason: 'none' };
+
+    if (recentActivities[0]?.values?.length > 0) {
+        const dailyTSS = {};
+        for (const row of recentActivities[0].values) {
+            const date = row[1]?.split('T')[0] || row[1];
+            dailyTSS[date] = (dailyTSS[date] || 0) + (row[0] || 0);
+        }
+
+        const pmcData = Object.keys(dailyTSS).sort().map(date => ({
+            date,
+            tss: dailyTSS[date],
+        }));
+
+        const pmcResult = PMC.calculate(pmcData);
+        const lastPmc = pmcResult[pmcResult.length - 1];
+        const tsb = lastPmc.ctl - lastPmc.atl;
+        const acwr = lastPmc.atl > 0 ? lastPmc.ctl / lastPmc.atl : 1;
+
+        // If TSB very negative or ACWR high, reduce upcoming session intensity
+        if (tsb < -20 || acwr > 1.5) {
+            const upcomingSessions = await dbAllUser(userDb, `
+                SELECT * FROM training_sessions
+                WHERE plan_id = ? AND completed = 0 AND week_number >= ?
+                ORDER BY week_number, session_number
+                LIMIT 3
+            `, [planId, session.week_number]);
+
+            for (const upcoming of upcomingSessions) {
+                let newIntensity = upcoming.intensity;
+                let newDescription = upcoming.description;
+
+                if (upcoming.intensity === 'high' || upcoming.intensity === 'very_high') {
+                    newIntensity = 'moderate';
+                    newDescription = `[ADAPTÉ] ${upcoming.description}\n⚠️ Intensité réduite due à la fatigue accumulée (TSB: ${Math.round(tsb)}).`;
+                    await dbRunUser(userDb, `
+                        UPDATE training_sessions SET intensity = ?, description = ?, adapted = 1
+                        WHERE id = ?
+                    `, [newIntensity, newDescription, upcoming.id]);
+                    adaptation.adjustedSessions++;
+                    adaptation.reason = 'fatigue';
+                }
+            }
+        }
+
+        // If RPE was very high, add recovery day
+        if (feedback.rpe && feedback.rpe > 8) {
+            const nextSession = await dbGetUser(userDb, `
+                SELECT * FROM training_sessions
+                WHERE plan_id = ? AND completed = 0 AND (week_number > ? OR (week_number = ? AND session_number > ?))
+                ORDER BY week_number, session_number LIMIT 1
+            `, [planId, session.week_number, session.week_number, session.session_number]);
+
+            if (nextSession && nextSession.intensity !== 'rest') {
+                await dbRunUser(userDb, `
+                    UPDATE training_sessions SET type = 'R', intensity = 'rest', title = 'Récupération (adapté)',
+                    description = 'Jour de repos ajouté suite à un effort perçu élevé (RPE: ' || ? || ').',
+                    adapted = 1
+                    WHERE id = ?
+                `, [feedback.rpe, nextSession.id]);
+                adaptation.adjustedSessions++;
+                adaptation.reason = adaptation.reason === 'none' ? 'high_rpe' : adaptation.reason + ',high_rpe';
+            }
+        }
+    }
+
+    return { success: true, adaptation };
+}
+
+/**
+ * Get weekly plan summary with PMC integration.
+ */
+async function getWeeklyPlanSummary(userId, weekNumber) {
+    const userDb = await getUserDb(userId);
+
+    const sessions = await dbAllUser(userDb, `
+        SELECT * FROM training_sessions
+        WHERE week_number = ? AND user_id = ?
+        ORDER BY day_number
+    `, [weekNumber, userId]);
+
+    const totalTSS = sessions.reduce((sum, s) => sum + (s.expected_tss || 0), 0);
+    const totalDistance = sessions.reduce((sum, s) => sum + (s.distance_target || 0), 0);
+    const totalTime = sessions.reduce((sum, s) => sum + (s.time_target || 0), 0);
+
+    const intensityCounts = { low: 0, moderate: 0, high: 0 };
+    for (const s of sessions) {
+        if (s.intensity === 'high' || s.intensity === 'very_high') intensityCounts.high++;
+        else if (s.intensity === 'moderate') intensityCounts.moderate++;
+        else intensityCounts.low++;
+    }
+
+    return {
+        weekNumber,
+        sessionCount: sessions.length,
+        totalTSS,
+        totalDistance: Math.round(totalDistance / 1000 * 10) / 10,
+        totalTimeHours: Math.round(totalTime / 3600 * 10) / 10,
+        intensityDistribution: intensityCounts,
+        sessions: sessions.map(s => ({
+            id: s.id,
+            day: s.day_number,
+            type: s.type,
+            title: s.title,
+            intensity: s.intensity,
+            completed: !!s.completed,
+        })),
+    };
+}
+
 module.exports = {
     createTrainingPlan,
     getActivePlan,
@@ -1548,5 +1820,7 @@ module.exports = {
     addExternalEvent,
     matchActivityToSession,
     getPendingSessions,
+    adaptPlanBasedOnFeedback,
+    getWeeklyPlanSummary,
     SESSION_TYPES
 };

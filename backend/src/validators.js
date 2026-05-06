@@ -81,9 +81,22 @@ function validateActivityBody(body) {
     const errors = [];
     if (!body || typeof body !== 'object') return { valid: false, errors: ['Request body is required'] };
 
-    const ALLOWED_TYPES = ['Run', 'Ride', 'Swim', 'Walk', 'Hike', 'VirtualRide', 'VirtualRun', 'Other'];
+    const ALLOWED_TYPES = [
+        'run', 'trail_run', 'race_walk', 'walk', 'hike',
+        'bike', 'mountain_bike', 'gravel_bike', 'indoor_cycling', 'virtual_ride',
+        'swim', 'open_water_swim',
+        'triathlon', 'duathlon', 'aquathlon',
+        'crossfit', 'weight_training', 'strength_training', 'cardio_training', 'hiit', 'circuit_training', 'pilates', 'yoga',
+        'rowing', 'kayak', 'canoe', 'stand_up_paddle',
+        'ski_alpine', 'ski_touring', 'ski_cross_country', 'snowboard', 'roller_ski',
+        'tennis', 'badminton', 'squash',
+        'basketball', 'football', 'soccer', 'rugby', 'volleyball', 'handball', 'golf',
+        'climbing', 'via_ferrata', 'mountaineering', 'land_sailing',
+        'other',
+        'Run', 'Ride', 'Swim', 'Walk', 'Hike', 'VirtualRide', 'VirtualRun', 'Other',
+    ];
     if (!body.type || !ALLOWED_TYPES.includes(body.type)) {
-        errors.push(`type must be one of: ${ALLOWED_TYPES.join(', ')}`);
+        errors.push(`type must be one of: ${ALLOWED_TYPES.slice(0, 10).join(', ')}... (${ALLOWED_TYPES.length} types accepted)`);
     }
     if (!body.start_date || isNaN(Date.parse(body.start_date))) {
         errors.push('start_date must be a valid ISO date string');

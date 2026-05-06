@@ -55,6 +55,7 @@ export type SportType =
   | 'climbing'
   | 'via_ferrata'
   | 'mountaineering'
+  | 'land_sailing'
   | 'other';
 
 export interface SportCategory {
@@ -687,6 +688,19 @@ export const SPORTS: Record<SportType, SportCategory> = {
   },
   
   // Other
+  land_sailing: {
+    id: 'land_sailing',
+    name: 'Land Sailing',
+    nameFr: 'Char à voile',
+    category: 'other',
+    primaryMetric: 'distance',
+    hasHeartRate: true,
+    hasPower: false,
+    hasGPS: true,
+    hasCadence: false,
+    hasElevation: false,
+    unit: 'km',
+  },
   other: {
     id: 'other',
     name: 'Other',

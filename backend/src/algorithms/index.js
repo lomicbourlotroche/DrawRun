@@ -2025,6 +2025,7 @@ const Overtraining = {
             maxScore: 100,
             factors,
             recommendations,
+            recommendation: recommendations.join('. '),
             monitoring: {
                 checkHRV: level >= 3,
                 checkRestingHR: level >= 3,
@@ -2755,6 +2756,392 @@ const SportAnalysis = {
     },
 };
 
+/**
+ * Running Power Estimation
+ * Estimates running power (watts) from pace, elevation, and biomechanical data.
+ * Ref: Stryd power meter validation studies, Minetti et al. (2002) energy cost of walking/running.
+ */
+const RunningPower = {
+    /**
+     * Estimate running power from pace and grade
+     * Ref: Minetti et al. (2002) metabolic cost model
+     * @param {number} paceSecPerKm - Pace in seconds per km
+     * @param {number} grade - Grade as decimal (0.05 = 5% uphill)
+     * @param {number} weight - Runner weight in kg
+     * @returns {object} Power estimation with components
+     */
+    estimateFromPace: (paceSecPerKm, grade = 0, weight = 70) => {
+        const speedMs = 1000 / paceSecPerKm;
+
+        // Horizontal power (COST of running ~ 0.98 J/kg/m at optimal speed)
+        const costOfRunning = 0.98 + 0.002 * Math.abs(speedMs - 3.5);
+        const horizontalPower = costOfRunning * weight * speedMs;
+
+        // Vertical power (mgh/t)
+        const verticalSpeed = speedMs * grade;
+        const verticalPower = weight * 9.81 * verticalSpeed;
+
+        // Total mechanical power (efficiency ~25%)
+        const totalMechanical = horizontalPower + Math.max(0, verticalPower);
+        const metabolicPower = totalMechanical / 0.25;
+
+        // Form power (lateral oscillation, ~15-25% of total)
+        const formPower = metabolicPower * 0.20;
+
+        // Leg spring stiffness adjustment
+        const legSpringFactor = 1 + 0.05 * Math.abs(grade);
+
+        const totalPower = Math.round((metabolicPower + formPower) * legSpringFactor);
+
+        return {
+            totalPower,
+            horizontalPower: Math.round(horizontalPower),
+            verticalPower: Math.round(Math.max(0, verticalPower)),
+            formPower: Math.round(formPower),
+            metabolicPower: Math.round(metabolicPower),
+            efficiency: 0.25,
+            grade,
+            speed: Math.round(speedMs * 100) / 100,
+        };
+    },
+
+    /**
+     * Estimate power from HR and pace (when no power meter)
+     * Uses HR as proxy for metabolic demand
+     */
+    estimateFromHR: (heartRate, maxHR, paceSecPerKm, weight = 70) => {
+        const hrPercent = heartRate / maxHR;
+        const basePower = RunningPower.estimateFromPace(paceSecPerKm, 0, weight);
+
+        // HR-based correction factor
+        const hrCorrection = 0.7 + 0.6 * hrPercent;
+        const adjustedPower = Math.round(basePower.totalPower * hrCorrection);
+
+        return {
+            totalPower: adjustedPower,
+            hrPercent: Math.round(hrPercent * 100) / 100,
+            confidence: hrPercent > 0.5 && hrPercent < 0.95 ? 'moderate' : 'low',
+            ...basePower,
+        };
+    },
+
+    /**
+     * Calculate power zones from FTP (Functional Threshold Power)
+     * 7-zone model (Coggan adapted for running)
+     */
+    calculatePowerZones: (ftp) => {
+        return [
+            { zone: 1, name: 'Active Recovery', min: 0, max: Math.round(ftp * 0.55), description: 'Récupération active' },
+            { zone: 2, name: 'Endurance', min: Math.round(ftp * 0.55), max: Math.round(ftp * 0.75), description: 'Endurance fondamentale' },
+            { zone: 3, name: 'Tempo', min: Math.round(ftp * 0.75), max: Math.round(ftp * 0.90), description: 'Allure tempo' },
+            { zone: 4, name: 'Threshold', min: Math.round(ftp * 0.90), max: Math.round(ftp * 1.05), description: 'Seuil lactique' },
+            { zone: 5, name: 'VO2max', min: Math.round(ftp * 1.05), max: Math.round(ftp * 1.20), description: 'VO2max' },
+            { zone: 6, name: 'Anaerobic', min: Math.round(ftp * 1.20), max: Math.round(ftp * 1.50), description: 'Anaérobie' },
+            { zone: 7, name: 'Neuromuscular', min: Math.round(ftp * 1.50), max: Infinity, description: 'Neuromusculaire' },
+        ];
+    },
+
+    /**
+     * Estimate FTP from race performance
+     */
+    estimateFTPFromRace: (raceDistanceKm, raceTimeSec, weight = 70) => {
+        const paceSecPerKm = raceTimeSec / raceDistanceKm;
+        const power = RunningPower.estimateFromPace(paceSecPerKm, 0, weight);
+
+        // FTP ≈ 95% of 1-hour power
+        const durationHours = raceTimeSec / 3600;
+        const ftpFactor = durationHours >= 1 ? 0.95 : 0.90 + 0.05 * durationHours;
+
+        return Math.round(power.totalPower * ftpFactor);
+    },
+
+    /**
+     * Calculate Normalized Power for running (similar to cycling)
+     * Uses 30-second rolling average with 4th power
+     */
+    calculateNormalizedPower: (powerSamples, sampleIntervalSec = 1) => {
+        if (powerSamples.length < 30) return MathUtils.mean(powerSamples);
+
+        // 30-second rolling average
+        const rollingAvg = [];
+        const windowSize = Math.floor(30 / sampleIntervalSec);
+
+        for (let i = windowSize; i < powerSamples.length; i++) {
+            const window = powerSamples.slice(i - windowSize, i);
+            rollingAvg.push(MathUtils.mean(window));
+        }
+
+        // NP = (mean(x^4))^(1/4)
+        const fourthPowers = rollingAvg.map(p => Math.pow(p, 4));
+        const meanFourth = MathUtils.mean(fourthPowers);
+        return Math.round(Math.pow(meanFourth, 0.25));
+    },
+
+    /**
+     * Calculate Intensity Factor (IF) = NP / FTP
+     */
+    calculateIntensityFactor: (normalizedPower, ftp) => {
+        if (!ftp || ftp === 0) return null;
+        return Math.round((normalizedPower / ftp) * 1000) / 1000;
+    },
+
+    /**
+     * Calculate Running Stress Score from power
+     */
+    calculatePowerTSS: (durationSec, normalizedPower, ftp) => {
+        if (!ftp || ftp === 0) return 0;
+        const if_ = normalizedPower / ftp;
+        return Math.round((durationSec * if_ * if_ * 100) / 3600);
+    },
+};
+
+/**
+ * Sleep Optimization Model
+ * Provides sleep recommendations based on training load, HRV, and recovery needs.
+ * Ref: Fullagar et al. (2019), Samuels (2018), Mah et al. (2011)
+ */
+const SleepOptimization = {
+    /**
+     * Calculate optimal sleep duration based on training load
+     */
+    calculateOptimalDuration: (dailyTSS, trainingPhase, age = 30) => {
+        // Base sleep need by age (NSF guidelines)
+        const baseSleep = age < 25 ? 9 : age < 65 ? 8 : 7.5;
+
+        // Training load adjustment
+        const tssAdjustment = dailyTSS > 200 ? 1.5 : dailyTSS > 150 ? 1.0 : dailyTSS > 100 ? 0.5 : 0;
+
+        // Phase adjustment
+        const phaseAdjustment = {
+            base: 0,
+            build: 0.3,
+            peak: 0.5,
+            taper: -0.3,
+            race: -0.5,
+        }[trainingPhase] || 0;
+
+        return Math.round((baseSleep + tssAdjustment + phaseAdjustment) * 10) / 10;
+    },
+
+    /**
+     * Calculate sleep quality score from available data
+     */
+    calculateSleepQuality: (sleepDuration, sleepEfficiency, hrvChange, restingHRChange) => {
+        let score = 0;
+
+        // Duration score (0-30)
+        if (sleepDuration >= 8) score += 30;
+        else if (sleepDuration >= 7) score += 25;
+        else if (sleepDuration >= 6) score += 15;
+        else score += 5;
+
+        // Efficiency score (0-25)
+        if (sleepEfficiency >= 90) score += 25;
+        else if (sleepEfficiency >= 85) score += 20;
+        else if (sleepEfficiency >= 80) score += 15;
+        else score += 5;
+
+        // HRV score (0-25)
+        if (hrvChange >= 0) score += 25;
+        else if (hrvChange > -5) score += 20;
+        else if (hrvChange > -15) score += 10;
+        else score += 0;
+
+        // RHR score (0-20)
+        if (restingHRChange <= 0) score += 20;
+        else if (restingHRChange < 3) score += 15;
+        else if (restingHRChange < 7) score += 8;
+        else score += 0;
+
+        return {
+            score: Math.min(100, score),
+            rating: score >= 80 ? 'excellent' : score >= 60 ? 'good' : score >= 40 ? 'fair' : 'poor',
+            components: {
+                duration: Math.round((score >= 75 ? 30 : score >= 55 ? 25 : score >= 30 ? 15 : 5) / 30 * 100),
+                efficiency: Math.round((sleepEfficiency || 0)),
+                hrv: Math.round((hrvChange >= 0 ? 25 : hrvChange > -5 ? 20 : hrvChange > -15 ? 10 : 0) / 25 * 100),
+                restingHR: Math.round((restingHRChange <= 0 ? 20 : restingHRChange < 3 ? 15 : restingHRChange < 7 ? 8 : 0) / 20 * 100),
+            },
+        };
+    },
+
+    /**
+     * Generate sleep recommendations
+     */
+    generateRecommendations: (sleepQuality, trainingLoad, nextSessionIntensity) => {
+        const recs = [];
+
+        if (sleepQuality.score < 60) {
+            recs.push('Qualité de sommeil insuffisante. Priorisez le sommeil ce soir.');
+            recs.push('Évitez les écrans 1h avant le coucher.');
+        }
+
+        if (trainingLoad > 150) {
+            recs.push('Charge d\'entraînement élevée: sieste de 20-30min recommandée.');
+        }
+
+        if (nextSessionIntensity === 'high' || nextSessionIntensity === 'very_high') {
+            recs.push('Séance intense demain: sommeil de qualité essentiel pour la performance.');
+        }
+
+        // Sleep hygiene recommendations
+        recs.push('Température chambre: 18-19°C optimale.');
+        recs.push('Caféine: éviter après 14h.');
+
+        return {
+            recommendations: recs,
+            priority: sleepQuality.score < 50 ? 'high' : sleepQuality.score < 70 ? 'moderate' : 'low',
+        };
+    },
+
+    /**
+     * Calculate sleep bank (cumulative sleep debt)
+     */
+    calculateSleepBank: (sleepHistoryDays, optimalDuration = 8) => {
+        const totalSleep = sleepHistoryDays.reduce((sum, d) => sum + d.duration, 0);
+        const totalOptimal = sleepHistoryDays.length * optimalDuration;
+        const debt = totalOptimal - totalSleep;
+
+        return {
+            totalDebt: Math.round(debt * 10) / 10,
+            avgDuration: Math.round((totalSleep / sleepHistoryDays.length) * 10) / 10,
+            trend: debt > 5 ? 'deficit' : debt < -5 ? 'surplus' : 'balanced',
+            recoveryDays: Math.ceil(Math.max(0, debt) / 1.5),
+        };
+    },
+};
+
+/**
+ * Altitude Training Model
+ * Models altitude acclimatization, performance effects, and training recommendations.
+ * Ref: Levine & Stray-Gundersen (live high, train low), Fulco et al. (1998)
+ */
+const AltitudeTraining = {
+    /**
+     * Calculate performance degradation at altitude
+     * VO2max decreases ~1% per 100m above 700m
+     */
+    calculatePerformanceEffect: (altitudeMeters, acclimatizationDays = 0) => {
+        if (altitudeMeters < 700) return { vo2maxChange: 0, paceAdjustment: 1.0, rating: 'none' };
+
+        // Base VO2max loss: ~1% per 100m above 700m
+        const effectiveAltitude = altitudeMeters - 700;
+        const baseVo2maxLoss = effectiveAltitude / 100;
+
+        // Acclimatization reduces the effect
+        const acclimatizationFactor = Math.min(0.4, acclimatizationDays * 0.02);
+        const netVo2maxLoss = baseVo2maxLoss * (1 - acclimatizationFactor);
+
+        // Pace adjustment: ~2% per 1% VO2max loss
+        const paceAdjustment = 1 + (netVo2maxLoss * 0.02);
+
+        let rating;
+        if (altitudeMeters < 1500) rating = 'low';
+        else if (altitudeMeters < 2500) rating = 'moderate';
+        else if (altitudeMeters < 3500) rating = 'high';
+        else rating = 'extreme';
+
+        return {
+            vo2maxChange: Math.round(-netVo2maxLoss * 10) / 10,
+            paceAdjustment: Math.round(paceAdjustment * 1000) / 1000,
+            rating,
+            altitude: altitudeMeters,
+            acclimatizationDays,
+        };
+    },
+
+    /**
+     * Calculate optimal altitude training protocol
+     * "Live High, Train Low" model
+     */
+    calculateOptimalProtocol: (goalAltitude, daysAvailable, baseAltitude = 0) => {
+        if (goalAltitude < 1500) {
+            return {
+                protocol: 'not_needed',
+                recommendation: 'Altitude < 1500m: pas d\'acclimatation nécessaire.',
+                minDays: 0,
+            };
+        }
+
+        // Minimum acclimatization days
+        const minDays = goalAltitude < 2500 ? 7 : goalAltitude < 3500 ? 14 : 21;
+
+        if (daysAvailable < minDays) {
+            return {
+                protocol: 'insufficient',
+                recommendation: `Acclimatation insuffisante: ${daysAvailable}j < ${minDays}j minimum.`,
+                minDays,
+                risk: 'high',
+            };
+        }
+
+        // Live High, Train Low recommendation
+        const optimalLivingAltitude = Math.min(goalAltitude, 2500);
+        const trainingAltitude = Math.max(baseAltitude, 1000);
+
+        return {
+            protocol: 'live_high_train_low',
+            livingAltitude: optimalLivingAltitude,
+            trainingAltitude,
+            minAcclimatizationDays: minDays,
+            phases: [
+                { days: '1-3', intensity: 'low', description: 'Adaptation progressive, uniquement endurance facile.' },
+                { days: '4-7', intensity: 'moderate', description: 'Introduction de seuil, volume réduit de 20%.' },
+                { days: '8-14', intensity: 'normal', description: 'Retour au volume normal, intensité progressive.' },
+                { days: '15+', intensity: 'full', description: 'Entraînement normal. Gain d\'endurance attendu.' },
+            ],
+            expectedBenefits: [
+                'Augmentation de la masse de globules rouges (+1-2%/semaine)',
+                'Amélioration du transport d\'oxygène',
+                'Gain de performance au retour en altitude basse (2-4%)',
+            ],
+        };
+    },
+
+    /**
+     * Calculate expected performance gain after altitude camp
+     */
+    calculatePostAltitudeGain: (altitudeDays, altitudeMeters, daysAfterReturn) => {
+        if (altitudeDays < 14 || altitudeMeters < 2000) {
+            return { gain: 0, peakDay: null, duration: 0 };
+        }
+
+        // Peak performance gain occurs 2-3 weeks after return
+        const peakDay = 14 + Math.floor(altitudeDays / 7);
+        const maxGain = Math.min(4, (altitudeMeters / 1000) * 1.5);
+
+        // Gain curve: peaks at ~2 weeks, fades over 4-6 weeks
+        const daysFromPeak = Math.abs(daysAfterReturn - peakDay);
+        const gainFade = Math.max(0, 1 - daysFromPeak / 30);
+        const currentGain = maxGain * gainFade;
+
+        return {
+            gain: Math.round(currentGain * 10) / 10,
+            maxGain: Math.round(maxGain * 10) / 10,
+            peakDay,
+            duration: 30,
+            daysAfterReturn,
+        };
+    },
+
+    /**
+     * Estimate hemoglobin mass increase from altitude exposure
+     */
+    estimateHemoglobinChange: (altitudeDays, altitudeMeters) => {
+        if (altitudeMeters < 2000 || altitudeDays < 7) return { change: 0 };
+
+        // ~1% increase in Hb mass per week at 2000-2500m
+        const altitudeFactor = Math.min(1.5, altitudeMeters / 2000);
+        const weeks = altitudeDays / 7;
+        const hbIncrease = weeks * 1.0 * altitudeFactor;
+
+        return {
+            change: Math.round(hbIncrease * 10) / 10,
+            rating: hbIncrease > 5 ? 'significant' : hbIncrease > 2 ? 'moderate' : 'minimal',
+        };
+    },
+};
+
 // ============================================================================
 // EXPORTS
 // ============================================================================
@@ -2773,4 +3160,7 @@ module.exports = {
     Taper,
     Recommendations,
     SportAnalysis,
+    RunningPower,
+    SleepOptimization,
+    AltitudeTraining,
 };
