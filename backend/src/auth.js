@@ -214,6 +214,7 @@ router.post('/login', async (req, res) => {
             has_strava: hasStrava,
             has_garmin: hasGarmin,
             has_suunto: hasSuunto,
+            has_decathlon: hasDecathlon,
             twofa_enabled: user.twofa_enabled === 1,
             message: 'Login successful',
             user: {
@@ -223,9 +224,11 @@ router.post('/login', async (req, res) => {
                 strava_enabled: hasStrava,
                 garmin_enabled: hasGarmin,
                 suunto_enabled: hasSuunto,
+                decathlon_enabled: hasDecathlon,
                 has_strava: hasStrava,
                 has_garmin: hasGarmin,
                 has_suunto: hasSuunto,
+                has_decathlon: hasDecathlon,
                 created_at: user.created_at,
                 last_login: user.last_login
             }
