@@ -15,8 +15,15 @@
 
 'use strict';
 
-const { chromium } = require('playwright');
 const { getUserDb, dbGetMain, dbRunMain, dbGetUser, dbRunUser, dbAllUser } = require('./database');
+
+// Playwright est optionnel — non disponible en production sans installation séparée
+let chromium;
+try {
+    chromium = require('playwright').chromium;
+} catch (_) {
+    chromium = null;
+}
 const { decrypt } = require('./crypto_utils');
 const { calculateAndStoreMetrics } = require('./metrics_calculator');
 const path = require('path');
