@@ -62,3 +62,5 @@ install_*.sh
 ecosystem.config.js
 .env.vps
 backend/NUL
+frontend/NUL
+frontend/src/NUL
