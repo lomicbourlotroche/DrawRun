@@ -326,14 +326,14 @@ function SyncTab() {
   return (
     <div className="space-y-6">
       {/* Sync Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <GlassCard>
+        <GlassCardHeader>
+          <GlassCardTitle className="flex items-center gap-2">
             <RefreshCw className={`w-5 h-5 ${isAnySyncing ? 'animate-spin text-primary' : 'text-muted'}`} />
             Synchronisation
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+          </GlassCardTitle>
+        </GlassCardHeader>
+        <GlassCardContent>
           <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 mb-4">
             <div>
               <p className="font-medium">Dernière sync</p>
@@ -349,8 +349,8 @@ function SyncTab() {
             <ServiceCard service="garmin" isConnected={garminConnected} lastSync={syncStatus?.garmin_last_sync || null} onConnect={() => setModalService('garmin')} onDisconnect={() => handleDisconnect('garmin')} isDisconnecting={disconnecting === 'garmin'} />
             <ServiceCard service="suunto" isConnected={suuntoConnected} lastSync={syncStatus?.suunto_last_sync || null} onConnect={() => setModalService('suunto')} onDisconnect={() => handleDisconnect('suunto')} isDisconnecting={disconnecting === 'suunto'} />
           </div>
-        </CardContent>
-      </Card>
+        </GlassCardContent>
+      </GlassCard>
 
       <CredentialModal isOpen={modalService === 'strava'} onClose={() => setModalService(null)} service="strava" onConnect={(e, p) => handleConnect('strava', e, p)} />
       <CredentialModal isOpen={modalService === 'garmin'} onClose={() => setModalService(null)} service="garmin" onConnect={(e, p) => handleConnect('garmin', e, p)} />
@@ -651,14 +651,14 @@ function SettingsTab() {
   return (
     <div className="space-y-4">
       {/* Interface Customization */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <GlassCard>
+        <GlassCardHeader>
+          <GlassCardTitle className="flex items-center gap-2">
             <Monitor className="w-5 h-5 text-primary" />
             Personnalisation de l'interface
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
+          </GlassCardTitle>
+        </GlassCardHeader>
+        <GlassCardContent className="space-y-6">
           {/* Theme Selection */}
           <div>
             <label className="text-sm font-medium mb-3 block">Thème</label>
@@ -808,18 +808,18 @@ function SettingsTab() {
           >
             Sauvegarder les préférences
           </Button>
-        </CardContent>
-      </Card>
+        </GlassCardContent>
+      </GlassCard>
 
       {/* Push Notifications */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <GlassCard>
+        <GlassCardHeader>
+          <GlassCardTitle className="flex items-center gap-2">
             <Bell className="w-5 h-5 text-primary" />
             Notifications push
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+          </GlassCardTitle>
+        </GlassCardHeader>
+        <GlassCardContent>
           <div className="flex items-center justify-between p-4 rounded-xl bg-card border border-border">
             <div className="flex items-center gap-3">
               {pushEnabled ? (
@@ -861,11 +861,11 @@ function SettingsTab() {
             Les notifications push vous alertent en temps réel des nouvelles demandes d&apos;ami, 
             draws et commentaires sur vos activités.
           </p>
-        </CardContent>
-      </Card>
+        </GlassCardContent>
+      </GlassCard>
 
-      <Card>
-        <CardContent className="space-y-3">
+      <GlassCard>
+        <GlassCardContent className="space-y-3">
           {/* 2FA Section */}
           <div className="p-4 rounded-xl bg-card border border-border">
             <div className="flex items-center justify-between">
@@ -897,8 +897,8 @@ function SettingsTab() {
           <Button variant="ghost" className="w-full justify-start text-danger hover:bg-danger/10" leftIcon={<Trash2 className="w-4 h-4" />} onClick={() => setShowDeleteModal(true)}>
             Supprimer le compte
           </Button>
-        </CardContent>
-      </Card>
+        </GlassCardContent>
+      </GlassCard>
 
       {/* 2FA Modal */}
       <Modal isOpen={show2FAModal} onClose={() => { setShow2FAModal(false); setTwoFACode(''); }} title="Authentification 2 facteurs" size="sm">
