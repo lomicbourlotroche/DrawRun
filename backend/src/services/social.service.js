@@ -1,4 +1,4 @@
-const { dbGetMain, dbRunMain, dbAllMain } = require('../database');
+const { dbGetMain, dbRunMain, dbAllMain, getUserDb, dbRunUser, dbAllUser, dbGetUser } = require('../database');
 
 // Aliases locaux pour lisibilité
 const dbGet  = (q, p) => dbGetMain(q, p);
@@ -95,16 +95,19 @@ async function getPendingRequests(userId) {
 }
 
 async function createGroup(userId, name, description, isPrivate = true) {
+    const userDb = await getUserDb(userId);
     const inviteCode = isPrivate ? generateInviteCode() : null;
 
-    const result = await dbRun(`
+    const result = await dbRunUser(userDb, `
         INSERT INTO training_groups (name, description, creator_id, is_private, invite_code)
         VALUES (?, ?, ?, ?, ?)
     `, [name, description || '', userId, isPrivate ? 1 : 0, inviteCode]);
 
-    const groupId = result.lastID;
+    // Get the actual ID (sql.js last_insert_rowid() may return 0)
+    const row = await dbGetUser(userDb, 'SELECT MAX(id) as id FROM training_groups');
+    const groupId = row?.id || result.lastID;
 
-    await dbRun(`
+    await dbRunUser(userDb, `
         INSERT INTO group_members (group_id, user_id, role)
         VALUES (?, ?, 'admin')
     `, [groupId, userId]);
@@ -121,7 +124,8 @@ async function createGroup(userId, name, description, isPrivate = true) {
 }
 
 async function joinGroup(userId, inviteCode) {
-    const group = await dbGet(`
+    const userDb = await getUserDb(userId);
+    const group = await dbGetUser(userDb, `
         SELECT * FROM training_groups WHERE invite_code = ?
     `, [inviteCode]);
 
@@ -129,7 +133,7 @@ async function joinGroup(userId, inviteCode) {
         return { success: false, error: 'Invalid invite code' };
     }
 
-    const existing = await dbGet(`
+    const existing = await dbGetUser(userDb, `
         SELECT * FROM group_members WHERE group_id = ? AND user_id = ?
     `, [group.id, userId]);
 
@@ -137,7 +141,7 @@ async function joinGroup(userId, inviteCode) {
         return { success: false, error: 'Already a member' };
     }
 
-    await dbRun(`
+    await dbRunUser(userDb, `
         INSERT INTO group_members (group_id, user_id, role)
         VALUES (?, ?, 'member')
     `, [group.id, userId]);
@@ -146,7 +150,8 @@ async function joinGroup(userId, inviteCode) {
 }
 
 async function leaveGroup(userId, groupId) {
-    await dbRun(`
+    const userDb = await getUserDb(userId);
+    await dbRunUser(userDb, `
         DELETE FROM group_members WHERE group_id = ? AND user_id = ?
     `, [groupId, userId]);
 
@@ -154,7 +159,8 @@ async function leaveGroup(userId, groupId) {
 }
 
 async function getGroups(userId) {
-    const groups = await dbAll(`
+    const userDb = await getUserDb(userId);
+    const groups = await dbAllUser(userDb, `
         SELECT g.*, gm.role,
             (SELECT COUNT(*) FROM group_members WHERE group_id = g.id) as member_count
         FROM training_groups g
