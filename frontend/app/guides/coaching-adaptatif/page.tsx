@@ -118,7 +118,7 @@ export default function CoachingAdaptatifGuide() {
               <ul className="space-y-1 text-sm text-amber-700">
                 <li>• Réduction du volume de 10-20%</li>
                 <li>• Remplacement des séances intenses par de l'endurance</li>
-                <li>• Semaine de récupération insérée si ACWR > 1.3</li>
+                <li>• Semaine de récupération insérée si ACWR &gt; 1.3</li>
               </ul>
             </div>
           </div>

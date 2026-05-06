@@ -52,7 +52,7 @@ export default function RacePlanningGuide() {
           <div className="p-4 bg-amber-50 rounded-xl border border-amber-100">
             <p className="text-sm text-amber-800">
               <strong>Stratégie par défaut :</strong> départ conservateur (5-10s/km plus lent que l'allure cible),
-              allure de croisière stabilisée à partir du km 3, et finish push si la forme le permet (TSB > 0).
+              allure de croisière stabilisée à partir du km 3, et finish push si la forme le permet (TSB &gt; 0).
             </p>
           </div>
         </div>
@@ -101,7 +101,7 @@ export default function RacePlanningGuide() {
             </div>
             <div className="p-4 bg-orange-50 rounded-xl">
               <h4 className="font-semibold text-orange-700 mb-2">Glucides</h4>
-              <p className="text-sm text-orange-600">1 gel toutes les 30-45 minutes pour les courses > 1h. 30-60g de glucides/heure.</p>
+              <p className="text-sm text-orange-600">1 gel toutes les 30-45 minutes pour les courses &gt; 1h. 30-60g de glucides/heure.</p>
             </div>
           </div>
         </div>
@@ -138,7 +138,7 @@ export default function RacePlanningGuide() {
           <ul className="space-y-2 text-sm text-neutral-600">
             <li className="flex items-start gap-2">
               <span className="text-red-500 mt-1">•</span>
-              <span><strong>Fatigue élevée (TSB < -30) :</strong> le plan recommande de réduire l'objectif de temps</span>
+              <span><strong>Fatigue élevée (TSB &lt; -30) :</strong> le plan recommande de réduire l'objectif de temps</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-amber-500 mt-1">•</span>

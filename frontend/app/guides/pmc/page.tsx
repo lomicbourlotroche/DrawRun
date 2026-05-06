@@ -95,11 +95,11 @@ export default function PMCGuide() {
                 <code className="text-xs font-mono text-green-600">TSB(t) = CTL(t) - ATL(t)</code>
               </div>
               <ul className="mt-3 space-y-1 text-sm text-green-600">
-                <li>• <strong>TSB > +25</strong> : très frais, mais forme potentiellement basse</li>
+                <li>• <strong>TSB &gt; +25</strong> : très frais, mais forme potentiellement basse</li>
                 <li>• <strong>TSB +10 à +25</strong> : zone idéale pour la compétition</li>
                 <li>• <strong>TSB 0 à +10</strong> : bon pour les entraînements intenses</li>
-                <li>• <strong>TSB < 0</strong> : fatigué, risque de sous-performance</li>
-                <li>• <strong>TSB < -30</strong> : surentraînement, repos impératif</li>
+                <li>• <strong>TSB &lt; 0</strong> : fatigué, risque de sous-performance</li>
+                <li>• <strong>TSB &lt; -30</strong> : surentraînement, repos impératif</li>
               </ul>
             </div>
           </div>

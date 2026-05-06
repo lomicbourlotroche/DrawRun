@@ -128,7 +128,7 @@ export default function HRZonesGuide() {
           </h3>
           <p className="text-neutral-600 leading-relaxed">
             Pendant un effort prolongé, la FC augmente progressivement même si l'allure reste constante. C'est la <strong>dérive cardiaque</strong> (cardiac drift).
-            DrawRun la prend en compte dans ses analyses : une dérive > 10% indique une déshydratation ou une fatigue importante.
+            DrawRun la prend en compte dans ses analyses : une dérive &gt; 10% indique une déshydratation ou une fatigue importante.
           </p>
         </div>
 

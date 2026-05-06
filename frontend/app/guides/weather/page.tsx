@@ -89,7 +89,7 @@ export default function WeatherGuide() {
           </h3>
           <p className="text-neutral-600 leading-relaxed">
             Une humidité élevée réduit l'efficacité de la transpiration, augmentant la perception de l'effort.
-            Au-dessus de 70% d'humidité combinée à > 20°C, l'impact sur la performance est significatif.
+            Au-dessus de 70% d'humidité combinée à &gt; 20°C, l'impact sur la performance est significatif.
             DrawRun calcule l'<strong>indice de chaleur</strong> (heat index) pour estimer la température ressentie.
           </p>
         </div>
