@@ -300,7 +300,7 @@ function SyncTab() {
       else if (service === 'garmin') await api.connectGarmin(email, password);
       else if (service === 'suunto') await api.connectSuunto(email, password);
       else if (service === 'decathlon') {
-        const { url } = await syncApi.getDecathlonUrl();
+        const { url } = await api.getDecathlonUrl();
         window.location.href = url;
         return;
       }
