@@ -10,6 +10,7 @@ import { api } from '@/lib/api';
 import { ActivityList, MobileActivityRecorder } from '@/components/features/activities';
 import { Button, Modal, Input, Select } from '@/components/ui';
 import { RefreshCw, Plus, Upload, FileUp, Play } from 'lucide-react';
+import Link from 'next/link';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { toast } from 'sonner';
 
@@ -149,6 +150,14 @@ export default function ActivitiesContent() {
         isLoading={isLoading}
         onRefresh={loadActivities}
       />
+
+      {/* Mobile FAB - Record Activity */}
+      <Link
+        href="/app/record"
+        className="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-primary to-blue-600 text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center active:scale-90 transition-transform z-40"
+      >
+        <Plus className="w-6 h-6" />
+      </Link>
 
       {/* Manual Activity Modal */}
       <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Ajouter une activité" size="md">
