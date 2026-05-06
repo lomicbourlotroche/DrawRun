@@ -2,6 +2,8 @@
 
 Guide pour déployer DrawRun sur un VPS sans CI/CD automatisée.
 
+**Dépôt GitHub :** https://github.com/lomicbourlotroche/DrawRun
+
 ## Prérequis
 
 - VPS avec Ubuntu 22.04+
@@ -22,8 +24,8 @@ ssh user@votre-vps-ip
 
 ```bash
 cd /var/www
-git clone https://github.com/votre-compte/DrawRun-New.git
-cd DrawRun-New
+git clone https://github.com/lomicbourlotroche/DrawRun.git
+cd DrawRun
 ```
 
 ### 3. Installer les dépendances
@@ -125,7 +127,7 @@ sudo certbot --nginx -d votre-domaine.com
 Pour mettre à jour le code:
 
 ```bash
-cd /var/www/DrawRun-New
+cd /var/www/DrawRun
 git pull origin main
 
 # Mettre à jour le backend
@@ -163,7 +165,7 @@ pm2 monit
 ## Structure sur le VPS
 
 ```
-/var/www/DrawRun-New/
+/var/www/DrawRun/
 ├── backend/          # Code backend
 │   ├── index.js
 │   ├── node_modules/

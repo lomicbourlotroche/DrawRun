@@ -1,9 +1,9 @@
 # DrawRun
 
-[![Version](https://img.shields.io/badge/version-4.1.0-blue.svg)](https://github.com/your-repo/DrawRun-New)
+[![Version](https://img.shields.io/badge/version-4.1.0-blue.svg)](https://github.com/lomicbourlotroche/DrawRun)
 [![License](https://img.shields.io/badge/license-ISC-green.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
-[![Tests](https://img.shields.io/badge/tests-107%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-107%20passing-brightgreen.svg)](https://github.com/lomicbourlotroche/DrawRun)
 
 A full-stack sports performance tracking application with per-user databases, scientific training algorithms, and multi-platform integration.
 
@@ -130,26 +130,11 @@ Key differentiators:
 
 ## Quick Start
 
-### Prerequisites
-- Node.js 18+ installed
-- npm 8+
-- Git
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/your-repo/DrawRun-New.git
-cd DrawRun-New
-
-# Install backend dependencies
-cd backend
-npm install
-
-# Install frontend dependencies
-cd ../frontend
-npm install
-```
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/lomicbourlotroche/DrawRun.git
+   cd DrawRun
+   ```
 
 ### Environment Setup
 
