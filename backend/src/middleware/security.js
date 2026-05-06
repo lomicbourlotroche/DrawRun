@@ -146,14 +146,34 @@ const otpLimiter = rateLimit({
 });
 
 /**
- * Rate limiter for sync operations.
- * Prevents abuse of sync endpoints.
+ * Rate limiter for sync operations (POST /api/sync — triggers actual sync).
  * Limits to 10 syncs per hour per user.
  */
 const syncLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
     max: 10,
+    keyGenerator: (req) => {
+        const userId = req.user?.id;
+        return userId ? `sync:user:${userId}` : `sync:ip:${req.ip}`;
+    },
     message: { error: 'Trop de synchronisations, veuillez réessayer dans 1 heure' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+/**
+ * Rate limiter for sync status/info endpoints (GET /api/sync/status, etc.).
+ * These are called on every page load — must be generous.
+ * Limits to 300 requests per 15 minutes per user.
+ */
+const syncStatusLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 300,
+    keyGenerator: (req) => {
+        const userId = req.user?.id;
+        return userId ? `syncstatus:user:${userId}` : `syncstatus:ip:${req.ip}`;
+    },
+    message: { error: 'Trop de requêtes, veuillez réessayer dans 15 minutes' },
     standardHeaders: true,
     legacyHeaders: false,
 });
@@ -324,6 +344,7 @@ module.exports = {
     authLimiter,
     otpLimiter,
     syncLimiter,
+    syncStatusLimiter,
     userBasedLimiter,
     sensitiveUserLimiter,
     validateContentType,

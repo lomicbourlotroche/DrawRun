@@ -152,7 +152,7 @@ const database = require('./src/database');
         // ============================================================================
         const express = require('express');
         const cors = require('cors');
-        const { configureHelmet, cspReportHandler, authLimiter, syncLimiter, userBasedLimiter, sensitiveUserLimiter, sanitizeInputs, securityHeaders, validateCorsOrigin } = require('./src/middleware/security');
+        const { configureHelmet, cspReportHandler, authLimiter, syncLimiter, syncStatusLimiter, userBasedLimiter, sensitiveUserLimiter, sanitizeInputs, securityHeaders, validateCorsOrigin } = require('./src/middleware/security');
         const { cacheMiddleware, noCacheMiddleware } = require('./src/middleware/cache');
         const { compressionMiddleware, performanceMetrics } = require('./src/performance');
         
@@ -205,6 +205,11 @@ const database = require('./src/database');
         
         // Rate limiting
         app.use('/api/auth', authLimiter);
+        // GET /api/sync/status et /api/sync/*/url : limite généreuse (appelés à chaque page)
+        app.use('/api/sync/status', syncStatusLimiter);
+        app.use('/api/sync/decathlon/url', syncStatusLimiter);
+        app.use('/api/sync/strava/url', syncStatusLimiter);
+        // POST /api/sync : limite stricte (déclenche une vraie synchro)
         app.use('/api/sync', syncLimiter);
         // Use user-based limiter for authenticated routes (applied after verifyToken)
         app.use('/api', userBasedLimiter);
@@ -288,7 +293,7 @@ const database = require('./src/database');
         app.use('/api/activities', verifyToken, userBasedLimiter, cacheMiddleware(3600), weatherRoutes);
         app.use('/api/activities', verifyToken, userBasedLimiter, noCacheMiddleware, shareRoutes);
         app.use('/api/pmc', verifyToken, userBasedLimiter, cacheMiddleware(300), pmcRoutes);
-        app.use('/api/sync', verifyToken, syncLimiter, noCacheMiddleware, syncRoutes);
+        app.use('/api/sync', verifyToken, noCacheMiddleware, syncRoutes);
         app.use('/api/metrics', verifyToken, userBasedLimiter, cacheMiddleware(60), metricsRoutes);
         app.use('/api/preferences', verifyToken, sensitiveUserLimiter, cacheMiddleware(600), preferencesRoutes);
         app.use('/api/onboarding', verifyToken, userBasedLimiter, cacheMiddleware(3600), onboardingRoutes);
