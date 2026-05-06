@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Badge } from '@/components/ui';
 import { api } from '@/lib/api';
+import { client } from '@/lib/api/client';
 import { racePlanningApi } from '@/lib/api/race-planning.api';
 import type { RacePlanningResponse, RacePlanningRequest } from '@/types';
 import { Trophy, Download, AlertTriangle, MapPin, Heart, Zap, Droplets, Save } from 'lucide-react';
@@ -70,7 +71,7 @@ export function RacePlanningContent() {
   const handleSavePlan = async () => {
     if (!result) return;
     try {
-      await api.request('/api/race-planning/save', {
+      await client.request('/api/race-planning/save', {
         method: 'POST',
         body: JSON.stringify({
           name: `${form.distance}km - ${new Date().toLocaleDateString('fr-FR')}`,
