@@ -36,6 +36,7 @@ export interface User {
   has_strava?: number | boolean;
   has_garmin?: number | boolean;
   has_suunto?: number | boolean;
+  has_decathlon?: number | boolean;
   twofa_enabled?: number | boolean;
   createdAt?: string;
   dateOfBirth?: string;
