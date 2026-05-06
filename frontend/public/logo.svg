@@ -1,34 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
       <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
     </linearGradient>
-    <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:0.9" />
-      <stop offset="100%" style="stop-color:#93c5fd;stop-opacity:0.6" />
-    </linearGradient>
     <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.15"/>
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.1"/>
     </filter>
   </defs>
 
-  <!-- Background circle -->
-  <circle cx="100" cy="100" r="90" fill="url(#bgGrad)" filter="url(#shadow)"/>
+  <!-- White background circle -->
+  <circle cx="100" cy="100" r="90" fill="white" filter="url(#shadow)"/>
 
-  <!-- Running track / wave lines -->
-  <path d="M 30 110 Q 60 80, 90 100 Q 120 120, 150 90 Q 170 70, 185 85" 
-        stroke="url(#waveGrad)" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.7"/>
-  <path d="M 30 130 Q 60 100, 90 120 Q 120 140, 150 110 Q 170 90, 185 105" 
-        stroke="url(#waveGrad)" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.4"/>
-
-  <!-- DR text -->
-  <text x="100" y="115" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="900" 
-        fill="white" text-anchor="middle" letter-spacing="-2">DR</text>
-
-  <!-- Runner silhouette (abstract) -->
-  <circle cx="130" cy="65" r="6" fill="white" opacity="0.9"/>
-  <path d="M 130 71 L 125 85 L 115 95" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
-  <path d="M 130 71 L 138 82 L 145 90" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
-  <path d="M 128 78 L 135 75 L 140 80" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+  <!-- Blue lightning bolt -->
+  <path d="M 115 30 
+           L 75 105 
+           L 100 105 
+           L 85 170 
+           L 130 90 
+           L 105 90 
+           Z" 
+        fill="url(#boltGrad)" 
+        stroke-linejoin="round" 
+        stroke-linecap="round"/>
 </svg>
