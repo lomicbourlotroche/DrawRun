@@ -385,10 +385,43 @@ export function RacePlanningContent() {
                 <CardTitle>Recommandation de taper</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="p-3 rounded-lg bg-info/10 border border-info/30">
-                  <p className="font-semibold">Durée: {(result.taperRecommendation as { duration?: number })?.duration ?? '?'} jours</p>
-                  <p className="text-sm text-muted mt-1">Réduction du volume progressive pour arriver frais le jour J.</p>
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  <div className="p-3 rounded-lg bg-info/10 border border-info/30 text-center">
+                    <p className="text-xs text-muted">Durée</p>
+                    <p className="text-lg font-semibold">{result.taperRecommendation.duration} jours</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-warning/10 border border-warning/30 text-center">
+                    <p className="text-xs text-muted">Réduction volume</p>
+                    <p className="text-lg font-semibold">-{result.taperRecommendation.volumeReduction}%</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-success/10 border border-success/30 text-center">
+                    <p className="text-xs text-muted">Gain estimé</p>
+                    <p className="text-lg font-semibold">+{result.taperRecommendation.expectedGain}%</p>
+                  </div>
                 </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-1 px-2">J-</th>
+                        <th className="text-left py-1 px-2">Volume</th>
+                        <th className="text-left py-1 px-2">Charge</th>
+                        <th className="text-left py-1 px-2">Type</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {result.taperRecommendation.plan.slice(0, 7).map((day) => (
+                        <tr key={day.daysOut} className={`border-b border-border/50 ${day.isCompetition ? 'bg-primary/10 font-semibold' : ''}`}>
+                          <td className="py-1 px-2">{day.daysOut}</td>
+                          <td className="py-1 px-2">{day.volumePercent}%</td>
+                          <td className="py-1 px-2">{day.targetLoad}</td>
+                          <td className="py-1 px-2 text-xs">{day.sessionDescription}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-xs text-muted mt-2">Ref: {result.taperRecommendation.reference}</p>
               </CardContent>
             </Card>
           )}
