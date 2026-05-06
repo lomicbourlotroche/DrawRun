@@ -1052,16 +1052,6 @@ function generatePlanRecommendations(metrics, history) {
 
     return recs;
 }
-    
-    if (metrics.expectedImprovement > 8) {
-        recs.push('Amélioration VDOT prévue significative. Considérez un test de VMA à mi-parcours.');
-    }
-    
-    recs.push('Respectez les jours de repos pour optimiser l’adaptation.');
-    recs.push('Hydratation et nutrition clés pour les sorties > 90min.');
-    
-    return recs;
-}
 
 function calculateVDOTFromWeeklyKm(weeklyKm, experienceLevel = 'intermediate') {
     if (!weeklyKm || weeklyKm < 5) return 20;

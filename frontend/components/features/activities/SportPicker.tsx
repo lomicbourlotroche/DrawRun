@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { SPORTS, type SportType, type SportCategoryType } from '@/types/sports';
 import {
   Footprints, Bike, Waves, Dumbbell, Snowflake, Droplets, Users,
-  Mountain, CircleDot, Club, Compass, Heart, Timer, Zap,
+  Mountain, CircleDot, Club, Compass, Heart, Timer, Zap, Wind,
   ChevronRight, Check
 } from 'lucide-react';
 
@@ -116,6 +116,7 @@ function SportIcon({ sport }: { sport: SportType }) {
     case 'basketball': case 'football': case 'soccer': case 'rugby': case 'volleyball': case 'handball': return <Users className={iconClass} />;
     case 'golf': return <Club className={iconClass} />;
     case 'climbing': case 'via_ferrata': case 'mountaineering': return <Mountain className={iconClass} />;
+    case 'land_sailing': return <Wind className={iconClass} />;
     case 'triathlon': case 'duathlon': case 'aquathlon': return <Zap className={iconClass} />;
     case 'crossfit': case 'weight_training': case 'strength_training': case 'cardio_training': case 'hiit': case 'circuit_training': return <Dumbbell className={iconClass} />;
     case 'pilates': case 'yoga': return <Heart className={iconClass} />;

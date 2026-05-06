@@ -1,25 +1,16 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Button, Card, CardContent, Badge } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { SportPicker } from './SportPicker';
 import type { SportType } from '@/types/sports';
-import { SPORTS } from '@/types/sports';
+import { SPORTS, getSportCategory } from '@/types/sports';
 import { 
-  Play, 
-  Pause, 
-  Square, 
-  MapPin, 
-  Activity, 
-  Navigation, 
-  Timer,
-  Mountain,
-  Zap,
-  Smartphone,
-  Heart,
-  ChevronDown
+  Play, Pause, Square, MapPin, Navigation, Timer, Mountain,
+  Heart, ChevronDown, X, Save, Battery, BatteryMedium, BatteryLow,
+  Target, TrendingUp, Footprints, Bike, Waves
 } from 'lucide-react';
 
 interface GPSData {
@@ -32,23 +23,8 @@ interface GPSData {
   timestamp: number;
 }
 
-interface MotionData {
-  acceleration: { x: number; y: number; z: number } | null;
-  accelerationIncludingGravity: { x: number; y: number; z: number } | null;
-  rotationRate: { alpha: number; beta: number; gamma: number } | null;
-  timestamp: number;
-}
-
-interface BarometerData {
-  pressure: number;
-  relativeAltitude: number;
-  timestamp: number;
-}
-
 interface RecordedPoint {
   gps: GPSData;
-  motion: MotionData | null;
-  barometer: BarometerData | null;
   timestamp: number;
 }
 
@@ -60,16 +36,16 @@ interface RecordingStats {
   elevationGain: number;
   elevationLoss: number;
   cadence: number | null;
-  verticalOscillation: number | null;
 }
 
 type RecordingState = 'idle' | 'recording' | 'paused' | 'finished';
 
 interface MobileActivityRecorderProps {
   onSave?: () => void;
+  onCancel?: () => void;
 }
 
-export function MobileActivityRecorder({ onSave }: MobileActivityRecorderProps) {
+export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecorderProps) {
   const [state, setState] = useState<RecordingState>('idle');
   const [activityType, setActivityType] = useState<SportType>('run');
   const [showSportPicker, setShowSportPicker] = useState(false);
@@ -82,105 +58,98 @@ export function MobileActivityRecorder({ onSave }: MobileActivityRecorderProps) 
     elevationGain: 0,
     elevationLoss: 0,
     cadence: null,
-    verticalOscillation: null,
   });
   const [currentGPS, setCurrentGPS] = useState<GPSData | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<string>('checking');
   const [batteryLevel, setBatteryLevel] = useState<number | null>(null);
+  const [activityName, setActivityName] = useState('');
   
   const watchIdRef = useRef<number | null>(null);
-  const motionHandlerRef = useRef<((event: DeviceMotionEvent) => void) | null>(null);
-  const barometerRef = useRef<any>(null);
   const startTimeRef = useRef<number>(0);
   const pausedDurationRef = useRef<number>(0);
   const lastPointRef = useRef<GPSData | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
-  // Check device capabilities on mount
+  const sport = SPORTS[activityType];
+  const sportCategory = getSportCategory(activityType);
+
   useEffect(() => {
     checkCapabilities();
     getBatteryLevel();
+    return () => { cleanup(); };
   }, []);
 
+  useEffect(() => {
+    if (state === 'recording') {
+      requestWakeLock();
+    } else {
+      releaseWakeLock();
+    }
+  }, [state]);
+
+  const cleanup = () => {
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+    }
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+    releaseWakeLock();
+  };
+
+  const requestWakeLock = async () => {
+    try {
+      if ('wakeLock' in navigator) {
+        wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
+      }
+    } catch {
+      // Wake Lock not available — silently ignore
+    }
+  };
+
+  const releaseWakeLock = () => {
+    if (wakeLockRef.current) {
+      wakeLockRef.current.release();
+      wakeLockRef.current = null;
+    }
+  };
+
   const checkCapabilities = async () => {
-    const capabilities = {
-      gps: 'geolocation' in navigator,
-      motion: 'DeviceMotionEvent' in window,
-      barometer: 'Barometer' in window || 'AbsoluteOrientationSensor' in window,
-      bluetooth: 'bluetooth' in navigator,
-    };
-    
-    if (!capabilities.gps) {
+    if (!('geolocation' in navigator)) {
       toast.error('GPS non disponible sur cet appareil');
       setPermissionStatus('unsupported');
     }
   };
 
   const getBatteryLevel = async () => {
-    if ('getBattery' in navigator) {
-      try {
+    try {
+      if ('getBattery' in navigator) {
         const battery = await (navigator as any).getBattery();
         setBatteryLevel(Math.round(battery.level * 100));
         battery.addEventListener('levelchange', () => {
           setBatteryLevel(Math.round(battery.level * 100));
         });
-      } catch (e) {
-        // Battery API not available on this device — silently ignore
       }
+    } catch {
+      // Battery API not available
     }
   };
 
-  // Calculate distance between two GPS points (Haversine formula)
   const calculateDistance = (p1: GPSData, p2: GPSData): number => {
-    const R = 6371e3; // Earth radius in meters
+    const R = 6371e3;
     const φ1 = p1.latitude * Math.PI / 180;
     const φ2 = p2.latitude * Math.PI / 180;
     const Δφ = (p2.latitude - p1.latitude) * Math.PI / 180;
     const Δλ = (p2.longitude - p1.longitude) * Math.PI / 180;
-
     const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-              Math.cos(φ1) * Math.cos(φ2) *
-              Math.sin(Δλ/2) * Math.sin(Δλ/2);
+              Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
     return R * c;
   };
 
-  // Process motion data to estimate cadence and form
-  const processMotionData = (motionData: MotionData[]): { cadence: number | null; verticalOscillation: number | null } => {
-    if (motionData.length < 10) return { cadence: null, verticalOscillation: null };
-
-    // Detect steps from acceleration peaks (Z-axis)
-    const zAccelerations = motionData.map(m => m.accelerationIncludingGravity?.z || 0);
-    let stepCount = 0;
-    let lastPeak = 0;
-    const threshold = 11; // m/s² threshold for step detection
-    
-    for (let i = 1; i < zAccelerations.length - 1; i++) {
-      if (zAccelerations[i] > threshold && zAccelerations[i] > zAccelerations[i-1] && zAccelerations[i] > zAccelerations[i+1]) {
-        if (i - lastPeak > 15) { // Minimum 15 samples between steps (anti-bounce)
-          stepCount++;
-          lastPeak = i;
-        }
-      }
-    }
-
-    // Calculate cadence (steps per minute)
-    const timeWindow = (motionData[motionData.length - 1].timestamp - motionData[0].timestamp) / 1000 / 60; // in minutes
-    const cadence = timeWindow > 0 ? Math.round(stepCount / timeWindow) : null;
-
-    // Calculate vertical oscillation (variance in Z acceleration)
-    const avgZ = zAccelerations.reduce((a, b) => a + b, 0) / zAccelerations.length;
-    const variance = zAccelerations.reduce((sum, val) => sum + Math.pow(val - avgZ, 2), 0) / zAccelerations.length;
-    const verticalOscillation = Math.sqrt(variance) * 10; // Convert to cm approximation
-
-    return { cadence, verticalOscillation };
-  };
-
-  // Start recording
   const startRecording = async () => {
     try {
-      // Request GPS permission
       const permission = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
       setPermissionStatus(permission.state);
       
@@ -189,7 +158,6 @@ export function MobileActivityRecorder({ onSave }: MobileActivityRecorderProps) 
         return;
       }
 
-      // Start GPS tracking
       watchIdRef.current = navigator.geolocation.watchPosition(
         (position) => {
           const gpsData: GPSData = {
@@ -203,107 +171,42 @@ export function MobileActivityRecorder({ onSave }: MobileActivityRecorderProps) 
           };
           setCurrentGPS(gpsData);
           
-          if (state === 'recording') {
+          if (state === 'recording' || state === 'idle') {
             addPoint(gpsData);
           }
         },
         (error) => {
-          toast.error(`Erreur GPS: ${error.message}`);
+          // GPS error — silently continue
         },
-        {
-          enableHighAccuracy: true,
-          maximumAge: 1000,
-          timeout: 5000,
-        }
+        { enableHighAccuracy: true, maximumAge: 1000, timeout: 5000 }
       );
 
-      // Start motion tracking
-      if (window.DeviceMotionEvent) {
-        motionHandlerRef.current = (event: DeviceMotionEvent) => {
-          if (state === 'recording') {
-            const motionData: MotionData = {
-              acceleration: event.acceleration ? {
-                x: event.acceleration.x || 0,
-                y: event.acceleration.y || 0,
-                z: event.acceleration.z || 0,
-              } : null,
-              accelerationIncludingGravity: event.accelerationIncludingGravity ? {
-                x: event.accelerationIncludingGravity.x || 0,
-                y: event.accelerationIncludingGravity.y || 0,
-                z: event.accelerationIncludingGravity.z || 0,
-              } : null,
-              rotationRate: event.rotationRate ? {
-                alpha: event.rotationRate.alpha || 0,
-                beta: event.rotationRate.beta || 0,
-                gamma: event.rotationRate.gamma || 0,
-              } : null,
-              timestamp: Date.now(),
-            };
-            // Store motion data with last GPS point
-            if (points.length > 0) {
-              points[points.length - 1].motion = motionData;
-            }
-          }
-        };
-        window.addEventListener('devicemotion', motionHandlerRef.current);
-      }
-
-      // Try to start barometer
-      if ('Barometer' in window) {
-        try {
-          barometerRef.current = new (window as any).Barometer({ frequency: 1 });
-          barometerRef.current.addEventListener('reading', () => {
-            if (state === 'recording' && points.length > 0) {
-              points[points.length - 1].barometer = {
-                pressure: barometerRef.current.pressure,
-                relativeAltitude: 0, // Calculate from pressure change
-                timestamp: Date.now(),
-              };
-            }
-          });
-          barometerRef.current.start();
-        } catch (e) {
-          // Barometer not available on this device — silently ignore
-        }
-      }
-
       startTimeRef.current = Date.now();
+      pausedDurationRef.current = 0;
       setState('recording');
-      toast.success('Enregistrement démarré !');
-      
-      // Start stats update loop
       updateStatsLoop();
-
     } catch {
       toast.error('Erreur lors du démarrage');
     }
   };
 
   const addPoint = (gpsData: GPSData) => {
-    const newPoint: RecordedPoint = {
-      gps: gpsData,
-      motion: null,
-      barometer: null,
-      timestamp: Date.now(),
-    };
+    const newPoint: RecordedPoint = { gps: gpsData, timestamp: Date.now() };
     
     setPoints(prev => {
       const newPoints = [...prev, newPoint];
       
-      // Calculate distance
-      if (lastPointRef.current) {
+      if (lastPointRef.current && gpsData.accuracy < 50) {
         const distance = calculateDistance(lastPointRef.current, gpsData);
-        setStats(s => ({
-          ...s,
-          distance: s.distance + distance,
-        }));
+        if (distance < 100) {
+          setStats(s => ({ ...s, distance: s.distance + distance }));
+        }
         
-        // Calculate elevation change
         if (gpsData.altitude !== null && lastPointRef.current.altitude !== null) {
           const elevationChange = gpsData.altitude - lastPointRef.current.altitude;
-          if (elevationChange > 0) {
+          if (elevationChange > 2) {
             setStats(s => ({ ...s, elevationGain: s.elevationGain + elevationChange }));
-          } else {
+          } else if (elevationChange < -2) {
             setStats(s => ({ ...s, elevationLoss: s.elevationLoss + Math.abs(elevationChange) }));
           }
         }
@@ -319,8 +222,8 @@ export function MobileActivityRecorder({ onSave }: MobileActivityRecorderProps) 
     
     const duration = (Date.now() - startTimeRef.current - pausedDurationRef.current) / 1000;
     setStats(s => {
-      const avgSpeed = duration > 0 ? (s.distance / duration) * 3.6 : 0; // km/h
-      const currentSpeed = currentGPS?.speed ? currentGPS.speed * 3.6 : 0; // km/h
+      const avgSpeed = duration > 0 ? (s.distance / duration) * 3.6 : 0;
+      const currentSpeed = currentGPS?.speed ? currentGPS.speed * 3.6 : 0;
       
       return {
         ...s,
@@ -329,13 +232,6 @@ export function MobileActivityRecorder({ onSave }: MobileActivityRecorderProps) 
         maxSpeed: currentSpeed > s.maxSpeed ? currentSpeed : s.maxSpeed,
       };
     });
-    
-    // Process motion data for cadence
-    const recentMotionData = points.slice(-50).map(p => p.motion).filter(Boolean) as MotionData[];
-    const { cadence, verticalOscillation } = processMotionData(recentMotionData);
-    
-    if (cadence !== null) setStats(s => ({ ...s, cadence }));
-    if (verticalOscillation !== null) setStats(s => ({ ...s, verticalOscillation }));
     
     animationFrameRef.current = requestAnimationFrame(updateStatsLoop);
   };
@@ -347,7 +243,6 @@ export function MobileActivityRecorder({ onSave }: MobileActivityRecorderProps) 
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
-      toast.info('Enregistrement en pause');
     }
   };
 
@@ -356,259 +251,266 @@ export function MobileActivityRecorder({ onSave }: MobileActivityRecorderProps) 
       setState('recording');
       startTimeRef.current = Date.now() - pausedDurationRef.current;
       updateStatsLoop();
-      toast.info('Enregistrement repris');
     }
   };
 
-  const stopRecording = async () => {
+  const stopRecording = () => {
     setState('finished');
-    
-    // Stop all tracking
     if (watchIdRef.current !== null) {
       navigator.geolocation.clearWatch(watchIdRef.current);
-    }
-    if (motionHandlerRef.current) {
-      window.removeEventListener('devicemotion', motionHandlerRef.current);
-    }
-    if (barometerRef.current) {
-      barometerRef.current.stop();
+      watchIdRef.current = null;
     }
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
-    
-    toast.success('Enregistrement terminé !');
+    releaseWakeLock();
   };
 
   const saveActivity = async () => {
     try {
-      // Generate GPX-like data
-      const gpxTrack = points.map(p => ({
-        lat: p.gps.latitude,
-        lng: p.gps.longitude,
-        ele: p.gps.altitude || 0,
-        time: new Date(p.timestamp).toISOString(),
-      }));
-      
-      // Calculate average heart rate if available (mock for now, would need Bluetooth HR monitor)
-      const avgHR = 150; // Placeholder
-      
+      const polyline = points.length > 0 
+        ? points.map(p => `${p.gps.latitude.toFixed(6)},${p.gps.longitude.toFixed(6)}`).join(';')
+        : undefined;
+
       await api.addManualActivity({
-        name: `${activityType} - ${new Date().toLocaleDateString()}`,
+        name: activityName || `${sport.nameFr} - ${new Date().toLocaleDateString('fr-FR')}`,
         type: activityType,
         date: new Date().toISOString(),
         distance: Math.round(stats.distance),
         duration: Math.round(stats.duration),
-        avg_hr: avgHR,
         elevation: Math.round(stats.elevationGain),
       });
       
       toast.success('Activité sauvegardée !');
-      
-      // Reset
-      setPoints([]);
-      setStats({
-        distance: 0,
-        duration: 0,
-        avgSpeed: 0,
-        maxSpeed: 0,
-        elevationGain: 0,
-        elevationLoss: 0,
-        cadence: null,
-        verticalOscillation: null,
-      });
-      setState('idle');
-      lastPointRef.current = null;
-
-      // Notify parent to refresh and close
+      resetState();
       onSave?.();
-      
     } catch {
       toast.error('Erreur lors de la sauvegarde');
     }
+  };
+
+  const resetState = () => {
+    setPoints([]);
+    setStats({ distance: 0, duration: 0, avgSpeed: 0, maxSpeed: 0, elevationGain: 0, elevationLoss: 0, cadence: null });
+    setState('idle');
+    lastPointRef.current = null;
+    setActivityName('');
+  };
+
+  const cancelRecording = () => {
+    cleanup();
+    resetState();
+    onCancel?.();
   };
 
   const formatDuration = (seconds: number): string => {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
-    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    if (hrs > 0) {
+      return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   const formatDistance = (meters: number): string => {
-    if (meters < 1000) return `${Math.round(meters)}m`;
-    return `${(meters / 1000).toFixed(2)}km`;
+    if (meters < 1000) return `${Math.round(meters)} m`;
+    return `${(meters / 1000).toFixed(2)} km`;
   };
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
-      }
-      if (motionHandlerRef.current) {
-        window.removeEventListener('devicemotion', motionHandlerRef.current);
-      }
-      if (barometerRef.current) {
-        barometerRef.current.stop();
-      }
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, []);
+  const formatPace = (speedKmh: number): string => {
+    if (speedKmh <= 0) return '--:--';
+    const paceMinPerKm = 60 / speedKmh;
+    const mins = Math.floor(paceMinPerKm);
+    const secs = Math.round((paceMinPerKm - mins) * 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
-  // Render UI
+  const getBatteryIcon = () => {
+    if (batteryLevel === null) return null;
+    if (batteryLevel > 50) return <Battery className="w-4 h-4" />;
+    if (batteryLevel > 20) return <BatteryMedium className="w-4 h-4" />;
+    return <BatteryLow className="w-4 h-4 text-red-500" />;
+  };
+
+  const getSportIcon = () => {
+    if (sportCategory.category === 'water') return <Waves className="w-6 h-6" />;
+    if (['bike', 'mountain_bike', 'gravel_bike', 'indoor_cycling', 'virtual_ride'].includes(activityType)) return <Bike className="w-6 h-6" />;
+    return <Footprints className="w-6 h-6" />;
+  };
+
+  const getSportColor = () => {
+    switch (sportCategory.category) {
+      case 'endurance': return 'from-blue-600 to-cyan-500';
+      case 'water': return 'from-cyan-600 to-blue-400';
+      case 'winter': return 'from-slate-600 to-blue-300';
+      case 'strength': return 'from-orange-600 to-red-500';
+      case 'team': return 'from-green-600 to-emerald-400';
+      case 'racket': return 'from-yellow-600 to-orange-400';
+      default: return 'from-slate-600 to-gray-400';
+    }
+  };
+
+  if (showSportPicker) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center">
+        <div className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden">
+          <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Choisir un sport</h3>
+            <button
+              onClick={() => setShowSportPicker(false)}
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5 text-slate-500" />
+            </button>
+          </div>
+          <div className="p-4 overflow-y-auto max-h-[70vh]">
+            <SportPicker
+              selectedSport={activityType}
+              onSelect={(sport) => {
+                setActivityType(sport);
+                setShowSportPicker(false);
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardContent className="p-4 space-y-4">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold flex items-center gap-2">
-            <Smartphone className="w-5 h-5" />
-            Enregistrement Mobile
-          </h2>
+    <div className="fixed inset-0 z-40 bg-white dark:bg-slate-950 flex flex-col">
+      {/* Header */}
+      <div className={`bg-gradient-to-r ${getSportColor()} text-white px-4 pt-12 pb-6`}>
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={state === 'idle' ? cancelRecording : undefined}
+            className="p-2 rounded-xl bg-white/20 active:scale-95 transition-transform"
+          >
+            <X className="w-5 h-5" />
+          </button>
           {batteryLevel !== null && (
-            <Badge variant={batteryLevel < 20 ? 'danger' : 'default'}>
-              🔋 {batteryLevel}%
-            </Badge>
+            <div className="flex items-center gap-1.5 bg-white/20 px-3 py-1.5 rounded-full text-sm">
+              {getBatteryIcon()}
+              <span>{batteryLevel}%</span>
+            </div>
           )}
         </div>
 
-        {/* Activity Type Selector */}
-        {state === 'idle' && !showSportPicker && (
-          <button
-            onClick={() => setShowSportPicker(true)}
-            className="w-full flex items-center justify-between p-3 rounded-xl border-2 border-border hover:border-primary/30 hover:bg-muted/50 transition-all"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                <Activity className="w-5 h-5 text-primary" />
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-medium">{SPORTS[activityType]?.nameFr || 'Course à pied'}</p>
-                <p className="text-xs text-muted-foreground">{SPORTS[activityType]?.name || 'Run'}</p>
-              </div>
-            </div>
-            <ChevronDown className="w-5 h-5 text-muted-foreground" />
-          </button>
-        )}
-
-        {/* Sport Picker Modal */}
-        {state === 'idle' && showSportPicker && (
-          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-            <div className="bg-background rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] overflow-hidden">
-              <div className="p-4 border-b border-border flex items-center justify-between">
-                <h3 className="text-lg font-bold">Choisir un sport</h3>
-                <Button variant="ghost" size="sm" onClick={() => setShowSportPicker(false)}>
-                  Fermer
-                </Button>
-              </div>
-              <div className="p-4 overflow-y-auto max-h-[60vh]">
-                <SportPicker
-                  selectedSport={activityType}
-                  onSelect={(sport) => {
-                    setActivityType(sport);
-                    setShowSportPicker(false);
-                  }}
-                />
-              </div>
-            </div>
+        <button
+          onClick={() => state === 'idle' && setShowSportPicker(true)}
+          className="w-full flex items-center gap-3 bg-white/15 backdrop-blur-sm rounded-2xl p-4 active:scale-[0.98] transition-transform"
+          disabled={state !== 'idle'}
+        >
+          <div className="w-12 h-12 bg-white/25 rounded-xl flex items-center justify-center">
+            {getSportIcon()}
           </div>
-        )}
+          <div className="text-left flex-1">
+            <p className="text-lg font-bold">{sport.nameFr}</p>
+            <p className="text-sm text-white/80">{sport.name}</p>
+          </div>
+          {state === 'idle' && <ChevronDown className="w-5 h-5 text-white/60" />}
+        </button>
+      </div>
 
-        {/* Status Badge */}
-        <div className="flex justify-center">
-          <Badge 
-            variant={state === 'recording' ? 'danger' : state === 'paused' ? 'warning' : 'default'}
-            className="text-lg px-4 py-1"
-          >
-            {state === 'idle' && 'Prêt'}
-            {state === 'recording' && '● ENREGISTREMENT'}
-            {state === 'paused' && '⏸ PAUSE'}
-            {state === 'finished' && '✓ Terminé'}
-          </Badge>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
+        {/* Timer */}
+        <div className="text-center mb-8">
+          <div className="text-7xl font-mono font-bold text-slate-900 dark:text-white tracking-tight">
+            {formatDuration(stats.duration)}
+          </div>
+          {state === 'recording' && (
+            <div className="flex items-center justify-center gap-2 mt-2">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+              </span>
+              <span className="text-sm font-medium text-red-500 uppercase tracking-wider">Enregistrement</span>
+            </div>
+          )}
+          {state === 'paused' && (
+            <span className="text-sm font-medium text-amber-500 uppercase tracking-wider">En pause</span>
+          )}
         </div>
 
-        {/* Main Stats */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-primary/10 rounded-lg p-3 text-center">
-            <Timer className="w-5 h-5 mx-auto mb-1 text-primary" />
-            <div className="text-2xl font-bold font-mono">
-              {formatDuration(stats.duration)}
-            </div>
-            <div className="text-xs text-muted-foreground">Durée</div>
-          </div>
-          
-          <div className="bg-primary/10 rounded-lg p-3 text-center">
-            <Navigation className="w-5 h-5 mx-auto mb-1 text-primary" />
-            <div className="text-2xl font-bold">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-3 gap-4 w-full max-w-sm mb-8">
+          <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 text-center">
+            <Navigation className="w-5 h-5 mx-auto mb-2 text-blue-500" />
+            <div className="text-xl font-bold text-slate-900 dark:text-white">
               {formatDistance(stats.distance)}
             </div>
-            <div className="text-xs text-muted-foreground">Distance</div>
+            <div className="text-xs text-slate-500 mt-1">Distance</div>
           </div>
           
-          <div className="bg-secondary/10 rounded-lg p-3 text-center">
-            <Zap className="w-5 h-5 mx-auto mb-1 text-secondary" />
-            <div className="text-xl font-bold">
-              {stats.avgSpeed.toFixed(1)}
+          <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 text-center">
+            <TrendingUp className="w-5 h-5 mx-auto mb-2 text-green-500" />
+            <div className="text-xl font-bold text-slate-900 dark:text-white">
+              {stats.avgSpeed > 0 ? `${stats.avgSpeed.toFixed(1)}` : '--'}
             </div>
-            <div className="text-xs text-muted-foreground">km/h (moy)</div>
+            <div className="text-xs text-slate-500 mt-1">km/h moy</div>
           </div>
           
-          <div className="bg-secondary/10 rounded-lg p-3 text-center">
-            <Activity className="w-5 h-5 mx-auto mb-1 text-secondary" />
-            <div className="text-xl font-bold">
-              {currentGPS?.speed ? (currentGPS.speed * 3.6).toFixed(1) : '--'}
+          <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 text-center">
+            <Target className="w-5 h-5 mx-auto mb-2 text-orange-500" />
+            <div className="text-xl font-bold text-slate-900 dark:text-white">
+              {stats.avgSpeed > 0 ? formatPace(stats.avgSpeed) : '--:--'}
             </div>
-            <div className="text-xs text-muted-foreground">km/h (actuel)</div>
+            <div className="text-xs text-slate-500 mt-1">allure</div>
           </div>
         </div>
 
-        {/* Advanced Stats */}
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="bg-muted rounded-lg p-2">
-            <Mountain className="w-4 h-4 mx-auto mb-1" />
-            <div className="font-bold">+{Math.round(stats.elevationGain)}m</div>
-            <div className="text-xs text-muted-foreground">D+</div>
-          </div>
-          
-          <div className="bg-muted rounded-lg p-2">
-            <Activity className="w-4 h-4 mx-auto mb-1" />
-            <div className="font-bold">{stats.cadence || '--'}</div>
-            <div className="text-xs text-muted-foreground">ppm</div>
-          </div>
-          
-          <div className="bg-muted rounded-lg p-2">
-            <MapPin className="w-4 h-4 mx-auto mb-1" />
-            <div className="font-bold">{points.length}</div>
-            <div className="text-xs text-muted-foreground">points</div>
-          </div>
-        </div>
-
-        {/* GPS Status */}
-        {currentGPS && (
-          <div className="text-xs text-center text-muted-foreground space-y-1">
-            <div>
-              GPS: {currentGPS.latitude.toFixed(6)}, {currentGPS.longitude.toFixed(6)}
-            </div>
-            <div>
-              Précision: ±{Math.round(currentGPS.accuracy)}m | 
-              Altitude: {currentGPS.altitude ? Math.round(currentGPS.altitude) + 'm' : 'N/A'}
-            </div>
+        {/* Secondary Stats */}
+        {(stats.elevationGain > 0 || currentGPS) && (
+          <div className="grid grid-cols-2 gap-3 w-full max-w-sm mb-8">
+            {stats.elevationGain > 0 && (
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 flex items-center gap-3">
+                <Mountain className="w-5 h-5 text-emerald-500" />
+                <div>
+                  <div className="font-semibold text-slate-900 dark:text-white">+{Math.round(stats.elevationGain)} m</div>
+                  <div className="text-xs text-slate-500">Dénivelé +</div>
+                </div>
+              </div>
+            )}
+            {currentGPS && (
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 flex items-center gap-3">
+                <MapPin className="w-5 h-5 text-purple-500" />
+                <div>
+                  <div className="font-semibold text-slate-900 dark:text-white">
+                    {currentGPS.speed ? `${(currentGPS.speed * 3.6).toFixed(1)}` : '--'} km/h
+                  </div>
+                  <div className="text-xs text-slate-500">Vitesse actuelle</div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Control Buttons */}
-        <div className="flex gap-2">
+        {/* Activity Name (when finished) */}
+        {state === 'finished' && (
+          <div className="w-full max-w-sm mb-6">
+            <input
+              type="text"
+              value={activityName}
+              onChange={(e) => setActivityName(e.target.value)}
+              placeholder="Nom de l'activité (optionnel)"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Controls */}
+      <div className="px-6 pb-8 pt-4 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-center gap-4 max-w-sm mx-auto">
           {state === 'idle' && (
             <Button 
               onClick={startRecording} 
-              className="flex-1 h-14 text-lg"
+              className="w-20 h-20 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-lg shadow-green-500/30"
               disabled={permissionStatus === 'denied' || permissionStatus === 'unsupported'}
             >
-              <Play className="w-5 h-5 mr-2" />
-              DÉMARRER
+              <Play className="w-8 h-8 fill-white" />
             </Button>
           )}
           
@@ -616,19 +518,15 @@ export function MobileActivityRecorder({ onSave }: MobileActivityRecorderProps) 
             <>
               <Button 
                 onClick={pauseRecording} 
-                variant="secondary"
-                className="flex-1 h-14"
+                className="w-16 h-16 rounded-full bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/30"
               >
-                <Pause className="w-5 h-5 mr-2" />
-                PAUSE
+                <Pause className="w-7 h-7 fill-white" />
               </Button>
               <Button 
                 onClick={stopRecording} 
-                variant="danger"
-                className="flex-1 h-14"
+                className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30"
               >
-                <Square className="w-5 h-5 mr-2" />
-                ARRÊT
+                <Square className="w-7 h-7 fill-white" />
               </Button>
             </>
           )}
@@ -637,18 +535,15 @@ export function MobileActivityRecorder({ onSave }: MobileActivityRecorderProps) 
             <>
               <Button 
                 onClick={resumeRecording} 
-                className="flex-1 h-14"
+                className="w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-lg shadow-green-500/30"
               >
-                <Play className="w-5 h-5 mr-2" />
-                REPRENDRE
+                <Play className="w-7 h-7 fill-white" />
               </Button>
               <Button 
                 onClick={stopRecording} 
-                variant="danger"
-                className="flex-1 h-14"
+                className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30"
               >
-                <Square className="w-5 h-5 mr-2" />
-                ARRÊT
+                <Square className="w-7 h-7 fill-white" />
               </Button>
             </>
           )}
@@ -656,34 +551,44 @@ export function MobileActivityRecorder({ onSave }: MobileActivityRecorderProps) 
           {state === 'finished' && (
             <>
               <Button 
-                onClick={() => setState('idle')} 
-                variant="secondary"
-                className="flex-1 h-14"
+                onClick={cancelRecording} 
+                className="flex-1 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700"
               >
-                Annuler
+                <X className="w-5 h-5 mr-2" />
+                Supprimer
               </Button>
               <Button 
                 onClick={saveActivity} 
-                className="flex-1 h-14"
+                className="flex-1 h-14 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-lg shadow-blue-500/30"
               >
+                <Save className="w-5 h-5 mr-2" />
                 Sauvegarder
               </Button>
             </>
           )}
         </div>
+      </div>
 
-        {/* Permission Warning */}
-        {permissionStatus === 'denied' && (
-          <div className="text-sm text-destructive text-center">
-            ⚠️ Permission GPS refusée. Activez-la dans les paramètres de votre navigateur.
+      {/* GPS Status Bar */}
+      {currentGPS && state !== 'idle' && (
+        <div className="px-4 py-2 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-between text-xs text-slate-500 max-w-sm mx-auto">
+            <div className="flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5" />
+              <span>±{Math.round(currentGPS.accuracy)}m</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span>{points.length} points</span>
+            </div>
+            {currentGPS.altitude && (
+              <div className="flex items-center gap-1.5">
+                <Mountain className="w-3.5 h-3.5" />
+                <span>{Math.round(currentGPS.altitude)}m</span>
+              </div>
+            )}
           </div>
-        )}
-
-        {/* Tips */}
-        <div className="text-xs text-muted-foreground text-center">
-          💡 Pour de meilleurs résultats, gardez l'écran allumé et l'appareil dans une poche ou brassard.
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }
