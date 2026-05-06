@@ -105,7 +105,7 @@ export default function GroupDetailPage() {
 
   const handleCreateEvent = async () => {
     try {
-      await api.createEvent(groupId, eventForm);
+      await api.createEvent(groupId, eventForm as any);
       toast.success('Événement créé');
       setShowEventModal(false);
       setEventForm({ title: '', description: '', location: '', event_date: '', isOnline: false });
