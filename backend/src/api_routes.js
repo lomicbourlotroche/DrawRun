@@ -444,8 +444,16 @@ router.get('/overtraining', (req, res) => {
     try {
         const { indicators } = req.query;
         
+        // Sans indicators → réponse par défaut (appelé depuis le dashboard sans données)
         if (!indicators) {
-            return res.status(400).json({ error: 'Paramètre indicators requis' });
+            return res.json({
+                risk: 'unknown',
+                riskScore: 0,
+                status: 'insufficient_data',
+                symptoms: [],
+                recommendation: 'Pas assez de données pour évaluer le risque de surentraînement.',
+                scientificBasis: 'Meeusen et al. (2013) OTS Consensus; Carrard et al. (2021)'
+            });
         }
         
         const indicatorsObj = JSON.parse(indicators);

@@ -154,7 +154,7 @@ const syncLimiter = rateLimit({
     max: 10,
     keyGenerator: (req) => {
         const userId = req.user?.id;
-        return userId ? `sync:user:${userId}` : `sync:ip:${req.ip}`;
+        return userId ? `sync:user:${userId}` : `sync:ip:${ipKeyGenerator(req)}`;
     },
     message: { error: 'Trop de synchronisations, veuillez réessayer dans 1 heure' },
     standardHeaders: true,
@@ -171,7 +171,7 @@ const syncStatusLimiter = rateLimit({
     max: 300,
     keyGenerator: (req) => {
         const userId = req.user?.id;
-        return userId ? `syncstatus:user:${userId}` : `syncstatus:ip:${req.ip}`;
+        return userId ? `syncstatus:user:${userId}` : `syncstatus:ip:${ipKeyGenerator(req)}`;
     },
     message: { error: 'Trop de requêtes, veuillez réessayer dans 15 minutes' },
     standardHeaders: true,

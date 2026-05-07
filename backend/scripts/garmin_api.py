@@ -37,11 +37,12 @@ def main():
         "--mode",
         type=str,
         default="activities",
-        choices=["activities", "health", "body", "all"],
+        choices=["activities", "details", "health", "body", "metrics", "all"],
     )
     parser.add_argument("--days", type=int, default=30)
     parser.add_argument("--limit", type=int, default=100)
     parser.add_argument("--start", type=str, help="Start date (YYYY-MM-DD)")
+    parser.add_argument("--start_date", type=str, help="Start date alias (YYYY-MM-DD)")
     parser.add_argument("--id", type=str, help="Activity ID")
     parser.add_argument("--format", type=str, default="json")
 
@@ -71,7 +72,9 @@ def main():
 
         if args.mode in ["activities", "all"]:
             # Get activities using date range (correct API method)
-            start_date = args.start or (
+            # Support both --start and --start_date arguments
+            effective_start = args.start_date or args.start
+            start_date = effective_start or (
                 datetime.now() - timedelta(days=args.days)
             ).strftime("%Y-%m-%d")
             end_date = datetime.now().strftime("%Y-%m-%d")
@@ -79,6 +82,12 @@ def main():
             # Limit results if needed
             if args.limit and len(activities) > args.limit:
                 activities = activities[: args.limit]
+
+            # Mode 'activities' seul → retourner directement le tableau (compatibilité garmin_sync.js)
+            if args.mode == "activities":
+                print(json.dumps(activities))
+                sys.exit(0)
+
             result["activities"] = activities
 
         if args.mode in ["health", "all"]:
@@ -129,6 +138,29 @@ def main():
                 "body_fat": garmin.get_body_fat(),
             }
             result["body"] = body
+
+        if args.mode == "details":
+            # Get single activity details by ID
+            if not args.id:
+                print(json.dumps({"error": "Activity ID required for details mode"}))
+                sys.exit(1)
+            try:
+                detail = garmin.get_activity_details(args.id)
+                print(json.dumps(detail))
+                sys.exit(0)
+            except Exception as e:
+                print(json.dumps({"error": str(e)}))
+                sys.exit(1)
+
+        if args.mode == "metrics":
+            # Get training status / VO2max
+            try:
+                metrics = garmin.get_max_metrics()
+                print(json.dumps(metrics))
+                sys.exit(0)
+            except Exception as e:
+                print(json.dumps({"error": str(e)}))
+                sys.exit(1)
 
         print(json.dumps(result))
         sys.exit(0)

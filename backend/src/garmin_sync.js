@@ -156,13 +156,16 @@ async function performGarminSync(userId) {
         }
 
         // === Phase 1: Activities List ===
-        const activities = await callGarminApi(userId, {
+        const activitiesResponse = await callGarminApi(userId, {
             mode: 'activities',
             start_date: startDate,
             limit: 50
         });
 
-        const activityList = Array.isArray(activities) ? activities : [];
+        // Le script Python retourne { activities: [...] } pour le mode 'activities'
+        const activityList = Array.isArray(activitiesResponse)
+            ? activitiesResponse
+            : (Array.isArray(activitiesResponse?.activities) ? activitiesResponse.activities : []);
         let importedCount = 0;
         let detailCount = 0;
 

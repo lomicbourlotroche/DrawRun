@@ -19,7 +19,7 @@ router.get('/status', verifyToken, async (req, res) => {
         const userDb = await getUserDb(req.user.id);
         const profile = await dbGetMain('SELECT fcm, vma, vdot FROM users WHERE id = ?', [req.user.id]);
         const plan = await dbGetUser(userDb, 'SELECT id FROM training_plans WHERE user_id = ? AND is_active = 1', [req.user.id]);
-        const activity = await dbGetUser(userDb, 'SELECT id FROM activities LIMIT 1');
+        const activity = await dbGetUser(userDb, 'SELECT id FROM activities WHERE user_id = ? LIMIT 1', [req.user.id]);
         
         res.json({
             completed: !!(profile?.fcm && plan && activity),
