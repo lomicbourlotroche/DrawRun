@@ -204,10 +204,13 @@ const database = require('./src/database');
         app.use('/api/sync/status', syncStatusLimiter);
         app.use('/api/sync/decathlon/url', syncStatusLimiter);
         app.use('/api/sync/strava/url', syncStatusLimiter);
-        // GET /api/sync/job/:id : polling — son propre limiter très généreux, AVANT syncLimiter et userBasedLimiter
+        // GET /api/sync/job/:id : polling — limiter très généreux, AVANT syncLimiter et userBasedLimiter
         app.use('/api/sync/job', syncStatusLimiter);
-        // POST /api/sync : limite stricte (déclenche une vraie synchro)
-        app.use('/api/sync', syncLimiter);
+        // POST /api/sync : limite stricte (déclenche une vraie synchro) — SAUF /api/sync/job
+        app.use('/api/sync', (req, res, next) => {
+            if (req.path.startsWith('/job')) return next();
+            return syncLimiter(req, res, next);
+        });
         // userBasedLimiter sur tout /api SAUF /api/sync/job (déjà limité ci-dessus)
         app.use('/api', (req, res, next) => {
             if (req.path.startsWith('/sync/job')) return next();
