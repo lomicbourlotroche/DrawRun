@@ -175,12 +175,13 @@ git pull origin main
 
 # 2. Dépendances backend
 cd backend
-npm ci --production
+npm install --omit=dev
 cd ..
 
 # 3. Dépendances + build frontend
+# Note: package-lock.json est gitignored → utiliser npm install (pas npm ci)
 cd frontend
-npm ci
+npm install
 npm run build
 cd ..
 
@@ -192,18 +193,112 @@ pm2 list
 curl http://localhost:3000/health
 ```
 
-### Script de déploiement rapide
-
-Un script `deploy.sh` est disponible à la racine du repo :
-
-```bash
-chmod +x /home/drawrun/app/deploy.sh
-/home/drawrun/app/deploy.sh
-```
+> ⚠️ `npm ci` échoue sur le VPS car `frontend/package-lock.json` est dans `.gitignore`.
+> Toujours utiliser `npm install` pour le frontend sur le VPS.
 
 ---
 
-## 7. Variables d'environnement
+## 7. Dépendances des scripts de synchronisation
+
+DrawRun synchronise les activités depuis 4 sources externes. Chacune a ses propres dépendances.
+
+---
+
+### 7.1 Garmin — Python + garminconnect + garth
+
+**Mécanisme :** script Python `backend/scripts/garmin_api.py` appelé via `child_process.spawn`.
+
+| Dépendance | Type | Statut VPS |
+|-----------|------|-----------|
+| `python3` | Système | ✅ Python 3.12.3 |
+| `garminconnect` | pip | ✅ v0.3.3 |
+| `garth` | pip | ✅ v0.8.0 (installé mai 2026) |
+| `requests` | pip | ✅ v2.31.0 |
+
+**Installation (si réinstallation) :**
+```bash
+pip3 install garminconnect garth requests --break-system-packages
+```
+
+> `--break-system-packages` est nécessaire sur Ubuntu 24.04 (PEP 668).
+
+**Tokens stockés dans :** `/home/drawrun/app/backend/data/garmin_tokens/<userId>/`
+
+---
+
+### 7.2 Strava — Playwright (scraping web)
+
+**Mécanisme :** Playwright Node.js avec Chromium headless — scrape le site web Strava avec email/password (pas d'API officielle).
+
+| Dépendance | Type | Statut VPS |
+|-----------|------|-----------|
+| `playwright` | npm (backend) | ✅ installé dans `node_modules` |
+| Chromium headless | Playwright browser | ✅ téléchargé dans `/home/drawrun/.playwright/` |
+| `PLAYWRIGHT_BROWSERS_PATH` | env var | ✅ `/home/drawrun/.playwright` dans `.env` |
+
+**Installation (si réinstallation) :**
+```bash
+cd /home/drawrun/app/backend
+npm install playwright
+
+# Télécharger Chromium dans le home (sans sudo)
+PLAYWRIGHT_BROWSERS_PATH=/home/drawrun/.playwright npx playwright install chromium
+
+# Ajouter dans backend/.env
+echo "PLAYWRIGHT_BROWSERS_PATH=/home/drawrun/.playwright" >> .env
+```
+
+> Playwright est dans les `dependencies` du `backend/package.json` (pas devDependencies) car il est utilisé en production pour le sync Strava.
+
+**Cookies de session stockés dans :** `/home/drawrun/app/backend/data/strava_cookies/<userId>.json`
+
+---
+
+### 7.3 Suunto — axios (API reverse-engineered)
+
+**Mécanisme :** Appels HTTP directs à `cloud.suunto.com` avec les credentials OAuth2 de l'app mobile Suunto (reverse-engineered).
+
+| Dépendance | Type | Statut VPS |
+|-----------|------|-----------|
+| `axios` | npm (backend) | ✅ installé |
+
+Aucune installation supplémentaire requise.
+
+**Tokens stockés dans :** `/home/drawrun/app/backend/data/suunto_tokens/<userId>.json`
+
+---
+
+### 7.4 Decathlon — axios (API officielle OAuth2 PKCE)
+
+**Mécanisme :** API officielle Decathlon Sports Tracking Data avec OAuth2 PKCE flow.
+
+| Dépendance | Type | Statut VPS |
+|-----------|------|-----------|
+| `axios` | npm (backend) | ✅ installé |
+
+**Variables d'environnement requises :**
+```bash
+DECATHLON_CLIENT_ID=<votre_client_id>
+DECATHLON_API_KEY=<votre_api_key>
+DECATHLON_REDIRECT_URI=https://drawrun.fr/auth/decathlon/callback
+```
+
+**Tokens stockés dans :** `/home/drawrun/app/backend/data/decathlon_tokens/<userId>.json`
+
+---
+
+### 7.5 Résumé des dépendances par source
+
+| Source | Technologie | Dépendances à installer |
+|--------|------------|------------------------|
+| **Garmin** | Python script | `pip3 install garminconnect garth requests --break-system-packages` |
+| **Strava** | Playwright/Chromium | `npm install playwright` + `npx playwright install chromium` |
+| **Suunto** | axios HTTP | Rien (inclus dans `npm install`) |
+| **Decathlon** | axios HTTP | Rien (inclus dans `npm install`) |
+
+---
+
+## 8. Variables d'environnement
 
 ### Backend — `/home/drawrun/app/backend/.env`
 
@@ -228,7 +323,7 @@ NEXT_PUBLIC_API_URL=https://drawrun.fr
 
 ---
 
-## 8. Logs applicatifs
+## 9. Logs applicatifs
 
 Les logs Winston du backend sont dans `/home/drawrun/app/backend/logs/` :
 
@@ -249,7 +344,7 @@ pm2 logs drawrun-backend --lines 100
 
 ---
 
-## 9. Erreurs connues (mai 2026)
+## 10. Erreurs connues (mai 2026)
 
 | Erreur | Cause | Statut |
 |--------|-------|--------|
@@ -260,7 +355,7 @@ pm2 logs drawrun-backend --lines 100
 
 ---
 
-## 10. Santé du système
+## 11. Santé du système
 
 ```bash
 # Health check API
@@ -282,7 +377,7 @@ uptime           # Load average
 
 ---
 
-## 11. Installation initiale (référence)
+## 12. Installation initiale (référence)
 
 Si jamais le VPS doit être réinstallé from scratch :
 
@@ -329,7 +424,7 @@ sudo certbot --nginx -d drawrun.fr -d www.drawrun.fr
 
 ---
 
-## 12. Backup des données
+## 13. Backup des données
 
 ```bash
 # Backup manuel
