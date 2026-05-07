@@ -52,7 +52,7 @@ export const syncApi = {
   async sync(
     source?: string,
     onProgress?: (job: SyncJob) => void,
-    intervalMs = 3000,
+    intervalMs = 5000,
     timeoutMs = 5 * 60 * 1000
   ): Promise<SyncResult> {
     const { jobId } = await syncApi.startSync(source);

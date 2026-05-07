@@ -204,6 +204,8 @@ const database = require('./src/database');
         app.use('/api/sync/status', syncStatusLimiter);
         app.use('/api/sync/decathlon/url', syncStatusLimiter);
         app.use('/api/sync/strava/url', syncStatusLimiter);
+        // GET /api/sync/job/:id : polling — exclure du syncLimiter, utiliser syncStatusLimiter
+        app.use('/api/sync/job', syncStatusLimiter);
         // POST /api/sync : limite stricte (déclenche une vraie synchro)
         app.use('/api/sync', syncLimiter);
         // Use user-based limiter for authenticated routes (applied after verifyToken)

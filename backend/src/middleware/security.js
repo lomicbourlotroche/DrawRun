@@ -163,12 +163,12 @@ const syncLimiter = rateLimit({
 
 /**
  * Rate limiter for sync status/info endpoints (GET /api/sync/status, etc.).
- * These are called on every page load — must be generous.
- * Limits to 300 requests per 15 minutes per user.
+ * These are called on every page load AND polled during async sync jobs.
+ * Limits to 600 requests per 15 minutes per user (covers 5s polling for 5 min).
  */
 const syncStatusLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 300,
+    max: 600,
     keyGenerator: (req) => {
         const userId = req.user?.id;
         return userId ? `syncstatus:user:${userId}` : `syncstatus:ip:${ipKeyGenerator(req)}`;
