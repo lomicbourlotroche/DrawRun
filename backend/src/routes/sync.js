@@ -6,6 +6,10 @@
  * - Strava: Playwright web scraping (email/password)
  * - Garmin: Python garminconnect library (email/password)
  * - Suunto: cloud.suunto.com reverse-engineered API (email/password)
+ * - Decathlon: Official OAuth2 PKCE API
+ *
+ * Le sync est ASYNCHRONE : POST /api/sync répond immédiatement avec un jobId,
+ * le client poll GET /api/sync/job/:id pour suivre la progression.
  */
 
 'use strict';
@@ -13,6 +17,7 @@ const { logger } = require('../logger');
 
 const express = require('express');
 const axios = require('axios');
+const crypto = require('crypto');
 const { verifyToken } = require('../auth');
 const { performSync: performStravaSync } = require('../strava_sync');
 const { performGarminSync } = require('../garmin_sync');
@@ -21,33 +26,138 @@ const { performDecathlonSync } = require('../decathlon_sync');
 
 const router = express.Router();
 
-// POST /api/sync
-router.post('/', verifyToken, async (req, res) => {
-    try {
-        const { source } = req.body;
-        let result = {};
+// ---------------------------------------------------------------------------
+// In-memory job store (TTL 30 min)
+// ---------------------------------------------------------------------------
 
-        if (!source || source === 'strava') {
-            result.strava = await performStravaSync(req.user.id);
-        }
-        if (!source || source === 'garmin') {
-            result.garmin = await performGarminSync(req.user.id);
-        }
-        if (!source || source === 'suunto') {
-            result.suunto = await performSuuntoSync(req.user.id);
-        }
-        if (!source || source === 'decathlon') {
-            result.decathlon = await performDecathlonSync(req.user.id);
-        }
+const JOB_TTL_MS = 30 * 60 * 1000;
 
-        res.json(result);
-    } catch (error) {
-        logger.error('Sync error:', error);
-        res.status(500).json({ error: 'Sync failed' });
+/** @type {Map<string, {userId: number, source: string, status: string, result: any, error: string|null, startedAt: number, finishedAt: number|null}>} */
+const jobs = new Map();
+
+// Cleanup expired jobs every 10 minutes
+setInterval(() => {
+    const now = Date.now();
+    for (const [id, job] of jobs.entries()) {
+        if (now - job.startedAt > JOB_TTL_MS) {
+            jobs.delete(id);
+        }
     }
+}, 10 * 60 * 1000);
+
+function createJob(userId, source) {
+    const id = crypto.randomBytes(12).toString('hex');
+    jobs.set(id, {
+        userId,
+        source,
+        status: 'running',
+        result: null,
+        error: null,
+        startedAt: Date.now(),
+        finishedAt: null,
+    });
+    return id;
+}
+
+function finishJob(id, result) {
+    const job = jobs.get(id);
+    if (job) {
+        job.status = 'done';
+        job.result = result;
+        job.finishedAt = Date.now();
+    }
+}
+
+function failJob(id, error) {
+    const job = jobs.get(id);
+    if (job) {
+        job.status = 'error';
+        job.error = error;
+        job.finishedAt = Date.now();
+    }
+}
+
+// ---------------------------------------------------------------------------
+// POST /api/sync — lance le sync en arrière-plan, répond immédiatement
+// ---------------------------------------------------------------------------
+
+router.post('/', verifyToken, async (req, res) => {
+    const { source } = req.body;
+    const userId = req.user.id;
+
+    const jobId = createJob(userId, source || 'all');
+
+    // Répondre immédiatement — le client poll /api/sync/job/:id
+    res.json({ jobId, status: 'running', message: 'Sync started' });
+
+    // Exécuter le sync en arrière-plan (sans await)
+    runSync(userId, source, jobId).catch((err) => {
+        logger.error('Sync background error:', { error: err.message, userId, source });
+        failJob(jobId, err.message);
+    });
 });
 
-// GET /api/sync/status
+async function runSync(userId, source, jobId) {
+    try {
+        const result = {};
+
+        if (!source || source === 'garmin') {
+            logger.info(`[Sync][Job ${jobId}] Starting Garmin sync for user ${userId}`);
+            result.garmin = await performGarminSync(userId);
+        }
+        if (!source || source === 'strava') {
+            logger.info(`[Sync][Job ${jobId}] Starting Strava sync for user ${userId}`);
+            result.strava = await performStravaSync(userId);
+        }
+        if (!source || source === 'suunto') {
+            logger.info(`[Sync][Job ${jobId}] Starting Suunto sync for user ${userId}`);
+            result.suunto = await performSuuntoSync(userId);
+        }
+        if (!source || source === 'decathlon') {
+            logger.info(`[Sync][Job ${jobId}] Starting Decathlon sync for user ${userId}`);
+            result.decathlon = await performDecathlonSync(userId);
+        }
+
+        finishJob(jobId, result);
+        logger.info(`[Sync][Job ${jobId}] All syncs complete for user ${userId}`);
+    } catch (error) {
+        failJob(jobId, error.message);
+        logger.error(`[Sync][Job ${jobId}] Failed for user ${userId}:`, { error: error.message });
+    }
+}
+
+// ---------------------------------------------------------------------------
+// GET /api/sync/job/:id — polling du statut d'un job
+// ---------------------------------------------------------------------------
+
+router.get('/job/:id', verifyToken, (req, res) => {
+    const job = jobs.get(req.params.id);
+
+    if (!job) {
+        return res.status(404).json({ error: 'Job not found or expired' });
+    }
+
+    // Sécurité : un utilisateur ne peut voir que ses propres jobs
+    if (job.userId !== req.user.id) {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    res.json({
+        jobId: req.params.id,
+        status: job.status,       // 'running' | 'done' | 'error'
+        source: job.source,
+        result: job.result,
+        error: job.error,
+        startedAt: job.startedAt,
+        finishedAt: job.finishedAt,
+        elapsedMs: job.finishedAt ? job.finishedAt - job.startedAt : Date.now() - job.startedAt,
+    });
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/sync/status — statut des intégrations configurées
+// ---------------------------------------------------------------------------
+
 router.get('/status', verifyToken, async (req, res) => {
     try {
         const { getStravaSyncStatus } = require('../strava_sync');
@@ -67,11 +177,10 @@ router.get('/status', verifyToken, async (req, res) => {
             garmin,
             suunto,
             decathlon,
-            // Indique quelles intégrations sont configurées côté serveur
             available: {
-                strava: true, // scraping, pas besoin de client_id
-                garmin: true, // Python script
-                suunto: true, // reverse-engineered API
+                strava: true,
+                garmin: true,
+                suunto: true,
                 decathlon: !!process.env.DECATHLON_CLIENT_ID,
             },
         });
@@ -81,7 +190,10 @@ router.get('/status', verifyToken, async (req, res) => {
     }
 });
 
-// POST /api/sync/strava/clear-session
+// ---------------------------------------------------------------------------
+// Endpoints de gestion des sessions/tokens
+// ---------------------------------------------------------------------------
+
 router.post('/strava/clear-session', verifyToken, async (req, res) => {
     try {
         const { clearStravaSession } = require('../strava_sync');
@@ -93,7 +205,6 @@ router.post('/strava/clear-session', verifyToken, async (req, res) => {
     }
 });
 
-// POST /api/sync/garmin/clear-tokens
 router.post('/garmin/clear-tokens', verifyToken, async (req, res) => {
     try {
         const { clearGarminTokens } = require('../garmin_sync');
@@ -105,7 +216,6 @@ router.post('/garmin/clear-tokens', verifyToken, async (req, res) => {
     }
 });
 
-// POST /api/sync/suunto/clear-token
 router.post('/suunto/clear-token', verifyToken, async (req, res) => {
     try {
         const { clearSuuntoToken } = require('../suunto_sync');
@@ -117,7 +227,6 @@ router.post('/suunto/clear-token', verifyToken, async (req, res) => {
     }
 });
 
-// GET /api/sync/decathlon/url - OAuth authorization URL
 router.get('/decathlon/url', verifyToken, async (req, res) => {
     if (!process.env.DECATHLON_CLIENT_ID) {
         return res.status(503).json({ error: 'Decathlon integration not configured on this server' });
@@ -132,33 +241,31 @@ router.get('/decathlon/url', verifyToken, async (req, res) => {
     }
 });
 
-// GET /api/sync/decathlon/callback - OAuth callback (GET with query params)
 router.get('/decathlon/callback', verifyToken, async (req, res) => {
     try {
-        const { code, state } = req.query;
+        const { code } = req.query;
         if (!code) {
             return res.status(400).json({ error: 'Authorization code required' });
         }
 
-        // Read code_verifier from temporary file
         const fs = require('fs');
         const path = require('path');
-        const { getTokenPath } = require('../decathlon_sync');
-        const tempPath = path.join(getTokenPath(req.user.id).replace('.json', '_pkce.json'));
-        
+        const tempPath = path.join(
+            __dirname, '..', 'data', 'decathlon_tokens',
+            `${req.user.id}_pkce.json`
+        );
+
         let codeVerifier;
         try {
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             const tempData = JSON.parse(fs.readFileSync(tempPath, 'utf8'));
             codeVerifier = tempData.codeVerifier;
-            // Clean up temp file
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             fs.unlinkSync(tempPath);
         } catch (e) {
             return res.status(400).json({ error: 'PKCE verifier not found. Restart the flow.' });
         }
 
-        // Exchange code for tokens
         const tokenResponse = await axios.post(
             'https://api-eu.decathlon.net/connect/oauth/token',
             new URLSearchParams({
@@ -176,7 +283,6 @@ router.get('/decathlon/callback', verifyToken, async (req, res) => {
 
         const { access_token, refresh_token, expires_in } = tokenResponse.data;
 
-        // Save tokens to user record
         const { dbRunMain } = require('../database');
         await dbRunMain(
             `UPDATE users SET
@@ -189,15 +295,13 @@ router.get('/decathlon/callback', verifyToken, async (req, res) => {
             [access_token, refresh_token, Date.now() + (expires_in * 1000), req.user.id]
         );
 
-        // Redirect to frontend with success
-        res.redirect(process.env.FRONTEND_URL || 'http://localhost:3001/profile?decathlon=connected');
+        res.redirect(process.env.FRONTEND_URL || 'https://drawrun.fr/profile?decathlon=connected');
     } catch (error) {
         logger.error('Decathlon callback error:', error);
-        res.redirect(process.env.FRONTEND_URL || 'http://localhost:3001/profile?decathlon=error');
+        res.redirect(process.env.FRONTEND_URL || 'https://drawrun.fr/profile?decathlon=error');
     }
 });
 
-// POST /api/sync/decathlon/clear-token
 router.post('/decathlon/clear-token', verifyToken, async (req, res) => {
     try {
         const { clearDecathlonToken } = require('../decathlon_sync');
@@ -209,7 +313,6 @@ router.post('/decathlon/clear-token', verifyToken, async (req, res) => {
     }
 });
 
-// GET /api/strava/url - OAuth authorization URL
 router.get('/strava/url', verifyToken, async (req, res) => {
     try {
         const { getStravaAuthUrl } = require('../strava_sync');
@@ -221,23 +324,22 @@ router.get('/strava/url', verifyToken, async (req, res) => {
     }
 });
 
-// POST /api/sync/healthconnect - Import Health Connect activities
 router.post('/healthconnect', verifyToken, async (req, res) => {
     try {
         const activities = req.body;
         if (!Array.isArray(activities)) {
             return res.status(400).json({ error: 'Expected array of activities' });
         }
-        
+
         const { getUserDb, dbRunUser } = require('../database');
         const userDb = await getUserDb(req.user.id);
-        
+
         let imported = 0;
         for (const activity of activities) {
             if (!activity.type || !activity.start_time) continue;
-            
+
             await dbRunUser(userDb, `
-                INSERT OR IGNORE INTO activities 
+                INSERT OR IGNORE INTO activities
                 (source, source_id, name, type, start_date, distance, moving_time, calories, is_manual)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
             `, [
@@ -248,11 +350,11 @@ router.post('/healthconnect', verifyToken, async (req, res) => {
                 activity.start_time,
                 activity.distance || 0,
                 activity.duration || 0,
-                activity.calories || 0
+                activity.calories || 0,
             ]);
             imported++;
         }
-        
+
         res.json({ success: true, imported });
     } catch (error) {
         logger.error('Health Connect sync error:', error);

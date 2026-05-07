@@ -379,7 +379,11 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     
     set({ isSyncing: true, lastError: null });
     try {
-      const result = await api.sync();
+      const result = await api.sync(
+        undefined,
+        // onProgress — met à jour l'état pendant le polling
+        () => { set({ isSyncing: true }); }
+      );
       
       let message = 'Synchronisation terminée';
       let hasError = false;
