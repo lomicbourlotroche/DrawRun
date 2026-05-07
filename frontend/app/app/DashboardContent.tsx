@@ -18,6 +18,12 @@ import { useLanguage } from '@/components/providers/LanguageProvider';
 import { Activity, Heart, TrendingUp, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { GlassCard, GradientBadge, PrimaryButton } from '@/components/ui';
+import dynamic from 'next/dynamic';
+
+const OnboardingWizard = dynamic(
+  () => import('@/components/features/onboarding/OnboardingWizard'),
+  { ssr: false }
+);
 
 export default function DashboardContent() {
   const { t } = useLanguage();
@@ -29,11 +35,20 @@ export default function DashboardContent() {
     setLoading,
   } = useDashboardStore();
   const [hasData, setHasData] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const loadDashboardData = useCallback(async () => {
     setLoading(true);
     
     try {
+      // Vérifier si l'onboarding est nécessaire
+      try {
+        const onboardingStatus = await api.getOnboardingStatus();
+        if (onboardingStatus && !onboardingStatus.completed) {
+          setShowOnboarding(true);
+        }
+      } catch { /* onboarding optionnel */ }
+
       const [activities, pmc] = await Promise.allSettled([
         api.getActivities(),
         api.getPmc(),

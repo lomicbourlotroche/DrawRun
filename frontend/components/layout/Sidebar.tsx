@@ -18,6 +18,7 @@ import {
   ChevronLeft,
   Trophy,
   Plus,
+  Compass,
 } from 'lucide-react';
 
 const navItems = [
@@ -26,6 +27,7 @@ const navItems = [
   { href: '/app/performance', label: 'Performance', icon: Activity },
   { href: '/app/coach', label: 'Coach', icon: Dumbbell },
   { href: '/app/race-planning', label: 'Race Planning', icon: Trophy },
+  { href: '/app/explore', label: 'Explorer', icon: Compass },
   { href: '/app/social', label: 'Social', icon: Users },
   { href: '/app/profile', label: 'Profil', icon: User },
 ];

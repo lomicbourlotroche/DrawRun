@@ -18,6 +18,148 @@ const { logger } = require('../logger');
 const router = express.Router();
 
 // ============================================================================
+// WIZARD DEFAULTS — pré-remplissage depuis les données utilisateur
+// ============================================================================
+
+router.get('/wizard-defaults', verifyToken, async (req, res) => {
+    try {
+        const { dbGetMain, getUserDb, dbAllUser, dbGetUser } = require('../database');
+        const { RunningPerformance, PMC } = require('../algorithms');
+
+        // Profil utilisateur (FCM, VDOT, VMA, poids)
+        const user = await dbGetMain(
+            'SELECT profile_data FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        let fcm = null, vdot = null, vma = null, weight = null;
+        if (user?.profile_data) {
+            try {
+                const p = JSON.parse(user.profile_data);
+                fcm  = p.fcm  || p.max_heart_rate  || null;
+                vdot = p.vdot || null;
+                vma  = p.vma  || null;
+                weight = p.weight || null;
+            } catch { /* ignore */ }
+        }
+
+        // Activités des 90 derniers jours
+        const userDb = await getUserDb(req.user.id);
+        const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const activities = await dbAllUser(userDb,
+            `SELECT distance, moving_time, average_heartrate, max_heartrate,
+                    average_speed, start_date, type, tss
+             FROM activities
+             WHERE start_date >= ? AND type IN ('run','Run','running','Running')
+             ORDER BY start_date DESC
+             LIMIT 100`,
+            [since]
+        );
+
+        const defaults = {};
+
+        if (activities.length === 0) {
+            return res.json({ defaults: {}, message: 'Aucune activité récente trouvée' });
+        }
+
+        // 1. Volume hebdomadaire moyen (km/semaine)
+        const totalKm = activities.reduce((s, a) => s + (a.distance || 0) / 1000, 0);
+        const weeks = Math.max(1, activities.length / (activities.length > 20 ? 5 : 3));
+        defaults.currentWeeklyKm = Math.round(totalKm / weeks);
+
+        // 2. Niveau d'expérience déduit du volume
+        if (defaults.currentWeeklyKm >= 60) defaults.experienceLevel = 'advanced';
+        else if (defaults.currentWeeklyKm >= 25) defaults.experienceLevel = 'intermediate';
+        else defaults.experienceLevel = 'beginner';
+
+        // 3. FCM depuis les activités si pas dans le profil
+        if (!fcm) {
+            const maxHRs = activities.map(a => a.max_heartrate).filter(Boolean);
+            if (maxHRs.length > 0) {
+                fcm = Math.max(...maxHRs);
+            }
+        }
+        if (fcm) defaults.fcm = fcm;
+
+        // 4. VDOT estimé depuis la meilleure performance récente
+        if (!vdot) {
+            // Chercher la meilleure performance sur une distance ≥ 3km
+            const goodRuns = activities
+                .filter(a => a.distance >= 3000 && a.moving_time > 0)
+                .map(a => ({
+                    distKm: a.distance / 1000,
+                    timeMin: a.moving_time / 60,
+                    vdot: RunningPerformance.estimateVDOT
+                        ? RunningPerformance.estimateVDOT(a.distance / 1000, a.moving_time / 60)
+                        : null,
+                }))
+                .filter(r => r.vdot && r.vdot > 20);
+
+            if (goodRuns.length > 0) {
+                vdot = Math.max(...goodRuns.map(r => r.vdot));
+                vdot = Math.round(vdot * 10) / 10;
+            }
+        }
+        if (vdot) {
+            defaults.vdotValue = vdot;
+            defaults.hasVDOT = true;
+        }
+
+        // 5. VMA estimée depuis VDOT (VDOT ≈ VMA * 0.82 pour coureurs moyens)
+        if (!vma && vdot) {
+            vma = Math.round(vdot / 0.82 * 10) / 10;
+        }
+        if (vma) {
+            defaults.vmaValue = vma;
+            defaults.hasVMA = true;
+        }
+
+        // 6. Jours d'entraînement préférés (jours où l'utilisateur court le plus)
+        const dayCount = {};
+        activities.forEach(a => {
+            const d = new Date(a.start_date).getDay();
+            dayCount[d] = (dayCount[d] || 0) + 1;
+        });
+        const sortedDays = Object.entries(dayCount)
+            .sort((a, b) => b[1] - a[1])
+            .map(([day]) => day);
+        if (sortedDays.length > 0) {
+            defaults.trainingDays = sortedDays.slice(0, 4);
+        }
+
+        // 7. Nombre de séances par semaine (médiane des semaines récentes)
+        const sessionsByWeek = {};
+        activities.forEach(a => {
+            const d = new Date(a.start_date);
+            const weekKey = `${d.getFullYear()}-W${Math.ceil(d.getDate() / 7)}`;
+            sessionsByWeek[weekKey] = (sessionsByWeek[weekKey] || 0) + 1;
+        });
+        const weekCounts = Object.values(sessionsByWeek);
+        if (weekCounts.length > 0) {
+            const sorted = weekCounts.sort((a, b) => a - b);
+            const median = sorted[Math.floor(sorted.length / 2)];
+            const clamped = Math.min(6, Math.max(2, Math.round(median)));
+            defaults.sessionsPerWeek = String(clamped);
+        }
+
+        // 8. Durée moyenne par séance → availableTimePerSession
+        const avgDurationMin = activities.reduce((s, a) => s + (a.moving_time || 0), 0) / activities.length / 60;
+        if (avgDurationMin < 30) defaults.availableTimePerSession = '20';
+        else if (avgDurationMin < 45) defaults.availableTimePerSession = '30';
+        else if (avgDurationMin < 65) defaults.availableTimePerSession = '45';
+        else defaults.availableTimePerSession = '60';
+
+        // 9. Équipement déduit (si FC disponible → montre cardio)
+        const hasHR = activities.some(a => a.average_heartrate);
+        defaults.equipment = hasHR ? 'hrm' : 'watch';
+
+        res.json({ defaults, activitiesAnalyzed: activities.length });
+    } catch (error) {
+        logger.error('Wizard defaults error', { error: error.message });
+        res.status(500).json({ error: 'Failed to compute wizard defaults' });
+    }
+});
+
+// ============================================================================
 // COACH PROFILE
 // ============================================================================
 

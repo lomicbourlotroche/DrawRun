@@ -223,6 +223,7 @@ export const api = {
   getGamification: coachApi.getGamification,
   matchActivityToSession: coachApi.matchActivityToSession,
   getPendingSessions: coachApi.getPendingSessions,
+  getWizardDefaults: coachApi.getWizardDefaults,
 
   // Social endpoints
   getFriends: socialApi.getFriends,

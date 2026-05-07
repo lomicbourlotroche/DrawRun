@@ -187,4 +187,27 @@ export const coachApi = {
   getPendingSessions(): Promise<PendingSessions> {
     return client.request('/api/coach/pending-sessions');
   },
+
+  /**
+   * Calcule les valeurs par défaut du wizard depuis les activités passées
+   */
+  getWizardDefaults(): Promise<{
+    defaults: {
+      currentWeeklyKm?: number;
+      experienceLevel?: string;
+      fcm?: number;
+      vdot?: number;
+      vdotValue?: number;
+      hasVDOT?: boolean;
+      vmaValue?: number;
+      hasVMA?: boolean;
+      trainingDays?: string[];
+      sessionsPerWeek?: string;
+      availableTimePerSession?: string;
+      equipment?: string;
+    };
+    activitiesAnalyzed: number;
+  }> {
+    return client.request('/api/coach/wizard-defaults');
+  },
 };
