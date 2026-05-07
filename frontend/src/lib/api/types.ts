@@ -20,15 +20,37 @@ export interface SyncResult {
   suunto?: { imported?: number; updated?: number; error?: string };
 }
 
+export interface SyncSourceStatus {
+  source: string;
+  status: 'idle' | 'syncing' | 'error';
+  last_sync: string | null;
+  configured: boolean;
+  has_session?: boolean;
+  has_token?: boolean;
+  has_tokens?: boolean;
+}
+
 export interface SyncStatus {
-  garmin_status: 'idle' | 'syncing' | 'error';
-  garmin_last_sync: string | null;
-  strava_status: 'idle' | 'syncing' | 'error';
-  strava_last_sync: string | null;
-  suunto_status: 'idle' | 'syncing' | 'error';
-  suunto_last_sync: string | null;
-  decathlon_status: 'idle' | 'syncing' | 'error';
-  decathlon_last_sync: string | null;
+  // Format imbriqué (retourné par GET /api/sync/status)
+  garmin?: SyncSourceStatus;
+  strava?: SyncSourceStatus;
+  suunto?: SyncSourceStatus;
+  decathlon?: SyncSourceStatus;
+  available?: {
+    strava: boolean;
+    garmin: boolean;
+    suunto: boolean;
+    decathlon: boolean;
+  };
+  // Champs plats (legacy — conservés pour compatibilité)
+  garmin_status?: 'idle' | 'syncing' | 'error';
+  garmin_last_sync?: string | null;
+  strava_status?: 'idle' | 'syncing' | 'error';
+  strava_last_sync?: string | null;
+  suunto_status?: 'idle' | 'syncing' | 'error';
+  suunto_last_sync?: string | null;
+  decathlon_status?: 'idle' | 'syncing' | 'error';
+  decathlon_last_sync?: string | null;
 }
 
 // ============================================================================
