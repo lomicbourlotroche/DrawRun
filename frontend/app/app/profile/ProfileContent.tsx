@@ -290,12 +290,24 @@ function SyncTab() {
   const [modalService, setModalService] = useState<'strava' | 'garmin' | 'suunto' | null>(null);
 
   // Check if services are connected (have credentials stored)
-  // Use has_* flags from auth store, fallback to syncStatus dates
-  const { has_strava, has_garmin, has_suunto, has_decathlon } = useAuthStore();
-  const stravaConnected = has_strava || !!syncStatus?.strava_last_sync;
-  const garminConnected = has_garmin || !!syncStatus?.garmin_last_sync;
-  const suuntoConnected = has_suunto || !!syncStatus?.suunto_last_sync;
-  const decathlonConnected = has_decathlon || !!syncStatus?.decathlon_last_sync;
+  const { has_strava, has_garmin, has_suunto } = useAuthStore();
+  const stravaConnected = has_strava || !!syncStatus?.strava?.configured || !!syncStatus?.strava_last_sync;
+  const garminConnected = has_garmin || !!syncStatus?.garmin?.configured || !!syncStatus?.garmin_last_sync;
+  const suuntoConnected = has_suunto || !!syncStatus?.suunto?.configured || !!syncStatus?.suunto_last_sync;
+  const decathlonConnected = !!syncStatus?.decathlon?.configured || !!syncStatus?.decathlon_last_sync;
+
+  // Gérer le retour du callback OAuth Decathlon (?decathlon=connected)
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const decathlonStatus = searchParams.get('decathlon');
+    if (decathlonStatus === 'connected') {
+      toast.success('Decathlon connecté avec succès !');
+      fetchStatus();
+    } else if (decathlonStatus === 'error') {
+      const reason = searchParams.get('reason');
+      toast.error(`Erreur connexion Decathlon${reason ? ` (${reason})` : ''}`);
+    }
+  }, [searchParams, fetchStatus]);
 
   const handleConnect = async (service: 'strava' | 'garmin' | 'suunto' | 'decathlon', email: string, password: string) => {
     try {

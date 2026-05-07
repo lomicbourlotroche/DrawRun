@@ -241,39 +241,54 @@ router.get('/decathlon/url', verifyToken, async (req, res) => {
     }
 });
 
-router.get('/decathlon/callback', verifyToken, async (req, res) => {
+router.get('/decathlon/callback', async (req, res) => {
+    // ⚠️ PAS de verifyToken ici — Decathlon redirige le navigateur sans JWT
+    // On identifie l'utilisateur via le paramètre `state` (userId) passé lors de la génération de l'URL
     try {
-        const { code } = req.query;
+        const { code, state } = req.query;
         if (!code) {
-            return res.status(400).json({ error: 'Authorization code required' });
+            return res.redirect('https://drawrun.fr/profile?decathlon=error&reason=no_code');
+        }
+        if (!state) {
+            return res.redirect('https://drawrun.fr/profile?decathlon=error&reason=no_state');
+        }
+
+        const userId = parseInt(String(state), 10);
+        if (!userId || isNaN(userId)) {
+            return res.redirect('https://drawrun.fr/profile?decathlon=error&reason=invalid_state');
         }
 
         const fs = require('fs');
         const path = require('path');
         const tempPath = path.join(
             __dirname, '..', 'data', 'decathlon_tokens',
-            `${req.user.id}_pkce.json`
+            `${userId}_pkce.json`
         );
 
         let codeVerifier;
         try {
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             const tempData = JSON.parse(fs.readFileSync(tempPath, 'utf8'));
+            // Vérifier que le verifier n'est pas trop vieux (10 min max)
+            if (Date.now() - tempData.createdAt > 10 * 60 * 1000) {
+                fs.unlinkSync(tempPath);
+                return res.redirect('https://drawrun.fr/profile?decathlon=error&reason=expired');
+            }
             codeVerifier = tempData.codeVerifier;
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             fs.unlinkSync(tempPath);
         } catch (e) {
-            return res.status(400).json({ error: 'PKCE verifier not found. Restart the flow.' });
+            return res.redirect('https://drawrun.fr/profile?decathlon=error&reason=no_verifier');
         }
 
         const tokenResponse = await axios.post(
             'https://api-eu.decathlon.net/connect/oauth/token',
             new URLSearchParams({
                 grant_type: 'authorization_code',
-                code,
+                code: String(code),
                 code_verifier: codeVerifier,
-                client_id: process.env.DECATHLON_CLIENT_ID,
-                redirect_uri: process.env.DECATHLON_REDIRECT_URI,
+                client_id: process.env.DECATHLON_CLIENT_ID || '',
+                redirect_uri: process.env.DECATHLON_REDIRECT_URI || 'https://drawrun.fr/api/sync/decathlon/callback',
             }),
             {
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -292,13 +307,14 @@ router.get('/decathlon/callback', verifyToken, async (req, res) => {
                 decathlon_enabled = 1,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = ?`,
-            [access_token, refresh_token, Date.now() + (expires_in * 1000), req.user.id]
+            [access_token, refresh_token, Date.now() + (expires_in * 1000), userId]
         );
 
-        res.redirect(process.env.FRONTEND_URL || 'https://drawrun.fr/profile?decathlon=connected');
+        logger.info(`[Decathlon] OAuth callback success for user ${userId}`);
+        res.redirect('https://drawrun.fr/app/profile?decathlon=connected&tab=sync');
     } catch (error) {
-        logger.error('Decathlon callback error:', error);
-        res.redirect(process.env.FRONTEND_URL || 'https://drawrun.fr/profile?decathlon=error');
+        logger.error('Decathlon callback error:', { error: error.message });
+        res.redirect('https://drawrun.fr/app/profile?decathlon=error');
     }
 });
 
