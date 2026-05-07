@@ -282,12 +282,13 @@ router.get('/decathlon/callback', async (req, res) => {
         }
 
         const tokenResponse = await axios.post(
-            'https://api-eu.decathlon.net/connect/oauth/token',
+            'https://api.decathlon.net/connect/oauth/token',
             new URLSearchParams({
                 grant_type: 'authorization_code',
                 code: String(code),
                 code_verifier: codeVerifier,
                 client_id: process.env.DECATHLON_CLIENT_ID || '',
+                client_secret: process.env.DECATHLON_CLIENT_SECRET || '',
                 redirect_uri: process.env.DECATHLON_REDIRECT_URI || 'https://drawrun.fr/api/sync/decathlon/callback',
             }),
             {

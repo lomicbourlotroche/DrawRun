@@ -23,8 +23,8 @@ const { logger } = require('./logger');
 
 const DECATHLON_TOKEN_DIR = path.join(__dirname, '..', 'data', 'decathlon_tokens');
 const DECATHLON_API_BASE = 'https://api.decathlon.net/sportstrackingdata/v2';
-const DECATHLON_AUTH_URL = 'https://api-eu.decathlon.net/connect/oauth/authorize';
-const DECATHLON_TOKEN_URL = 'https://api-eu.decathlon.net/connect/oauth/token';
+const DECATHLON_AUTH_URL = 'https://api.decathlon.net/connect/oauth/authorize';
+const DECATHLON_TOKEN_URL = 'https://api.decathlon.net/connect/oauth/token';
 
 function log(userId, message, ...args) {
     logger.info(`[Decathlon][User ${userId}] ${message}`, ...args);
@@ -88,6 +88,7 @@ async function refreshDecathlonToken(userId) {
             grant_type: 'refresh_token',
             refresh_token: refreshToken,
             client_id: process.env.DECATHLON_CLIENT_ID || '',
+            client_secret: process.env.DECATHLON_CLIENT_SECRET || '',
         }),
         {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -464,7 +465,7 @@ async function getDecathlonAuthUrl(userId) {
         client_id: process.env.DECATHLON_CLIENT_ID || '',
         redirect_uri: redirectUri,
         response_type: 'code',
-        scope: 'profile sports openid',
+        scope: 'profile openid email sports_tracking_data',
         code_challenge: codeChallenge,
         code_challenge_method: 'S256',
         state: String(userId),
