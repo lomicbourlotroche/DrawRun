@@ -83,20 +83,72 @@ export default function PerformanceContent() {
       const actsArray = Array.isArray(acts) ? acts : [];
       setActivities(actsArray);
 
-      if (!constantsResult) {
-        // User constants not available — will use defaults
-      }
-
-      // Polarization — requires activities with zone data
+      // ── Polarisation ──────────────────────────────────────────────────────
+      // Calculer la distribution d'intensité depuis la FC des activités
+      // (zonePercent n'existe pas dans le type Activity — on estime depuis avgHR/maxHR)
       try {
-        const activitiesWithZones = (actsArray as ActivityType[]).map((a) => ({
-          zonePercent: (a as ActivityType & { zonePercent?: { 1?: number; 2?: number; 3?: number; 4?: number; 5?: number } }).zonePercent,
-        }));
-        const polData = await api.getAlgoPolarization(activitiesWithZones);
-        setPolarization(polData);
+        const profile = constantsResult?.profile;
+        const fcm = profile?.fcm || 180;
+
+        // Construire zonePercent estimé depuis average_heartrate et max_heartrate
+        const activitiesWithZones = actsArray
+          .filter((a) => (a as ActivityType & { average_heartrate?: number }).average_heartrate)
+          .map((a) => {
+            const avgHR = (a as ActivityType & { average_heartrate?: number }).average_heartrate ?? 0;
+            const hrPct = avgHR / fcm;
+            // Estimer la zone dominante depuis le % FCM
+            let low = 0, moderate = 0, high = 0;
+            if (hrPct < 0.70) { low = 100; }
+            else if (hrPct < 0.80) { low = 40; moderate = 60; }
+            else if (hrPct < 0.88) { moderate = 30; high = 70; }
+            else { high = 100; }
+            return { zonePercent: { 1: low / 2, 2: low / 2, 3: moderate, 4: high / 2, 5: high / 2 } };
+          });
+
+        if (activitiesWithZones.length > 0) {
+          const polData = await api.getAlgoPolarization(activitiesWithZones);
+          setPolarization(polData);
+        } else {
+          setPolarizationError('Pas assez de données FC pour calculer la polarisation');
+        }
       } catch {
         setPolarizationError('Données de polarisation non disponibles');
       }
+
+      // ── HRV ───────────────────────────────────────────────────────────────
+      // Estimer le HRV depuis la FC de repos et les activités récentes
+      try {
+        const profile = constantsResult?.profile;
+        const restingHR = (profile as unknown as Record<string, unknown> | null)?.restingHR as number | undefined;
+
+        // Calculer un RMSSD estimé depuis la variabilité de FC entre activités
+        const hrs = actsArray
+          .filter((a) => (a as ActivityType & { average_heartrate?: number }).average_heartrate)
+          .slice(0, 14) // 2 dernières semaines
+          .map((a) => (a as ActivityType & { average_heartrate?: number }).average_heartrate as number);
+
+        if (hrs.length >= 3) {
+          // RMSSD estimé : écart-type de la FC × facteur de conversion empirique
+          const mean = hrs.reduce((s, v) => s + v, 0) / hrs.length;
+          const variance = hrs.reduce((s, v) => s + (v - mean) ** 2, 0) / hrs.length;
+          const stdDev = Math.sqrt(variance);
+          // Conversion empirique : stdDev FC ≈ RMSSD / 3 pour coureurs entraînés
+          const estimatedRmssd = Math.round(stdDev * 3 + 20);
+          const baseline = restingHR ? Math.round(60 / restingHR * 30 + 20) : null;
+
+          const hrvData = await api.getAlgoHRV({
+            rmssd: estimatedRmssd,
+            baseline: baseline ?? undefined,
+            restingHR: restingHR ?? 60,
+          });
+          setHrv(hrvData);
+        } else {
+          setHrvError('Pas assez d\'activités récentes pour estimer le HRV');
+        }
+      } catch {
+        setHrvError('Données HRV non disponibles');
+      }
+
     } catch { /* silent */ }
     finally { setIsLoading(false); }
   };

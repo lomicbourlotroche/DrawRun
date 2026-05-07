@@ -28,6 +28,8 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [otpCode, setOtpCode] = useState('');
+  const [totpCode, setTotpCode] = useState('');
+  const [requires2FA, setRequires2FA] = useState(false);
   const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -39,6 +41,8 @@ export default function LoginForm() {
     setMode(getMode());
     setError('');
     setSuccessMessage('');
+    setRequires2FA(false);
+    setTotpCode('');
   }, [searchParams]);
 
   const isLogin = mode === 'login';
@@ -50,13 +54,21 @@ export default function LoginForm() {
     setIsLoading(true);
     try {
       if (isLogin) {
-        await login(email, password);
+        // Si 2FA requise, on passe le code TOTP au store
+        await login(email, password, requires2FA ? totpCode : undefined);
       } else {
         await register(email, password, name);
       }
       router.push('/app');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+      const message = err instanceof Error ? err.message : 'Une erreur est survenue';
+      // Le store lance '2FA_REQUIRED' quand le backend demande le code TOTP
+      if (message === '2FA_REQUIRED') {
+        setRequires2FA(true);
+        setError('');
+      } else {
+        setError(message);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -563,6 +575,33 @@ export default function LoginForm() {
                   </div>
 
                   <ErrorAlert />
+
+                  {/* Champ 2FA — affiché uniquement si le backend l'exige */}
+                  {isLogin && requires2FA && (
+                    <div className="space-y-2 p-4 rounded-xl bg-blue-50 border border-blue-200">
+                      <p className="text-sm font-semibold text-blue-800">
+                        🔐 Authentification à deux facteurs
+                      </p>
+                      <p className="text-xs text-blue-600 mb-2">
+                        Entrez le code à 6 chiffres de votre application d&apos;authentification.
+                      </p>
+                      <label htmlFor="totp-code" className={labelClass}>Code 2FA</label>
+                      <input
+                        id="totp-code"
+                        type="text"
+                        value={totpCode}
+                        onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="123456"
+                        autoComplete="one-time-code"
+                        inputMode="numeric"
+                        maxLength={6}
+                        required
+                        className={inputClass}
+                        style={{ fontSize: '16px', letterSpacing: '0.3em', textAlign: 'center' }}
+                        autoFocus
+                      />
+                    </div>
+                  )}
 
                   {/* Forgot password */}
                   {isLogin && (

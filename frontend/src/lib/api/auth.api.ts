@@ -60,12 +60,12 @@ export const authApi = {
   },
 
   /**
-   * Connexion utilisateur
+   * Connexion utilisateur (avec support 2FA optionnel)
    */
-  async login(email: string, password: string): Promise<LoginResponse> {
+  async login(email: string, password: string, totpCode?: string): Promise<LoginResponse> {
     const response = await client.request<LoginResponse>('/api/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, ...(totpCode ? { totpCode } : {}) }),
     });
     if (response.refreshToken) {
       client.setRefreshToken(response.refreshToken);

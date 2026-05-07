@@ -36,6 +36,7 @@ export default function DashboardContent() {
   } = useDashboardStore();
   const [hasData, setHasData] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
 
   const loadDashboardData = useCallback(async () => {
     setLoading(true);
@@ -48,8 +49,9 @@ export default function DashboardContent() {
           setShowOnboarding(true);
         }
       } catch { /* onboarding optionnel */ }
+      setOnboardingChecked(true);
 
-      const [activities, pmc] = await Promise.allSettled([
+      const [activities, pmc, recommendations] = await Promise.allSettled([
         api.getActivities(),
         api.getPmc(),
         api.getRecommendations(),
@@ -119,6 +121,10 @@ export default function DashboardContent() {
   if (!isLoading && !hasData) {
     return (
       <div className="space-y-6 animate-fade-in">
+        {/* Onboarding wizard — affiché si l'utilisateur n'a pas encore configuré son profil */}
+        {onboardingChecked && showOnboarding && (
+          <OnboardingWizard onComplete={() => setShowOnboarding(false)} />
+        )}
         {/* Header avec badge */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -180,6 +186,10 @@ export default function DashboardContent() {
       <div className="fixed inset-0 bg-[linear-gradient(rgba(0,102,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,102,255,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* Onboarding wizard — affiché par-dessus le dashboard si nécessaire */}
+        {onboardingChecked && showOnboarding && (
+          <OnboardingWizard onComplete={() => setShowOnboarding(false)} />
+        )}
         <OvertrainingAlert />
         <ModernDashboard />
       </div>

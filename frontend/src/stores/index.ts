@@ -40,7 +40,7 @@ interface AuthState {
   has_suunto: boolean;
   has_decathlon: boolean;
   
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, totpCode?: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => void;
   clearError: () => void;
@@ -61,10 +61,16 @@ export const useAuthStore = create<AuthState>()(
       has_suunto: false,
       has_decathlon: false,
 
-      login: async (email: string, password: string) => {
+      login: async (email: string, password: string, totpCode?: string) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await api.login(email, password);
+          const response = await api.login(email, password, totpCode);
+
+          // Le backend retourne { requires2FA: true } si 2FA activée et code non fourni
+          if ((response as unknown as Record<string, unknown>).requires2FA) {
+            set({ isLoading: false });
+            throw new Error('2FA_REQUIRED');
+          }
           api.setToken(response.token);
           if (response.refreshToken) {
             api.setRefreshToken(response.refreshToken);
