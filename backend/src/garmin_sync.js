@@ -92,17 +92,19 @@ async function callGarminApi(userId, options = {}) {
                     reject(new Error('Failed to parse Garmin data'));
                 }
             } else {
-                let errorMessage = errorOutput;
+                let errorMessage = errorOutput || output;
                 try {
-                    const errJson = JSON.parse(errorOutput);
-                    errorMessage = errJson.error || errorOutput;
+                    const errJson = JSON.parse(errorOutput || output);
+                    errorMessage = errJson.error || errorMessage;
                     if (errJson.rate_limited || errorMessage.includes('429')) {
-                        errorMessage = 'Garmin temporairement indisponible (trop de tentatives). Réessayez dans 15-30 minutes.';
+                        errorMessage = 'Garmin temporairement indisponible (IP rate-limitée). Les tokens seront réutilisés au prochain sync.';
+                    } else if (errJson.blocked) {
+                        errorMessage = 'Garmin bloque cette IP (Cloudflare 403). Réessayez dans quelques heures.';
                     } else if (errJson.auth_failed) {
                         errorMessage = 'Identifiants Garmin incorrects.';
                     }
                 } catch (e) { /* ignore JSON parse error on error output */ }
-                log(userId, `Python error (code ${code}): ${errorOutput.slice(0, 200)}`);
+                log(userId, `Python error (code ${code}): ${(errorOutput || output).slice(0, 300)}`);
                 reject(new Error(errorMessage));
             }
         });
