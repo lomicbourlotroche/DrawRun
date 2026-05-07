@@ -126,7 +126,9 @@ describe('Algorithm Robustness (Property-Based)', () => {
         fc.assert(
             fc.property(fc.double({ min: 10, max: 200 }), fc.integer({ min: 3, max: 21 }), (load, duration) => {
                 const result = Taper.calculateOptimalTaper(load, duration, 'marathon');
-                return result.plan.length === duration + 1 && 
+                // The algorithm caps actualDays at targetDays (14 for marathon)
+                const expectedLength = Math.min(duration, 14) + 1;
+                return result.plan.length === expectedLength && 
                        result.expectedGain >= 2 && 
                        result.expectedGain <= 5;
             })
