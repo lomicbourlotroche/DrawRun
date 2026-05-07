@@ -93,6 +93,7 @@ export { notificationsApi } from './notifications.api';
 export { racePlanningApi } from './race-planning.api';
 export { weatherApi } from './weather.api';
 export { shareApi } from './share.api';
+export { gearApi } from './gear.api';
 
 // ============================================================================
 // RETROCOMPATIBILITÉ - Ancien api.ts
@@ -126,6 +127,7 @@ import { racePlanningApi } from './race-planning.api';
 import { weatherApi } from './weather.api';
 import { shareApi } from './share.api';
 import { userConstantsApi } from './user-constants.api';
+import { gearApi } from './gear.api';
 import { client } from './client';
 
 // Création d'un objet api unifié pour rétrocompatibilité
@@ -153,9 +155,9 @@ export const api = {
   connectStrava: authApi.connectStrava,
   connectGarmin: authApi.connectGarmin,
   connectSuunto: authApi.connectSuunto,
-  disconnectStrava: authApi.disconnectStrava,
-  disconnectGarmin: authApi.disconnectGarmin,
-  disconnectSuunto: authApi.disconnectSuunto,
+  disconnectStrava: () => authApi.disconnectService('strava'),
+  disconnectGarmin: () => authApi.disconnectService('garmin'),
+  disconnectSuunto: () => authApi.disconnectService('suunto'),
 
   // Profile endpoints
   getProfile: profileApi.getProfile,
@@ -224,6 +226,7 @@ export const api = {
   matchActivityToSession: coachApi.matchActivityToSession,
   getPendingSessions: coachApi.getPendingSessions,
   getWizardDefaults: coachApi.getWizardDefaults,
+  calculateRaceStrategy: coachApi.calculateRaceStrategy,
 
   // Social endpoints
   getFriends: socialApi.getFriends,
@@ -327,6 +330,8 @@ export const api = {
   getMetrics: metricsApi.getMetrics,
   checkOvertraining: metricsApi.checkOvertraining,
   calculateTSS: metricsApi.calculateTSS,
+  logHrv: metricsApi.logHrv,
+  logSleep: metricsApi.logSleep,
 
   // Onboarding endpoints
   getOnboardingStatus: onboardingApi.getOnboardingStatus,
@@ -355,6 +360,13 @@ export const api = {
 
   // User Constants endpoint
   getUserConstants: userConstantsApi.get,
+
+  // Gear endpoints
+  getGear: gearApi.getGear,
+  createGear: gearApi.createGear,
+  updateGear: gearApi.updateGear,
+  deleteGear: gearApi.deleteGear,
+  linkGearToActivity: gearApi.linkToActivity,
 };
 
 // ============================================================================

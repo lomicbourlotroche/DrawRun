@@ -56,25 +56,38 @@ router.get('/weather', verifyToken, async (req, res) => {
 
     const userDb = await getUserDb(userId);
 
-    // Get activity details
-    const activityResult = userDb.exec(`
+    // Get activity details - use prepare + get to avoid SQL injection
+    const activityResult = userDb.prepare(`
       SELECT 
         id,
         start_date,
-        start_latlng,
-        json_extract(start_latlng, '$[0]') as lat,
-        json_extract(start_latlng, '$[1]') as lng
+        start_latlng
       FROM activities 
       WHERE id = ?
-    `, [activityId]);
-
-    if (!activityResult[0]?.values?.[0]) {
+    `).get([activityId]);
+    
+    if (!activityResult) {
       return res.status(404).json({ error: 'Activité non trouvée' });
     }
+    
+    // Extract lat/lng from start_latlng JSON
+    let lat, lng;
+    try {
+      const startLatLng = JSON.parse(activityResult.start_latlng);
+      if (Array.isArray(startLatLng) && startLatLng.length >= 2) {
+        lat = startLatLng[0];
+        lng = startLatLng[1];
+      }
+    } catch (e) { /* ignore parse error */ }
 
-    const activity = activityResult[0].values[0];
-    const lat = activity[3];
-    const lng = activity[4];
+
+    if (!lat || !lng) {
+      return res.status(404).json({ 
+        error: 'Aucune coordonnée GPS disponible pour cette activité' 
+      });
+    }
+    
+    const activity = activityResult;
 
     if (!lat || !lng) {
       return res.status(404).json({ 
@@ -86,15 +99,15 @@ router.get('/weather', verifyToken, async (req, res) => {
     const activityDate = new Date(startDate);
     const dateStr = activityDate.toISOString().split('T')[0];
 
-    // Check cache first
-    const cacheResult = userDb.exec(`
+    // Check cache first - use prepare + get
+    const cacheResult = userDb.prepare(`
       SELECT data, fetched_at 
       FROM weather_cache 
       WHERE activity_id = ?
-    `, [activityId]);
+    `).get([activityId]);
 
-    if (cacheResult[0]?.values?.[0]) {
-      const cachedData = JSON.parse(cacheResult[0].values[0][0]);
+    if (cacheResult?.data) {
+      const cachedData = JSON.parse(cacheResult.data);
       logger.info('[Weather] Cache hit for activity', { activityId });
       return res.json({ ...cachedData, cached: true });
     }
@@ -164,11 +177,11 @@ router.get('/weather', verifyToken, async (req, res) => {
         cached: false,
       };
 
-      // Cache the result
-      userDb.run(`
-        INSERT INTO weather_cache (activity_id, data, fetched_at)
-        VALUES (?, ?, ?)
-      `, [activityId, JSON.stringify(weatherData), new Date().toISOString()]);
+    // Cache the result - use prepare + run
+    userDb.prepare(`
+      INSERT OR REPLACE INTO weather_cache (activity_id, data, fetched_at)
+      VALUES (?, ?, ?)
+    `).run([activityId, JSON.stringify(weatherData), new Date().toISOString()]);
 
       logger.info('[Weather] Fetched and cached weather for activity', { 
         activityId, 

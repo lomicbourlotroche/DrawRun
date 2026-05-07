@@ -119,7 +119,7 @@ function securityLog(event, severity, details = {}) {
 function maskSensitiveData(obj) {
     if (!obj) return obj;
     const masked = { ...obj };
-    const sensitiveFields = ['password', 'password_hash', 'token', 'secret', 'apiKey', 'accessToken', 'refreshToken'];
+    const sensitiveFields = ['password', 'password_hash', 'token', 'secret', 'apiKey', 'accessToken', 'refreshToken', 'credentials', 'strava_token', 'garmin_token', 'suunto_token', 'decathlon_token', 'VAPID_PRIVATE_KEY'];
     
     for (const field of sensitiveFields) {
         if (masked[field]) {

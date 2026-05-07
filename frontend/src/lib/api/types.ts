@@ -113,6 +113,7 @@ export interface AlgoVdotResponse {
     halfMarathon: { time: string; pace: string };
     classicRaces: Array<{ distance: string; time: string; pace: string }>;
   };
+  trainingPaces?: Record<string, { min?: string; max?: string; pace?: string }>;
 }
 
 export interface AlgoPmcParams {
@@ -178,7 +179,16 @@ export interface AlgoReadinessResponse {
   color: string;
   label: string;
   advice: string;
-  factors: { pmc: boolean; hrv: boolean; sleep: number | null };
+  factors: {
+    pmc: boolean;
+    hrvValue?: number | null;
+    sleepHours?: number | null;
+    hrv?: number;
+    sleep?: number;
+    tsb?: number;
+    restingHR?: number;
+    stress?: number;
+  };
 }
 
 export interface AlgoTaperParams {
@@ -202,6 +212,21 @@ export interface AlgoCriticalPowerParams {
 }
 
 export interface AlgoTSSParams {
+  nutrition?: any;
+  biomechanics?: {
+    verticalOscillation: number;
+    groundContactTime: number;
+    stiffness: number;
+    verticalRatio: number;
+    stepLength: number;
+    cadence: number;
+    advice: Array<{
+      type: string;
+      message: string;
+      detail: string;
+      priority: 'high' | 'moderate' | 'low';
+    }>;
+  };
   duration?: number;
   intensityFactor?: number;
   avgHR?: number;

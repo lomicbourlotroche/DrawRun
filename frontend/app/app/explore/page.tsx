@@ -1,14 +1,16 @@
-/* eslint-disable unused-imports/no-unused-vars */
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { GlassCard, GlassCardContent, GlassCardHeader, GlassCardTitle, Button } from '@/components/ui';
-import { Map, Route, Trophy, Compass } from 'lucide-react';
+import { Map, Route, Trophy, Compass, AlertCircle } from 'lucide-react';
 import { SegmentList, useNearbySegments } from '@/components/features/explore/Segments';
 import { RouteList, useRoutes } from '@/components/features/explore/Routes';
+import { toast } from 'sonner';
 
 export default function ExplorePage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('segments');
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   
@@ -16,28 +18,27 @@ export default function ExplorePage() {
   const { routes, isLoading: routesLoading, fetchPublicRoutes } = useRoutes();
 
   useEffect(() => {
-    // Load public data initially
     fetchPublicSegments();
     fetchPublicRoutes();
   }, [fetchPublicSegments, fetchPublicRoutes]);
 
-  const handleLocateMe = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation({ lat: latitude, lng: longitude });
-          fetchNearbySegments(latitude, longitude);
-        },
-        (error) => {
-          /* géolocalisation refusée ou indisponible */
-          alert('Impossible d\'obtenir votre position');
-        }
-      );
-    } else {
-      alert('La géolocalisation n\'est pas supportée par votre navigateur');
+  const handleLocateMe = useCallback(() => {
+    if (!navigator.geolocation) {
+      toast.error('La géolocalisation n\'est pas supportée par votre navigateur');
+      return;
     }
-  };
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+        fetchNearbySegments(latitude, longitude);
+        toast.success('Position détectée — segments à proximité chargés');
+      },
+      () => {
+        toast.error('Impossible d\'obtenir votre position');
+      }
+    );
+  }, [fetchNearbySegments]);
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
@@ -70,6 +71,11 @@ export default function ExplorePage() {
                 <GlassCardTitle className="text-lg flex items-center gap-2">
                   <Map className="w-5 h-5" />
                   Segments à proximité
+                  {userLocation && (
+                    <span className="text-xs font-normal text-muted ml-1">
+                      ({userLocation.lat.toFixed(3)}, {userLocation.lng.toFixed(3)})
+                    </span>
+                  )}
                 </GlassCardTitle>
                 <Button onClick={handleLocateMe} size="sm">
                   Me localiser
@@ -81,8 +87,7 @@ export default function ExplorePage() {
                 segments={segments} 
                 isLoading={segmentsLoading}
                 onSegmentClick={(segment) => {
-                  // Navigate to segment detail
-                  window.location.href = `/app/explore/segments/${segment.id}`;
+                  router.push(`/app/explore/segments/${segment.id}`);
                 }}
               />
             </GlassCardContent>
@@ -104,8 +109,7 @@ export default function ExplorePage() {
                 routes={routes} 
                 isLoading={routesLoading}
                 onRouteClick={(route) => {
-                  // Navigate to route detail
-                  window.location.href = `/app/explore/routes/${route.id}`;
+                  router.push(`/app/explore/routes/${route.id}`);
                 }}
               />
             </GlassCardContent>

@@ -26,14 +26,16 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // TODO: In production, send to error tracking service (Sentry, etc.)
     logger.error('ErrorBoundary caught error', { 
       message: error.message,
       stack: error.stack,
       componentStack: errorInfo.componentStack 
     });
-    this.props.onError?.(error, errorInfo);
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo);
+    }
     this.setState({ errorInfo });
   }
 

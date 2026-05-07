@@ -16,6 +16,8 @@ import {
 import { useAuthStore, useDashboardStore } from '@/stores';
 import { ReadinessCard } from './ReadinessCard';
 import { RecommendationCard } from './RecommendationCard';
+import { InjuryRiskCard } from './InjuryRiskCard';
+import { GlassCard } from '@/components/ui';
 import type { Activity as ActivityType, PmcDataPoint } from '@/types';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -69,7 +71,7 @@ interface StatCardProps {
 
 function StatCard({ title, value, subtitle, icon, iconBg, trend }: StatCardProps) {
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.10)] transition-shadow duration-200">
+    <GlassCard className="p-5" hover>
       <div className="flex items-start justify-between mb-3">
         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${iconBg}`}>
           {icon}
@@ -81,7 +83,7 @@ function StatCard({ title, value, subtitle, icon, iconBg, trend }: StatCardProps
                 ? 'bg-green-50 text-green-600'
                 : trend < 0
                 ? 'bg-red-50 text-red-500'
-                : 'bg-slate-100 text-slate-500'
+                : 'bg-neutral-100 text-neutral-500'
             }`}
           >
             {trend > 0 ? (
@@ -95,12 +97,12 @@ function StatCard({ title, value, subtitle, icon, iconBg, trend }: StatCardProps
           </div>
         )}
       </div>
-      <p className="text-2xl font-bold text-slate-900 tabular-nums">{value}</p>
-      <p className="text-sm font-medium text-slate-900 mt-0.5">{title}</p>
-      <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>
-    </div>
-  );
-}
+       <p className="text-2xl font-bold text-neutral-900 tabular-nums">{value}</p>
+       <p className="text-sm font-medium text-neutral-900 mt-0.5">{title}</p>
+       <p className="text-xs text-neutral-400 mt-0.5">{subtitle}</p>
+     </GlassCard>
+   );
+ }
 
 interface ActivityRowProps {
   activity: ActivityType;
@@ -115,17 +117,17 @@ function ActivityRow({ activity }: ActivityRowProps) {
   return (
     <Link
       href={`/app/activities/${activity.id}`}
-      className="flex items-center justify-between p-3.5 rounded-xl hover:bg-slate-50 transition-colors duration-150 group"
+      className="flex items-center justify-between p-3.5 rounded-xl hover:bg-neutral-50 transition-colors duration-150 group"
     >
       <div className="flex items-center gap-3 min-w-0">
         <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 transition-colors">
           {getActivityIcon(activity.type)}
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-slate-900 truncate">
+          <p className="text-sm font-semibold text-neutral-900 truncate">
             {activity.title ?? 'Activité'}
           </p>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-neutral-400 mt-0.5">
             {dateStr ? formatDate(dateStr) : '—'}
             {durationS > 0 && ` · ${formatDuration(durationS)}`}
           </p>
@@ -135,11 +137,11 @@ function ActivityRow({ activity }: ActivityRowProps) {
       <div className="flex items-center gap-4 flex-shrink-0 ml-3">
         {distanceM > 0 && (
           <div className="text-right">
-            <p className="text-sm font-semibold text-slate-900 tabular-nums">
+            <p className="text-sm font-semibold text-neutral-900 tabular-nums">
               {formatDistance(distanceM)}
             </p>
             {elevation !== null && elevation !== undefined && elevation > 0 && (
-              <p className="text-xs text-slate-400 flex items-center justify-end gap-0.5">
+              <p className="text-xs text-neutral-400 flex items-center justify-end gap-0.5">
                 <Mountain className="w-3 h-3" />
                 {Math.round(elevation)} m
               </p>
@@ -222,10 +224,10 @@ export function ModernDashboard() {
 
       {/* Greeting */}
       <div className="relative">
-        <h2 className="text-2xl font-bold text-slate-900">
+        <h2 className="text-2xl font-bold text-neutral-900">
           {greeting}, {firstName} 👋
         </h2>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-neutral-500 mt-1">
           {new Date().toLocaleDateString('fr-FR', {
             weekday: 'long',
             day: 'numeric',
@@ -287,9 +289,9 @@ export function ModernDashboard() {
       {/* Main content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent activities */}
-        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-            <h3 className="text-base font-semibold text-slate-900">Activités récentes</h3>
+        <GlassCard className="lg:col-span-2" padding="none">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100/50">
+            <h3 className="text-base font-semibold text-neutral-900">Activités récentes</h3>
             <Link
               href="/app/activities"
               className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
@@ -305,22 +307,30 @@ export function ModernDashboard() {
               ))
             ) : (
               <div className="flex flex-col items-center justify-center py-10 text-center">
-                <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center mb-3">
-                  <Clock className="w-6 h-6 text-slate-400" />
+                <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center mb-3">
+                  <Clock className="w-6 h-6 text-neutral-400" />
                 </div>
-                <p className="text-sm font-medium text-slate-600">Aucune activité récente</p>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-sm font-medium text-neutral-600">Aucune activité récente</p>
+                <p className="text-xs text-neutral-400 mt-1">
                   Synchronisez vos services pour voir vos activités
                 </p>
               </div>
             )}
           </div>
-        </div>
+        </GlassCard>
 
         {/* Side panel */}
         <div className="space-y-5">
           {/* Readiness */}
           <ReadinessCard readiness={readiness} isLoading={isLoading} />
+
+          {/* Injury Risk (ACWR) */}
+          {pmcData.length > 0 && (
+            <InjuryRiskCard 
+              acwr={pmcData[pmcData.length - 1].acwr || (pmcData[pmcData.length - 1].atl / (pmcData[pmcData.length - 1].ctl || 1))} 
+              trend={pmcData.length > 7 ? (pmcData[pmcData.length - 1].acwr! > pmcData[pmcData.length - 8].acwr! ? 'up' : 'down') : 'stable'}
+            />
+          )}
 
           {/* Recommendation */}
           {recommendation && (
@@ -329,9 +339,11 @@ export function ModernDashboard() {
 
           {/* PMC summary if no recommendation */}
           {!recommendation && pmc && (
-            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">Métriques PMC</h3>
-              <div className="space-y-3">
+            <GlassCard className="p-0" padding="none">
+              <div className="px-5 py-4 border-b border-neutral-100/50">
+                <h3 className="text-sm font-semibold text-neutral-900">Métriques PMC</h3>
+              </div>
+              <div className="p-5 space-y-3">
                 {[
                   { label: 'CTL — Forme', value: pmc.ctl, color: 'bg-blue-500' },
                   { label: 'ATL — Fatigue', value: pmc.atl, color: 'bg-red-400' },
@@ -343,13 +355,13 @@ export function ModernDashboard() {
                 ].map((m) => (
                   <div key={m.label}>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-slate-500">{m.label}</span>
-                      <span className="font-semibold text-slate-900 tabular-nums">
+                      <span className="text-neutral-500">{m.label}</span>
+                      <span className="font-semibold text-neutral-900 tabular-nums">
                         {m.label.startsWith('TSB') && pmc.tsb < 0 ? '-' : ''}
                         {m.value}
                       </span>
                     </div>
-                    <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full ${m.color}`}
                         style={{ width: `${Math.min(100, (m.value / 150) * 100)}%` }}
@@ -358,7 +370,7 @@ export function ModernDashboard() {
                   </div>
                 ))}
               </div>
-            </div>
+            </GlassCard>
           )}
         </div>
       </div>

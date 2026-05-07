@@ -66,30 +66,37 @@ export const metricsApi = {
     message: string;
     recommendation?: string;
   }> {
-    return client.request('/api/overtraining/check');
+    return client.request('/api/algo/overtraining');
   },
 
   /**
    * Calcule le TSS (Training Stress Score)
    */
-  calculateTSS(params: CalculateTSSParams): Promise<{ 
-    tss: number | null; 
-    trimp: number | null; 
-    durationHours: number; 
-    intensityFactor: number | null 
+  calculateTSS(params: CalculateTSSParams): Promise<{
+    tss: number | null;
+    trimp: number | null;
+    durationHours: number;
+    intensityFactor: number | null;
   }> {
     const query = new URLSearchParams();
-    if (params.restingHR) query.set('restingHR', String(params.restingHR));
-    if (params.sex) query.set('sex', params.sex);
-    const queryStr = query.toString();
-    return client.request(`/api/tss/calculate?${queryStr}`, {
-      method: 'POST',
-      body: JSON.stringify({
-        durationSeconds: params.durationSeconds,
-        avgHR: params.avgHR,
-        thresholdHR: params.thresholdHR,
-        maxHR: params.maxHR,
-      }),
-    });
+    query.set('duration', String(params.durationSeconds / 60)); // Convert to minutes
+    if (params.avgHR) query.set('avgHR', String(params.avgHR));
+    if (params.thresholdHR) query.set('thresholdHR', String(params.thresholdHR));
+    if (params.maxHR) query.set('maxHR', String(params.maxHR));
+    return client.request(`/api/algo/tss?${query.toString()}`);
+  },
+
+  /**
+   * Enregistre le HRV
+   */
+  logHrv(value: number, date?: string): Promise<{ success: boolean; message: string }> {
+    return client.post('/api/metrics/hrv', { value, date });
+  },
+
+  /**
+   * Enregistre le sommeil
+   */
+  logSleep(value: number, date?: string): Promise<{ success: boolean; message: string }> {
+    return client.post('/api/metrics/sleep', { value, date });
   },
 };

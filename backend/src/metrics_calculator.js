@@ -84,17 +84,19 @@ async function calculateAndStoreMetrics(userId, userDb) {
             const analysis = SportAnalysis.analyze(activityData, profileData);
             
             // Mettre à jour l'activité si on a du TSS ou TRIMP
-            if (analysis.tss !== null || analysis.trimp !== null) {
+            if (analysis.tss !== null || analysis.trimp !== null || analysis.efficiencyFactor !== null) {
                 await dbRunUser(userDb, `
                     UPDATE activities SET 
                         tss = COALESCE(?, tss),
                         trimp = COALESCE(?, trimp),
-                        intensity_factor = COALESCE(?, intensity_factor)
+                        intensity_factor = COALESCE(?, intensity_factor),
+                        efficiency_factor = COALESCE(?, efficiency_factor)
                     WHERE id = ?
                 `, [
                     analysis.tss ?? activity.tss,
                     analysis.trimp ?? activity.trimp,
                     analysis.intensityFactor ?? activity.intensity_factor,
+                    analysis.efficiencyFactor ?? null,
                     activity.id
                 ]);
                 metricsCalculated++;
@@ -143,8 +145,47 @@ async function calculateAndStoreMetrics(userId, userDb) {
             if (pmcData.length > 0) {
                 const latest = pmcData[pmcData.length - 1];
                 
+                // Récupérer les dernières métriques HRV (28 jours) et Sommeil pour la readiness
+                const hrvHistory = await dbAllUser(userDb, `
+                    SELECT metric_value as rmssd, recorded_at as date 
+                    FROM performance_metrics 
+                    WHERE metric_type = 'hrv' 
+                    ORDER BY recorded_at DESC 
+                    LIMIT 28
+                `);
+                
+                const lastSleep = await dbGetUser(userDb, "SELECT metric_value FROM performance_metrics WHERE metric_type = 'sleep' ORDER BY recorded_at DESC LIMIT 1");
+
+                // Calculer la baseline HRV dynamique
+                const hrvBaseline = HRV.calculateDynamicBaseline(hrvHistory.reverse());
+                const currentHrv = hrvHistory.length > 0 ? hrvHistory[hrvHistory.length - 1].rmssd : 0;
+
+                // Estimer la forme (readiness) avec analyse de récupération HRV
+                let readiness = 70;
+                if (hrvBaseline && currentHrv > 0) {
+                    const hrvAnalysis = HRV.analyzeRecovery(currentHrv, hrvBaseline.baseline, lastSleep?.metric_value || 7);
+                    readiness = hrvAnalysis.readiness;
+                    
+                    // Ajuster selon le TSB (Training Stress Balance)
+                    const tsbFactor = MathUtils.clamp(1 + (latest.tsb / 100), 0.7, 1.3);
+                    readiness = Math.round(MathUtils.clamp(readiness * tsbFactor, 10, 100));
+                } else {
+                    const result = PMC.estimateReadiness(
+                        pmcData,
+                        currentHrv,
+                        lastSleep?.metric_value || 7
+                    );
+                    readiness = result.readiness;
+                }
+                
                 // Stocker les métriques PMC
                 const today = new Date().toISOString().split('T')[0];
+                
+                await dbRunUser(userDb, `
+                    INSERT OR REPLACE INTO performance_metrics
+                    (user_id, metric_type, metric_value, recorded_at, source)
+                    VALUES (?, 'readiness', ?, ?, 'calculated')
+                `, [userId, readiness, today]);
                 
                 await dbRunUser(userDb, `
                     INSERT OR REPLACE INTO performance_metrics
@@ -164,16 +205,30 @@ async function calculateAndStoreMetrics(userId, userDb) {
                     VALUES (?, 'tsb', ?, ?, 'calculated')
                 `, [userId, latest.tsb, today]);
                 
-                // Calculer ACWR
-                const ctl = latest.ctl;
-                const atl = latest.atl;
-                const acwr = ctl > 0 ? atl / ctl : 0;
+                // Calculer ACWR (Acute:Chronic Workload Ratio)
+                // Modèle EWMA (Williams et al. 2017) plus précis que le ratio simple
+                const dailyLoads = pmcData.map(d => d.tss);
+                const acwr = PMC.calculateACWR_EWMA(dailyLoads) || 1;
+                
+                // Calculer aussi le ratio simple pour comparaison ou fallback
+                const last28Days = pmcData.slice(-28);
+                const avgLoad28 = last28Days.reduce((sum, d) => sum + d.tss, 0) / Math.max(1, last28Days.length);
+                const avgLoad7 = pmcData.slice(-7).reduce((sum, d) => sum + d.tss, 0) / Math.max(1, Math.min(7, pmcData.length));
                 
                 await dbRunUser(userDb, `
                     INSERT OR REPLACE INTO performance_metrics
                     (user_id, metric_type, metric_value, recorded_at, source)
                     VALUES (?, 'acwr', ?, ?, 'calculated')
                 `, [userId, Math.round(acwr * 100) / 100, today]);
+
+                // Update pmc_history table if it exists
+                try {
+                    await dbRunUser(userDb, `
+                        INSERT OR REPLACE INTO pmc_history
+                        (user_id, date, ctl, atl, tsb, acute_load, chronic_load, acwr)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    `, [userId, today, latest.ctl, latest.atl, latest.tsb, avgLoad7, avgLoad28, acwr]);
+                } catch (_) {}
                 
                 // Stocker les données PMC complètes
                 await dbRunUser(userDb, `

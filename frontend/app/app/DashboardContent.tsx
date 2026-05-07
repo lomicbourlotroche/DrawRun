@@ -9,7 +9,9 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useDashboardStore } from '@/stores';
+import type { Readiness } from '@/types';
 import { api } from '@/lib/api';
+import { logger } from '@/lib/logger';
 import {
   OvertrainingAlert,
   ModernDashboard,
@@ -71,8 +73,8 @@ export default function DashboardContent() {
 
       let hasPmcData = false;
 
-      if (activities.status === 'fulfilled') {
-        const acts = activities.value;
+      if (activities.status === 'fulfilled' && activities.value) {
+        const acts = activities.value.data;
         setRecentActivities(acts.slice(0, 5));
         setHasData(acts.length > 0);
       }
@@ -93,20 +95,22 @@ export default function DashboardContent() {
       if (readinessData.status === 'fulfilled' && readinessData.value) {
         const readinessResult = readinessData.value;
         // Map the API response to the Readiness type
-        const readinessWithScore = {
-          score: readinessResult.readiness,
-          status: readinessResult.status as 'excellent' | 'good' | 'fair' | 'poor',
+        const readinessWithScore: any = {
+          score: readinessResult.readiness ?? (typeof readinessResult === 'number' ? readinessResult : 70),
+          status: (readinessResult.status as 'excellent' | 'good' | 'fair' | 'poor') || 'good',
           factors: {
-            hrv: readinessResult.factors.hrv ? 80 : 60, // Default values if not provided
-            sleep: readinessResult.factors.sleep || 7,
-            restingHR: 60,
-            stress: 3
+            hrv: readinessResult.factors?.hrv ?? (readinessResult.factors?.hrvValue ? 80 : 60),
+            sleep: readinessResult.factors?.sleep ?? (readinessResult.factors?.sleepHours ? 80 : 70),
+            restingHR: readinessResult.factors?.restingHR ?? 60,
+            stress: readinessResult.factors?.stress ?? 30
           }
         };
-        setReadiness(readinessWithScore);
+        setReadiness(readinessWithScore as Readiness);
       }
-    } catch {
-      /* silencieux */
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message) {
+        logger.error(`Dashboard data load error: ${error.message}`);
+      }
     } finally {
       setLoading(false);
     }

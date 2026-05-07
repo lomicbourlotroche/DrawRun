@@ -43,8 +43,8 @@ export default function ActivitiesContent() {
     }
     setLoading(true);
     try {
-      const data = await api.getActivities();
-      setActivities(data);
+      const result = await api.getActivities();
+      setActivities(result.data);
     } catch (error: unknown) {
       const apiError = error as { status?: number };
       if (apiError.status !== 401) {

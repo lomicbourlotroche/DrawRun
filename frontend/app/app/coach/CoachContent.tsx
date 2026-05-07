@@ -201,11 +201,11 @@ export default function CoachContent() {
     setIsPlanLoading(true);
     try {
       // GET /api/coach/plan returns { plan, sessions, planId } or null
-      const data = await api.getActivePlan() as { plan?: Record<string, unknown>; planId?: number } | null;
+      const data = await api.getActivePlan();
       if (data?.plan && data.planId) {
         // Fetch full plan structure via GET /api/coach/plan/:id
         const fullPlan = await api.getPlan(data.planId).catch(() => null);
-        setActivePlan((fullPlan as unknown as TrainingPlan) ?? null);
+        setActivePlan(fullPlan?.plan ?? null);
       } else {
         setActivePlan(null);
       }

@@ -7,6 +7,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent, Button, Input, GradientBadge, Avatar, Modal } from '@/components/ui';
 import { useAuthStore, useSyncStore } from '@/stores';
 import { api } from '@/lib/api';
@@ -220,13 +221,15 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
         <GlassCardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="relative group">
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={user?.name}
-                  className="w-16 h-16 rounded-full object-cover border-2 border-border"
-                />
-              ) : (
+                {avatarUrl ? (
+                  <Image
+                    src={avatarUrl}
+                    alt={user?.name || 'Avatar'}
+                    width={64}
+                    height={64}
+                    className="w-16 h-16 rounded-full object-cover border-2 border-border"
+                  />
+                ) : (
                 <Avatar name={user?.name} size="xl" />
               )}
               <label

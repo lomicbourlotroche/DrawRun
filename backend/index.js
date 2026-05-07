@@ -33,17 +33,10 @@ initializeTracing({
 // ===========================================================================
 require('dotenv').config({ path: require('path').join(__dirname, '.env'), override: false });
 
-// Fallback: read .env manually if JWT_SECRET is still missing
+// Fail fast if JWT_SECRET is missing (no fallback)
 if (!process.env.JWT_SECRET) {
-    try {
-        const fs = require('fs');
-        const envPath = '/home/drawrun/DrawRun/backend/.env';
-        const envContent = fs.readFileSync(envPath, 'utf8');
-        envContent.split('\n').forEach(line => {
-            const [key, ...vals] = line.split('=');
-            if (key && vals.length) process.env[key.trim()] = vals.join('=').trim();
-        });
-    } catch (e) { /* ignore */ }
+    console.error('FATAL: JWT_SECRET is required. Set it in .env or environment.');
+    process.exit(1);
 }
 
 // ============================================================================
@@ -143,9 +136,11 @@ const database = require('./src/database');
         const exploreRoutes = require('./src/routes/explore');
         const notificationsRoutes = require('./src/routes/notifications');
         const racePlanningRoutes = require('./src/routes/race_planning');
+        const racePlannerRoutes = require('./src/routes/race_planner');
         const weatherRoutes = require('./src/routes/weather');
         const shareRoutes = require('./src/routes/share');
         const userConstantsRoutes = require('./src/routes/user-constants');
+        const gearRoutes = require('./src/routes/gear');
         
         // ============================================================================
         // EXPRESS SERVER
@@ -301,69 +296,22 @@ const database = require('./src/database');
         app.use('/api/tss', verifyToken, userBasedLimiter, cacheMiddleware(300), tssRoutes);
         app.use('/api/social', verifyToken, userBasedLimiter, cacheMiddleware(60), socialRoutes);
         app.use('/api/coach', verifyToken, sensitiveUserLimiter, cacheMiddleware(300), coachRoutes);
+        app.use('/api/coach/race-planner', verifyToken, sensitiveUserLimiter, noCacheMiddleware, racePlannerRoutes);
         app.use('/api/explore', verifyToken, userBasedLimiter, cacheMiddleware(600), exploreRoutes);
         app.use('/api/notifications', verifyToken, userBasedLimiter, noCacheMiddleware, notificationsRoutes);
         app.use('/api/race-planning', verifyToken, userBasedLimiter, noCacheMiddleware, racePlanningRoutes);
         app.use('/api/user/constants', verifyToken, userBasedLimiter, cacheMiddleware(300), userConstantsRoutes);
+        app.use('/api/gear', verifyToken, userBasedLimiter, noCacheMiddleware, gearRoutes);
         
         // Legacy route aliases (pour compatibilité)
         app.use('/api/recommendations', verifyToken, pmcRoutes);
-        
-        // ============================================================================
-        // GITHUB WEBHOOK — Auto-deploy on push
-        // ============================================================================
-        
-        app.post('/webhook', express.json({ limit: '10mb' }), (req, res) => {
-            const signature = req.headers['x-hub-signature-256'];
-            const secret = process.env.WEBHOOK_SECRET || 'Drawrun';
-            
-            if (!signature) {
-                logger.warn('Webhook: No signature provided');
-                return res.status(401).send('No signature');
-            }
-            
-            const hmac = require('crypto').createHmac('sha256', secret);
-            hmac.update(JSON.stringify(req.body));
-            const digest = 'sha256=' + hmac.digest('hex');
-            
-            if (signature !== digest) {
-                logger.warn('Webhook: Invalid signature');
-                return res.status(401).send('Invalid signature');
-            }
-            
-            // Verify this is a push to main branch
-            const payload = req.body;
-            if (payload.ref !== 'refs/heads/main') {
-                logger.info(`Webhook: Ignoring push to ${payload.ref}`);
-                return res.status(200).send('Ignored');
-            }
-            
-            logger.info('Webhook: Deploy triggered by GitHub push');
-            
-            // Trigger deploy script
-            const { exec } = require('child_process');
-            const deployScript = '/home/drawrun/deploy.sh';
-            
-            exec(`bash ${deployScript}`, (error, stdout, stderr) => {
-                if (error) {
-                    logger.error(`Webhook deploy error: ${error.message}`);
-                    return;
-                }
-                if (stderr) {
-                    logger.error(`Webhook deploy stderr: ${stderr}`);
-                }
-                logger.info(`Webhook deploy success: ${stdout}`);
-            });
-            
-            res.status(200).send('Deploy triggered');
-        });
         
         // ============================================================================
         // ERROR HANDLER
         // ============================================================================
         
         app.use((err, req, res, _next) => {
-            logger.error('Unhandled error:', { message: err.message, stack: err.stack });
+            logger.error('Unhandled error:', { message: err.message });
             const isProd = process.env.NODE_ENV === 'production';
             res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
         });

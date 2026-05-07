@@ -20,6 +20,7 @@ const { getUserDb, dbGetMain, dbRunMain, dbGetUser, dbRunUser, dbAllUser } = req
 // Playwright est optionnel — non disponible en production sans installation séparée
 let chromium;
 try {
+    // eslint-disable-next-line node/no-extraneous-require, import/no-extraneous-dependencies
     chromium = require('playwright').chromium;
 } catch (_) {
     chromium = null;
@@ -341,48 +342,34 @@ async function performSync(userId) {
                 if (batch.length < perPage) break;
                 pageNum++;
 
-                // Rate limiting - be respectful
-                await page.waitForTimeout(1000);
+                // Use batch processing - no per-activity sleep
             }
 
             log(userId, `Found ${allActivities.length} activities`);
 
-            for (const activity of allActivities) {
-                const sourceId = activity.id ? String(activity.id) : null;
-                if (!sourceId) continue;
+        const activitiesToProcess = allActivities
+            .filter(activity => activity.id)
+            .map(activity => ({
+                source_id: String(activity.id),
+                name: activity.name || 'Strava Activity',
+                type: mapStravaType(activity.type),
+                start_date: activity.start_date,
+                distance: activity.distance || 0,
+                moving_time: activity.moving_time || activity.elapsed_time || 0,
+                average_heartrate: activity.average_heartrate || null,
+                max_heartrate: activity.max_heartrate || null,
+                average_speed: activity.average_speed || null,
+                max_speed: activity.max_speed || null,
+                calories: activity.calories || null,
+            }));
 
-                const existing = await dbGetUser(userDb,
-                    'SELECT id FROM activities WHERE source = "strava" AND source_id = ?',
-                    [sourceId]
-                );
+        // Batch process
+        const { processActivityList } = require('./sync_utils');
+        const result = await processActivityList(userDb, 'strava', activitiesToProcess,
+            (sourceId) => callStravaApi(userId, { mode: 'activity', id: sourceId })
+        );
 
-                const isNew = !existing;
-
-                await dbRunUser(userDb, `
-                    INSERT OR REPLACE INTO activities
-                    (source, source_id, name, distance, moving_time, elapsed_time,
-                     total_elevation_gain, type, start_date,
-                     average_speed, max_speed, average_heartrate, max_heartrate, calories)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `, [
-                    'strava', sourceId, activity.name || 'Strava Activity',
-                    activity.distance, activity.moving_time, activity.elapsed_time,
-                    activity.total_elevation_gain, mapStravaType(activity.type),
-                    activity.start_date_local || activity.start_date,
-                    activity.average_speed, activity.max_speed,
-                    activity.average_heartrate, activity.max_heartrate,
-                    activity.calories
-                ]);
-
-                if (isNew) {
-                    totalImported++;
-                    // Fetch streams for new activities
-                    try {
-                        await page.waitForTimeout(500); // Rate limit
-                        const streams = await getActivityStreams(page, sourceId);
-                        if (streams && Object.keys(streams).length > 0) {
-                            totalStreams++;
-                        }
+        importedCount += result.imported;
                     } catch (streamErr) {
                         // Streams may not exist for all activities
                     }

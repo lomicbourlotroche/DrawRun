@@ -87,7 +87,7 @@ export const authApi = {
    * Mot de passe oublié - envoi code
    */
   forgotPassword(email: string): Promise<{ success: boolean }> {
-    return client.request('/api/auth/forgot-password', {
+    return client.request('/api/auth/forgot-password/request', {
       method: 'POST',
       body: JSON.stringify({ email }),
     });
@@ -97,7 +97,7 @@ export const authApi = {
    * Réinitialisation mot de passe avec code
    */
   resetPassword(email: string, code: string, newPassword: string): Promise<{ success: boolean }> {
-    return client.request('/api/auth/reset-password', {
+    return client.request('/api/auth/forgot-password/confirm', {
       method: 'POST',
       body: JSON.stringify({ email, code, newPassword }),
     });
@@ -144,7 +144,7 @@ export const authApi = {
    * Suppression du compte utilisateur
    */
   deleteAccount(password: string): Promise<{ success: boolean; message?: string }> {
-    return client.request('/api/auth/delete_account', {
+    return client.request('/api/auth/delete-account', {
       method: 'POST',
       body: JSON.stringify({ password }),
     });
@@ -154,9 +154,15 @@ export const authApi = {
    * Déconnexion d'un service (Strava, Garmin, etc.)
    */
   disconnectService(service: string): Promise<{ success: boolean }> {
-    return client.request(`/api/auth/disconnect/${service}`, {
-      method: 'POST',
-    });
+    const endpoints: Record<string, string> = {
+      strava: '/api/sync/strava/clear-session',
+      garmin: '/api/sync/garmin/clear-tokens',
+      suunto: '/api/sync/suunto/clear-token',
+      decathlon: '/api/sync/decathlon/clear-token',
+    };
+    const endpoint = endpoints[service.toLowerCase()];
+    if (!endpoint) throw new Error(`Unknown service: ${service}`);
+    return client.request(endpoint, { method: 'POST' });
   },
 
   /**
@@ -189,30 +195,4 @@ export const authApi = {
     });
   },
 
-  /**
-   * Déconnexion Strava
-   */
-  disconnectStrava(): Promise<{ success: boolean }> {
-    return client.request('/api/auth/disconnect/strava', {
-      method: 'POST',
-    });
-  },
-
-  /**
-   * Déconnexion Garmin
-   */
-  disconnectGarmin(): Promise<{ success: boolean }> {
-    return client.request('/api/auth/disconnect/garmin', {
-      method: 'POST',
-    });
-  },
-
-  /**
-   * Déconnexion Suunto
-   */
-  disconnectSuunto(): Promise<{ success: boolean }> {
-    return client.request('/api/auth/disconnect/suunto', {
-      method: 'POST',
-    });
-  },
 };

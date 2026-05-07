@@ -261,7 +261,7 @@ describe('API Client', () => {
         `${API_BASE_URL}/api/activities`,
         expect.any(Object)
       );
-      expect(result).toEqual(mockActivities);
+      expect(result).toEqual(mockActivities.data);
     });
 
     it('should create activity', async () => {

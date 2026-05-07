@@ -4,7 +4,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button, Input, Badge, Avatar, Skeleton } from '@/components/ui';
 import { api } from '@/lib/api';
-import type { SocialFeedItem } from '@/types';
+import type { 
+  SocialFeedItem, 
+  Friend, 
+  FriendRequest, 
+  UserSearchResult, 
+  LeaderboardEntry, 
+  Group 
+} from '@/types';
 import { useNotificationsStore } from '@/stores';
 import { 
   Users, UserPlus, Search, Trophy, Target, MessageCircle, 
@@ -17,10 +24,10 @@ import { toast } from 'sonner';
 // ============================================================================
 
 function FriendsTab() {
-  const [friends, setFriends] = useState<any[]>([]);
-  const [requests, setRequests] = useState<any[]>([]);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadFriends = useCallback(async () => {
@@ -123,7 +130,7 @@ function FriendsTab() {
                     </div>
                     <div>
                       <p className="font-semibold">{user.name}</p>
-                      <p className="text-xs text-muted">Membre depuis {new Date(user.memberSince).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</p>
+                      <p className="text-xs text-muted">Membre depuis {new Date(user.memberSince || user.member_since || '').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</p>
                     </div>
                   </div>
                   <Button size="sm" className="rounded-xl" onClick={() => handleAddFriend(user.id)}>
@@ -147,7 +154,7 @@ function FriendsTab() {
           </div>
           <div className="grid gap-2">
             {requests.map((req) => (
-              <div key={req.user_id} className="p-4 bg-gradient-to-r from-orange-500/10 to-amber-500/5 border border-orange-500/20 rounded-2xl">
+              <div key={req.userId || req.user_id || 0} className="p-4 bg-gradient-to-r from-orange-500/10 to-amber-500/5 border border-orange-500/20 rounded-2xl">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <Avatar name={req.name} size="md" />
@@ -157,10 +164,10 @@ function FriendsTab() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" className="rounded-xl bg-green-500 hover:bg-green-600" onClick={() => handleAccept(req.user_id)}>
+                    <Button size="sm" className="rounded-xl bg-green-500 hover:bg-green-600" onClick={() => handleAccept(req.userId || req.user_id || 0)}>
                       <Check className="w-4 h-4" />
                     </Button>
-                    <Button size="sm" variant="ghost" className="rounded-xl text-muted hover:text-danger" onClick={() => handleRemove(req.user_id)}>
+                    <Button size="sm" variant="ghost" className="rounded-xl text-muted hover:text-danger" onClick={() => handleRemove(req.userId || req.user_id || 0)}>
                       <X className="w-4 h-4" />
                     </Button>
                   </div>
@@ -195,7 +202,7 @@ function FriendsTab() {
         ) : (
           <div className="grid gap-2">
             {friends.map((friend) => (
-              <div key={friend.friend_id} className="group p-4 bg-card border border-border rounded-2xl hover:border-primary/30 hover:shadow-md transition-all">
+              <div key={friend.id || friend.friend_id || friend.user_id || 0} className="group p-4 bg-card border border-border rounded-2xl hover:border-primary/30 hover:shadow-md transition-all">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="relative">
@@ -204,10 +211,10 @@ function FriendsTab() {
                     </div>
                     <div>
                       <p className="font-semibold">{friend.name}</p>
-                      <p className="text-xs text-muted">Amis depuis {new Date(friend.accepted_at).toLocaleDateString('fr-FR')}</p>
+                      <p className="text-xs text-muted">Amis depuis {new Date(friend.accepted_at || friend.created_at || '').toLocaleDateString('fr-FR')}</p>
                     </div>
                   </div>
-                  <Button size="sm" variant="ghost" className="rounded-xl opacity-0 group-hover:opacity-100 transition-opacity text-muted hover:text-danger" onClick={() => handleRemove(friend.friend_id)}>
+                  <Button size="sm" variant="ghost" className="rounded-xl opacity-0 group-hover:opacity-100 transition-opacity text-muted hover:text-danger" onClick={() => handleRemove(friend.id || friend.user_id || 0)}>
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
@@ -372,7 +379,7 @@ function FeedTab() {
 // ============================================================================
 
 function LeaderboardTab() {
-  const [entries, setEntries] = useState<any[]>([]);
+  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [category, setCategory] = useState('distance');
   const [period, setPeriod] = useState('week');
   const [isLoading, setIsLoading] = useState(true);
@@ -520,7 +527,7 @@ function LeaderboardTab() {
 // ============================================================================
 
 function GroupsTab() {
-  const [groups, setGroups] = useState<any[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
@@ -685,7 +692,7 @@ function GroupsTab() {
                 </div>
                 <div className="flex gap-2">
                   {group.invite_code && (
-                    <Button size="sm" variant="ghost" className="rounded-xl" onClick={() => copyCode(group.invite_code)}>
+                    <Button size="sm" variant="ghost" className="rounded-xl" onClick={() => copyCode(group.invite_code || group.inviteCode || '')}>
                       <Copy className="w-4 h-4" />
                     </Button>
                   )}

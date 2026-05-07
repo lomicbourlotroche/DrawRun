@@ -33,15 +33,19 @@ export const profileApi = {
   },
 
   /**
-   * Récupère le profil étendu
+   * Upload avatar photo (base64)
    */
+   uploadAvatar(imageData: string): Promise<{ success: boolean; avatar_url: string }> {
+    return client.request('/api/profile/avatar', {
+      method: 'POST',
+      body: JSON.stringify({ avatar: imageData }),
+    });
+  },
+
   getExtendedProfile(): Promise<Record<string, unknown>> {
     return client.request('/api/profile/extended');
   },
 
-  /**
-   * Met à jour le profil étendu
-   */
   updateExtendedProfile(data: Record<string, unknown>): Promise<{ success: boolean }> {
     return client.request('/api/profile/extended', {
       method: 'PUT',
@@ -49,27 +53,12 @@ export const profileApi = {
     });
   },
 
-  /**
-   * Récupère les informations athlète
-   */
-  getAthlete(): Promise<{ id: number; email: string; strava_athlete_id?: number }> {
-    return client.request('/api/athlete');
+  getAthlete(): Promise<Record<string, unknown>> {
+    return client.request('/api/profile/athlete');
   },
 
-  /**
-   * Récupère les statistiques athlète
-   */
   getAthleteStats(): Promise<AthleteStats> {
-    return client.request('/api/athlete/stats');
+    return client.request('/api/profile/athlete/stats');
   },
 
-  /**
-   * Upload avatar photo (base64)
-   */
-  uploadAvatar(imageData: string): Promise<{ success: boolean; avatar_url: string }> {
-    return client.request('/api/profile/avatar', {
-      method: 'POST',
-      body: JSON.stringify({ avatar: imageData }),
-    });
-  },
 };

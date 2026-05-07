@@ -48,12 +48,12 @@ export function Modal({
 
   if (!isOpen) return null;
 
-  const sizes = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-lg',
-    xl: 'max-w-xl',
-  };
+   const sizes = {
+     sm: 'max-w-[calc(100vw-2rem)] sm:max-w-sm',
+     md: 'max-w-[calc(100vw-2rem)] sm:max-w-md',
+     lg: 'max-w-[calc(100vw-2rem)] lg:max-w-lg',
+     xl: 'max-w-[calc(100vw-2rem)] lg:max-w-xl',
+   };
 
   const modalContent = (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

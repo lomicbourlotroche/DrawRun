@@ -261,33 +261,17 @@ const MIGRATIONS = [
                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             `);
-            db.run('CREATE INDEX IF NOT EXISTS idx_comments_activity ON activity_comments(activity_id)');
-            db.run('CREATE INDEX IF NOT EXISTS idx_comments_user ON activity_comments(user_id)');
-        },
-    },
-    {
-        version: '007_add_activity_photos',
-        description: 'Add activity_photos table for social features',
-        up: (db) => {
-            db.run(`
-                CREATE TABLE IF NOT EXISTS activity_photos (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    activity_id INTEGER NOT NULL,
-                    user_id INTEGER NOT NULL,
-                    url TEXT NOT NULL,
-                    caption TEXT,
-                    lat REAL,
-                    lng REAL,
-                    timestamp DATETIME,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-                )
-            `);
-            db.run('CREATE INDEX IF NOT EXISTS idx_photos_activity ON activity_photos(activity_id)');
-        },
-    },
-
-    {
-        version: '009_add_social_feed',
+             db.run('CREATE INDEX IF NOT EXISTS idx_comments_activity ON activity_comments(activity_id)');
+             db.run('CREATE INDEX IF NOT EXISTS idx_comments_user ON activity_comments(user_id)');
+             // Additional performance indexes
+             try { db.run('CREATE INDEX IF NOT EXISTS idx_activities_source ON activities(source, source_id)'); } catch (_) {}
+             try { db.run('CREATE INDEX IF NOT EXISTS idx_activities_start_date ON activities(start_date DESC)'); } catch (_) {}
+             try { db.run('CREATE INDEX IF NOT EXISTS idx_metrics_type ON performance_metrics(metric_type, recorded_at DESC)'); } catch (_) {}
+             try { db.run('CREATE INDEX IF NOT EXISTS idx_metrics_user ON performance_metrics(user_id, metric_type)'); } catch (_) {}
+         },
+     },
+     {
+         version: '009_add_social_feed',
         description: 'Add social feed tables',
         up: (db) => {
             db.run(`
@@ -934,6 +918,8 @@ function initUserSchema(userDb) {
             is_race INTEGER DEFAULT 0,
             is_commute INTEGER DEFAULT 0,
             is_manual INTEGER DEFAULT 0,
+            gear_id INTEGER,
+            efficiency_factor REAL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(source, source_id)
@@ -1114,6 +1100,24 @@ function initUserSchema(userDb) {
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
+
+    userDb.run(`
+        CREATE TABLE IF NOT EXISTS gear (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            type TEXT NOT NULL,
+            brand TEXT,
+            model TEXT,
+            distance_km REAL DEFAULT 0,
+            max_distance_km REAL,
+            is_active INTEGER DEFAULT 1,
+            is_default INTEGER DEFAULT 0,
+            purchased_at DATE,
+            retired_at DATE,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
 }
 
 function ensureUserSchemaCompatibility(userDb) {
@@ -1196,6 +1200,21 @@ function ensureUserSchemaCompatibility(userDb) {
             nutrition_strategy TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`,
+        `CREATE TABLE IF NOT EXISTS gear (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            type TEXT NOT NULL,
+            brand TEXT,
+            model TEXT,
+            distance_km REAL DEFAULT 0,
+            max_distance_km REAL,
+            is_active INTEGER DEFAULT 1,
+            is_default INTEGER DEFAULT 0,
+            purchased_at DATE,
+            retired_at DATE,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`,
     ];
 
     for (const stmt of missingTables) {
@@ -1204,6 +1223,18 @@ function ensureUserSchemaCompatibility(userDb) {
         } catch (_) {
             // Table already exists
         }
+    }
+
+    // Add new columns to activities
+    const activityUpdates = [
+        'ALTER TABLE activities ADD COLUMN gear_id INTEGER',
+        'ALTER TABLE activities ADD COLUMN efficiency_factor REAL',
+    ];
+
+    for (const statement of activityUpdates) {
+        try {
+            userDb.run(statement);
+        } catch (_) {}
     }
 
     // Only run UPDATE when there are rows that actually need migration

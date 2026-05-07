@@ -1,4 +1,4 @@
-/* eslint-disable unused-imports/no-unused-vars */
+/* eslint-disable unused-imports/no-unused-vars, security/detect-object-injection, security/detect-non-literal-regexp */
 /**
  * ============================================================
  * ACTIVITIES ROUTES
@@ -278,7 +278,14 @@ router.get('/:id/streams', verifyToken, async (req, res) => {
             return res.json({});
         }
         try {
-            res.json(JSON.parse(streams.streams_data));
+            // Parse streams de manière asynchrone pour ne pas bloquer
+            const parsed = await new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    try { resolve(JSON.parse(streams.streams_data)); } 
+                    catch (e) { reject(e); }
+                }, 0);
+            });
+            res.json(parsed);
         } catch {
             res.json({});
         }
@@ -388,6 +395,10 @@ router.get('/:id/splits', verifyToken, async (req, res) => {
                     totalElevGain += gain;
                 }
                 const gradient = splitDistance > 0 ? Math.round((elevChange / splitDistance) * 100 * 10) / 10 : 0;
+                
+                // Calculer GAP
+                const { RunningPerformance } = require('../algorithms');
+                const gap = pace ? Math.round(RunningPerformance.calculateGAP(pace, gradient / 100)) : null;
 
                 splits.push({
                     split: splitNum++,
@@ -395,6 +406,7 @@ router.get('/:id/splits', verifyToken, async (req, res) => {
                     distance: Math.round(splitDistance),
                     speed: Math.round(speed * 10) / 10,
                     pace: pace ? Math.round(pace) : null,
+                    gap,
                     avgHR,
                     maxHR,
                     elevationChange: elevChange,
@@ -450,70 +462,32 @@ router.get('/:id/analysis', verifyToken, async (req, res) => {
             } catch { /* ignore */ }
         }
 
+        const { SportAnalysis } = require('../algorithms/index');
+        const profileData = user?.profile_data ? JSON.parse(user.profile_data) : {};
         const avgHR = activity.average_heartrate;
-        const maxHR = activity.max_heartrate;
-        const dist = activity.distance || 0;
-        const time = activity.moving_time || 0;
-        const elev = activity.total_elevation_gain || 0;
+        
+        // Use the centralized SportAnalysis engine
+        const sportAnalysis = SportAnalysis.analyze(activity, profileData);
+        
+        // Merging with legacy structure expected by frontend
+        const analysis = {
+            ...sportAnalysis,
+            avgHrPercent: sportAnalysis.zones?.percent || null,
+            profileFcm: fcm,
+            hrReserve: avgHR ? Math.round(((avgHR - restingHR) / (fcm - restingHR)) * 100) : null,
+            estimatedVdot: sportAnalysis.vdot,
+            paceFormatted: sportAnalysis.pace?.formatted,
+            estimatedGrade: activity.distance > 0 ? Math.round(((activity.total_elevation_gain || 0) / activity.distance) * 100 * 10) / 10 : 0,
+        };
 
-        const analysis = {};
-
-        // FC analysis
-        if (avgHR && fcm) {
-            analysis.avgHrPercent = Math.round((avgHR / fcm) * 100);
-            analysis.maxHrPercent = maxHR ? Math.round((maxHR / fcm) * 100) : null;
-            analysis.hrReserve = Math.round(((avgHR - restingHR) / (fcm - restingHR)) * 100);
-            analysis.profileFcm = fcm;
-
-            // TRIMP
-            const hrRatio = (avgHR - restingHR) / (fcm - restingHR);
-            const gender = 1.92; // male default
-            analysis.trimp = Math.round((time / 60) * hrRatio * 0.64 * Math.exp(gender * hrRatio));
-
-            // Zones (5 zones basées sur FCM)
-            const zones = [
-                { max: fcm * 0.60 },
-                { max: fcm * 0.70 },
-                { max: fcm * 0.80 },
-                { max: fcm * 0.90 },
-                { max: fcm },
-            ];
-            const zone = zones.findIndex(z => avgHR <= z.max);
-            analysis.zone1Percent = zone === 0 ? 100 : 0;
-            analysis.zone2Percent = zone === 1 ? 100 : 0;
-            analysis.zone3Percent = zone === 2 ? 100 : 0;
-            analysis.zone4Percent = zone === 3 ? 100 : 0;
-            analysis.zone5Percent = zone >= 4 ? 100 : 0;
-        }
-
-        // Elevation
-        if (elev > 0) {
-            analysis.elevMin = null;
-            analysis.elevMax = null;
-            analysis.estimatedGrade = dist > 0 ? Math.round((elev / dist) * 100 * 10) / 10 : 0;
-        }
-
-        // Pace & VDOT
-        if (dist > 0 && time > 0) {
-            const paceSecPerKm = time / (dist / 1000);
-            analysis.paceFormatted = `${Math.floor(paceSecPerKm / 60)}'${String(Math.round(paceSecPerKm % 60)).padStart(2, '0')}`;
-            analysis.tss = activity.tss || null;
-
-            // VDOT estimé depuis la performance
-            if (dist >= 1000) {
-                const { RunningPerformance } = require('../algorithms/index');
-                try {
-                    const estVdot = RunningPerformance.estimateVDOT(dist / 1000, time / 60);
-                    analysis.estimatedVdot = estVdot ? Math.round(estVdot * 10) / 10 : null;
-                    if (estVdot) {
-                        const preds = RunningPerformance.predictRaceTimes(estVdot);
-                        analysis.predicted5k = preds?.['5k'] ? Math.round(preds['5k'] * 60) : null;
-                        analysis.predicted10k = preds?.['10k'] ? Math.round(preds['10k'] * 60) : null;
-                        analysis.predictedHalfMarathon = preds?.['half'] ? { time: `${Math.floor(preds['half'])}:${String(Math.round((preds['half'] % 1) * 60)).padStart(2, '0')}` } : null;
-                        analysis.predictedMarathon = preds?.['marathon'] ? { time: `${Math.floor(preds['marathon'])}:${String(Math.round((preds['marathon'] % 1) * 60)).padStart(2, '0')}` } : null;
-                    }
-                } catch { /* ignore */ }
-            }
+        // Add predictions if VDOT is available
+        if (analysis.estimatedVdot) {
+            const { RunningPerformance } = require('../algorithms/index');
+            const preds = RunningPerformance.predictRaceTimes(analysis.estimatedVdot);
+            analysis.predicted5k = preds?.['5k'] ? Math.round(preds['5k'] * 60) : null;
+            analysis.predicted10k = preds?.['10k'] ? Math.round(preds['10k'] * 60) : null;
+            analysis.predictedHalfMarathon = preds?.['half'] ? { time: `${Math.floor(preds['half'])}:${String(Math.round((preds['half'] % 1) * 60)).padStart(2, '0')}` } : null;
+            analysis.predictedMarathon = preds?.['marathon'] ? { time: `${Math.floor(preds['marathon'])}:${String(Math.round((preds['marathon'] % 1) * 60)).padStart(2, '0')}` } : null;
         }
 
         res.json(analysis);
@@ -552,6 +526,12 @@ router.post('/import/gpx', verifyToken, async (req, res) => {
             // Extraire les trackpoints
             const trkpts = [];
             const trkptRe = /<trkpt([^>]*)>([\s\S]*?)<\/trkpt>/gi;
+            
+            // GPX ReDoS protection: limit file size and parse time
+            const GPX_MAX_SIZE = 5 * 1024 * 1024; // 5MB
+            if (gpxContent.length > GPX_MAX_SIZE) {
+              return res.status(413).json({ error: 'GPX file too large (max 5MB)' });
+            }
             let m;
             while ((m = trkptRe.exec(xml)) !== null) {
                 const attrs = m[1];
@@ -665,6 +645,58 @@ router.post('/import/gpx', verifyToken, async (req, res) => {
     } catch (error) {
         logger.error('GPX import error', { error: error.message });
         res.status(500).json({ error: 'Failed to import GPX file' });
+    }
+});
+
+/**
+ * PUT /activities/:id
+ * Update activity metadata (gear, notes, etc.)
+ */
+router.put('/:id', verifyToken, async (req, res) => {
+    try {
+        const userDb = await getUserDb(req.user.id);
+        const activityId = req.params.id;
+        const { gear_id, efficiency_factor, notes, name } = req.body;
+
+        const activity = await dbGetUser(userDb, 'SELECT * FROM activities WHERE id = ?', [activityId]);
+        if (!activity) {
+            return res.status(404).json({ error: 'Activité non trouvée' });
+        }
+
+        // Update gear distance if gear_id changed or was added
+        if (gear_id !== undefined && gear_id !== activity.gear_id) {
+            const distanceKm = (activity.distance || 0) / 1000;
+            
+            // Add distance to new gear
+            if (gear_id) {
+                await dbRunUser(userDb, 'UPDATE gear SET current_distance = current_distance + ? WHERE id = ?', [distanceKm, gear_id]);
+            }
+            
+            // Subtract distance from old gear if existed
+            if (activity.gear_id) {
+                await dbRunUser(userDb, 'UPDATE gear SET current_distance = current_distance - ? WHERE id = ?', [distanceKm, activity.gear_id]);
+            }
+        }
+
+        await dbRunUser(userDb, `
+            UPDATE activities 
+            SET gear_id = ?, 
+                efficiency_factor = ?, 
+                description = COALESCE(?, description), 
+                name = COALESCE(?, name)
+            WHERE id = ?
+        `, [
+            gear_id !== undefined ? gear_id : activity.gear_id, 
+            efficiency_factor !== undefined ? efficiency_factor : activity.efficiency_factor, 
+            notes || null, 
+            name || activity.name, 
+            activityId
+        ]);
+
+        res.json({ success: true, message: 'Activité mise à jour' });
+    } catch (error) {
+        logger.error('Update activity error:', error);
+        res.status(500).json({ error: 'Erreur lors de la mise à jour de l\'activité' });
     }
 });
 

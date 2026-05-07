@@ -9,7 +9,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button, Input, GradientBadge, Avatar, Skeleton, GlassCard, GlassCardContent } from '@/components/ui';
 import { api } from '@/lib/api';
-import type { SocialFeedItem } from '@/types';
+import type { 
+  SocialFeedItem, 
+  Friend, 
+  FriendRequest, 
+  UserSearchResult, 
+  LeaderboardEntry, 
+  Group 
+} from '@/types';
 import { useNotificationsStore } from '@/stores';
 import { 
   Users, UserPlus, Search, Trophy, MessageCircle, 
@@ -23,10 +30,10 @@ import { toast } from 'sonner';
 // ============================================================================
 
 function FriendsTab() {
-  const [friends, setFriends] = useState<any[]>([]);
-  const [requests, setRequests] = useState<any[]>([]);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
 
@@ -163,7 +170,7 @@ function FriendsTab() {
           </div>
           <div className="grid gap-2">
             {requests.map((req) => (
-              <GlassCard key={req.user_id} padding="sm" hover>
+              <GlassCard key={req.userId || req.user_id || 0} padding="sm" hover>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <Avatar name={req.name} size="md" />
@@ -173,10 +180,10 @@ function FriendsTab() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" className="rounded-xl bg-green-500 hover:bg-green-600" onClick={() => handleAccept(req.user_id)}>
+                    <Button size="sm" className="rounded-xl bg-green-500 hover:bg-green-600" onClick={() => handleAccept(req.userId || req.user_id || 0)}>
                       <Check className="w-4 h-4" />
                     </Button>
-                    <Button size="sm" variant="ghost" className="rounded-xl text-muted hover:text-danger" onClick={() => handleRemove(req.user_id)}>
+                    <Button size="sm" variant="ghost" className="rounded-xl text-muted hover:text-danger" onClick={() => handleRemove(req.userId || req.user_id || 0)}>
                       <X className="w-4 h-4" />
                     </Button>
                   </div>
@@ -207,7 +214,7 @@ function FriendsTab() {
         ) : (
           <div className="grid gap-2">
             {friends.map((friend) => (
-              <GlassCard key={friend.friend_id} padding="sm" hover>
+              <GlassCard key={friend.id || friend.friend_id || friend.user_id || 0} padding="sm" hover>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="relative">
@@ -216,10 +223,10 @@ function FriendsTab() {
                     </div>
                     <div>
                       <p className="font-semibold">{friend.name}</p>
-                      <p className="text-xs text-muted">Amis depuis {new Date(friend.accepted_at).toLocaleDateString('fr-FR')}</p>
+                      <p className="text-xs text-muted">Amis depuis {new Date(friend.accepted_at || friend.created_at || '').toLocaleDateString('fr-FR')}</p>
                     </div>
                   </div>
-                  <Button size="sm" variant="ghost" className="rounded-xl opacity-0 group-hover:opacity-100 transition-opacity text-muted hover:text-danger" onClick={() => handleRemove(friend.friend_id)}>
+                  <Button size="sm" variant="ghost" className="rounded-xl opacity-0 group-hover:opacity-100 transition-opacity text-muted hover:text-danger" onClick={() => handleRemove(friend.id || friend.friend_id || friend.user_id || 0)}>
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
@@ -239,6 +246,12 @@ function FriendsTab() {
 function FeedTab() {
   const [activities, setActivities] = useState<SocialFeedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  // État pour la modal de commentaires
+  const [commentActivityId, setCommentActivityId] = useState<number | null>(null);
+  const [comments, setComments] = useState<Array<{ id: number; content: string; user_name: string; created_at: string }>>([]);
+  const [commentText, setCommentText] = useState('');
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [isPostingComment, setIsPostingComment] = useState(false);
 
   const loadFeed = useCallback(async () => {
     setIsLoading(true);
@@ -270,6 +283,41 @@ function FeedTab() {
       ));
     } catch (e) {
       toast.error('Erreur');
+    }
+  };
+
+  const handleOpenComments = async (activityId: number) => {
+    setCommentActivityId(activityId);
+    setCommentText('');
+    setIsLoadingComments(true);
+    try {
+      const data = await api.getActivityComments(activityId);
+      setComments((data as Array<{ id: number; content: string; user_name: string; created_at: string }>) || []);
+    } catch {
+      setComments([]);
+    } finally {
+      setIsLoadingComments(false);
+    }
+  };
+
+  const handlePostComment = async () => {
+    if (!commentText.trim() || !commentActivityId) return;
+    setIsPostingComment(true);
+    try {
+      await api.addComment(commentActivityId, commentText.trim());
+      toast.success('Commentaire ajouté');
+      setCommentText('');
+      const data = await api.getActivityComments(commentActivityId);
+      setComments((data as Array<{ id: number; content: string; user_name: string; created_at: string }>) || []);
+      setActivities(prev => prev.map(a =>
+        a.id === commentActivityId
+          ? { ...a, comment_count: (a.comment_count ?? 0) + 1 }
+          : a
+      ));
+    } catch {
+      toast.error('Erreur lors de l\'ajout du commentaire');
+    } finally {
+      setIsPostingComment(false);
     }
   };
 
@@ -318,6 +366,7 @@ function FeedTab() {
   }
 
     return (
+      <>
       <div className="space-y-4">
         {activities.map((activity) => (
           <GlassCard key={activity.id} hover className="overflow-hidden">
@@ -382,9 +431,11 @@ function FeedTab() {
                 </button>
                
                 <div className="flex items-center gap-2">
-                  <Button size="sm" variant="ghost" className="rounded-full">
+                  <Button size="sm" variant="ghost" className="rounded-full" onClick={() => handleOpenComments(activity.id)}>
                     <MessageCircle className="w-4 h-4 mr-1" />
-                    Commenter
+                    {(activity as SocialFeedItem & { comment_count?: number }).comment_count
+                      ? `${(activity as SocialFeedItem & { comment_count?: number }).comment_count}`
+                      : 'Commenter'}
                   </Button>
                   <Button size="sm" variant="ghost" className="rounded-full">
                     <ChevronRight className="w-4 h-4" />
@@ -395,15 +446,88 @@ function FeedTab() {
           </GlassCard>
         ))}
       </div>
-    );
+
+      {/* ── Modal commentaires ── */}
+      {commentActivityId !== null && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4"
+          onClick={() => setCommentActivityId(null)}
+        >
+          <div
+            className="bg-card rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <h3 className="font-semibold flex items-center gap-2">
+                <MessageCircle className="w-4 h-4 text-primary" />
+                Commentaires
+              </h3>
+              <button
+                onClick={() => setCommentActivityId(null)}
+                className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+              >
+                <X className="w-4 h-4 text-muted" />
+              </button>
+            </div>
+
+            {/* Liste des commentaires */}
+            <div className="flex-1 overflow-y-auto px-5 py-3 space-y-3 min-h-[120px]">
+              {isLoadingComments ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-5 h-5 animate-spin text-muted" />
+                </div>
+              ) : comments.length === 0 ? (
+                <div className="text-center py-8">
+                  <MessageCircle className="w-8 h-8 mx-auto mb-2 text-muted opacity-30" />
+                  <p className="text-sm text-muted">Aucun commentaire — soyez le premier !</p>
+                </div>
+              ) : (
+                comments.map((c) => (
+                  <div key={c.id} className="flex gap-3">
+                    <Avatar name={c.user_name} size="sm" />
+                    <div className="flex-1 bg-muted/40 rounded-xl px-3 py-2">
+                      <p className="text-xs font-semibold text-foreground">{c.user_name}</p>
+                      <p className="text-sm text-foreground mt-0.5">{c.content || '(Aucun contenu)'}</p>
+                      <p className="text-xs text-muted mt-1">
+                        {c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Zone de saisie */}
+            <div className="px-5 py-4 border-t border-border">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handlePostComment()}
+                  placeholder="Écrire un commentaire..."
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-muted/50 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm"
+                  autoFocus
+                />
+                <button
+                  onClick={handlePostComment}
+                  disabled={!commentText.trim() || isPostingComment}
+                  className="px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
+                >
+                  {isPostingComment ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Envoyer'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
 
-// ============================================================================
-// LEADERBOARD TAB
-// ============================================================================
-
 function LeaderboardTab() {
-  const [entries, setEntries] = useState<any[]>([]);
+  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [category, setCategory] = useState('distance');
   const [period, setPeriod] = useState('week');
   const [isLoading, setIsLoading] = useState(true);
@@ -555,8 +679,8 @@ function LeaderboardTab() {
 import Link from 'next/link';
 
 function GroupsTab() {
-  const [groups, setGroups] = useState<any[]>([]);
-  const [publicGroups, setPublicGroups] = useState<any[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [publicGroups, setPublicGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
@@ -692,7 +816,7 @@ function GroupsTab() {
                     </div>
                     <div className="flex gap-2">
                       {group.invite_code && (
-                        <Button size="sm" variant="ghost" className="rounded-xl" onClick={(e) => { e.preventDefault(); copyCode(group.invite_code); }}>
+                        <Button size="sm" variant="ghost" className="rounded-xl" onClick={(e) => { e.preventDefault(); copyCode(group.invite_code || ''); }}>
                           <Copy className="w-4 h-4" />
                         </Button>
                       )}
@@ -743,7 +867,7 @@ function GroupsTab() {
                       <p className="text-xs text-muted">{group.member_count} membres</p>
                     </div>
                   </div>
-                  <Button size="sm" onClick={() => { setInviteCode(group.invite_code); setShowJoin(true); }}>
+                  <Button size="sm" onClick={() => { setInviteCode(group.invite_code || ''); setShowJoin(true); }}>
                     Rejoindre
                   </Button>
                 </div>

@@ -36,8 +36,8 @@ router.get('/share-image', verifyToken, async (req, res) => {
 
     const userDb = await getUserDb(userId);
 
-    // Get activity details
-    const activityResult = userDb.exec(`
+    // Get activity details - use prepare + get to avoid SQL injection
+    const activityResult = userDb.prepare(`
       SELECT 
         a.id,
         a.name,
@@ -53,7 +53,7 @@ router.get('/share-image', verifyToken, async (req, res) => {
       FROM activities a
       LEFT JOIN users u ON u.id = ?
       WHERE a.id = ?
-    `, [userId, activityId]);
+    `).get([userId, activityId]);
 
     if (!activityResult[0]?.values?.[0]) {
       return res.status(404).json({ error: 'Activité non trouvée' });

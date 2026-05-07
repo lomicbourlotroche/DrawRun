@@ -306,16 +306,19 @@ export default function LoginForm() {
           </Link>
         </div>
 
-        {/* Mobile brand (visible only on small screens) */}
-        <div className="lg:hidden flex items-center justify-center gap-3 pt-16 pb-2">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #0066FF, #5856D6)' }}>
-            <Activity className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-lg font-extrabold text-neutral-900 tracking-tight">
-            DRAW<span className="text-primary-600">RUN</span>
-          </span>
-        </div>
+       {/* Mobile brand (visible only on small screens) */}
+         <div className="lg:hidden flex flex-col items-center justify-center gap-3 pt-12 pb-6 px-6">
+           <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg"
+             style={{ background: 'linear-gradient(135deg, #0066FF, #5856D6)' }}>
+             <Activity className="w-6 h-6 text-white" />
+           </div>
+           <span className="text-xl font-extrabold text-neutral-900 tracking-tight">
+             DRAW<span className="text-primary-600">RUN</span>
+           </span>
+           <p className="text-sm text-neutral-500 text-center mt-1">
+             L&apos;app de performance ultime
+           </p>
+         </div>
 
         {/* Form card */}
         <div className="flex-1 flex items-center justify-center px-6 py-10 sm:px-10">

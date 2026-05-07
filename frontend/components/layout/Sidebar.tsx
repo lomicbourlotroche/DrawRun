@@ -40,11 +40,12 @@ export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-    }
-  }, [isAuthenticated, router]);
+  // La redirection est gérée par AppLayout - éviter le doublon
+  // useEffect(() => {
+  //   if (!isAuthenticated) {
+  //     router.push('/login');
+  //   }
+  // }, [isAuthenticated, router]);
 
   useEffect(() => {
     setIsMobileOpen(false);
@@ -142,7 +143,7 @@ export default function Sidebar() {
                 href={item.href}
                 title={isCollapsed ? item.label : undefined}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative group',
+                  'flex items-center gap-3 px-3 py-3 min-h-[44px] rounded-xl transition-all duration-200 relative group',
                   isCollapsed && 'justify-center px-0',
                   active
                     ? 'bg-primary-50 text-primary-700 border border-primary-100'
@@ -207,13 +208,13 @@ export default function Sidebar() {
           )}
 
           <button
-            onClick={handleLogout}
-            title={isCollapsed ? 'Déconnexion' : undefined}
-            className={cn(
-              'flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-neutral-500 hover:text-danger-600 hover:bg-danger-50 transition-all duration-150',
-              isCollapsed && 'justify-center px-0'
-            )}
-          >
+             onClick={handleLogout}
+             title={isCollapsed ? 'Déconnexion' : undefined}
+             className={cn(
+               'flex items-center gap-3 w-full px-3 py-3 min-h-[44px] rounded-xl text-neutral-500 hover:text-danger-600 hover:bg-danger-50 transition-all duration-150',
+               isCollapsed && 'justify-center px-0'
+             )}
+           >
             <LogOut className="w-5 h-5 flex-shrink-0" />
             {!isCollapsed && <span className="text-sm font-medium">Déconnexion</span>}
           </button>

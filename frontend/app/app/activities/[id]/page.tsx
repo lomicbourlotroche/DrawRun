@@ -10,6 +10,7 @@ import type { ActivityDetail as ActivityDetailType, ActivityStreams } from '@/ty
 import type { SplitData, SplitSummary } from '@/types';
 import { ArrowLeft, Heart, Timer, Gauge, Mountain, Activity as ActivityIcon, Zap, Wind, MapPin, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { BiomechanicsCard } from '@/components/features/activities/BiomechanicsCard';
 
 function fmt(s: number) {
   const h = Math.floor(s / 3600);
@@ -284,6 +285,12 @@ export default function ActivityDetailPage() {
                   {analysis.estimatedVdot && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-lg font-bold text-green-400">{toNum(analysis.estimatedVdot).toFixed(1)}</p><p className="text-xs text-muted">VDOT estimé</p></div>}
                   {analysis.paceFormatted && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-lg font-bold text-foreground">{toStr(analysis.paceFormatted)}</p><p className="text-xs text-muted">Allure</p></div>}
                   {analysis.intensity_factor && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-lg font-bold text-blue-400">{toNum(analysis.intensity_factor).toFixed(2)}</p><p className="text-xs text-muted">IF</p></div>}
+                  {(analysis.efficiency_factor || activity.efficiency_factor) && (
+                     <div className="text-center p-3 rounded-lg bg-background border border-border">
+                       <p className="text-lg font-bold text-amber-500">{toNum(analysis.efficiency_factor || activity.efficiency_factor).toFixed(2)}</p>
+                       <p className="text-xs text-muted">EF (Aérobie)</p>
+                     </div>
+                   )}
                   {analysis.tss && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-lg font-bold text-purple-400">{Math.round(toNum(analysis.tss))}</p><p className="text-xs text-muted">TSS</p></div>}
                 </div>
                 
@@ -297,6 +304,63 @@ export default function ActivityDetailPage() {
                       {analysis.predictedHalfMarathon && typeof analysis.predictedHalfMarathon === 'object' && <div className="text-center p-2 rounded-lg bg-background"><p className="text-sm font-bold text-foreground">{(analysis.predictedHalfMarathon as {time: string}).time}</p><p className="text-xs text-muted">Semi</p></div>}
                       {analysis.predictedMarathon && typeof analysis.predictedMarathon === 'object' && <div className="text-center p-2 rounded-lg bg-background"><p className="text-sm font-bold text-foreground">{(analysis.predictedMarathon as {time: string}).time}</p><p className="text-xs text-muted">Marathon</p></div>}
                     </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Biomechanics Analysis */}
+          {analysis.biomechanics && (
+            <BiomechanicsCard metrics={analysis.biomechanics as any} />
+          )}
+
+          {/* Nutrition Strategy */}
+          {analysis.nutrition && (
+            <Card className="border-amber-500/20 bg-amber-500/5">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2 text-amber-600">
+                  <Wind className="w-4 h-4" />
+                  Stratégie de Ravitaillement
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted uppercase font-semibold">Hydratation</p>
+                    <div className="flex items-baseline gap-1">
+                      <p className="text-2xl font-bold text-foreground">{(analysis.nutrition as any).hydration.totalMl}</p>
+                      <p className="text-sm text-muted">ml total</p>
+                    </div>
+                    <p className="text-xs text-muted">Cible: {(analysis.nutrition as any).hydration.perHourMl} ml/h</p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted uppercase font-semibold">Glucides (CHO)</p>
+                    <div className="flex items-baseline gap-1">
+                      <p className="text-2xl font-bold text-foreground">{(analysis.nutrition as any).carbs.totalG}</p>
+                      <p className="text-sm text-muted">g total</p>
+                    </div>
+                    <p className="text-xs text-muted">Cible: {(analysis.nutrition as any).carbs.perHourG} g/h</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted uppercase font-semibold">Sodium</p>
+                    <div className="flex items-baseline gap-1">
+                      <p className="text-2xl font-bold text-foreground">{(analysis.nutrition as any).sodium.totalMg}</p>
+                      <p className="text-sm text-muted">mg</p>
+                    </div>
+                  </div>
+                </div>
+
+                {Array.isArray((analysis.nutrition as any).recommendations) && (
+                  <div className="mt-4 space-y-1">
+                    {(analysis.nutrition as any).recommendations.map((rec: string, i: number) => (
+                      <div key={i} className="flex gap-2 text-xs text-amber-700/80">
+                        <span className="shrink-0">•</span>
+                        <p>{rec}</p>
+                      </div>
+                    ))}
                   </div>
                 )}
               </CardContent>
@@ -331,9 +395,9 @@ export default function ActivityDetailPage() {
                     <th className="py-2 text-left">Km</th>
                     <th className="py-2 text-right">Temps</th>
                     <th className="py-2 text-right">Allure</th>
+                    <th className="py-2 text-right text-primary">GAP</th>
                     <th className="py-2 text-right">Vitesse</th>
                     <th className="py-2 text-right">FC moy</th>
-                    <th className="py-2 text-right">FC max</th>
                     <th className="py-2 text-right">Dénivelé</th>
                     <th className="py-2 text-right">Pente %</th>
                     <th className="py-2 text-right">Cad</th>
@@ -354,9 +418,11 @@ export default function ActivityDetailPage() {
                         <td className={`py-2 text-right font-mono ${paceColor}`}>
                           {split.pace ? `${Math.floor(split.pace / 60)}'${String(Math.round(split.pace % 60)).padStart(2, '0')}` : '-'}
                         </td>
+                        <td className="py-2 text-right font-mono font-bold text-primary">
+                          {split.gap ? `${Math.floor(split.gap / 60)}'${String(Math.round(split.gap % 60)).padStart(2, '0')}` : '-'}
+                        </td>
                         <td className="py-2 text-right font-mono">{split.speed.toFixed(1)} km/h</td>
                         <td className="py-2 text-right">{split.avgHR || '-'}</td>
-                        <td className="py-2 text-right">{split.maxHR || '-'}</td>
                         <td className={`py-2 text-right ${split.elevationChange > 0 ? 'text-green-400' : split.elevationChange < 0 ? 'text-red-400' : 'text-muted'}`}>
                           {split.elevationChange > 0 ? '+' : ''}{split.elevationChange || '-'}m
                         </td>

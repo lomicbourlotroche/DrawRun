@@ -20,11 +20,8 @@ export const activitiesApi = {
   /**
    * Liste toutes les activités
    */
-  async getActivities(): Promise<Activity[]> {
-    const res = await client.request<Activity[] | { data: Activity[] }>('/api/activities');
-    // Le backend retourne { data: [...], pagination: {...} }
-    if (res && !Array.isArray(res) && 'data' in res) return res.data;
-    return Array.isArray(res) ? res : [];
+  async   getActivities(page = 1, perPage = 20): Promise<{ data: Activity[]; pagination: { page: number; per_page: number; total: number; total_pages: number; has_next: boolean; has_prev: boolean } }> {
+    return client.request<{ data: Activity[]; pagination: { page: number; per_page: number; total: number; total_pages: number; has_next: boolean; has_prev: boolean } }>(`/api/activities?page=${page}&per_page=${perPage}`);
   },
 
   /**
@@ -77,8 +74,8 @@ export const activitiesApi = {
         start_date: data.date,
         distance: data.distance,
         moving_time: data.duration,
-        average_heartrate: data.avg_hr,
-        max_heartrate: data.max_hr,
+        avg_hr: data.avg_hr,
+        max_hr: data.max_hr,
         total_elevation_gain: data.elevation,
         calories: data.calories,
       }),

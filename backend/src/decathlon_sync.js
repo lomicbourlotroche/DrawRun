@@ -33,13 +33,20 @@ function log(userId, message, ...args) {
 // Token Management (PKCE Flow)
 // ---------------------------------------------------------------------------
 
+const ALLOWED_TOKEN_DIR = path.resolve(DECATHLON_TOKEN_DIR);
+
 function getTokenPath(userId) {
-    return path.join(DECATHLON_TOKEN_DIR, `${userId}.json`);
+    const tokenPath = path.resolve(ALLOWED_TOKEN_DIR, `${String(userId).replace(/[^0-9]/g, '')}.json`);
+    if (!tokenPath.startsWith(ALLOWED_TOKEN_DIR)) {
+        throw new Error('Invalid token path');
+    }
+    return tokenPath;
 }
 
 async function saveToken(userId, tokenData) {
-    fs.mkdirSync(DECATHLON_TOKEN_DIR, { recursive: true });
-    fs.writeFileSync(getTokenPath(userId), JSON.stringify({
+    const tokenPath = getTokenPath(userId);
+    fs.mkdirSync(ALLOWED_TOKEN_DIR, { recursive: true });
+    fs.writeFileSync(tokenPath, JSON.stringify({
         accessToken: tokenData.access_token,
         refreshToken: tokenData.refresh_token,
         expiresAt: Date.now() + (tokenData.expires_in * 1000),
@@ -148,38 +155,24 @@ async function performDecathlonSync(userId) {
         let imported = 0;
         let updated = 0;
 
-        for (const activity of activities) {
-            const sourceId = activity.id || activity['@id']?.split('/').pop();
-            if (!sourceId) continue;
+        // Prepare activities for batch processing
+        const activitiesToProcess = activities
+            .filter(activity => activity.id || activity['@id'])
+            .map(activity => ({
+                source_id: activity.id || activity['@id']?.split('/').pop(),
+                name: activity.name || 'Decathlon Activity',
+                type: mapDecathlonSport(activity.sport),
+                start_date: activity.startdate || new Date().toISOString(),
+                distance: activity.dataSummaries?.['5'] || 0,
+                moving_time: activity.duration || 0,
+                elapsed_time: activity.duration || 0,
+            }));
 
-            const existing = await dbGetUser(userDb,
-                'SELECT id FROM activities WHERE source = "decathlon" AND source_id = ?',
-                [sourceId]
-            );
+        // Batch process using sync_utils
+        const { processActivityList } = require('./sync_utils');
+        const result = await processActivityList(userDb, 'decathlon', activitiesToProcess);
 
-            const isNew = !existing;
-
-            await dbRunUser(userDb, `
-                INSERT OR REPLACE INTO activities
-                (source, source_id, name, type, start_date, distance, moving_time, elapsed_time)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            `, [
-                'decathlon',
-                sourceId,
-                activity.name || 'Decathlon Activity',
-                mapDecathlonSport(activity.sport),
-                activity.startdate || new Date().toISOString(),
-                activity.dataSummaries?.['5'] || 0,
-                activity.duration || 0,
-                activity.duration || 0,
-            ]);
-
-            if (isNew) {
-                imported++;
-            } else {
-                updated++;
-            }
-        }
+        imported += result.imported;
 
         log(userId, `Activities: ${imported} new, ${updated} updated`);
 

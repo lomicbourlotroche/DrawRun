@@ -19,7 +19,7 @@ router.get('/', verifyToken, async (req, res) => {
     try {
         const userDb = await getUserDb(req.user.id);
         const pmcData = await dbAllUser(userDb, `
-            SELECT date, ctl, atl, tsb FROM pmc_history 
+            SELECT date, ctl, atl, tsb, acwr FROM pmc_history 
             ORDER BY date DESC LIMIT 90
         `);
         

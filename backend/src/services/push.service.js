@@ -18,9 +18,8 @@ function initializeVapidKeys() {
         publicKey = vapidKeys.publicKey;
         privateKey = vapidKeys.privateKey;
 
-        logger.info('[VAPID] Generated new VAPID keys (save these to .env for production)');
+        logger.info('[VAPID] Generated new VAPID keys - save these to .env for production');
         logger.info(`[VAPID] Public Key: ${publicKey}`);
-        logger.info(`[VAPID] Private Key: ${privateKey}`);
     }
 
     // Configure web-push
@@ -138,9 +137,13 @@ async function subscribeUser(userId, subscription, userAgent) {
 
         // Check if already subscribed
         const existing = await dbGetMain(
-            'SELECT id FROM push_subscriptions WHERE endpoint = ?',
+            'SELECT id, user_id FROM push_subscriptions WHERE endpoint = ?',
             [endpoint]
         );
+        
+        if (existing && existing.length > 0 && existing[0].user_id !== userId) {
+            return { success: false, message: 'Subscription belongs to another user' };
+        }
 
         if (existing && existing.length > 0) {
             return { success: false, message: 'Already subscribed', conflict: true };

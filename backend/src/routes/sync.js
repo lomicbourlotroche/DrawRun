@@ -12,6 +12,7 @@
 const { logger } = require('../logger');
 
 const express = require('express');
+const axios = require('axios');
 const { verifyToken } = require('../auth');
 const { performSync: performStravaSync } = require('../strava_sync');
 const { performGarminSync } = require('../garmin_sync');
@@ -52,7 +53,6 @@ router.get('/status', verifyToken, async (req, res) => {
         const { getStravaSyncStatus } = require('../strava_sync');
         const { getGarminSyncStatus } = require('../garmin_sync');
         const { getSuuntoSyncStatus } = require('../suunto_sync');
-
         const { getDecathlonSyncStatus } = require('../decathlon_sync');
 
         const [strava, garmin, suunto, decathlon] = await Promise.all([
@@ -62,7 +62,19 @@ router.get('/status', verifyToken, async (req, res) => {
             getDecathlonSyncStatus(req.user.id),
         ]);
 
-        res.json({ strava, garmin, suunto, decathlon });
+        res.json({
+            strava,
+            garmin,
+            suunto,
+            decathlon,
+            // Indique quelles intégrations sont configurées côté serveur
+            available: {
+                strava: true, // scraping, pas besoin de client_id
+                garmin: true, // Python script
+                suunto: true, // reverse-engineered API
+                decathlon: !!process.env.DECATHLON_CLIENT_ID,
+            },
+        });
     } catch (error) {
         logger.error('Sync status error:', error);
         res.status(500).json({ error: 'Failed to get sync status' });
@@ -107,6 +119,9 @@ router.post('/suunto/clear-token', verifyToken, async (req, res) => {
 
 // GET /api/sync/decathlon/url - OAuth authorization URL
 router.get('/decathlon/url', verifyToken, async (req, res) => {
+    if (!process.env.DECATHLON_CLIENT_ID) {
+        return res.status(503).json({ error: 'Decathlon integration not configured on this server' });
+    }
     try {
         const { getDecathlonAuthUrl } = require('../decathlon_sync');
         const url = await getDecathlonAuthUrl(req.user.id);
@@ -133,9 +148,11 @@ router.get('/decathlon/callback', verifyToken, async (req, res) => {
         
         let codeVerifier;
         try {
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             const tempData = JSON.parse(fs.readFileSync(tempPath, 'utf8'));
             codeVerifier = tempData.codeVerifier;
             // Clean up temp file
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             fs.unlinkSync(tempPath);
         } catch (e) {
             return res.status(400).json({ error: 'PKCE verifier not found. Restart the flow.' });
@@ -147,7 +164,7 @@ router.get('/decathlon/callback', verifyToken, async (req, res) => {
             new URLSearchParams({
                 grant_type: 'authorization_code',
                 code,
-                code_verifier,
+                code_verifier: codeVerifier,
                 client_id: process.env.DECATHLON_CLIENT_ID,
                 redirect_uri: process.env.DECATHLON_REDIRECT_URI,
             }),

@@ -6,8 +6,10 @@ import Link from 'next/link';
 import { GlassCard, GlassCardContent, GradientBadge, FilterChipGroup, Select, ActivitySkeleton, EmptyState } from '@/components/ui';
 import { formatDate, formatDistance, getSportColor } from '@/lib/utils';
 import type { Activity } from '@/types';
-import { Clock, Heart, TrendingUp, ChevronRight, Search, RefreshCw } from 'lucide-react';
+import { Clock, Heart, TrendingUp, ChevronRight, Search, RefreshCw, ChevronDown } from 'lucide-react';
 import { DrawButton } from '@/components/features/social/DrawButton';
+
+const PAGE_SIZE = 20;
 
 interface ActivityListProps {
   activities: Activity[];
@@ -19,26 +21,30 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
   const [filter, setFilter] = useState<'all' | 'run' | 'bike' | 'swim'>('all');
   const [sortBy, setSortBy] = useState<'date' | 'distance' | 'duration'>('date');
   const [searchQuery, setSearchQuery] = useState('');
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const filteredActivities = useMemo(() => {
     let filtered = activities;
 
     if (filter !== 'all') {
-      filtered = filtered.filter((a) => a.type === filter);
+      filtered = filtered.filter((a) => {
+        const t = (a.type as string).toLowerCase();
+        return t === filter || t.startsWith(filter);
+      });
     }
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((a) =>
-        a.title.toLowerCase().includes(query) ||
-        a.date.includes(query)
+        (a.title || a.name || '').toLowerCase().includes(query) ||
+        (a.date || a.start_date || '').includes(query)
       );
     }
 
     return [...filtered].sort((a, b) => {
       switch (sortBy) {
         case 'date':
-          return new Date(b.date).getTime() - new Date(a.date).getTime();
+          return new Date(b.date || b.start_date || 0).getTime() - new Date(a.date || a.start_date || 0).getTime();
         case 'distance':
           return b.distance - a.distance;
         case 'duration':
@@ -49,19 +55,40 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
     });
   }, [activities, filter, sortBy, searchQuery]);
 
+  // Réinitialiser la pagination quand les filtres changent
+  const handleFilterChange = (id: string) => {
+    setFilter(id as typeof filter);
+    setVisibleCount(PAGE_SIZE);
+  };
+  const handleSortChange = (v: string) => {
+    setSortBy(v as typeof sortBy);
+    setVisibleCount(PAGE_SIZE);
+  };
+  const handleSearchChange = (v: string) => {
+    setSearchQuery(v);
+    setVisibleCount(PAGE_SIZE);
+  };
+
+  const visibleActivities = filteredActivities.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredActivities.length;
+
   const validActivities = Array.isArray(activities) ? activities : [];
   const filterOptions = [
-    { id: 'all', label: 'Tous', count: validActivities.length },
-    { id: 'run', label: 'Course', count: validActivities.filter?.((a: Activity) => a.type === 'run').length || 0 },
-    { id: 'bike', label: 'Vélo', count: validActivities.filter?.((a: Activity) => a.type === 'bike').length || 0 },
-    { id: 'swim', label: 'Natation', count: validActivities.filter?.((a: Activity) => a.type === 'swim').length || 0 },
+    { id: 'all',  label: 'Tous',     count: validActivities.length },
+    { id: 'run',  label: 'Course',   count: validActivities.filter((a) => (a.type as string).toLowerCase().startsWith('run')).length },
+    { id: 'bike', label: 'Vélo',     count: validActivities.filter((a) => (a.type as string).toLowerCase().startsWith('bike') || (a.type as string).toLowerCase().startsWith('ride')).length },
+    { id: 'swim', label: 'Natation', count: validActivities.filter((a) => (a.type as string).toLowerCase().startsWith('swim')).length },
   ];
 
   const sportIcons: Record<string, string> = {
-    run: '🏃',
-    bike: '🚴',
-    swim: '🏊',
+    run: '🏃', running: '🏃',
+    bike: '🚴', ride: '🚴', cycling: '🚴',
+    swim: '🏊', swimming: '🏊',
+    hike: '🥾', walk: '🚶',
+    workout: '💪',
   };
+
+  const getSportIcon = (type: string) => sportIcons[(type || '').toLowerCase()] || '🏃';
 
   if (isLoading) {
     return (
@@ -93,6 +120,7 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
 
   return (
     <div className="space-y-4">
+      {/* Barre de recherche + tri */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
@@ -100,50 +128,59 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
             type="text"
             placeholder="Rechercher une activité..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="input pl-10"
           />
         </div>
         <Select
           options={[
-            { value: 'date', label: 'Date' },
+            { value: 'date',     label: 'Date' },
             { value: 'distance', label: 'Distance' },
             { value: 'duration', label: 'Durée' },
           ]}
           value={sortBy}
-          onChange={(v) => setSortBy(v as typeof sortBy)}
+          onChange={handleSortChange}
           className="w-full sm:w-40"
         />
       </div>
 
+      {/* Filtres par type */}
       <FilterChipGroup
         options={filterOptions}
         activeFilter={filter}
-        onFilterChange={(id) => setFilter(id as typeof filter)}
+        onFilterChange={handleFilterChange}
       />
 
+      {/* Compteur */}
+      <p className="text-xs text-muted">
+        {filteredActivities.length} activité{filteredActivities.length > 1 ? 's' : ''}
+        {filter !== 'all' || searchQuery ? ' (filtrées)' : ''}
+        {hasMore ? ` — ${visibleCount} affichées` : ''}
+      </p>
+
+      {/* Liste */}
       <div className="space-y-3">
-        {filteredActivities.map((activity, index) => (
+        {visibleActivities.map((activity, index) => (
           <Link
             key={activity.id}
             href={`/app/activities/${activity.id}`}
             className="block group"
-            style={{ animationDelay: `${index * 50}ms` }}
+            style={{ animationDelay: `${index * 30}ms` }}
           >
             <GlassCard hover className="animate-slide-up" padding="md">
               <GlassCardContent>
                 <div className="flex items-center gap-4">
                   <div
-                    className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl"
+                    className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
                     style={{ backgroundColor: `${getSportColor(activity.type)}20` }}
                   >
-                    {sportIcons[activity.type] || '🏃'}
+                    {getSportIcon(activity.type)}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-                        {activity.title}
+                        {activity.title || activity.name || 'Activité'}
                       </h3>
                       <GradientBadge variant="primary" size="sm">
                         {activity.type}
@@ -152,12 +189,12 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
                       <span className="flex items-center gap-1">
                         <Clock className="w-3.5 h-3.5" />
-                        {formatDate(activity.date)}
+                        {formatDate(activity.date || activity.start_date || '')}
                       </span>
-                      {activity.avgHR > 0 && (
+                      {(activity.avgHR || activity.average_heartrate || 0) > 0 && (
                         <span className="flex items-center gap-1">
                           <Heart className="w-3.5 h-3.5" />
-                          {activity.avgHR} bpm
+                          {activity.avgHR || activity.average_heartrate} bpm
                         </span>
                       )}
                       {activity.tss && (
@@ -169,12 +206,19 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
                     </div>
                   </div>
 
-                  <div className="text-right">
+                  <div className="text-right flex-shrink-0">
                     <p className="text-lg font-bold text-foreground">
                       {formatDistance(activity.distance)}
                     </p>
-                    <div className="flex items-center gap-2 text-sm text-muted">
-                      {activity.pace && <span>{activity.pace}/km</span>}
+                    <div className="flex items-center gap-2 text-sm text-muted justify-end">
+                      {activity.gap ? (
+                        <div className="flex flex-col items-end leading-tight">
+                          <span className="text-foreground font-medium">{activity.pace}/km</span>
+                          <span className="text-xs text-primary-600 font-semibold" title="Grade Adjusted Pace (GAP)">GAP {activity.gap}</span>
+                        </div>
+                      ) : (
+                        activity.pace && <span>{activity.pace}/km</span>
+                      )}
                       {activity.duration && <span>{activity.duration}</span>}
                     </div>
                     {activity.user_id && (
@@ -186,7 +230,6 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
                           initialHasDrawn={activity.has_drawn || false}
                           size="sm"
                           onDrawChange={(hasDrawn, count) => {
-                            // Mettre à jour l'activité localement
                             activity.has_drawn = hasDrawn;
                             activity.draw_count = count;
                           }}
@@ -195,21 +238,34 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
                     )}
                   </div>
 
-                  <ChevronRight className="w-5 h-5 text-muted group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                  <ChevronRight className="w-5 h-5 text-muted group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
                 </div>
               </GlassCardContent>
-             </GlassCard>
+            </GlassCard>
           </Link>
         ))}
       </div>
 
-      {filteredActivities.length === 0 && searchQuery && (
+      {/* Bouton "Charger plus" */}
+      {hasMore && (
+        <button
+          onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-border text-sm font-medium text-muted hover:text-foreground hover:border-primary/50 hover:bg-primary/5 transition-all"
+        >
+          <ChevronDown className="w-4 h-4" />
+          Charger {Math.min(PAGE_SIZE, filteredActivities.length - visibleCount)} activités de plus
+          <span className="text-xs text-muted/60">({filteredActivities.length - visibleCount} restantes)</span>
+        </button>
+      )}
+
+      {filteredActivities.length === 0 && (searchQuery || filter !== 'all') && (
         <EmptyState
           icon={<Search className="w-8 h-8" />}
           title="Aucun résultat"
-          description={`Aucune activité ne correspond à "${searchQuery}"`}
+          description={searchQuery ? `Aucune activité ne correspond à "${searchQuery}"` : `Aucune activité de type "${filter}"`}
         />
       )}
     </div>
   );
 }
+

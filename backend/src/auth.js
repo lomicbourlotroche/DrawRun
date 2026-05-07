@@ -363,8 +363,9 @@ router.post('/register', async (req, res) => {
             }
         });
     } catch (error) {
-        logger.error('Registration error:', JSON.stringify({ message: error?.message, name: error?.name, stack: error?.stack, code: error?.code }));
-        res.status(500).json({ error: 'Registration failed', detail: error?.message || 'Unknown error' });
+        logger.error('Registration error:', { message: error?.message, code: error?.code });
+        const isProd = process.env.NODE_ENV === 'production';
+        res.status(500).json({ error: isProd ? 'Registration failed' : (error?.message || 'Unknown error') });
     }
 });
 
@@ -392,6 +393,10 @@ router.post('/delete_account', verifyToken, async (req, res) => {
         // Delete user data
         const userId = req.user.id;
         await dbRun('DELETE FROM users WHERE id = ?', [userId]);
+        
+        // M5: Revoke all refresh tokens on password change
+        const { revokeAllUserTokens } = require('./jwt_tokens');
+        await revokeAllUserTokens(userId);
         
         // Delete personal database file
         try {
@@ -922,16 +927,18 @@ router.get('/export', verifyToken, async (req, res) => {
             }
         };
         
-        // Export activities
-        const activities = await dbAll(userDb, 'SELECT * FROM activities ORDER BY start_date DESC', []);
+        // Export activities with pagination
+        const limit = Math.min(parseInt(req.query.limit) || 100, 500);
+        const offset = parseInt(req.query.offset) || 0;
+        const activities = await dbAll(userDb, 'SELECT * FROM activities ORDER BY start_date DESC LIMIT ? OFFSET ?', [limit, offset]);
         exportData.activities = activities;
         
-        // Export training plans
-        const plans = await dbAll(userDb, 'SELECT * FROM training_plans', []);
+        // Export training plans (limit to last 100)
+        const plans = await dbAll(userDb, 'SELECT * FROM training_plans LIMIT 100', []);
         exportData.training_plans = plans;
         
-        // Export performance metrics
-        const metrics = await dbAll(userDb, 'SELECT * FROM performance_metrics ORDER BY metric_date DESC', []);
+        // Export performance metrics (limit to last 365 days)
+        const metrics = await dbAll(userDb, 'SELECT * FROM performance_metrics ORDER BY metric_date DESC LIMIT 365', []);
         exportData.performance_metrics = metrics;
         
         auditLog('DATA_EXPORT', req.user.id, { ip: req.ip }, req);

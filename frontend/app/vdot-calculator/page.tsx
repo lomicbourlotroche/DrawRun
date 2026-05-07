@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
 import { API_BASE_URL } from '@/lib/constants';
 import {
   ArrowLeft, Calculator, Trophy, Target, Zap, TrendingUp, Activity, ChevronRight
@@ -79,14 +80,7 @@ export default function VDOTCalculatorPage() {
     setResult(null);
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/algo/vdot?distance=${distance}&time=${timeMinutes}`
-      );
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Erreur lors du calcul');
-      }
-      const data = await response.json();
+      const data = await api.getAlgoVdot({ distance: Number(distance), time: timeMinutes });
       data.trainingPaces = computeTrainingPaces(data.vdot);
       setResult(data);
     } catch (err) {

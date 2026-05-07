@@ -50,6 +50,14 @@ const metricsMiddleware = (req, res, next) => {
         if (metrics.httpRequestDuration.length > 1000) {
             metrics.httpRequestDuration = metrics.httpRequestDuration.slice(-500);
         }
+        
+        // Cleanup httpRequestsTotal Map periodically (keep last 5000 entries)
+        if (metrics.httpRequestsTotal.size > 5000) {
+            const entries = [...metrics.httpRequestsTotal.entries()];
+            const toKeep = entries.slice(-2500);
+            metrics.httpRequestsTotal.clear();
+            toKeep.forEach(([k, v]) => metrics.httpRequestsTotal.set(k, v));
+        }
     });
 
     next();

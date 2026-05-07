@@ -189,7 +189,18 @@ export const useAuthStore = create<AuthState>()(
         has_decathlon: state.has_decathlon,
       }),
       onRehydrateStorage: () => (state) => {
-        if (state?.token) api.setToken(state.token);
+        if (state?.token) {
+          // Vérifier la validité du token (non expiré)
+          try {
+            const payload = JSON.parse(atob(state.token.split('.')[1]));
+            if (payload.exp * 1000 > Date.now()) {
+              api.setToken(state.token);
+            }
+            // Si expiré, le prochain appel API échouera et déclenchera le logout
+          } catch {
+            // Token invalide - sera géré par le prochain appel API
+          }
+        }
       },
     }
   )
@@ -207,6 +218,7 @@ interface DashboardState {
   setPmcData: (data: PmcDataPoint[]) => void;
   setRecentActivities: (activities: Activity[]) => void;
   setLoading: (loading: boolean) => void;
+  fetchPmcData: () => Promise<void>;
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
@@ -221,6 +233,15 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   setPmcData: (data) => set({ pmcData: data }),
   setRecentActivities: (activities) => set({ recentActivities: activities }),
   setLoading: (loading) => set({ isLoading: loading }),
+  fetchPmcData: async () => {
+    set({ isLoading: true });
+    try {
+      const data = await api.getPmc();
+      set({ pmcData: data });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 }));
 
 interface ActivitiesState {

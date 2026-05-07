@@ -36,8 +36,8 @@ function configureHelmet() {
         contentSecurityPolicy: {
             directives: {
                 defaultSrc: ["'self'"],
-                scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-                styleSrc: ["'self'", "'unsafe-inline'"],
+                scriptSrc: ["'self'"],
+                styleSrc: ["'self'", "'unsafe-inline'"],  // Keep inline styles for now, but plan to use nonces
                 imgSrc: ["'self'", "data:", "https:"],
                 connectSrc: connectSrc,
                 fontSrc: ["'self'"],
@@ -323,9 +323,15 @@ function validateCorsOrigin(origin, callback) {
         return;
     }
     
-    // Support wildcard '*' to allow all origins (for debugging only)
-    if (allowedOrigins.includes('*')) {
-        callback(null, true);
+        // No wildcard support in production — fail closed
+        if (allowedOrigins.includes('*')) {
+            if (process.env.NODE_ENV !== 'production') {
+                logger.warn('[CORS] Wildcard allowed only in development');
+                callback(null, true);
+            } else {
+                logger.error('[CORS] Wildcard blocked in production');
+                callback(new Error('CORS wildcard not allowed in production'));
+            }
     } else if (allowedOrigins.includes(origin)) {
         callback(null, true);
     } else if (origin && origin.match(/^https?:\/\/(www\.)?drawrun\.fr(:\d+)?$/)) {

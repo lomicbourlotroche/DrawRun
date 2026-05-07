@@ -1,14 +1,18 @@
 /* eslint-disable eqeqeq, react/no-unescaped-entities */
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Badge } from '@/components/ui';
-import { api } from '@/lib/api';
+import { api, coachApi } from '@/lib/api';
 import { client } from '@/lib/api/client';
 import { racePlanningApi } from '@/lib/api/race-planning.api';
-import type { RacePlanningResponse, RacePlanningRequest } from '@/types';
-import { Trophy, Download, AlertTriangle, MapPin, Heart, Zap, Droplets, Save } from 'lucide-react';
+import type { RacePlanningResponse, RacePlanningRequest, Split } from '@/types';
+import { Trophy, Download, AlertTriangle, MapPin, Heart, Zap, Droplets, Save, Upload, Printer } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import { 
+  ResponsiveContainer, ComposedChart, CartesianGrid, XAxis, YAxis, Tooltip, Area, Line 
+} from 'recharts';
 
 const ELEVATION_PROFILES = [
   { id: 'flat', label: 'Plat', description: 'Route plate sans dénivelé', factor: 1.0 },
@@ -32,27 +36,52 @@ export function RacePlanningContent() {
   const [targetMode, setTargetMode] = useState<'time' | 'pace'>('time');
   const [targetTime, setTargetTime] = useState('00:50:00');
   const [targetPace, setTargetPace] = useState('05:00');
+  const [mode, setMode] = useState<'simple' | 'gpx'>('simple');
+  const [points, setPoints] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<RacePlanningResponse | null>(null);
+  const [result, setResult] = useState<RacePlanningResponse | any | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleCalculate = async () => {
     setIsLoading(true);
     try {
-      const params: RacePlanningRequest = {
-        distance: form.distance,
-        elevationProfile: form.elevationProfile,
-        fatigue: form.fatigue,
-      };
+      if (mode === 'simple') {
+        const params: RacePlanningRequest = {
+          distance: form.distance,
+          elevationProfile: form.elevationProfile,
+          fatigue: form.fatigue,
+        };
 
-      if (targetMode === 'time') {
-        params.targetTime = targetTime;
+        if (targetMode === 'time') {
+          params.targetTime = targetTime;
+        } else {
+          const [mins, secs] = targetPace.split(':').map(Number);
+          params.targetPace = mins * 60 + secs;
+        }
+
+        const response = await api.calculateRacePlan(params);
+        setResult(response);
       } else {
-        const [mins, secs] = targetPace.split(':').map(Number);
-        params.targetPace = mins * 60 + secs;
-      }
+        if (points.length < 2) {
+          toast.error('Veuillez d\'abord importer un fichier GPX');
+          setIsLoading(false);
+          return;
+        }
 
-      const response = await api.calculateRacePlan(params);
-      setResult(response);
+        const goalTimeMinutes = targetMode === 'time' && targetTime ? 
+          targetTime.split(':').reduce((acc, val, i, arr) => acc + parseInt(val) * Math.pow(60, arr.length - 1 - i), 0) / 60 : 
+          undefined;
+
+        const response = await coachApi.calculateRaceStrategy({
+          points: points.map((p: any) => ({ dist: p.dist, elev: p.elev })),
+          params: {
+            temp: 15,
+            humidity: 50,
+            goalTime: goalTimeMinutes
+          }
+        });
+        setResult(response);
+      }
       toast.success('Plan de course calculé !');
     } catch (error) {
       console.error('Race planning error:', error);
@@ -60,6 +89,55 @@ export function RacePlanningContent() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const xml = event.target?.result as string;
+      const pts = parseGpx(xml);
+      if (pts.length > 0) {
+        setPoints(pts);
+        setForm({ ...form, distance: Math.round(pts[pts.length - 1].dist / 10) / 100 });
+        toast.success(`${pts.length} points importés`);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const parseGpx = (xml: string) => {
+    const pts: any[] = [];
+    const trkptRegex = /<trkpt lat="([^"]+)" lon="([^"]+)">([\s\S]*?)<\/trkpt>/g;
+    const eleRegex = /<ele>([^<]+)<\/ele>/;
+    let match;
+    let totalDist = 0;
+    let prevPoint: any = null;
+
+    while ((match = trkptRegex.exec(xml)) !== null) {
+      const lat = parseFloat(match[1]);
+      const lon = parseFloat(match[2]);
+      const eleMatch = match[3].match(eleRegex);
+      const elev = eleMatch ? parseFloat(eleMatch[1]) : 0;
+      if (prevPoint) totalDist += calculateDistance(prevPoint.lat, prevPoint.lon, lat, lon);
+      pts.push({ lat, lon, elev, dist: totalDist });
+      prevPoint = { lat, lon };
+    }
+    return pts;
+  };
+
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371000;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   const handleExportCsv = () => {
@@ -103,14 +181,30 @@ export function RacePlanningContent() {
 
   return (
     <div className="space-y-6 animate-fade-in max-w-6xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <Trophy className="w-6 h-6 text-primary" />
-          Race Planning
-        </h1>
-        <p className="text-muted mt-1">
-          Planifiez votre stratégie de course avec des splits détaillés et une stratégie de nutrition
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Trophy className="w-6 h-6 text-primary" />
+            Race Planning 2.0
+          </h1>
+          <p className="text-muted mt-1">
+            Planifiez votre stratégie de course avec des splits détaillés et une stratégie de nutrition
+          </p>
+        </div>
+        <div className="flex bg-muted p-1 rounded-xl">
+          <button 
+            onClick={() => setMode('simple')}
+            className={cn("px-4 py-2 rounded-lg text-sm font-medium transition-all", mode === 'simple' ? "bg-white text-primary shadow-sm" : "text-muted hover:text-foreground")}
+          >
+            Distance Simple
+          </button>
+          <button 
+            onClick={() => setMode('gpx')}
+            className={cn("px-4 py-2 rounded-lg text-sm font-medium transition-all", mode === 'gpx' ? "bg-white text-primary shadow-sm" : "text-muted hover:text-foreground")}
+          >
+            Profil GPX
+          </button>
+        </div>
       </div>
 
       {/* Configuration Form */}
@@ -119,29 +213,47 @@ export function RacePlanningContent() {
           <CardTitle>Configuration de la course</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Distance */}
-          <div>
-            <label className="text-sm font-medium mb-2 block">Distance</label>
-            <div className="flex gap-2 mb-3">
-              {DISTANCE_PRESETS.map((preset) => (
-                <Button
-                  key={preset.label}
-                  variant={form.distance === preset.km ? 'primary' : 'secondary'}
-                  size="sm"
-                  onClick={() => setForm({ ...form, distance: preset.km })}
-                >
-                  {preset.label}
-                </Button>
-              ))}
+          {/* Mode Simple vs GPX Inputs */}
+          {mode === 'simple' ? (
+            <div>
+              <label className="text-sm font-medium mb-2 block">Distance</label>
+              <div className="flex gap-2 mb-3">
+                {DISTANCE_PRESETS.map((preset) => (
+                  <Button
+                    key={preset.label}
+                    variant={form.distance === preset.km ? 'primary' : 'secondary'}
+                    size="sm"
+                    onClick={() => setForm({ ...form, distance: preset.km })}
+                  >
+                    {preset.label}
+                  </Button>
+                ))}
+              </div>
+              <Input
+                type="number"
+                step="0.1"
+                value={form.distance}
+                onChange={(e) => setForm({ ...form, distance: parseFloat(e.target.value) || 0 })}
+                label="Distance personnalisée (km)"
+              />
             </div>
-            <Input
-              type="number"
-              step="0.1"
-              value={form.distance}
-              onChange={(e) => setForm({ ...form, distance: parseFloat(e.target.value) || 0 })}
-              label="Distance personnalisée (km)"
-            />
-          </div>
+          ) : (
+            <div>
+              <label className="text-sm font-medium mb-2 block">Parcours GPX</label>
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className={cn(
+                  "border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all",
+                  points.length > 0 ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                )}
+              >
+                <Upload className={cn("w-8 h-8 mx-auto mb-2", points.length > 0 ? "text-primary" : "text-muted")} />
+                <p className="text-sm font-medium">{points.length > 0 ? `${points.length} points chargés` : "Cliquez pour importer un fichier .gpx"}</p>
+                {points.length > 0 && <p className="text-xs text-muted mt-1">Distance estimée: {(points[points.length-1].dist / 1000).toFixed(2)} km</p>}
+              </div>
+              <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".gpx" className="hidden" />
+            </div>
+          )}
 
           {/* Target Mode */}
           <div>
@@ -235,14 +347,43 @@ export function RacePlanningContent() {
       {/* Results */}
       {result && (
         <div className="space-y-6">
+          {/* Visualisation (GPX mode only) */}
+          {mode === 'gpx' && result && result.segments && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Profil d'Effort Dynamique</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80 w-full mt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={result.segments}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
+                      <XAxis dataKey="km" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis yAxisId="left" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} label={{ value: 'Altitude (m)', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 10 }} />
+                      <YAxis yAxisId="right" orientation="right" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} label={{ value: 'Allure (s/km)', angle: 90, position: 'insideRight', fill: '#64748b', fontSize: 10 }} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#fff', border: 'none', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      />
+                      <Area yAxisId="left" type="monotone" dataKey="elevGain" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.1} strokeWidth={2} />
+                      <Line yAxisId="right" type="stepAfter" dataKey="targetPaceSec" stroke="#818cf8" strokeWidth={3} dot={false} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Summary */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Résumé</span>
-                <div className="flex gap-2">
+                <div className="flex gap-2 no-print">
                   <Button variant="secondary" size="sm" onClick={handleSavePlan} leftIcon={<Save className="w-4 h-4" />}>
                     Enregistrer
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={handlePrint} leftIcon={<Printer className="w-4 h-4" />}>
+                    Imprimer PDF
                   </Button>
                   <Button variant="secondary" size="sm" onClick={handleExportCsv} leftIcon={<Download className="w-4 h-4" />}>
                     Exporter CSV
@@ -303,7 +444,7 @@ export function RacePlanningContent() {
               {/* Warnings */}
               {result.warnings.length > 0 && (
                 <div className="mt-4 space-y-2">
-                  {result.warnings.map((warning, idx) => {
+                  {result.warnings.map((warning: any, idx: number) => {
                     const severityColors: Record<string, string> = {
                       info: 'bg-info/10 border-info/30',
                       moderate: 'bg-warning/10 border-warning/30',
@@ -411,7 +552,7 @@ export function RacePlanningContent() {
                       </tr>
                     </thead>
                     <tbody>
-                      {result.taperRecommendation.plan.slice(0, 7).map((day) => (
+                      {result.taperRecommendation.plan.slice(0, 7).map((day: any) => (
                         <tr key={day.daysOut} className={`border-b border-border/50 ${day.isCompetition ? 'bg-primary/10 font-semibold' : ''}`}>
                           <td className="py-1 px-2">{day.daysOut}</td>
                           <td className="py-1 px-2">{day.volumePercent}%</td>
@@ -448,7 +589,7 @@ export function RacePlanningContent() {
                     </tr>
                   </thead>
                   <tbody>
-                    {result.splits.map((split) => (
+                    {result.splits.map((split: any) => (
                       <tr key={split.km} className="border-b border-border/50 hover:bg-muted/30">
                         <td className="py-2 px-2 font-medium">{split.km}</td>
                         <td className="py-2 px-2">{formatDuration(split.splitTime)}</td>
@@ -466,7 +607,7 @@ export function RacePlanningContent() {
                         </td>
                         <td className="py-2 px-2">
                           <div className="flex gap-1 flex-wrap">
-                            {split.nutrition.map((nut, idx) => (
+                            {split.nutrition.map((nut: any, idx: number) => (
                               <Badge
                                 key={idx}
                                 variant={nut.type === 'water' ? 'secondary' : nut.type === 'gel' ? 'warning' : 'outline'}

@@ -170,6 +170,14 @@ const SCIENTIFIC_CONSTANTS = {
         MODERATE: 500,
         HIGH: 800,
     },
+
+    // Facteurs environnementaux
+    ENVIRONMENTAL: {
+        TEMP_OPTIMAL_MIN: 8,      // °C - Température idéale marathon
+        TEMP_OPTIMAL_MAX: 15,
+        HEAT_DEGRADATION_START: 20, // °C - Début de la perte de performance significante
+        ALTITUDE_DEGRADATION_START: 700, // m - Début de la baisse de VO2max
+    },
 };
 
 // ============================================================================
@@ -608,6 +616,48 @@ const RunningPerformance = {
     },
     
     /**
+     * GAP - Grade Adjusted Pace
+     * Allure ajustée à la pente basée sur le coût métabolique.
+     * Ref: Minetti, A. E. et al. (2002). Energy cost of walking and running at extreme uphill and downhill slopes.
+     * 
+     * @param {number} paceSeconds - Allure actuelle en sec/km
+     * @param {number} grade - Pente en décimal (ex: 0.05 pour 5%)
+     */
+    calculateGAP: (paceSeconds, grade) => {
+        if (!paceSeconds || paceSeconds <= 0) return 0;
+        
+        // Pente clampée pour éviter les aberrations
+        const g = MathUtils.clamp(grade, -0.45, 0.45);
+        
+        // Formule polynomiale (Minetti et al. 2002)
+        const c5 = 155.4, c4 = -30.4, c3 = -43.3, c2 = 46.3, c1 = 19.5, c0 = 3.6;
+        const costG = c5 * Math.pow(g, 5) + c4 * Math.pow(g, 4) + c3 * Math.pow(g, 3) + c2 * Math.pow(g, 2) + c1 * g + c0;
+        const cost0 = c0;
+        
+        const factor = costG / cost0;
+        
+        // GAP = Allure / Facteur de difficulté
+        // En montée (factor > 1), le GAP est plus rapide (secondes plus petites)
+        return paceSeconds / factor;
+    },
+
+    /**
+     * Facteur d'Efficacité (EF)
+     * Mesure la relation entre l'intensité (allure ajustée) et la réponse cardiaque.
+     * Une augmentation de l'EF indique une amélioration de la condition aérobie.
+     * 
+     * @param {number} gapSeconds - Allure ajustée (GAP) en sec/km
+     * @param {number} avgHR - Fréquence cardiaque moyenne
+     */
+    calculateEfficiencyFactor: (gapSeconds, avgHR) => {
+        if (!gapSeconds || gapSeconds <= 0 || !avgHR || avgHR <= 0) return 0;
+        
+        // Vitesse en m/min pour une valeur lisible (ex: 1.5 - 2.5)
+        const speedMetersPerMin = 1000 / (gapSeconds / 60);
+        return speedMetersPerMin / avgHR;
+    },
+    
+    /**
      * Estimation VMA à partir du VO2max
      * Ref: Mercier et al. (1987)
      * VMA (km/h) = (VO2max - 2.209) / 3.5 (formule française)
@@ -952,6 +1002,25 @@ const RunningPerformance = {
         const points = Math.round(table.A * Math.pow(Math.abs(table.B - performance), table.C));
         return Math.max(0, points);
     },
+
+    /**
+     * Prédictions groupées pour les distances classiques
+     */
+    predictRaceTimes: (vdot) => {
+        const m = RunningPerformance.predictMarathon(vdot);
+        const h = RunningPerformance.predictHalfMarathon(vdot);
+        
+        // Estimations 10k et 5k (simplifiées pour VDOT)
+        const pace10k = RunningPerformance.getPaceSeconds(vdot, SCIENTIFIC_CONSTANTS.VDOT.T);
+        const pace5k = RunningPerformance.getPaceSeconds(vdot, SCIENTIFIC_CONSTANTS.VDOT.I);
+        
+        return {
+            marathon: parseFloat(m.time.split(':')[0]) + parseFloat(m.time.split(':')[1])/60,
+            half: parseFloat(h.time.split(':')[0]) + parseFloat(h.time.split(':')[1])/60,
+            '10k': (pace10k * 10) / 3600,
+            '5k': (pace5k * 5) / 3600
+        };
+    }
 };
 
 // ============================================================================
@@ -1392,13 +1461,18 @@ const PMC = {
      * Estimation readiness depuis PMC
      */
     estimateReadiness: (pmcData, hrvRmssd, sleepHours) => {
-        if (!pmcData || pmcData.length === 0) return 70;
+        if (!pmcData || pmcData.length === 0) {
+            return {
+                readiness: 70,
+                factors: { hrv: 70, sleep: 70, tsb: 70 }
+            };
+        }
         
         const latest = pmcData[pmcData.length - 1];
         const tsb = latest.tsb || 0;
         const atl = latest.atl || 0;
         
-        let tsbScore = MathUtils.clamp(50 + tsb * 2, 0, 100);
+        const tsbScore = MathUtils.clamp(50 + tsb * 2, 0, 100);
         
         let hrvScore = 70;
         if (hrvRmssd > 0) {
@@ -1407,17 +1481,25 @@ const PMC = {
         
         let sleepScore = 70;
         if (sleepHours > 0) {
-            if (sleepHours >= 8) sleepScore = 90;
+            if (sleepHours >= 8) sleepScore = 95;
             else if (sleepHours >= 7) sleepScore = 80;
             else if (sleepHours >= 6) sleepScore = 60;
             else sleepScore = 40;
         }
         
-        const atlFactor = atl > 0 ? Math.max(0.3, 1 - atl / 100) : 1;
+        const atlFactor = atl > 0 ? Math.max(0.4, 1 - atl / 150) : 1;
         
         const readiness = (tsbScore * 0.4 + hrvScore * 0.3 + sleepScore * 0.3) * atlFactor;
         
-        return Math.round(MathUtils.clamp(readiness, 10, 100));
+        return {
+            readiness: Math.round(MathUtils.clamp(readiness, 10, 100)),
+            factors: {
+                hrv: Math.round(hrvScore),
+                sleep: Math.round(sleepScore),
+                tsb: Math.round(tsbScore),
+                atlFactor: Math.round(atlFactor * 100) / 100
+            }
+        };
     },
 };
 
@@ -2190,6 +2272,19 @@ const Taper = {
     calculateTaperPlan: (currentWeeklyLoad, daysToCompetition, taperStyle = 'classic') => {
         return Taper.calculateOptimalTaper(currentWeeklyLoad, daysToCompetition).plan;
     },
+
+    /**
+     * Get tapering specific advice
+     */
+    getAdvice: (distance) => {
+        return [
+            'Maintenez l\'intensité : Ne réduisez pas vos allures de travail, seulement la durée des fractions.',
+            'Volume : Réduisez le volume global progressivement.',
+            'Sommeil : Visez 1h de sommeil supplémentaire par nuit.',
+            'Nutrition : Augmentez la part de glucides à J-3.',
+            'Mental : Visualisez votre course chaque jour.'
+        ];
+    }
 };
 
 // ============================================================================
@@ -2757,10 +2852,45 @@ const SportAnalysis = {
             if (avgPower > 0) variabilityIndex = Math.round((normalizedPower / avgPower) * 100) / 100;
         }
 
+        // ===== GAP & Efficiency Factor =====
+        let gap = null, efficiencyFactor = null;
+        if ((sportType === 'Run' || sportType === 'TrailRun' || sportType === 'run') && distance > 0 && duration > 0) {
+            const paceSecPerKm = duration / (distance / 1000);
+            const grade = elevation / distance;
+            const gapSecPerKm = RunningPerformance.calculateGAP(paceSecPerKm, grade);
+            
+            gap = {
+                secPerKm: Math.round(gapSecPerKm),
+                formatted: MathUtils.formatPace(gapSecPerKm)
+            };
+            
+            if (avgHR > 0) {
+                efficiencyFactor = Math.round(RunningPerformance.calculateEfficiencyFactor(gapSecPerKm, avgHR) * 100) / 100;
+            }
+        }
+
+        // ===== Biomechanics =====
+        let biomechanics = null;
+        if (sportType === 'Run' && (activity.average_cadence || activity.cadence)) {
+            const cadence = activity.average_cadence || activity.cadence;
+            const speedMs = distance / duration;
+            const weight = profile?.weight || 70;
+            const height = profile?.height || 175;
+            
+            const metrics = Biomechanics.estimateMetrics(speedMs, cadence, weight, height);
+            if (metrics) {
+                biomechanics = {
+                    ...metrics,
+                    advice: Biomechanics.getAdvice(metrics, speedMs * 3.6)
+                };
+            }
+        }
+
         return {
             sportType, sportLabel: constants.label, tss, trimp,
             intensityFactor: intensityFactor ? Math.round(intensityFactor * 100) / 100 : null,
-            zones, pace, vdot, normalizedPower, variabilityIndex,
+            zones, pace, vdot, gap, efficiencyFactor, normalizedPower, variabilityIndex,
+            biomechanics,
             elevationGain: elevation, duration, durationFormatted: MathUtils.formatDuration(duration),
             calories: activity.calories || null,
         };
@@ -3153,6 +3283,373 @@ const AltitudeTraining = {
     },
 };
 
+/**
+ * Nutrition & Fueling Strategy
+ * Calculates carbohydrate and hydration needs based on exercise intensity and duration.
+ * Ref: Jeukendrup (2014) - A step towards personalized sports nutrition.
+ */
+const Nutrition = {
+    /**
+     * Calculate fueling requirements for a session
+     */
+    calculateRequirements: (durationMinutes, intensityFactor, weightKg = 70) => {
+        // Hydration: 400-800ml per hour depending on intensity
+        const hydrationPerHour = 400 + (intensityFactor > 0.8 ? 400 : intensityFactor > 0.6 ? 200 : 0);
+        const totalHydration = Math.round((durationMinutes / 60) * hydrationPerHour);
+
+        // Carbohydrates (CHO): 30-90g per hour
+        let choPerHour = 0;
+        if (durationMinutes < 45) choPerHour = 0;
+        else if (durationMinutes < 75) choPerHour = 30; // Rinse or small amount
+        else if (durationMinutes < 150) choPerHour = 60; // 60g/h (Glucose:Fructose 2:1)
+        else choPerHour = 90; // 90g/h (Multiple transportable CHOs)
+
+        // Adjust by intensity
+        if (intensityFactor < 0.6) choPerHour *= 0.6;
+        else if (intensityFactor > 0.9) choPerHour *= 1.2;
+
+        const totalCHO = Math.round((durationMinutes / 60) * choPerHour);
+
+        // Sodium: 500-1000mg per liter
+        const totalSodium = Math.round((totalHydration / 1000) * 700);
+
+        return {
+            hydration: { totalMl: totalHydration, perHourMl: hydrationPerHour },
+            carbs: { totalG: totalCHO, perHourG: Math.round(choPerHour) },
+            sodium: { totalMg: totalSodium },
+            recommendations: Nutrition.getRecommendations(durationMinutes, choPerHour),
+        };
+    },
+
+    getRecommendations: (duration, choPerHour) => {
+        const recs = [];
+        if (duration > 120) {
+            recs.push('Privilégiez un ratio Glucose:Fructose 2:1 pour absorber >60g/h.');
+            recs.push('Commencez à vous ravitailler dès la 20ème minute.');
+        }
+        if (choPerHour >= 90) {
+            recs.push('Entraînement de l\'intestin (Gut Training) indispensable pour ces doses.');
+        }
+        recs.push('Visez 500-700mg de sodium par litre d\'eau.');
+        return recs;
+    },
+    
+    /**
+     * Recovery nutrition (4:1 Carb to Protein ratio)
+     */
+    calculateRecovery: (weightKg) => {
+        return {
+            carbsG: Math.round(weightKg * 1.2),
+            proteinG: Math.round(weightKg * 0.3),
+            timing: 'Dans les 30-60 minutes après l\'effort.',
+        };
+    }
+};
+
+/**
+ * Biomechanics & Stride Analysis
+ * Estimates running dynamics (VO, GCT, Stiffness) from cadence and speed.
+ * Ref: Morin et al. (2005), Minetti (2002), Dalleau et al. (2004)
+ */
+const Biomechanics = {
+    /**
+     * Estimate running dynamics
+     * @param {number} speedMs - Speed in m/s
+     * @param {number} cadence - Cadence in steps per minute (total, e.g. 180)
+     * @param {number} weightKg - Runner weight
+     * @param {number} heightCm - Runner height (optional)
+     */
+    estimateMetrics: (speedMs, cadence, weightKg = 70, heightCm = 175) => {
+        if (!speedMs || !cadence || cadence < 100) return null;
+
+        const stepFreq = cadence / 60; // steps per second
+        const stepLength = speedMs / stepFreq; // meters per step
+
+        // 1. Vertical Oscillation (VO) estimation
+        // Higher cadence and speed usually correlate with lower VO
+        // Ref: Dalleau et al. (2004) - Simple method for field-based stiffness
+        const voCm = Math.max(4, 15 - (speedMs * 1.2) - (cadence - 160) * 0.1);
+
+        // 2. Ground Contact Time (GCT) estimation
+        // Typical range: 160ms (elite) to 300ms (beginner)
+        const gctMs = Math.max(160, 350 - (speedMs * 18) - (cadence - 160) * 0.5);
+
+        // 3. Leg Stiffness (kN/m)
+        // Kleg = Fmax / ΔL (simplified)
+        // Ref: Morin et al. (2005)
+        const g = 9.81;
+        const flightTime = (1 / stepFreq) - (gctMs / 1000);
+        const stiffness = (weightKg * Math.PI * (1 / stepFreq)) / ( (gctMs / 1000) * ( ( (1 / stepFreq) * Math.PI / 2 ) - (gctMs / 1000) ) );
+
+        // 4. Vertical Ratio (%) = VO / Step Length
+        const verticalRatio = (voCm / 100) / stepLength * 100;
+
+        return {
+            verticalOscillation: Math.round(voCm * 10) / 10,
+            groundContactTime: Math.round(gctMs),
+            stiffness: Math.round(stiffness * 10) / 10,
+            verticalRatio: Math.round(verticalRatio * 10) / 10,
+            stepLength: Math.round(stepLength * 100) / 100,
+            cadence,
+        };
+    },
+
+    /**
+     * Generate technical advice based on metrics
+     */
+    getAdvice: (metrics, speedKmh) => {
+        if (!metrics) return [];
+        const advice = [];
+
+        if (metrics.cadence < 165 && speedKmh > 10) {
+            advice.push({
+                type: 'cadence',
+                message: 'Cadence faible détectée.',
+                detail: 'Augmentez votre cadence de 5% pour réduire les forces d\'impact et le risque de blessure.',
+                priority: 'high'
+            });
+        }
+
+        if (metrics.verticalOscillation > 11) {
+            advice.push({
+                type: 'oscillation',
+                message: 'Oscillation verticale élevée.',
+                detail: 'Vous dépensez trop d\'énergie vers le haut. Essayez de courir plus "à plat".',
+                priority: 'moderate'
+            });
+        }
+
+        if (metrics.groundContactTime > 260 && speedKmh > 12) {
+            advice.push({
+                type: 'gct',
+                message: 'Temps de contact au sol prolongé.',
+                detail: 'Travaillez votre explosivité (pluymétrie) pour une foulée plus réactive.',
+                priority: 'moderate'
+            });
+        }
+
+        if (metrics.verticalRatio < 7) {
+            advice.push({
+                type: 'efficiency',
+                message: 'Excellente efficacité !',
+                detail: 'Votre ratio vertical est optimal, signe d\'une technique très économique.',
+                priority: 'low'
+            });
+        }
+
+        return advice;
+    },
+
+    /**
+     * Standalone calculation for vertical oscillation
+     */
+    calculateVerticalOscillation: (cadence, speedMs) => {
+        return Math.max(4, 15 - (speedMs * 1.2) - (cadence - 160) * 0.1);
+    },
+
+    /**
+     * Standalone calculation for ground contact time
+     */
+    calculateGroundContactTime: (cadence, speedMs) => {
+        return Math.max(160, 350 - (speedMs * 18) - (cadence - 160) * 0.5);
+    },
+
+    /**
+     * Standalone calculation for leg stiffness
+     */
+    calculateLegStiffness: (weightKg, flightTime, contactTime) => {
+        const stepPeriod = flightTime + contactTime;
+        const stepFreq = 1 / stepPeriod;
+        const g = 9.81;
+        // Kleg = Fmax / dL simplified model
+        const stiffnessNm = (weightKg * g * Math.PI * stepPeriod) / ( 2 * contactTime * ( ( stepPeriod * Math.PI / 2 ) - contactTime ) );
+        return stiffnessNm / 1000; // Return in kN/m
+    },
+
+    /**
+     * Rating system for metrics
+     */
+    getRating: (metric, value) => {
+        const ratings = {
+            cadence: { excellent: 180, fair: 170 },
+            oscillation: { excellent: 8, fair: 11 }, // lower is better
+            gct: { excellent: 200, fair: 250 } // lower is better
+        };
+
+        const r = ratings[metric];
+        if (!r) return 'unknown';
+
+        if (metric === 'cadence') {
+            if (value >= r.excellent) return 'excellent';
+            if (value >= r.fair) return 'good';
+            return 'fair';
+        } else {
+            if (value <= r.excellent) return 'excellent';
+            if (value <= r.fair) return 'good';
+            return 'fair';
+        }
+    }
+};
+
+/**
+ * Environmental Impact Model
+ * Calculates pace adjustments for heat, humidity, and altitude.
+ * Ref: Ely et al. (2007) - Impact of Environmental Conditions on Marathon Performance.
+ */
+const EnvironmentalImpact = {
+    /**
+     * Calculate pace adjustment for heat and humidity
+     * @param {number} tempCelsius - Air temperature
+     * @param {number} humidityPct - Relative humidity (0-100)
+     * @returns {number} Factor (e.g. 1.05 means 5% slower)
+     */
+    calculateHeatImpact: (tempCelsius, humidityPct = 50) => {
+        const threshold = SCIENTIFIC_CONSTANTS.ENVIRONMENTAL.HEAT_DEGRADATION_START;
+        if (tempCelsius < threshold) return 1.0;
+        
+        // Pace degradation: ~0.5% per degree above 20°C, adjusted by humidity
+        const tempEffect = (tempCelsius - threshold) * 0.006;
+        const humidityEffect = humidityPct > 60 ? (humidityPct - 60) * 0.002 : 0;
+        
+        const totalImpact = 1 + tempEffect + humidityEffect;
+        return Math.round(totalImpact * 1000) / 1000;
+    },
+    
+    /**
+     * Get combined adjustment factor
+     */
+    getAdjustmentFactor: (temp, humidity, altitude) => {
+        const heat = EnvironmentalImpact.calculateHeatImpact(temp, humidity);
+        const alt = AltitudeTraining.calculatePerformanceEffect(altitude).paceAdjustment;
+        return Math.round(heat * alt * 1000) / 1000;
+    }
+};
+
+/**
+ * Race Strategy Engine
+ * Generates segment-based pacing plans from GPX data.
+ */
+const RaceStrategy = {
+    /**
+     * Generate pacing strategy
+     * @param {Array} points - [{lat, lon, elev, dist}, ...] or simplified points
+     * @param {object} athlete - {vdot, weight}
+     * @param {object} params - {temp, humidity, altitude, goalTime, strategyType}
+     */
+    generatePlan: (points, athlete, params) => {
+        if (!points || points.length < 2) return null;
+
+        const { vdot } = athlete;
+        const { temp = 15, humidity = 50, goalTime = null } = params;
+
+        // 1. Calculer l'allure de base (effort plat)
+        let basePaceSec;
+        if (goalTime) {
+            const totalDist = points[points.length - 1].dist;
+            basePaceSec = (goalTime * 60) / (totalDist / 1000);
+        } else {
+            // Utiliser VDOT pour estimer l'allure marathon/semi/10k
+            const preds = RunningPerformance.predictRaceTimes(vdot);
+            const totalDist = points[points.length - 1].dist;
+            
+            let targetDist;
+            if (totalDist > 30000) targetDist = 'marathon';
+            else if (totalDist > 15000) targetDist = 'half';
+            else if (totalDist > 8000) targetDist = '10k';
+            else targetDist = '5k';
+            
+            const timeHours = preds[targetDist];
+            basePaceSec = (timeHours * 3600) / (targetDist === 'marathon' ? 42.195 : targetDist === 'half' ? 21.0975 : targetDist === '10k' ? 10 : 5);
+        }
+
+        // 2. Découper en segments de 1km (ou plus fin si besoin)
+        const segments = [];
+        let currentSeg = { dist: 0, elevGain: 0, elevLoss: 0, points: [] };
+        let lastDist = 0;
+
+        points.forEach((p, i) => {
+            if (i === 0) return;
+            const prev = points[i - 1];
+            const d = p.dist - prev.dist;
+            const e = p.elev - prev.elev;
+
+            if (e > 0) currentSeg.elevGain += e;
+            else currentSeg.elevLoss += Math.abs(e);
+
+            currentSeg.dist += d;
+
+            if (currentSeg.dist >= 1000 || i === points.length - 1) {
+                const grade = (currentSeg.elevGain - currentSeg.elevLoss) / currentSeg.dist;
+                // Calcul du coût métabolique via Minetti (modèle GAP)
+                const g = MathUtils.clamp(grade, -0.45, 0.45);
+                const c5 = 155.4, c4 = -30.4, c3 = -43.3, c2 = 46.3, c1 = 19.5, c0 = 3.6;
+                const costG = c5 * Math.pow(g, 5) + c4 * Math.pow(g, 4) + c3 * Math.pow(g, 3) + c2 * Math.pow(g, 2) + c1 * g + c0;
+                const slopeFactor = costG / c0;
+
+                // Cardiac drift: ~1.5% d'effort supplémentaire nécessaire par heure
+                const cumulativeTimeHours = segments.reduce((acc, s) => acc + s.targetPaceSec, 0) / 3600;
+                const driftFactor = 1 + (cumulativeTimeHours * 0.015);
+
+                // Application du facteur environnemental
+                const envFactor = EnvironmentalImpact.getAdjustmentFactor(temp, humidity, p.elev);
+                
+                const targetPace = basePaceSec * slopeFactor * envFactor * driftFactor;
+
+                segments.push({
+                    km: segments.length + 1,
+                    distance: Math.round(currentSeg.dist),
+                    elevGain: Math.round(currentSeg.elevGain),
+                    elevLoss: Math.round(currentSeg.elevLoss),
+                    grade: Math.round(grade * 1000) / 10,
+                    targetPaceSec: Math.round(targetPace),
+                    targetPace: `${Math.floor(targetPace / 60)}:${String(Math.round(targetPace % 60)).padStart(2, '0')}`,
+                    cumulativeTime: Math.round((segments.reduce((acc, s) => acc + s.targetPaceSec, 0) + targetPace) * 10) / 10
+                });
+
+                currentSeg = { dist: 0, elevGain: 0, elevLoss: 0, points: [] };
+            }
+        });
+
+        // 4. Tapering strategy (if enough distance)
+        const totalDistKm = points[points.length - 1].dist / 1000;
+        let taper = null;
+        if (totalDistKm >= 5) {
+            const distanceTag = totalDistKm > 30 ? 'marathon' : totalDistKm > 15 ? 'half' : totalDistKm > 8 ? '10k' : '5k';
+            // On estime la charge hebdomadaire actuelle à partir du VDOT si non fournie
+            const estimatedWeeklyLoad = athlete.weeklyLoad || (athlete.vdot * 10);
+            taper = Taper.calculateOptimalTaper(estimatedWeeklyLoad, 14, distanceTag);
+            taper.recommendations = Taper.getAdvice(distanceTag);
+        }
+
+        // 5. Nutrition strategy integration
+        const totalDurationMin = segments.reduce((acc, s) => acc + s.targetPaceSec, 0) / 60;
+        const nutrition = Nutrition.calculateRequirements(totalDurationMin, 0.85, athlete.weight || 70);
+
+        return {
+            segments,
+            summary: {
+                totalDistance: Math.round(points[points.length - 1].dist),
+                totalElevationGain: Math.round(segments.reduce((acc, s) => acc + s.elevGain, 0)),
+                totalTimeSec: Math.round(segments.reduce((acc, s) => acc + s.targetPaceSec, 0)),
+                averagePace: `${Math.floor((segments.reduce((acc, s) => acc + s.targetPaceSec, 0) / (points[points.length - 1].dist / 1000)) / 60)}:${String(Math.round((segments.reduce((acc, s) => acc + s.targetPaceSec, 0) / (points[points.length - 1].dist / 1000)) % 60)).padStart(2, '0')}`
+            },
+            nutrition,
+            taper
+        };
+    },
+
+    /**
+     * Helper to adjust pace for grade
+     */
+    adjustPaceForGrade: (paceSec, grade) => {
+        const g = MathUtils.clamp(grade / 100, -0.45, 0.45);
+        const c5 = 155.4, c4 = -30.4, c3 = -43.3, c2 = 46.3, c1 = 19.5, c0 = 3.6;
+        const costG = c5 * Math.pow(g, 5) + c4 * Math.pow(g, 4) + c3 * Math.pow(g, 3) + c2 * Math.pow(g, 2) + c1 * g + c0;
+        const slopeFactor = costG / c0;
+        return paceSec * slopeFactor;
+    }
+};
+
 // ============================================================================
 // EXPORTS
 // ============================================================================
@@ -3174,4 +3671,8 @@ module.exports = {
     RunningPower,
     SleepOptimization,
     AltitudeTraining,
+    Nutrition,
+    EnvironmentalImpact,
+    RaceStrategy,
+    Biomechanics,
 };

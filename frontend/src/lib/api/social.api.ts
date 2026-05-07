@@ -131,17 +131,17 @@ export const socialApi = {
     return client.request(`/api/social/groups/${groupId}/members`);
   },
 
-  kickMember(groupId: number, userId: number): Promise<{ success: boolean; error?: string }> {
-    return client.request(`/api/social/groups/${groupId}/kick`, {
+  kickMember(groupId: number, targetUserId: number): Promise<{ success: boolean; error?: string }> {
+    return client.request('/api/social/groups/kick', {
       method: 'POST',
-      body: JSON.stringify({ userId }),
+      body: JSON.stringify({ targetUserId }),
     });
   },
 
   promoteMember(groupId: number, userId: number, role: string): Promise<{ success: boolean; error?: string }> {
     return client.request(`/api/social/groups/${groupId}/promote`, {
       method: 'POST',
-      body: JSON.stringify({ userId, role }),
+      body: JSON.stringify({ targetUserId: userId, role }),
     });
   },
 
@@ -331,11 +331,11 @@ export const socialApi = {
     });
   },
 
-  getActivityReactions(activityId: number): Promise<Reaction[]> {
+  getActivityReactions(activityId: number): Promise<Array<{ reaction_type: string; count: number }>> {
     return client.request(`/api/social/activities/${activityId}/reactions`);
   },
 
-  getUserActivityReactions(activityId: number): Promise<string[]> {
+  getUserActivityReactions(activityId: number): Promise<{ reaction_type: string }[]> {
     return client.request(`/api/social/activities/${activityId}/reactions/user`);
   },
 

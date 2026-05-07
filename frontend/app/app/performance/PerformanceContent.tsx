@@ -10,7 +10,7 @@ import { api } from '@/lib/api';
 import { useUserConstantsStore } from '@/stores';
 import { PerformanceZones, PerformanceMetrics, ProgressionChart } from '@/components/features/performance';
 import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent, Skeleton, Progress } from '@/components/ui';
-import { Dumbbell, Bike, Waves, Heart, Activity, TrendingUp, Gauge, Zap, BarChart3, Brain, AlertCircle, MapPin, Clock } from 'lucide-react';
+import { Dumbbell, Bike, Waves, Heart, Activity, TrendingUp, Gauge, Zap, BarChart3, Brain, AlertCircle, MapPin, Clock, Crown, Star } from 'lucide-react';
 import type { PmcDataPoint, Activity as ActivityType } from '@/types';
 
 interface PolarizationData {
@@ -53,7 +53,7 @@ function computeStats(activities: ActivityType[]): StatsData {
 
 export default function PerformanceContent() {
   const [sport, setSport] = useState<'run' | 'bike' | 'swim'>('run');
-  const [activeTab, setActiveTab] = useState<'metrics' | 'zones' | 'stats' | 'progression' | 'analyse'>('metrics');
+  const [activeTab, setActiveTab] = useState<'metrics' | 'zones' | 'stats' | 'progression' | 'analyse' | 'elite'>('metrics');
   const [pmc, setPmc] = useState<PmcDataPoint[]>([]);
   const [activities, setActivities] = useState<ActivityType[]>([]);
   const [polarization, setPolarization] = useState<PolarizationData | null>(null);
@@ -76,11 +76,11 @@ export default function PerformanceContent() {
       const [constantsResult, p, acts] = await Promise.all([
         fetchConstants(),
         api.getPmc().catch(() => []),
-        api.getActivities().catch(() => []),
+        api.getActivities().catch(() => ({ data: [] as ActivityType[] })),
       ]);
       setPmc(p);
-      // Garantir que acts est toujours un tableau
-      const actsArray = Array.isArray(acts) ? acts : [];
+      // acts est maintenant { data: Activity[], pagination: ... }
+      const actsArray = Array.isArray((acts as any)?.data) ? (acts as any).data : [];
       setActivities(actsArray);
 
       // ── Polarisation ──────────────────────────────────────────────────────
@@ -92,9 +92,9 @@ export default function PerformanceContent() {
 
         // Construire zonePercent estimé depuis average_heartrate et max_heartrate
         const activitiesWithZones = actsArray
-          .filter((a) => (a as ActivityType & { average_heartrate?: number }).average_heartrate)
-          .map((a) => {
-            const avgHR = (a as ActivityType & { average_heartrate?: number }).average_heartrate ?? 0;
+          .filter((a: ActivityType) => a.average_heartrate)
+          .map((a: ActivityType) => {
+            const avgHR = a.average_heartrate ?? 0;
             const hrPct = avgHR / fcm;
             // Estimer la zone dominante depuis le % FCM
             let low = 0, moderate = 0, high = 0;
@@ -123,14 +123,14 @@ export default function PerformanceContent() {
 
         // Calculer un RMSSD estimé depuis la variabilité de FC entre activités
         const hrs = actsArray
-          .filter((a) => (a as ActivityType & { average_heartrate?: number }).average_heartrate)
+          .filter((a: ActivityType) => a.average_heartrate)
           .slice(0, 14) // 2 dernières semaines
-          .map((a) => (a as ActivityType & { average_heartrate?: number }).average_heartrate as number);
+          .map((a: ActivityType) => a.average_heartrate as number);
 
         if (hrs.length >= 3) {
           // RMSSD estimé : écart-type de la FC × facteur de conversion empirique
-          const mean = hrs.reduce((s, v) => s + v, 0) / hrs.length;
-          const variance = hrs.reduce((s, v) => s + (v - mean) ** 2, 0) / hrs.length;
+          const mean = hrs.reduce((s: number, v: number) => s + v, 0) / hrs.length;
+          const variance = hrs.reduce((s: number, v: number) => s + (v - mean) ** 2, 0) / hrs.length;
           const stdDev = Math.sqrt(variance);
           // Conversion empirique : stdDev FC ≈ RMSSD / 3 pour coureurs entraînés
           const estimatedRmssd = Math.round(stdDev * 3 + 20);
@@ -165,6 +165,7 @@ export default function PerformanceContent() {
     { id: 'stats', label: 'Statistiques', icon: <BarChart3 className="w-4 h-4" /> },
     { id: 'progression', label: 'Progression', icon: <TrendingUp className="w-4 h-4" /> },
     { id: 'analyse', label: 'Analyse', icon: <Brain className="w-4 h-4" /> },
+    { id: 'elite', label: 'Elite', icon: <Crown className="w-4 h-4 text-amber-500" /> },
   ] as const;
 
   return (
@@ -335,10 +336,157 @@ export default function PerformanceContent() {
               <HRVRecoverySection hrv={hrv} error={hrvError} />
             </div>
           )}
+          {activeTab === 'elite' && (
+            <EliteAnalyticsSection activities={activities} />
+          )}
         </>
       )}
     </div>
   );
+}
+
+// ============================================================================
+// 10.3 — Elite Analytics Section
+// ============================================================================
+
+function EliteAnalyticsSection({ activities }: { activities: ActivityType[] }) {
+    // Filtrer les activités avec EF
+    const efData = activities
+        .filter(a => a.efficiency_factor)
+        .map(a => ({
+            date: a.date || a.start_date || '',
+            ef: a.efficiency_factor
+        }))
+        .reverse();
+    
+    const trailActivities = activities.filter(a => a.gap && a.total_elevation_gain && a.total_elevation_gain > 50);
+
+    return (
+        <div className="space-y-6 animate-slide-up">
+            <GlassCard>
+                <GlassCardHeader>
+                    <GlassCardTitle className="flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5 text-primary" />
+                        Efficacité Aérobie (EF)
+                    </GlassCardTitle>
+                </GlassCardHeader>
+                <GlassCardContent>
+                    <p className="text-sm text-muted mb-6">
+                        L&apos;Efficiency Factor (EF) mesure votre vitesse ajustée à la pente (GAP) par rapport à votre fréquence cardiaque moyenne.
+                        Une hausse de l&apos;EF sur le long terme indique une amélioration de votre condition aérobie.
+                    </p>
+                    
+                    <div className="h-64 relative">
+                        {efData.length >= 2 ? (
+                            <div className="w-full h-full flex flex-col justify-end gap-1">
+                                <div className="flex-1 flex items-end gap-1 px-2">
+                                    {efData.slice(-15).map((d, i) => {
+                                        const h = Math.min(100, (d.ef || 0) * 40);
+                                        return (
+                                            <div 
+                                                key={i} 
+                                                className="flex-1 bg-primary/20 hover:bg-primary/40 rounded-t-sm transition-all group relative"
+                                                style={{ height: `${h}%` }}
+                                            >
+                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-neutral-900 text-white text-[10px] py-0.5 px-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none z-10">
+                                                    {d.ef}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <div className="h-px bg-border w-full" />
+                                <div className="flex justify-between text-[10px] text-muted pt-1">
+                                    <span>{new Date(efData[0].date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                                    <span>{new Date(efData[efData.length - 1].date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center border border-dashed border-border rounded-xl">
+                                <p className="text-sm text-muted">Pas assez de données pour le graphique EF</p>
+                            </div>
+                        )}
+                    </div>
+                </GlassCardContent>
+            </GlassCard>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* ── Analyse de Pente (GAP) ── */}
+                <GlassCard>
+                    <GlassCardHeader>
+                        <GlassCardTitle className="flex items-center gap-2 text-base">
+                            <MapPin className="w-4 h-4 text-primary" />
+                            Analyse de Pente (GAP)
+                        </GlassCardTitle>
+                    </GlassCardHeader>
+                    <GlassCardContent>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="text-left border-b border-border text-xs text-muted uppercase tracking-wider">
+                                        <th className="pb-2 font-medium">Date</th>
+                                        <th className="pb-2 font-medium text-right">Pace</th>
+                                        <th className="pb-2 font-medium text-right text-primary">GAP</th>
+                                        <th className="pb-2 font-medium text-right">Gain</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {trailActivities.length > 0 ? (
+                                        trailActivities.slice(0, 6).map(a => (
+                                            <tr key={a.id} className="border-b border-border/50 last:border-0 hover:bg-muted/5 transition-colors">
+                                                <td className="py-2.5 text-muted">{new Date(a.date || a.start_date || '').toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</td>
+                                                <td className="py-2.5 text-right font-medium">{a.pace}/km</td>
+                                                <td className="py-2.5 text-right font-bold text-primary">{a.gap}/km</td>
+                                                <td className="py-2.5 text-right text-xs">+{a.total_elevation_gain}m</td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={4} className="py-8 text-center text-muted italic">
+                                                Aucune activité en dénivelé détectée.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </GlassCardContent>
+                </GlassCard>
+
+                {/* ── Cardiac Decoupling Concept ── */}
+                <GlassCard>
+                    <GlassCardHeader>
+                        <GlassCardTitle className="flex items-center gap-2 text-base">
+                            <Star className="w-4 h-4 text-amber-500" />
+                            Économie Aérobie
+                        </GlassCardTitle>
+                    </GlassCardHeader>
+                    <GlassCardContent className="space-y-4">
+                        <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
+                            <h4 className="text-sm font-semibold text-amber-600 mb-1">Concept Elite</h4>
+                            <p className="text-xs text-slate-500 leading-relaxed">
+                                Un coureur efficace maintient son allure sans que sa fréquence cardiaque ne dérive de manière excessive. 
+                                Si votre EF augmente au fil des mois pour une même intensité, vous devenez une machine plus efficace.
+                            </p>
+                        </div>
+                        
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium">Dernière séance EF</span>
+                                <span className="text-lg font-bold text-primary">{efData.length > 0 ? efData[efData.length - 1].ef : '--'}</span>
+                            </div>
+                            <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
+                                <div className="h-full bg-primary w-2/3" />
+                            </div>
+                            <p className="text-[10px] text-muted text-right italic">
+                                Comparé à votre baseline de 1.42
+                            </p>
+                        </div>
+                    </GlassCardContent>
+                </GlassCard>
+            </div>
+        </div>
+    );
 }
 
 // ============================================================================

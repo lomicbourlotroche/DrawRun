@@ -3,7 +3,12 @@
 import { Card, CardHeader, CardTitle, CardContent, CircularProgress } from '@/components/ui';
 import { calculateReadinessColor } from '@/lib/utils';
 import type { Readiness } from '@/types';
-import { Heart, Brain, Moon, Activity } from 'lucide-react';
+import { Heart, Brain, Moon, Activity, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { Modal, Input, Button } from '@/components/ui';
+import { api } from '@/lib/api';
+import { toast } from 'sonner';
+import { useDashboardStore } from '@/stores';
 
 interface ReadinessCardProps {
   readiness: Readiness | null;
@@ -11,6 +16,33 @@ interface ReadinessCardProps {
 }
 
 export function ReadinessCard({ readiness, isLoading }: ReadinessCardProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hrvValue, setHrvValue] = useState('');
+  const [sleepValue, setSleepValue] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { fetchPmcData } = useDashboardStore();
+
+  const handleLogData = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      if (hrvValue) await api.logHrv(parseFloat(hrvValue));
+      if (sleepValue) await api.logSleep(parseFloat(sleepValue));
+      
+      toast.success('Données vitales enregistrées');
+      setIsModalOpen(false);
+      setHrvValue('');
+      setSleepValue('');
+      
+      // Refresh dashboard data
+      fetchPmcData();
+    } catch (error) {
+      toast.error('Erreur lors de l\'enregistrement');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -60,9 +92,17 @@ export function ReadinessCard({ readiness, isLoading }: ReadinessCardProps) {
   ];
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="relative overflow-hidden group">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle>Readiness</CardTitle>
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          type="button"
+          className="p-1.5 rounded-full bg-primary-50 text-primary-600 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary-100"
+          title="Enregistrer HRV / Sommeil"
+        >
+          <Plus className="w-4 h-4" />
+        </button>
       </CardHeader>
       <CardContent>
         <div className="flex items-center gap-6">
@@ -90,6 +130,48 @@ export function ReadinessCard({ readiness, isLoading }: ReadinessCardProps) {
             ))}
           </div>
         </div>
+
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title="Enregistrer vos constantes"
+        >
+          <form onSubmit={handleLogData} className="space-y-4 pt-4">
+            <p className="text-sm text-slate-500 mb-2">
+              Entrez vos mesures du matin pour affiner votre score de readiness.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="HRV (rmssd)"
+                placeholder="ex: 65"
+                type="number"
+                value={hrvValue}
+                onChange={(e) => setHrvValue(e.target.value)}
+              />
+              <Input
+                label="Sommeil (heures)"
+                placeholder="ex: 7.5"
+                type="number"
+                step="0.1"
+                value={sleepValue}
+                onChange={(e) => setSleepValue(e.target.value)}
+              />
+            </div>
+            <div className="pt-4 flex justify-end gap-3">
+              <Button variant="ghost" type="button" onClick={() => setIsModalOpen(false)}>
+                Annuler
+              </Button>
+              <Button 
+                variant="primary" 
+                type="submit" 
+                isLoading={isSubmitting}
+                disabled={!hrvValue && !sleepValue}
+              >
+                Enregistrer
+              </Button>
+            </div>
+          </form>
+        </Modal>
       </CardContent>
     </Card>
   );

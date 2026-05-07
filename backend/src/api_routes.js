@@ -585,11 +585,13 @@ router.get('/readiness', (req, res) => {
             pmcData = JSON.parse(pmc);
         }
         
-        const readiness = PMC.estimateReadiness(
+        const result = PMC.estimateReadiness(
             pmcData,
             hrv ? parseFloat(hrv) : 0,
             sleep ? parseFloat(sleep) : 7
         );
+        
+        const { readiness, factors } = result;
         
         // Statuts
         let status, color, label;
@@ -621,9 +623,10 @@ router.get('/readiness', (req, res) => {
             label,
             advice: advice[status],
             factors: {
+                ...factors,
                 pmc: pmcData.length > 0,
-                hrv: !!hrv,
-                sleep: sleep ? parseFloat(sleep) : null
+                hrvValue: hrv ? parseFloat(hrv) : null,
+                sleepHours: sleep ? parseFloat(sleep) : null
             }
         });
     } catch (error) {

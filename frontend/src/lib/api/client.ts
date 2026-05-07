@@ -31,14 +31,11 @@ class ApiClient {
   setToken(token: string | null) {
     this.token = token;
     if (typeof window !== 'undefined') {
-      // Keep token scoped to browser session to reduce persistence risk.
       if (token) {
         sessionStorage.setItem('drawrun_token', token);
-        localStorage.removeItem('drawrun_token');
       } else {
         sessionStorage.removeItem('drawrun_token');
-        localStorage.removeItem('drawrun_token');
-        this.setRefreshToken(null); // Clear refresh token on logout
+        this.setRefreshToken(null);
       }
     }
   }
@@ -63,11 +60,7 @@ class ApiClient {
   getToken(): string | null {
     if (this.token) return this.token;
     if (typeof window !== 'undefined') {
-      this.token = sessionStorage.getItem('drawrun_token') || localStorage.getItem('drawrun_token');
-      if (this.token) {
-        sessionStorage.setItem('drawrun_token', this.token);
-        localStorage.removeItem('drawrun_token');
-      }
+      this.token = sessionStorage.getItem('drawrun_token');
     }
     return this.token;
   }

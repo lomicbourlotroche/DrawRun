@@ -84,10 +84,12 @@ ensureUploadDir();
 
 router.get('/', verifyToken, async (req, res) => {
     try {
-        const user = await dbGetMain('SELECT * FROM users WHERE id = ?', [req.user.id]);
+        const user = await dbGetMain(
+            `SELECT id, email, name, profile_data, created_at, updated_at
+             FROM users WHERE id = ?`,
+            [req.user.id]
+        );
         if (!user) return res.status(404).json({ error: 'User not found' });
-        
-        delete user.password_hash;
         res.json(user);
     } catch (error) {
         logger.error('Get profile error:', error);
@@ -167,11 +169,15 @@ router.post('/avatar', verifyToken, async (req, res) => {
         }
 
         if (profileData.avatar_url) {
-            const oldPath = path.join(__dirname, '..', '..', profileData.avatar_url);
-            try {
-                await fs.unlink(oldPath);
-            } catch {
-                /* ignore */
+            // Validate path to prevent traversal
+            const avatarRelPath = profileData.avatar_url;
+            if (avatarRelPath && !avatarRelPath.includes('..') && avatarRelPath.startsWith('/uploads/avatars/')) {
+                const oldPath = path.join(__dirname, '..', '..', avatarRelPath);
+                try {
+                    await fs.unlink(oldPath);
+                } catch {
+                    /* ignore */
+                }
             }
         }
 

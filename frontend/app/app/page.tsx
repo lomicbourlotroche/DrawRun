@@ -1,6 +1,6 @@
 /**
  * Dashboard Page avec Lazy Loading
- * 
+ *
  * Cette page utilise dynamic import pour charger le contenu du dashboard
  * de manière asynchrone, améliorant ainsi le temps de chargement initial.
  */
@@ -9,6 +9,7 @@
 
 import dynamic from 'next/dynamic';
 import { DashboardSkeleton } from '@/components/ui';
+import { ErrorBoundary } from '@/components/providers/ErrorBoundary';
 
 // Chargement dynamique du contenu du dashboard avec skeleton
 const DashboardContent = dynamic(() => import('./DashboardContent'), {
@@ -17,5 +18,9 @@ const DashboardContent = dynamic(() => import('./DashboardContent'), {
 });
 
 export default function DashboardPage() {
-  return <DashboardContent />;
+  return (
+    <ErrorBoundary>
+      <DashboardContent />
+    </ErrorBoundary>
+  );
 }

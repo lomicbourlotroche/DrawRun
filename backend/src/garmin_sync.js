@@ -166,58 +166,37 @@ async function performGarminSync(userId) {
         let importedCount = 0;
         let detailCount = 0;
 
+        // Use batch operations from sync_utils
+        const { processActivityList } = require('./sync_utils');
+
+        // Filter and prepare activities
+        const activitiesToProcess = [];
         for (const activity of activityList) {
             const sourceId = activity.activityId ? String(activity.activityId) : null;
             if (!sourceId) continue;
-
-            let rawData = JSON.stringify(activity);
-
-            // === Phase 2: Activity Details (si pas déjà haute résolution) ===
-            const existing = await dbGetUser(userDb,
-                'SELECT id FROM activities WHERE source = "garmin" AND source_id = ?',
-                [sourceId]
-            );
-
-            if (!existing) {
-                try {
-                    const details = await callGarminApi(userId, { mode: 'details', id: sourceId });
-                    if (details) {
-                        rawData = JSON.stringify({ ...activity, details });
-                        detailCount++;
-                    }
-                } catch (detailErr) {
-                    log(userId, `Details failed for ${sourceId}: ${detailErr.message}`);
-                }
-                await sleep(200);
-            }
-
-            try {
-                await dbRunUser(userDb, `
-                    INSERT OR REPLACE INTO activities
-                    (source, source_id, name, type, start_date, distance, moving_time,
-                     average_heartrate, max_heartrate, average_speed, max_speed, calories)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `, [
-                    'garmin', sourceId,
-                    activity.activityName || 'Garmin Activity',
-                    activity.activityType?.typeKey || 'workout',
-                    activity.startTimeLocal || new Date().toISOString(),
-                    activity.distance || 0,
-                    activity.duration || 0,
-                    activity.averageHR || null,
-                    activity.maxHR || null,
-                    activity.averageSpeed || null,
-                    activity.maxSpeed || null,
-                    activity.calories || null
-                ]);
-                importedCount++;
-                if (importedCount % 10 === 0) {
-                    log(userId, `Processed ${importedCount} activities...`);
-                }
-            } catch (dbErr) {
-                log(userId, `DB insert failed for ${sourceId}: ${dbErr.message}`);
-            }
+            activitiesToProcess.push({
+                ...activity,
+                source_id: sourceId,
+                name: activity.activityName || 'Garmin Activity',
+                type: activity.activityType?.typeKey || 'workout',
+                start_date: activity.startTimeLocal,
+                distance: activity.distance || 0,
+                moving_time: activity.duration || 0,
+                average_heartrate: activity.averageHR || null,
+                max_heartrate: activity.maxHR || null,
+                average_speed: activity.averageSpeed || null,
+                max_speed: activity.maxSpeed || null,
+                calories: activity.calories || null,
+            });
         }
+
+        // Batch process (check existing + insert new)
+        const result = await processActivityList(userDb, 'garmin', activitiesToProcess, 
+            (sourceId) => callGarminApi(userId, { mode: 'details', id: sourceId })
+        );
+
+        importedCount = result.imported;
+        detailCount = result.details;
 
         log(userId, `Imported ${importedCount} activities (${detailCount} with details)`);
 

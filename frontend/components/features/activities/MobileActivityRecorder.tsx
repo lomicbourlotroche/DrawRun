@@ -91,10 +91,20 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   const cleanup = () => {
     if (watchIdRef.current !== null) {
       navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
     }
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
     }
+    // Cleanup battery listener
+    try {
+      if ('getBattery' in navigator) {
+        (navigator as any).getBattery().then((battery: any) => {
+          battery.removeEventListener('levelchange', updateBatteryLevel);
+        });
+      }
+    } catch { /* silent */ }
     releaseWakeLock();
   };
 
@@ -127,14 +137,44 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       if ('getBattery' in navigator) {
         const battery = await (navigator as any).getBattery();
         setBatteryLevel(Math.round(battery.level * 100));
-        battery.addEventListener('levelchange', () => {
-          setBatteryLevel(Math.round(battery.level * 100));
-        });
+        battery.removeEventListener('levelchange', updateBatteryLevel);
+        battery.addEventListener('levelchange', updateBatteryLevel);
       }
     } catch {
       // Battery API not available
     }
   };
+
+  const updateBatteryLevel = () => {
+    try {
+      if ('getBattery' in navigator) {
+        (navigator as any).getBattery().then((battery: any) => {
+          setBatteryLevel(Math.round(battery.level * 100));
+        });
+      }
+    } catch { /* silent */ }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+      // Cleanup battery listeners
+      try {
+        if ('getBattery' in navigator) {
+          (navigator as any).getBattery().then((battery: any) => {
+            battery.removeEventListener('levelchange', updateBatteryLevel);
+          });
+        }
+      } catch { /* silent */ }
+      releaseWakeLock();
+    };
+  }, []);
 
   const calculateDistance = (p1: GPSData, p2: GPSData): number => {
     const R = 6371e3;

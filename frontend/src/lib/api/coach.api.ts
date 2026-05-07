@@ -16,6 +16,7 @@ import type {
   AdaptivePlanResult,
   PlanFeedbackResult,
   PlanDetail,
+  TrainingPlan,
   MissedSessionResult,
   SubmitTestResult,
   PendingSessions,
@@ -34,8 +35,8 @@ export const coachApi = {
   /**
    * Récupère le plan actif de l'utilisateur
    */
-  getActivePlan(): Promise<Record<string, unknown> | null> {
-    return client.request('/api/coach/plan').catch(() => null) as Promise<Record<string, unknown> | null>;
+  getActivePlan(): Promise<{ plan?: TrainingPlan; sessions?: any[]; planId?: number } | null> {
+    return client.request('/api/coach/plan').catch(() => null) as Promise<{ plan?: TrainingPlan; sessions?: any[]; planId?: number } | null>;
   },
 
   /**
@@ -209,5 +210,19 @@ export const coachApi = {
     activitiesAnalyzed: number;
   }> {
     return client.request('/api/coach/wizard-defaults');
+  },
+
+  /**
+   * Génère une stratégie d'allure dynamique depuis un GPX
+   */
+  calculateRaceStrategy(params: { 
+    points?: Array<{ dist: number; elev: number }>; 
+    gpxData?: string;
+    params: { temp?: number; humidity?: number; goalTime?: number } 
+  }): Promise<any> {
+    return client.request('/api/coach/race-planner/race-strategy', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
   },
 };

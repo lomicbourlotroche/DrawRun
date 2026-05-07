@@ -47,6 +47,7 @@ export interface User {
 export interface Activity {
   id: number;
   title: string;
+  name?: string;
   type: SportType;
   date: string;
   dist: string;
@@ -55,12 +56,15 @@ export interface Activity {
   distance: number;
   avgSpeed: number;
   avgHR: number;
+  average_heartrate?: number;
   moving_time?: number;
   elapsed_time?: number;
   total_elevation_gain?: number;
   description?: string;
   start_date?: string;
   tss?: number;
+  gap?: string;
+  efficiency_factor?: number;
   user_id?: number;
   draw_count?: number;
   has_drawn?: boolean;
@@ -94,6 +98,8 @@ export interface ActivityDetail extends Omit<Activity, 'type'> {
   intensity?: number;
   ifFactor?: number;
   ef?: number;
+  efficiency_factor?: number;
+  gap?: string;
   vi?: number;
   ie?: number;
   trimp?: number;
@@ -126,6 +132,7 @@ export interface SplitData {
   distance: number;
   duration: number;
   pace: number | null;
+  gap: number | null;
   speed: number;
   avgHR: number | null;
   maxHR: number | null;
@@ -452,19 +459,25 @@ export interface PendingSessions {
 
 export interface Friend {
   id: number;
+  user_id?: number;
+  friend_id?: number;
   email: string;
   name: string;
   avatar_url?: string;
   status?: string;
+  created_at?: string;
+  accepted_at?: string;
   [key: string]: unknown;
 }
 
 export interface FriendRequest {
   id: number;
   userId: number;
+  user_id?: number;
   email: string;
   name: string;
   createdAt: string;
+  created_at?: string;
   [key: string]: unknown;
 }
 
@@ -473,15 +486,24 @@ export interface Group {
   name: string;
   description?: string;
   isPrivate?: boolean;
+  is_private?: boolean;
   memberCount?: number;
+  member_count?: number;
   inviteCode?: string;
+  invite_code?: string;
   creatorId?: number;
+  creator_id?: number;
   creatorName?: string;
+  creator_name?: string;
   role?: string;
   userRole?: string | null;
+  user_role?: string | null;
   isMember?: boolean;
+  is_member?: boolean;
   createdAt?: string;
+  created_at?: string;
   updatedAt?: string;
+  updated_at?: string;
   [key: string]: unknown;
 }
 
@@ -539,6 +561,7 @@ export interface GroupUpdate {
 export interface LeaderboardEntry {
   rank: number;
   userId: number;
+  user_id?: number;
   name: string;
   value: number;
   unit?: string;
@@ -583,6 +606,8 @@ export interface UserSearchResult {
   email: string;
   name: string;
   avatar_url?: string;
+  memberSince?: string;
+  member_since?: string;
   [key: string]: unknown;
 }
 

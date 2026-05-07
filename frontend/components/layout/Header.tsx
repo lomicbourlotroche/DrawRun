@@ -84,7 +84,7 @@ export default function Header() {
             onClick={handleSync}
             disabled={isSyncing}
             className={cn(
-              'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all duration-200',
+              'inline-flex items-center gap-1.5 px-3 py-2 min-h-[40px] rounded-xl text-sm font-medium transition-all duration-200',
               'bg-white/80 border border-neutral-200 text-neutral-600',
               'hover:bg-primary-50 hover:border-primary-200 hover:text-primary-700',
               'disabled:opacity-50 disabled:cursor-not-allowed',
@@ -134,27 +134,27 @@ export default function Header() {
                   </div>
 
                   <Link
-                    href="/app/profile"
-                    onClick={() => setIsUserMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-neutral-600 hover:text-neutral-900 hover:bg-primary-50/50 transition-colors"
-                  >
-                    <User className="w-4 h-4 text-neutral-400" />
-                    Mon profil
-                  </Link>
-                  <Link
-                    href="/app/profile"
-                    onClick={() => setIsUserMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-neutral-600 hover:text-neutral-900 hover:bg-primary-50/50 transition-colors"
-                  >
-                    <Settings className="w-4 h-4 text-neutral-400" />
-                    Paramètres
-                  </Link>
+                     href="/app/profile"
+                     onClick={() => setIsUserMenuOpen(false)}
+                     className="flex items-center gap-2.5 px-4 py-3 min-h-[44px] text-sm text-neutral-600 hover:text-neutral-900 hover:bg-primary-50/50 transition-colors"
+                   >
+                     <User className="w-4 h-4 text-neutral-400" />
+                     Mon profil
+                   </Link>
+                   <Link
+                     href="/app/profile"
+                     onClick={() => setIsUserMenuOpen(false)}
+                     className="flex items-center gap-2.5 px-4 py-3 min-h-[44px] text-sm text-neutral-600 hover:text-neutral-900 hover:bg-primary-50/50 transition-colors"
+                   >
+                     <Settings className="w-4 h-4 text-neutral-400" />
+                     Paramètres
+                   </Link>
 
-                  <div className="border-t border-slate-100 mt-1 pt-1">
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-red-500 hover:text-red-600 hover:bg-red-50 transition-colors"
-                    >
+                   <div className="border-t border-slate-100 mt-1 pt-1">
+                     <button
+                       onClick={handleLogout}
+                       className="flex items-center gap-2.5 w-full px-4 py-3 min-h-[44px] text-sm text-red-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+                     >
                       <LogOut className="w-4 h-4" />
                       Déconnexion
                     </button>

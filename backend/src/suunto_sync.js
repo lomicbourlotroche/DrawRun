@@ -43,8 +43,21 @@ function log(userId, message, ...args) {
 // Token Management
 // ---------------------------------------------------------------------------
 
+const ALLOWED_TOKEN_DIR = path.resolve(SUUNTO_TOKEN_DIR);
+
 function getTokenPath(userId) {
-    return path.join(SUUNTO_TOKEN_DIR, `${userId}.json`);
+    const tokenPath = path.resolve(ALLOWED_TOKEN_DIR, `${String(userId).replace(/[^0-9]/g, '')}.json`);
+    if (!tokenPath.startsWith(ALLOWED_TOKEN_DIR)) {
+        throw new Error('Invalid token path');
+    }
+    return tokenPath;
+}
+
+async function saveToken(userId, tokenData) {
+    const tokenPath = getTokenPath(userId);
+    fs.mkdirSync(ALLOWED_TOKEN_DIR, { recursive: true });
+    fs.writeFileSync(tokenPath, JSON.stringify(tokenData));
+    log(userId, 'Token saved');
 }
 
 async function loadToken(userId) {
@@ -52,13 +65,7 @@ async function loadToken(userId) {
     if (!fs.existsSync(tokenPath)) return null;
 
     try {
-        const data = JSON.parse(fs.readFileSync(tokenPath, 'utf-8'));
-        if (data.expiresAt && Date.now() < data.expiresAt) {
-            log(userId, 'Loaded valid token');
-            return data;
-        }
-        log(userId, 'Token expired');
-        return null;
+        return JSON.parse(fs.readFileSync(tokenPath, 'utf-8'));
     } catch (e) {
         return null;
     }
@@ -297,74 +304,37 @@ async function performSuuntoSync(userId) {
                 if (batch.length < limit) break;
                 offset += limit;
 
-                // Rate limiting
-                await new Promise(r => setTimeout(r, 500));
+                // Use batch processing - no per-activity sleep
             }
 
             log(userId, `Found ${allActivities.length} activities`);
 
-            for (const activity of allActivities) {
-                const sourceId = activity.id ? String(activity.id) : null;
-                if (!sourceId) continue;
+            // Prepare activities for batch processing
+            const activitiesToProcess = allActivities
+                .filter(activity => activity.id)
+                .map(activity => ({
+                    source_id: String(activity.id),
+                    name: activity.title || activity.name || 'Suunto Activity',
+                    type: mapSuuntoType(activity.sport || activity.sportName),
+                    start_date: activity.startTime || activity.timestamp || new Date().toISOString(),
+                    distance: activity.distance || 0,
+                    moving_time: activity.duration || activity.durationInSeconds || 0,
+                    elapsed_time: activity.duration || activity.durationInSeconds || 0,
+                    total_elevation_gain: activity.elevationGain || activity.ascent || 0,
+                    average_heartrate: activity.avgHeartRate || activity.averageHeartRate || null,
+                    max_heartrate: activity.maxHeartRate || activity.maximumHeartRate || null,
+                    average_speed: null, // Will calculate if needed
+                    max_speed: null,
+                    calories: activity.calories || activity.energy || null,
+                }));
 
-                const existing = await dbGetUser(userDb,
-                    'SELECT id FROM activities WHERE source = "suunto" AND source_id = ?',
-                    [sourceId]
-                );
+            // Batch process using sync_utils
+            const { processActivityList } = require('./sync_utils');
+            const result = await processActivityList(userDb, 'suunto', activitiesToProcess,
+                (sourceId) => getActivitySamples(accessToken, sourceId)
+            );
 
-                const isNew = !existing;
-
-                // Parse activity data
-                const startTime = activity.startTime || activity.timestamp;
-                const duration = activity.duration || activity.durationInSeconds || 0;
-                const distance = activity.distance || 0;
-                const avgHR = activity.avgHeartRate || activity.averageHeartRate;
-                const maxHR = activity.maxHeartRate || activity.maximumHeartRate;
-                const calories = activity.calories || activity.energy;
-                const elevationGain = activity.elevationGain || activity.ascent;
-                const avgSpeed = distance > 0 && duration > 0 ? distance / duration : null;
-
-                await dbRunUser(userDb, `
-                    INSERT OR REPLACE INTO activities
-                    (source, source_id, name, type, start_date, distance, moving_time,
-                     elapsed_time, total_elevation_gain, average_heartrate, max_heartrate,
-                     average_speed, max_speed, calories)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `, [
-                    'suunto', sourceId,
-                    activity.title || activity.name || activity.sport || 'Suunto Activity',
-                    mapSuuntoType(activity.sport || activity.sportName),
-                    startTime || new Date().toISOString(),
-                    distance,
-                    duration,
-                    duration,
-                    elevationGain || 0,
-                    avgHR || null,
-                    maxHR || null,
-                    avgSpeed,
-                    activity.maxSpeed || null,
-                    calories || null
-                ]);
-
-                if (isNew) {
-                    totalImported++;
-
-                    // Fetch detailed samples for new activities
-                    try {
-                        await new Promise(r => setTimeout(r, 300));
-                        const samples = await getActivitySamples(accessToken, sourceId);
-                        if (samples && samples.length > 0) {
-                            // Store GPS polyline if available
-                            const gpsPoints = samples.filter(s => s.latitude && s.longitude);
-                            if (gpsPoints.length > 0) {
-                                const polyline = gpsPoints
-                                    .map(p => `${p.latitude},${p.longitude}`)
-                                    .join(';');
-                                await dbRunUser(userDb,
-                                    'UPDATE activities SET map_summary_polyline = ? WHERE source = "suunto" AND source_id = ?',
-                                    [polyline, sourceId]
-                                );
-                            }
+            totalImported += result.imported;
                         }
                     } catch (sampleErr) {
                         // Samples may not exist for all activities
