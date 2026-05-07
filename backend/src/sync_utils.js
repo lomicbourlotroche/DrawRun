@@ -16,13 +16,12 @@ const { logger } = require('./logger');
  */
 async function batchCheckExisting(userDb, source, sourceIds) {
     if (!sourceIds || sourceIds.length === 0) return new Set();
-    
+
     try {
-        // Create parameterized query with IN clause
         const placeholders = sourceIds.map(() => '?').join(',');
         const query = `SELECT source_id FROM activities WHERE source = ? AND source_id IN (${placeholders})`;
         const params = [source, ...sourceIds];
-        
+
         const results = userDb.prepare(query).all(params);
         return new Set(results.map(r => String(r.source_id)));
     } catch (error) {
@@ -32,44 +31,46 @@ async function batchCheckExisting(userDb, source, sourceIds) {
 }
 
 /**
- * Batch insert/update activities
+ * Batch insert activities using individual statements wrapped in a transaction.
+ * Each activity is an object already normalized with a `source` field.
  * @param {object} userDb - User database instance
- * @param {object[]} activities - Array of activity objects
- * @returns {Promise<number>} Number of activities inserted
+ * @param {object[]} activities - Array of normalized activity objects
+ * @returns {number} Number of activities inserted
  */
-async function batchInsertActivities(userDb, activities) {
+function batchInsertActivities(userDb, activities) {
     if (!activities || activities.length === 0) return 0;
-    
+
     try {
-        const placeholders = activities.map(() => '(?,?,?,?,?,?,?,?)').join(',');
-        const query = `
-            INSERT OR IGNORE INTO activities 
-            (source, source_id, name, type, start_date, distance, moving_time, 
+        const stmt = userDb.prepare(`
+            INSERT OR IGNORE INTO activities
+            (source, source_id, name, type, start_date, distance, moving_time,
              average_heartrate, max_heartrate, average_speed, max_speed, calories)
-            VALUES ${placeholders}
-        `;
-        
-        const params = [];
-        for (const act of activities) {
-            params.push(
-                act.source || 'unknown',
-                String(act.source_id || act.id || ''),
-                act.name || 'Activity',
-                act.type || 'run',
-                act.start_date || new Date().toISOString(),
-                act.distance || 0,
-                act.moving_time || act.duration || 0,
-                act.average_heartrate || act.avg_hr || null,
-                act.max_heartrate || act.max_hr || null,
-                act.average_speed || null,
-                act.max_speed || null,
-                act.calories || null
-            );
-        }
-        
-        const stmt = userDb.prepare(query);
-        stmt.run(...params);
-        return activities.length;
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+
+        const insertMany = userDb.transaction((acts) => {
+            let count = 0;
+            for (const act of acts) {
+                const info = stmt.run(
+                    act.source || 'unknown',
+                    String(act.source_id || ''),
+                    act.name || 'Activity',
+                    act.type || 'run',
+                    act.start_date || new Date().toISOString(),
+                    act.distance || 0,
+                    act.moving_time || act.duration || 0,
+                    act.average_heartrate || act.avg_hr || null,
+                    act.max_heartrate || act.max_hr || null,
+                    act.average_speed || null,
+                    act.max_speed || null,
+                    act.calories || null
+                );
+                count += info.changes;
+            }
+            return count;
+        });
+
+        return insertMany(activities);
     } catch (error) {
         logger.error('[SyncUtils] Batch insert failed', { error: error.message });
         return 0;
@@ -78,51 +79,53 @@ async function batchInsertActivities(userDb, activities) {
 
 /**
  * Process activity list with batch operations (replaces N+1 loops)
+ * Activities passed in must already have a normalized `source_id` field.
  * @param {object} userDb - User database instance
  * @param {string} source - Source name
- * @param {object[]} activityList - List of activities from API
+ * @param {object[]} activityList - List of normalized activities from API
  * @param {function} [detailFetcher] - Optional function to fetch details for new activities
  * @returns {Promise<{imported: number, details: number}>}
  */
 async function processActivityList(userDb, source, activityList, detailFetcher = null) {
     const results = { imported: 0, details: 0 };
-    
+
     if (!activityList || activityList.length === 0) {
         return results;
     }
-    
+
     logger.info(`[SyncUtils] Processing ${activityList.length} activities from ${source}`);
-    
+
     // Step 1: Batch check existing activities
-    const sourceIds = activityList.map(a => String(a.id || a.activityId || ''));
+    // Activities are already normalized — use `source_id` which is always set by callers.
+    const sourceIds = activityList.map(a => String(a.source_id || ''));
     const existingIds = await batchCheckExisting(userDb, source, sourceIds);
-    
+
     logger.info(`[SyncUtils] Found ${existingIds.size} existing activities`);
-    
+
     // Step 2: Filter new activities
     const newActivities = [];
     for (const activity of activityList) {
-        const sourceId = String(activity.id || activity.activityId || '');
+        const sourceId = String(activity.source_id || '');
         if (sourceId && !existingIds.has(sourceId)) {
             newActivities.push({
                 source,
                 source_id: sourceId,
-                name: activity.name || activity.activityName || `${source} Activity`,
-                type: (activity.type || activity.activityType || 'run').toLowerCase(),
-                start_date: activity.start_date || activity.startTimeLocal || new Date().toISOString(),
-                distance: activity.distance || activity.distanceMeters || 0,
-                moving_time: activity.moving_time || activity.duration || activity.elapsedDuration || 0,
-                average_heartrate: activity.average_heartrate || activity.avgHR || null,
-                max_heartrate: activity.max_heartrate || activity.maxHR || null,
+                name: activity.name || `${source} Activity`,
+                type: (activity.type || 'run').toLowerCase(),
+                start_date: activity.start_date || new Date().toISOString(),
+                distance: activity.distance || 0,
+                moving_time: activity.moving_time || activity.duration || 0,
+                average_heartrate: activity.average_heartrate || null,
+                max_heartrate: activity.max_heartrate || null,
                 average_speed: activity.average_speed || null,
                 max_speed: activity.max_speed || null,
                 calories: activity.calories || null,
             });
         }
     }
-    
+
     logger.info(`[SyncUtils] ${newActivities.length} new activities to import`);
-    
+
     // Step 3: Optionally fetch details for new activities (if detailFetcher provided)
     if (detailFetcher && newActivities.length > 0) {
         const maxDetails = Math.min(newActivities.length, 10); // Limit to 10 detail fetches
@@ -145,12 +148,12 @@ async function processActivityList(userDb, source, activityList, detailFetcher =
             }
         }
     }
-    
+
     // Step 4: Batch insert
-    results.imported = await batchInsertActivities(userDb, newActivities);
-    
+    results.imported = batchInsertActivities(userDb, newActivities);
+
     logger.info(`[SyncUtils] Imported ${results.imported} activities from ${source}`);
-    
+
     return results;
 }
 

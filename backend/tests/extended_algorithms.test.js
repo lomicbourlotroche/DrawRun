@@ -113,10 +113,14 @@ describe('Algorithm Robustness (Property-Based)', () => {
 
     test('Biomechanics.estimateMetrics should never crash and return reasonable values', () => {
         fc.assert(
-            fc.property(fc.integer({ min: 100, max: 250 }), fc.double({ min: 1, max: 10 }), (cadence, speedMs) => {
+            fc.property(fc.integer({ min: 101, max: 250 }), fc.double({ min: 1, max: 10 }), (cadence, speedMs) => {
                 const metrics = Biomechanics.estimateMetrics(speedMs, cadence, 70, 180);
-                return metrics !== null && 
-                       metrics.verticalOscillation > 0 && 
+                // Must always return a non-null object for valid inputs (cadence > 100)
+                if (metrics === null) return false;
+                // Values must be finite numbers (not NaN or Infinity)
+                return Number.isFinite(metrics.verticalOscillation) &&
+                       Number.isFinite(metrics.groundContactTime) &&
+                       metrics.verticalOscillation > 0 &&
                        metrics.groundContactTime > 0;
             })
         );

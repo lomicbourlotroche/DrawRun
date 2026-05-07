@@ -50,7 +50,7 @@ export default function Footer() {
                     href={social.href}
                     target={social.href.startsWith('http') ? '_blank' : undefined}
                     rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                    className="w-10 h-10 bg-neutral-800 hover:bg-neutral-700 rounded-lg flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
+                    className="w-11 h-11 bg-neutral-800 hover:bg-neutral-700 rounded-lg flex items-center justify-center text-neutral-400 hover:text-white transition-colors min-h-[44px] min-w-[44px]"
                     aria-label={social.label}
                   >
                     <Icon className="w-5 h-5" />

@@ -169,7 +169,7 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
           >
             <GlassCard hover className="animate-slide-up" padding="md">
               <GlassCardContent>
-                <div className="flex items-center gap-4">
+                <div className="flex items-start sm:items-center gap-4 flex-wrap">
                   <div
                     className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
                     style={{ backgroundColor: `${getSportColor(activity.type)}20` }}
@@ -206,7 +206,7 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
                     </div>
                   </div>
 
-                  <div className="text-right flex-shrink-0">
+                  <div className="text-right flex-shrink-0 ml-auto sm:ml-0">
                     <p className="text-lg font-bold text-foreground">
                       {formatDistance(activity.distance)}
                     </p>
@@ -238,7 +238,7 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
                     )}
                   </div>
 
-                  <ChevronRight className="w-5 h-5 text-muted group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
+                  <ChevronRight className="w-5 h-5 text-muted group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0 self-center" />
                 </div>
               </GlassCardContent>
             </GlassCard>

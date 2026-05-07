@@ -71,17 +71,17 @@ export function TabsTrigger({ value, children, className }: TabsTriggerProps) {
   const { value: selectedValue, onValueChange } = useTabs();
   const isActive = selectedValue === value;
 
-  return (
-    <button
-      onClick={() => onValueChange(value)}
-      className={cn(
-        'flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200',
-        isActive
-          ? 'bg-surface text-foreground'
-          : 'text-muted hover:text-foreground hover:bg-surface/50',
-        className
-      )}
-    >
+    return (
+      <button
+        onClick={() => onValueChange(value)}
+        className={cn(
+          'flex-1 flex items-center justify-center gap-2 px-3 py-3 min-h-[44px] rounded-md text-sm font-medium transition-all duration-200',
+          isActive
+            ? 'bg-surface text-foreground'
+            : 'text-muted hover:text-foreground hover:bg-surface/50',
+          className
+        )}
+      >
       {children}
     </button>
   );

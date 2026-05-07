@@ -24,6 +24,7 @@ const { logger } = require('./logger');
 const DECATHLON_TOKEN_DIR = path.join(__dirname, '..', 'data', 'decathlon_tokens');
 const DECATHLON_API_BASE = 'https://api.decathlon.net/sportstrackingdata/v2';
 const DECATHLON_AUTH_URL = 'https://api-eu.decathlon.net/connect/oauth/authorize';
+const DECATHLON_TOKEN_URL = 'https://api-eu.decathlon.net/connect/oauth/token';
 
 function log(userId, message, ...args) {
     logger.info(`[Decathlon][User ${userId}] ${message}`, ...args);
@@ -70,17 +71,69 @@ async function loadToken(userId) {
 }
 
 // ---------------------------------------------------------------------------
+// Token Refresh
+// ---------------------------------------------------------------------------
+
+async function refreshDecathlonToken(userId) {
+    const user = await dbGetMain(
+        'SELECT decathlon_refresh_token FROM users WHERE id = ?',
+        [userId]
+    );
+
+    if (!user?.decathlon_refresh_token) {
+        throw new Error('No refresh token available. Please re-authenticate Decathlon.');
+    }
+
+    const response = await axios.post(DECATHLON_TOKEN_URL,
+        new URLSearchParams({
+            grant_type: 'refresh_token',
+            refresh_token: user.decathlon_refresh_token,
+            client_id: process.env.DECATHLON_CLIENT_ID || '',
+        }),
+        {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            timeout: 15000,
+        }
+    );
+
+    const tokenData = response.data;
+    await saveToken(userId, tokenData);
+    await dbRunMain(
+        `UPDATE users SET
+            decathlon_access_token = ?,
+            decathlon_refresh_token = ?,
+            decathlon_expires_at = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?`,
+        [tokenData.access_token, tokenData.refresh_token || user.decathlon_refresh_token,
+         Date.now() + (tokenData.expires_in * 1000), userId]
+    );
+
+    log(userId, 'Token refreshed');
+    return tokenData.access_token;
+}
+
+// ---------------------------------------------------------------------------
 // API Calls
 // ---------------------------------------------------------------------------
 
 async function decathlonRequest(userId, endpoint, options = {}) {
-    const user = await dbGetMain(
-        'SELECT decathlon_access_token FROM users WHERE id = ?',
-        [userId]
-    );
+    let accessToken;
+    const savedToken = await loadToken(userId);
 
-    if (!user?.decathlon_access_token) {
-        throw new Error('Decathlon not configured');
+    if (savedToken && savedToken.expiresAt && Date.now() < savedToken.expiresAt - 300000) {
+        accessToken = savedToken.accessToken;
+    } else if (savedToken?.refreshToken) {
+        accessToken = await refreshDecathlonToken(userId);
+    } else {
+        const user = await dbGetMain(
+            'SELECT decathlon_access_token FROM users WHERE id = ?',
+            [userId]
+        );
+        if (!user?.decathlon_access_token) {
+            throw new Error('Decathlon not configured');
+        }
+        accessToken = user.decathlon_access_token;
     }
 
     const url = new URL(`${DECATHLON_API_BASE}${endpoint}`);
@@ -90,16 +143,31 @@ async function decathlonRequest(userId, endpoint, options = {}) {
         });
     }
 
-    const response = await axios.get(url.toString(), {
-        headers: {
-            'Authorization': `Bearer ${user.decathlon_access_token}`,
-            'x-api-key': process.env.DECATHLON_API_KEY || '',
-            'Accept': 'application/json',
-        },
-        timeout: 30000,
-    });
-
-    return response.data;
+    try {
+        const response = await axios.get(url.toString(), {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'x-api-key': process.env.DECATHLON_API_KEY || '',
+                'Accept': 'application/json',
+            },
+            timeout: 30000,
+        });
+        return response.data;
+    } catch (error) {
+        if (error.response?.status === 401 && savedToken?.refreshToken) {
+            accessToken = await refreshDecathlonToken(userId);
+            const retryResponse = await axios.get(url.toString(), {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'x-api-key': process.env.DECATHLON_API_KEY || '',
+                    'Accept': 'application/json',
+                },
+                timeout: 30000,
+            });
+            return retryResponse.data;
+        }
+        throw error;
+    }
 }
 
 // ---------------------------------------------------------------------------

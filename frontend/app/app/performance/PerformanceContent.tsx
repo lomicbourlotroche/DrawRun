@@ -184,7 +184,7 @@ export default function PerformanceContent() {
           <button
             key={t.id}
             onClick={() => setSport(t.id as typeof sport)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
               sport === t.id ? 'bg-primary text-white' : 'text-muted hover:text-foreground hover:bg-muted'
             }`}
           >
@@ -209,7 +209,7 @@ export default function PerformanceContent() {
               <button
                 key={t.id}
                 onClick={() => setActiveTab(t.id as typeof activeTab)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                   activeTab === t.id ? 'bg-primary text-white' : 'text-muted hover:text-foreground hover:bg-muted'
                 }`}
               >

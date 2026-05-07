@@ -38,6 +38,41 @@ interface RecordingStats {
   cadence: number | null;
 }
 
+interface Route {
+  id: string;
+  name: string;
+  description?: string;
+  polyline: string; // Format: "lat,lng;lat,lng;..."
+  distance: number; // in meters
+  elevationGain: number;
+  createdAt: string;
+}
+
+interface CoachSession {
+  id: string;
+  name: string;
+  type: string;
+  duration: number; // in seconds
+  distance?: number; // in meters
+  targetPace?: number; // in min/km
+  targetHeartRateZone?: { min: number; max: number };
+  powerTarget?: number; // in watts
+}
+
+interface Segment {
+  id: string;
+  name: string;
+  description?: string;
+  startLat: number;
+  startLng: number;
+  endLat: number;
+  endLng: number;
+  distance: number; // in meters
+  elevationGain: number;
+  createdAt: string;
+  personalRecord?: number; // best time in seconds
+}
+
 type RecordingState = 'idle' | 'recording' | 'paused' | 'finished';
 
 interface MobileActivityRecorderProps {
@@ -64,6 +99,22 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   const [batteryLevel, setBatteryLevel] = useState<number | null>(null);
   const [activityName, setActivityName] = useState('');
   
+  // Route following state
+  const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
+  const [showRoutePicker, setShowRoutePicker] = useState(false);
+  const [routeProgress, setRouteProgress] = useState(0); // Percentage of route completed
+  
+  // Coach session state
+  const [activeCoachSession, setActiveCoachSession] = useState<CoachSession | null>(null);
+  const [coachSessionFeedback, setCoachSessionFeedback] = useState<any>(null);
+  
+  // Segments state
+  const [segments, setSegments] = useState<Segment[]>([]);
+  const [activeSegment, setActiveSegment] = useState<Segment | null>(null);
+  const [segmentStartTime, setSegmentStartTime] = useState<number | null>(null);
+  const [showSegmentPicker, setShowSegmentPicker] = useState(false);
+  const [showSegmentsOnMap, setShowSegmentsOnMap] = useState(true);
+  
   const watchIdRef = useRef<number | null>(null);
   const startTimeRef = useRef<number>(0);
   const pausedDurationRef = useRef<number>(0);
@@ -74,19 +125,36 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   const sport = SPORTS[activityType];
   const sportCategory = getSportCategory(activityType);
 
-  useEffect(() => {
-    checkCapabilities();
-    getBatteryLevel();
-    return () => { cleanup(); };
-  }, []);
+   useEffect(() => {
+     checkCapabilities();
+     getBatteryLevel();
+     return () => { cleanup(); };
+   }, []);
 
-  useEffect(() => {
-    if (state === 'recording') {
-      requestWakeLock();
-    } else {
-      releaseWakeLock();
-    }
-  }, [state]);
+   useEffect(() => {
+     if (state === 'recording') {
+       requestWakeLock();
+     } else {
+       releaseWakeLock();
+     }
+   }, [state]);
+
+   // Load active coach session when starting to record
+   useEffect(() => {
+     if (state === 'recording' && !activeCoachSession) {
+       loadActiveCoachSession();
+     }
+   }, [state, activeCoachSession]);
+
+   // Load user's routes
+   useEffect(() => {
+     loadUserRoutes();
+   }, []);
+
+   // Load user's segments
+   useEffect(() => {
+     loadUserSegments();
+   }, []);
 
   const cleanup = () => {
     if (watchIdRef.current !== null) {
@@ -108,15 +176,50 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     releaseWakeLock();
   };
 
-  const requestWakeLock = async () => {
-    try {
-      if ('wakeLock' in navigator) {
-        wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
-      }
-    } catch {
-      // Wake Lock not available — silently ignore
-    }
-  };
+   const requestWakeLock = async () => {
+     try {
+       if ('wakeLock' in navigator) {
+         wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
+       }
+     } catch {
+       // Wake Lock not available — silently ignore
+     }
+   };
+
+   // Load user's routes
+   const loadUserRoutes = async () => {
+     try {
+       // In a real implementation, this would fetch from backend
+       // For now, we'll leave it empty or use mock data
+       // const routes = await api.getUserRoutes();
+       // setRoutes(routes);
+     } catch (error) {
+       console.error('Failed to load routes:', error);
+     }
+   };
+
+   // Load user's segments
+   const loadUserSegments = async () => {
+     try {
+       // In a real implementation, this would fetch from backend
+       // For now, we'll leave it empty or use mock data
+       // const segments = await api.getUserSegments();
+       // setSegments(segments);
+     } catch (error) {
+       console.error('Failed to load segments:', error);
+     }
+   };
+
+   // Load active coach session
+   const loadActiveCoachSession = async () => {
+     try {
+       // In a real implementation, this would fetch from backend
+       // const session = await coachApi.getActivePlan();
+       // setActiveCoachSession(session);
+     } catch (error) {
+       console.error('Failed to load active coach session:', error);
+     }
+   };
 
   const releaseWakeLock = () => {
     if (wakeLockRef.current) {
@@ -176,86 +279,249 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     };
   }, []);
 
-  const calculateDistance = (p1: GPSData, p2: GPSData): number => {
-    const R = 6371e3;
-    const φ1 = p1.latitude * Math.PI / 180;
-    const φ2 = p2.latitude * Math.PI / 180;
-    const Δφ = (p2.latitude - p1.latitude) * Math.PI / 180;
-    const Δλ = (p2.longitude - p1.longitude) * Math.PI / 180;
-    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-              Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  };
+   const calculateDistance = (p1: GPSData, p2: GPSData): number => {
+     const R = 6371e3;
+     const φ1 = p1.latitude * Math.PI / 180;
+     const φ2 = p2.latitude * Math.PI / 180;
+     const Δφ = (p2.latitude - p1.latitude) * Math.PI / 180;
+     const Δλ = (p2.longitude - p1.longitude) * Math.PI / 180;
+     const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+               Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
+     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+     return R * c;
+   };
 
-  const startRecording = async () => {
-    try {
-      const permission = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
-      setPermissionStatus(permission.state);
+   // Calculate distance from a point to a line segment (for route deviation)
+   const distanceToRouteSegment = (point: GPSData, segmentStart: GPSData, segmentEnd: GPSData): number => {
+     const x = point.longitude;
+     const y = point.latitude;
+     const x1 = segmentStart.longitude;
+     const y1 = segmentStart.latitude;
+     const x2 = segmentEnd.longitude;
+     const y2 = segmentEnd.latitude;
+     
+     const A = x - x1;
+     const B = y - y1;
+     const C = x2 - x1;
+     const D = y2 - y1;
+     
+     const dot = A * C + B * D;
+     const len_sq = C * C + D * D;
+     let param = -1;
+     if (len_sq !== 0) { //in case of 0 length line
+        param = dot / len_sq;
+     }
+     
+     let xx, yy;
+     
+     if (param < 0) {
+       xx = x1;
+       yy = y1;
+     } else if (param > 1) {
+       xx = x2;
+       yy = y2;
+     } else {
+       xx = x1 + param * C;
+       yy = y1 + param * D;
+     }
+     
+     const dx = x - xx;
+     const dy = y - yy;
+     return Math.sqrt(dx * dx + dy * dy) * 111000; // Convert to meters (approximate)
+   };
+
+   // Calculate progress along a route (percentage)
+   const calculateRouteProgress = (points: RecordedPoint[], routePolyline: string): number => {
+     if (points.length < 2 || !routePolyline) return 0;
+     
+     // Parse route polyline
+     const routePoints = routePolyline.split(';').map(pair => {
+       const [lat, lng] = pair.split(',').map(parseFloat);
+       return { latitude: lat, longitude: lng };
+     });
+     
+     if (routePoints.length < 2) return 0;
+     
+     // Find the closest point on the route to our current position
+     const lastPoint = points[points.length - 1].gps;
+     let minDistance = Infinity;
+     let closestIndex = 0;
+     
+     for (let i = 0; i < routePoints.length; i++) {
+       const dist = calculateDistance(lastPoint, {
+         latitude: routePoints[i].latitude,
+         longitude: routePoints[i].longitude,
+         altitude: 0,
+         accuracy: 0,
+         speed: 0,
+         heading: 0,
+         timestamp: 0
+       });
+       if (dist < minDistance) {
+         minDistance = dist;
+         closestIndex = i;
+       }
+     }
+     
+     // Calculate progress as percentage along the route
+     return Math.min(100, (closestIndex / (routePoints.length - 1)) * 100);
+   };
+
+   // Check if we're inside a segment
+   const isPointInSegment = (point: GPSData, segment: Segment): boolean => {
+     // Simple bounding box check for now (can be improved with precise geometry)
+     const minLat = Math.min(segment.startLat, segment.endLat);
+     const maxLat = Math.max(segment.startLat, segment.endLat);
+     const minLng = Math.min(segment.startLng, segment.endLng);
+     const maxLng = Math.max(segment.startLng, segment.endLng);
+     
+     return (
+       point.latitude >= minLat &&
+       point.latitude <= maxLat &&
+       point.longitude >= minLng &&
+       point.longitude <= maxLng
+     );
+   };
+
+   // Calculate distance between two GPS points
+   const calculateDistanceBetweenPoints = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+     const R = 6371e3; // Earth's radius in meters
+     const φ1 = lat1 * Math.PI / 180;
+     const φ2 = lat2 * Math.PI / 180;
+     const Δφ = (lat2 - lat1) * Math.PI / 180;
+     const Δλ = (lng2 - lng1) * Math.PI / 180;
+     
+     const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+               Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
+     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+     
+     return R * c;
+   };
+
+   const startRecording = async () => {
+     try {
+       const permission = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+       setPermissionStatus(permission.state);
+       
+       if (permission.state === 'denied') {
+         toast.error('Permission GPS refusée. Activez la localisation.');
+         return;
+       }
+ 
+       // Load data before starting
+       await loadUserRoutes();
+       await loadUserSegments();
+       await loadActiveCoachSession();
+ 
+       watchIdRef.current = navigator.geolocation.watchPosition(
+         (position) => {
+           const gpsData: GPSData = {
+             latitude: position.coords.latitude,
+             longitude: position.coords.longitude,
+             altitude: position.coords.altitude,
+             accuracy: position.coords.accuracy,
+             speed: position.coords.speed,
+             heading: position.coords.heading,
+             timestamp: position.timestamp,
+           };
+           setCurrentGPS(gpsData);
+           
+           if (state === 'recording' || state === 'idle') {
+             addPoint(gpsData);
+           }
+         },
+         (error) => {
+           // GPS error — silently continue
+         },
+         { enableHighAccuracy: true, maximumAge: 1000, timeout: 5000 }
+       );
+
+       startTimeRef.current = Date.now();
+       pausedDurationRef.current = 0;
+       setState('recording');
+       updateStatsLoop();
+     } catch {
+       toast.error('Erreur lors du démarrage');
+     }
+   };
+
+    const addPoint = (gpsData: GPSData) => {
+      const newPoint: RecordedPoint = { gps: gpsData, timestamp: Date.now() };
       
-      if (permission.state === 'denied') {
-        toast.error('Permission GPS refusée. Activez la localisation.');
-        return;
-      }
-
-      watchIdRef.current = navigator.geolocation.watchPosition(
-        (position) => {
-          const gpsData: GPSData = {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            altitude: position.coords.altitude,
-            accuracy: position.coords.accuracy,
-            speed: position.coords.speed,
-            heading: position.coords.heading,
-            timestamp: position.timestamp,
-          };
-          setCurrentGPS(gpsData);
+      setPoints(prev => {
+        const newPoints = [...prev, newPoint];
+        
+        // Only add distance if we have a last point and the movement is significant
+        // Filter out stationary points by checking speed and accuracy
+        if (lastPointRef.current && gpsData.accuracy < 50) {
+          const distance = calculateDistance(lastPointRef.current, gpsData);
           
-          if (state === 'recording' || state === 'idle') {
-            addPoint(gpsData);
+          // Only count movement if:
+          // 1. Speed is significant (> 0.5 m/s or ~1.8 km/h) OR
+          // 2. Distance is substantial (> 5 meters) to account for slow movements
+          const speedMs = gpsData.speed !== null ? gpsData.speed : 0;
+          const isMoving = speedMs > 0.5 || distance > 5;
+          
+          if (isMoving && distance < 100) { // Still filter out unrealistic jumps
+            setStats(s => ({ ...s, distance: s.distance + distance }));
           }
-        },
-        (error) => {
-          // GPS error — silently continue
-        },
-        { enableHighAccuracy: true, maximumAge: 1000, timeout: 5000 }
-      );
-
-      startTimeRef.current = Date.now();
-      pausedDurationRef.current = 0;
-      setState('recording');
-      updateStatsLoop();
-    } catch {
-      toast.error('Erreur lors du démarrage');
-    }
-  };
-
-  const addPoint = (gpsData: GPSData) => {
-    const newPoint: RecordedPoint = { gps: gpsData, timestamp: Date.now() };
-    
-    setPoints(prev => {
-      const newPoints = [...prev, newPoint];
-      
-      if (lastPointRef.current && gpsData.accuracy < 50) {
-        const distance = calculateDistance(lastPointRef.current, gpsData);
-        if (distance < 100) {
-          setStats(s => ({ ...s, distance: s.distance + distance }));
+          
+          if (gpsData.altitude !== null && lastPointRef.current.altitude !== null) {
+            const elevationChange = gpsData.altitude - lastPointRef.current.altitude;
+            if (elevationChange > 2) {
+              setStats(s => ({ ...s, elevationGain: s.elevationGain + elevationChange }));
+            } else if (elevationChange < -2) {
+              setStats(s => ({ ...s, elevationLoss: s.elevationLoss + Math.abs(elevationChange) }));
+            }
+          }
+          
+          // Update route progress if we have a selected route
+          if (selectedRoute) {
+            const progress = calculateRouteProgress(points, selectedRoute.polyline);
+            setRouteProgress(progress);
+            
+            // Optional: provide haptic feedback or visual cues for route deviation
+            // const deviation = distanceToRouteSegment(gpsData, 
+            //   { latitude: selectedRoute.polyline.split(';')[0].split(',')[0], longitude: selectedRoute.polyline.split(';')[0].split(',')[1] },
+            //   { latitude: selectedRoute.polyline.split(';')[selectedRoute.polyline.split(';').length-1].split(',')[0], longitude: selectedRoute.polyline.split(';')[selectedRoute.polyline.split(';').length-1].split(',')[1] }
+            // );
+          }
+          
+          // Check for segment entry/exit
+          if (showSegmentsOnMap && segments.length > 0) {
+            const nowInSegment = segments.find(segment => isPointInSegment(gpsData, segment));
+            
+            if (nowInSegment && !activeSegment) {
+              // Entered a segment
+              setActiveSegment(nowInSegment);
+              setSegmentStartTime(Date.now());
+            } else if (!nowInSegment && activeSegment) {
+              // Exited a segment
+              const segmentDuration = (Date.now() - (segmentStartTime || Date.now())) / 1000; // in seconds
+              
+              // Update personal record if this is better
+              if (activeSegment.personalRecord === null || segmentDuration < activeSegment.personalRecord!) {
+                // In a real app, we would update this in the database
+                // For now, we'll just update the local state
+                setSegments(prevSegments => 
+                  prevSegments.map(seg => 
+                    seg.id === activeSegment!.id 
+                      ? { ...seg, personalRecord: segmentDuration } 
+                      : seg
+                  )
+                );
+              }
+              
+              setActiveSegment(null);
+              setSegmentStartTime(null);
+            }
+          }
         }
         
-        if (gpsData.altitude !== null && lastPointRef.current.altitude !== null) {
-          const elevationChange = gpsData.altitude - lastPointRef.current.altitude;
-          if (elevationChange > 2) {
-            setStats(s => ({ ...s, elevationGain: s.elevationGain + elevationChange }));
-          } else if (elevationChange < -2) {
-            setStats(s => ({ ...s, elevationLoss: s.elevationLoss + Math.abs(elevationChange) }));
-          }
-        }
-      }
-      
-      lastPointRef.current = gpsData;
-      return newPoints;
-    });
-  };
+        lastPointRef.current = gpsData;
+        return newPoints;
+      });
+    };
 
   const updateStatsLoop = () => {
     if (state !== 'recording') return;
@@ -391,32 +657,86 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     }
   };
 
-  if (showSportPicker) {
-    return (
-      <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center">
-        <div className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden">
-          <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Choisir un sport</h3>
-            <button
-              onClick={() => setShowSportPicker(false)}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            >
-              <X className="w-5 h-5 text-slate-500" />
-            </button>
-          </div>
-          <div className="p-4 overflow-y-auto max-h-[70vh]">
-            <SportPicker
-              selectedSport={activityType}
-              onSelect={(sport) => {
-                setActivityType(sport);
-                setShowSportPicker(false);
-              }}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }
+   if (showSportPicker) {
+     return (
+       <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center">
+         <div className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden">
+           <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Choisir un sport</h3>
+             <button
+               onClick={() => setShowSportPicker(false)}
+               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+             >
+               <X className="w-5 h-5 text-slate-500" />
+             </button>
+           </div>
+           <div className="p-4 overflow-y-auto max-h-[70vh]">
+             <SportPicker
+               selectedSport={activityType}
+               onSelect={(sport) => {
+                 setActivityType(sport);
+                 setShowSportPicker(false);
+               }}
+             />
+           </div>
+         </div>
+       </div>
+     );
+   }
+
+   if (showRoutePicker) {
+     return (
+       <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center">
+         <div className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden">
+           <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Choisir un parcours</h3>
+             <button
+               onClick={() => setShowRoutePicker(false)}
+               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+             >
+               <X className="w-5 h-5 text-slate-500" />
+             </button>
+           </div>
+           <div className="p-4 overflow-y-auto max-h-[70vh]">
+             {/* Route picker content would go here */}
+             <div className="space-y-4">
+               <p className="text-center text-slate-500">Sélecteur de parcours à implémenter</p>
+               <Button onClick={() => setShowRoutePicker(false)} className="w-full">
+                 Retour
+               </Button>
+             </div>
+           </div>
+         </div>
+       </div>
+     );
+   }
+
+   if (showSegmentPicker) {
+     return (
+       <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center">
+         <div className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden">
+           <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Gérer les segments</h3>
+             <button
+               onClick={() => setShowSegmentPicker(false)}
+               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+             >
+               <X className="w-5 h-5 text-slate-500" />
+             </button>
+           </div>
+           <div className="p-4 overflow-y-auto max-h-[70vh]">
+             {/* Segment picker content would go here */}
+             <div className="space-y-4">
+               <p className="text-center text-slate-500">Gestionnaire de segments à implémenter</p>
+               <Button onClick={() => setShowSegmentPicker(false)} className="w-full">
+                 Retour
+               </Button>
+             </div>
+           </div>
+         </div>
+       </div>
+     );
+   }
 
   return (
     <div className="fixed inset-0 z-40 bg-white dark:bg-slate-950 flex flex-col">
@@ -541,73 +861,89 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
         )}
       </div>
 
-      {/* Controls */}
-      <div className="px-6 pb-8 pt-4 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800">
-        <div className="flex items-center justify-center gap-4 max-w-sm mx-auto">
-          {state === 'idle' && (
-            <Button 
-              onClick={startRecording} 
-              className="w-20 h-20 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-lg shadow-green-500/30"
-              disabled={permissionStatus === 'denied' || permissionStatus === 'unsupported'}
-            >
-              <Play className="w-8 h-8 fill-white" />
-            </Button>
-          )}
-          
-          {state === 'recording' && (
-            <>
-              <Button 
-                onClick={pauseRecording} 
-                className="w-16 h-16 rounded-full bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/30"
-              >
-                <Pause className="w-7 h-7 fill-white" />
-              </Button>
-              <Button 
-                onClick={stopRecording} 
-                className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30"
-              >
-                <Square className="w-7 h-7 fill-white" />
-              </Button>
-            </>
-          )}
-          
-          {state === 'paused' && (
-            <>
-              <Button 
-                onClick={resumeRecording} 
-                className="w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-lg shadow-green-500/30"
-              >
-                <Play className="w-7 h-7 fill-white" />
-              </Button>
-              <Button 
-                onClick={stopRecording} 
-                className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30"
-              >
-                <Square className="w-7 h-7 fill-white" />
-              </Button>
-            </>
-          )}
-          
-          {state === 'finished' && (
-            <>
-              <Button 
-                onClick={cancelRecording} 
-                className="flex-1 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700"
-              >
-                <X className="w-5 h-5 mr-2" />
-                Supprimer
-              </Button>
-              <Button 
-                onClick={saveActivity} 
-                className="flex-1 h-14 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-lg shadow-blue-500/30"
-              >
-                <Save className="w-5 h-5 mr-2" />
-                Sauvegarder
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
+       {/* Controls */}
+       <div className="px-6 pb-8 pt-4 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800">
+         <div className="flex items-center justify-center gap-4 max-w-sm mx-auto">
+           {state === 'idle' && (
+             <>
+               <Button 
+                 onClick={() => setShowRoutePicker(true)}
+                 className="w-16 h-16 rounded-full bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/30"
+               >
+                 <MapPin className="w-7 h-7 fill-white" />
+                 Parcours
+               </Button>
+               <Button 
+                 onClick={startRecording} 
+                 className="w-20 h-20 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-lg shadow-green-500/30"
+                 disabled={permissionStatus === 'denied' || permissionStatus === 'unsupported'}
+               >
+                 <Play className="w-8 h-8 fill-white" />
+               </Button>
+               <Button 
+                 onClick={() => setShowSegmentPicker(true)}
+                 className="w-16 h-16 rounded-full bg-purple-500 hover:bg-purple-600 shadow-lg shadow-purple-500/30"
+               >
+                 <Target className="w-7 h-7 fill-white" />
+                 Segments
+               </Button>
+             </>
+           )}
+           
+           {state === 'recording' && (
+             <>
+               <Button 
+                 onClick={pauseRecording} 
+                 className="w-16 h-16 rounded-full bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/30"
+               >
+                 <Pause className="w-7 h-7 fill-white" />
+               </Button>
+               <Button 
+                 onClick={stopRecording} 
+                 className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30"
+               >
+                 <Square className="w-7 h-7 fill-white" />
+               </Button>
+             </>
+           )}
+           
+           {state === 'paused' && (
+             <>
+               <Button 
+                 onClick={resumeRecording} 
+                 className="w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-lg shadow-green-500/30"
+               >
+                 <Play className="w-7 h-7 fill-white" />
+               </Button>
+               <Button 
+                 onClick={stopRecording} 
+                 className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30"
+               >
+                 <Square className="w-7 h-7 fill-white" />
+               </Button>
+             </>
+           )}
+           
+           {state === 'finished' && (
+             <>
+               <Button 
+                 onClick={cancelRecording} 
+                 className="flex-1 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700"
+               >
+                 <X className="w-5 h-5 mr-2" />
+                 Supprimer
+               </Button>
+               <Button 
+                 onClick={saveActivity} 
+                 className="flex-1 h-14 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-lg shadow-blue-500/30"
+               >
+                 <Save className="w-5 h-5 mr-2" />
+                 Sauvegarder
+               </Button>
+             </>
+           )}
+         </div>
+       </div>
 
       {/* GPS Status Bar */}
       {currentGPS && state !== 'idle' && (

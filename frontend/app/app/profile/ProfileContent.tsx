@@ -267,7 +267,7 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
           )}
         </GlassCardHeader>
         <GlassCardContent>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Nom" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} disabled={!isEditing} leftIcon={<User className="w-4 h-4" />} />
             <Input label="Email" value={user?.email || ''} disabled leftIcon={<Mail className="w-4 h-4" />} />
             <Input label="Poids (kg)" type="number" value={form.weight} onChange={(e) => setForm({ ...form, weight: e.target.value })} disabled={!isEditing} leftIcon={<Scale className="w-4 h-4" />} />

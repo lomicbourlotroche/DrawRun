@@ -63,24 +63,24 @@ export function Modal({
       />
       <div
         className={cn(
-          'relative w-full bg-surface border border-border rounded-lg shadow-lg animate-slide-up',
+          'relative w-full bg-surface border border-border rounded-lg shadow-lg animate-slide-up max-h-[90vh] flex flex-col',
           sizes[size]
         )}
       >
         {(title || showClose) && (
-          <div className="flex items-start justify-between p-4 border-b border-border">
+          <div className="flex items-start justify-between p-4 border-b border-border flex-shrink-0">
             <div>
               {title && <h2 className="text-lg font-semibold text-foreground">{title}</h2>}
               {description && <p className="text-sm text-muted mt-1">{description}</p>}
             </div>
             {showClose && (
-              <Button variant="ghost" size="sm" onClick={onClose} className="p-1.5 -mr-2">
+              <Button variant="ghost" size="sm" onClick={onClose} className="p-2 min-h-[44px] min-w-[44px] -mr-2">
                 <X className="w-5 h-5" />
               </Button>
             )}
           </div>
         )}
-        <div className="p-4">{children}</div>
+        <div className="p-4 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   );

@@ -22,7 +22,6 @@ export default function ActivitiesContent() {
   const { sync, isSyncing } = useSyncStore();
 
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showImportModal, setShowImportModal] = useState(false);
   const [showRecordModal, setShowRecordModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -108,7 +107,7 @@ export default function ActivitiesContent() {
       try {
         const result = await api.importGpx(file.name.replace('.gpx', ''), gpxData);
         toast.success(`Importé : ${(result.distance / 1000).toFixed(1)}km en ${Math.round(result.duration / 60)}min`);
-        setShowImportModal(false);
+        setShowAddModal(false);
         await loadActivities();
       } catch (err) {
         toast.error('Erreur lors de l\'import GPX');
@@ -131,9 +130,6 @@ export default function ActivitiesContent() {
             <>
               <Button onClick={() => setShowRecordModal(true)} variant="primary" leftIcon={<Play className="w-4 h-4" />}>
                 Enregistrer
-              </Button>
-              <Button onClick={() => setShowImportModal(true)} variant="secondary" leftIcon={<Upload className="w-4 h-4" />}>
-                GPX
               </Button>
               <Button onClick={() => setShowAddModal(true)} variant="secondary" leftIcon={<Plus className="w-4 h-4" />}>
                 Ajouter
@@ -160,39 +156,46 @@ export default function ActivitiesContent() {
         <Plus className="w-6 h-6" />
       </Link>
 
-      {/* Manual Activity Modal */}
-      <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Ajouter une activité" size="md">
-        <div className="space-y-4">
-          <Input label="Nom" placeholder="Ex: Course du matin" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          <Select label="Type" options={[
-            { value: 'run', label: 'Course' },
-            { value: 'bike', label: 'Vélo' },
-            { value: 'swim', label: 'Natation' },
-          ]} value={form.type} onChange={(v) => setForm({ ...form, type: v })} />
-          <Input label="Date" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
-          <Input label="Distance (mètres)" type="number" placeholder="10000" value={form.distance} onChange={(e) => setForm({ ...form, distance: e.target.value })} />
-          <Input label="Durée (secondes)" type="number" placeholder="3600" hint="ex: 3600 = 1h" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} />
-          <Input label="FC moyenne (optionnel)" type="number" placeholder="145" value={form.avg_hr} onChange={(e) => setForm({ ...form, avg_hr: e.target.value })} />
-          <div className="flex gap-3 pt-2">
-            <Button variant="secondary" onClick={() => setShowAddModal(false)} className="flex-1">Annuler</Button>
-            <Button onClick={handleAddActivity} isLoading={isSubmitting} className="flex-1">Ajouter</Button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* GPX Import Modal */}
-      <Modal isOpen={showImportModal} onClose={() => setShowImportModal(false)} title="Importer un fichier GPX" size="sm">
-        <div className="space-y-4 text-center">
-          <div className="p-8 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-            <FileUp className="w-12 h-12 mx-auto mb-4 text-muted" />
-            <p className="text-sm text-foreground font-medium">Clique pour sélectionner un fichier .gpx</p>
-            <p className="text-xs text-muted mt-1">Le fichier sera analysé automatiquement</p>
-          </div>
-          <input ref={fileInputRef} type="file" accept=".gpx" className="hidden" onChange={handleGpxImport} />
-          {isSubmitting && <p className="text-sm text-muted">Import en cours...</p>}
-          <Button variant="secondary" onClick={() => setShowImportModal(false)} className="w-full">Annuler</Button>
-        </div>
-      </Modal>
+       {/* Manual Activity Modal - with GPX import option */}
+       <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Ajouter une activité" size="md">
+         <div className="space-y-4">
+           {/* GPX Import Option */}
+           <div className="p-4 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer text-center"
+                onClick={() => fileInputRef.current?.click()}>
+             <FileUp className="w-8 h-8 mx-auto mb-2 text-muted" />
+             <p className="text-sm font-medium text-foreground">Importer un fichier GPX</p>
+             <p className="text-xs text-muted mt-1">Le fichier sera analysé automatiquement</p>
+           </div>
+           <input ref={fileInputRef} type="file" accept=".gpx" className="hidden" onChange={handleGpxImport} />
+           
+           {isSubmitting && <p className="text-sm text-muted text-center">Import en cours...</p>}
+           
+           <div className="relative">
+             <div className="absolute inset-0 flex items-center">
+               <div className="w-full border-t border-border" />
+             </div>
+             <div className="relative flex justify-center text-xs uppercase">
+               <span className="bg-surface px-2 text-muted">Ou saisie manuelle</span>
+             </div>
+           </div>
+           
+           {/* Manual Form */}
+           <Input label="Nom" placeholder="Ex: Course du matin" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+           <Select label="Type" options={[
+             { value: 'run', label: 'Course' },
+             { value: 'bike', label: 'Vélo' },
+             { value: 'swim', label: 'Natation' },
+           ]} value={form.type} onChange={(v) => setForm({ ...form, type: v })} />
+           <Input label="Date" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+           <Input label="Distance (mètres)" type="number" placeholder="10000" value={form.distance} onChange={(e) => setForm({ ...form, distance: e.target.value })} />
+           <Input label="Durée (secondes)" type="number" placeholder="3600" hint="ex: 3600 = 1h" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} />
+           <Input label="FC moyenne (optionnel)" type="number" placeholder="145" value={form.avg_hr} onChange={(e) => setForm({ ...form, avg_hr: e.target.value })} />
+           <div className="flex gap-3 pt-2">
+             <Button variant="secondary" onClick={() => setShowAddModal(false)} className="flex-1">Annuler</Button>
+             <Button onClick={handleAddActivity} isLoading={isSubmitting} className="flex-1">Ajouter</Button>
+           </div>
+         </div>
+       </Modal>
 
       {/* Mobile Activity Recorder Modal */}
       <Modal 

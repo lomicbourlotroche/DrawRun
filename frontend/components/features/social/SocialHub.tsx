@@ -133,7 +133,7 @@ function FriendsTab() {
                       <p className="text-xs text-muted">Membre depuis {new Date(user.memberSince || user.member_since || '').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</p>
                     </div>
                   </div>
-                  <Button size="sm" className="rounded-xl" onClick={() => handleAddFriend(user.id)}>
+                  <Button size="md" className="rounded-xl" onClick={() => handleAddFriend(user.id)}>
                     <UserPlus className="w-4 h-4 mr-1" />
                     Ajouter
                   </Button>
@@ -164,10 +164,10 @@ function FriendsTab() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" className="rounded-xl bg-green-500 hover:bg-green-600" onClick={() => handleAccept(req.userId || req.user_id || 0)}>
+                    <Button size="md" className="rounded-xl bg-green-500 hover:bg-green-600" onClick={() => handleAccept(req.userId || req.user_id || 0)}>
                       <Check className="w-4 h-4" />
                     </Button>
-                    <Button size="sm" variant="ghost" className="rounded-xl text-muted hover:text-danger" onClick={() => handleRemove(req.userId || req.user_id || 0)}>
+                    <Button size="md" variant="ghost" className="rounded-xl text-muted hover:text-danger" onClick={() => handleRemove(req.userId || req.user_id || 0)}>
                       <X className="w-4 h-4" />
                     </Button>
                   </div>
@@ -214,7 +214,7 @@ function FriendsTab() {
                       <p className="text-xs text-muted">Amis depuis {new Date(friend.accepted_at || friend.created_at || '').toLocaleDateString('fr-FR')}</p>
                     </div>
                   </div>
-                  <Button size="sm" variant="ghost" className="rounded-xl opacity-0 group-hover:opacity-100 transition-opacity text-muted hover:text-danger" onClick={() => handleRemove(friend.id || friend.user_id || 0)}>
+                  <Button size="md" variant="ghost" className="rounded-xl opacity-0 group-hover:opacity-100 transition-opacity text-muted hover:text-danger" onClick={() => handleRemove(friend.id || friend.user_id || 0)}>
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
@@ -357,11 +357,11 @@ function FeedTab() {
                 </button>
                 
                 <div className="flex items-center gap-2">
-                  <Button size="sm" variant="ghost" className="rounded-full">
+                  <Button size="md" variant="ghost" className="rounded-full">
                     <MessageCircle className="w-4 h-4 mr-1" />
                     Commenter
                   </Button>
-                  <Button size="sm" variant="ghost" className="rounded-full">
+                  <Button size="md" variant="ghost" className="rounded-full">
                     <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>
@@ -692,12 +692,12 @@ function GroupsTab() {
                 </div>
                 <div className="flex gap-2">
                   {group.invite_code && (
-                    <Button size="sm" variant="ghost" className="rounded-xl" onClick={() => copyCode(group.invite_code || group.inviteCode || '')}>
+                    <Button size="md" variant="ghost" className="rounded-xl" onClick={() => copyCode(group.invite_code || group.inviteCode || '')}>
                       <Copy className="w-4 h-4" />
                     </Button>
                   )}
                   {group.role !== 'admin' && (
-                    <Button size="sm" variant="ghost" className="rounded-xl text-muted hover:text-danger" onClick={() => handleLeave(group.id)}>
+                    <Button size="md" variant="ghost" className="rounded-xl text-muted hover:text-danger" onClick={() => handleLeave(group.id)}>
                       Quitter
                     </Button>
                   )}
@@ -784,7 +784,7 @@ function NotificationsTab() {
           )}
         </h3>
         {unreadCount > 0 && (
-          <Button size="sm" variant="ghost" onClick={handleMarkAllAsRead}>
+          <Button size="md" variant="ghost" onClick={handleMarkAllAsRead}>
             Tout marquer comme lu
           </Button>
         )}

@@ -37,7 +37,7 @@ export default function HeroSection() {
             </div>
 
             {/* Title */}
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-neutral-900 leading-[1.1] mb-6">
+            <h1 className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-neutral-900 leading-[1.1] mb-6 break-words">
               VOTRE PERFORMANCE
               <br />
               <span className="bg-gradient-to-r from-primary-600 via-primary-500 to-secondary bg-clip-text text-transparent">

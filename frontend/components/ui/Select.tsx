@@ -60,7 +60,7 @@ export function Select({
           disabled={disabled}
           onClick={() => !disabled && setIsOpen(!isOpen)}
           className={cn(
-            'w-full flex items-center justify-between bg-background border rounded-lg px-4 py-2.5 text-left',
+            'w-full flex items-center justify-between bg-background border rounded-lg px-4 py-3 min-h-[44px] text-left',
             'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary',
             'transition-all duration-200',
             error ? 'border-danger' : 'border-border',
@@ -86,7 +86,7 @@ export function Select({
         </button>
 
         {isOpen && (
-          <div className="absolute z-50 w-full mt-1 bg-surface border border-border rounded-lg shadow-lg animate-slide-down overflow-hidden">
+          <div className="absolute z-50 w-full mt-1 bg-surface border border-border rounded-lg shadow-lg animate-slide-down max-h-60 overflow-y-auto">
             {options.map((option) => (
               <button
                 key={option.value}
@@ -96,7 +96,7 @@ export function Select({
                   setIsOpen(false);
                 }}
                 className={cn(
-                  'w-full flex items-center gap-2 px-4 py-2.5 text-left hover:bg-background/50 transition-colors',
+                  'w-full flex items-center gap-2 px-4 py-3 min-h-[44px] text-left hover:bg-background/50 transition-colors',
                   option.value === value && 'bg-primary/10 text-primary'
                 )}
               >

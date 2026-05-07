@@ -83,10 +83,10 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile hamburger */}
+       {/* Mobile hamburger */}
       <button
         onClick={() => setIsMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2.5 bg-white/95 backdrop-blur-xl rounded-xl border border-neutral-200/60 shadow-sm active:scale-95 transition-transform"
+        className="lg:hidden fixed top-4 left-4 z-50 p-3 min-h-[44px] min-w-[44px] bg-white/95 backdrop-blur-xl rounded-xl border border-neutral-200/60 shadow-sm active:scale-95 transition-transform"
         aria-label="Ouvrir le menu"
       >
         <Menu className="w-5 h-5 text-neutral-700" />

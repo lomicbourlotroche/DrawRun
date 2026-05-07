@@ -28,7 +28,7 @@ const { logger } = require('./logger');
 // ---------------------------------------------------------------------------
 
 const SUUNTO_TOKEN_DIR = path.join(__dirname, '..', 'data', 'suunto_tokens');
-const SUUNTO_AUTH_URL = 'https://cloudapi.oauth.suunto.com/token';
+const SUUNTO_AUTH_URL = 'https://cloudapi.suunto.com/oauth/token';
 const SUUNTO_API_BASE = 'https://cloud.suunto.com/api/v2';
 
 // Suunto mobile app OAuth client (reverse-engineered)
@@ -51,13 +51,6 @@ function getTokenPath(userId) {
         throw new Error('Invalid token path');
     }
     return tokenPath;
-}
-
-async function saveToken(userId, tokenData) {
-    const tokenPath = getTokenPath(userId);
-    fs.mkdirSync(ALLOWED_TOKEN_DIR, { recursive: true });
-    fs.writeFileSync(tokenPath, JSON.stringify(tokenData));
-    log(userId, 'Token saved');
 }
 
 async function loadToken(userId) {
@@ -335,14 +328,6 @@ async function performSuuntoSync(userId) {
             );
 
             totalImported += result.imported;
-                        }
-                    } catch (sampleErr) {
-                        // Samples may not exist for all activities
-                    }
-                } else {
-                    totalUpdated++;
-                }
-            }
 
             log(userId, `Activities: ${totalImported} new, ${totalUpdated} updated`);
         } catch (e) {

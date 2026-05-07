@@ -3377,9 +3377,14 @@ const Biomechanics = {
         // 3. Leg Stiffness (kN/m)
         // Kleg = Fmax / ΔL (simplified)
         // Ref: Morin et al. (2005)
-        const g = 9.81;
-        const flightTime = (1 / stepFreq) - (gctMs / 1000);
-        const stiffness = (weightKg * Math.PI * (1 / stepFreq)) / ( (gctMs / 1000) * ( ( (1 / stepFreq) * Math.PI / 2 ) - (gctMs / 1000) ) );
+        const stepPeriod = 1 / stepFreq;
+        const flightTime = stepPeriod - (gctMs / 1000);
+        let stiffness = 0;
+        if (flightTime > 0) {
+            const contactSec = gctMs / 1000;
+            const stiffnessNm = (weightKg * 9.81 * Math.PI * stepPeriod) / (2 * contactSec * ((stepPeriod * Math.PI / 2) - contactSec));
+            stiffness = stiffnessNm / 1000; // kN/m
+        }
 
         // 4. Vertical Ratio (%) = VO / Step Length
         const verticalRatio = (voCm / 100) / stepLength * 100;

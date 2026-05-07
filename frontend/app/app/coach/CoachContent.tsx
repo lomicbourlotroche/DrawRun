@@ -93,7 +93,7 @@ function TodayTab() {
             )}
 
             {rec.metrics && (
-              <div className="grid grid-cols-4 gap-2 pt-3 border-t border-border">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 border-t border-border">
                 {rec.metrics.weeklyKm !== undefined && (
                   <div className="text-center p-2 rounded-lg bg-muted/50">
                     <p className="text-lg font-bold text-foreground">{rec.metrics.weeklyKm}</p>
@@ -248,7 +248,7 @@ export default function CoachContent() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
               activeTab === tab.id
                 ? 'bg-primary text-white'
                 : 'text-muted hover:text-foreground hover:bg-muted'

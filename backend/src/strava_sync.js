@@ -219,6 +219,11 @@ async function performSync(userId) {
         const email = user.strava_client_id;
         const password = decrypt(user.strava_client_secret) || user.strava_client_secret;
 
+        // Verify Playwright is installed
+        if (!chromium) {
+            throw new Error('Playwright not installed. Run: npm install playwright');
+        }
+
         // Launch browser
         browser = await chromium.launch({
             headless: true,
@@ -347,36 +352,39 @@ async function performSync(userId) {
 
             log(userId, `Found ${allActivities.length} activities`);
 
-        const activitiesToProcess = allActivities
-            .filter(activity => activity.id)
-            .map(activity => ({
-                source_id: String(activity.id),
-                name: activity.name || 'Strava Activity',
-                type: mapStravaType(activity.type),
-                start_date: activity.start_date,
-                distance: activity.distance || 0,
-                moving_time: activity.moving_time || activity.elapsed_time || 0,
-                average_heartrate: activity.average_heartrate || null,
-                max_heartrate: activity.max_heartrate || null,
-                average_speed: activity.average_speed || null,
-                max_speed: activity.max_speed || null,
-                calories: activity.calories || null,
-            }));
+            const activitiesToProcess = allActivities
+                .filter(activity => activity.id)
+                .map(activity => ({
+                    source_id: String(activity.id),
+                    name: activity.name || 'Strava Activity',
+                    type: mapStravaType(activity.type),
+                    start_date: activity.start_date,
+                    distance: activity.distance || 0,
+                    moving_time: activity.moving_time || activity.elapsed_time || 0,
+                    average_heartrate: activity.average_heartrate || null,
+                    max_heartrate: activity.max_heartrate || null,
+                    average_speed: activity.average_speed || null,
+                    max_speed: activity.max_speed || null,
+                    calories: activity.calories || null,
+                }));
 
-        // Batch process
-        const { processActivityList } = require('./sync_utils');
-        const result = await processActivityList(userDb, 'strava', activitiesToProcess,
-            (sourceId) => callStravaApi(userId, { mode: 'activity', id: sourceId })
-        );
-
-        importedCount += result.imported;
-                    } catch (streamErr) {
-                        // Streams may not exist for all activities
-                    }
-                } else {
-                    totalUpdated++;
+            // Batch process
+            const { processActivityList } = require('./sync_utils');
+            const result = await processActivityList(userDb, 'strava', activitiesToProcess,
+                async (sourceId) => {
+                    const detail = await getActivityDetail(page, sourceId);
+                    if (!detail) return null;
+                    return {
+                        average_heartrate: detail.average_heartrate || null,
+                        max_heartrate: detail.max_heartrate || null,
+                        average_speed: detail.average_speed || null,
+                        max_speed: detail.max_speed || null,
+                        calories: detail.calories || null,
+                    };
                 }
-            }
+            );
+
+            totalImported += result.imported;
 
             log(userId, `Activities: ${totalImported} new, ${totalUpdated} updated, ${totalStreams} with streams`);
         } catch (e) {
