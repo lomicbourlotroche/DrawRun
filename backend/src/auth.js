@@ -147,7 +147,7 @@ router.post('/login', async (req, res) => {
     
     try {
         const normalizedEmail = email.trim().toLowerCase();
-        const user = await dbGet('SELECT id, email, password_hash, profile_data, created_at, last_login, strava_client_id, garmin_username, suunto_username, twofa_enabled, totp_secret FROM users WHERE email = ?', [normalizedEmail]);
+        const user = await dbGet('SELECT id, email, password_hash, profile_data, created_at, last_login, strava_client_id, garmin_username, suunto_username, decathlon_access_token, twofa_enabled, totp_secret FROM users WHERE email = ?', [normalizedEmail]);
         
         logger.info(`Login attempt for ${normalizedEmail}, user found: ${!!user}`);
         

@@ -3382,12 +3382,15 @@ const Biomechanics = {
         let stiffness = 0;
         if (flightTime > 0) {
             const contactSec = gctMs / 1000;
-            const stiffnessNm = (weightKg * 9.81 * Math.PI * stepPeriod) / (2 * contactSec * ((stepPeriod * Math.PI / 2) - contactSec));
-            stiffness = stiffnessNm / 1000; // kN/m
+            const denominator = 2 * contactSec * ((stepPeriod * Math.PI / 2) - contactSec);
+            if (denominator > 0) {
+                const stiffnessNm = (weightKg * 9.81 * Math.PI * stepPeriod) / denominator;
+                stiffness = Number.isFinite(stiffnessNm) ? stiffnessNm / 1000 : 0; // kN/m
+            }
         }
 
         // 4. Vertical Ratio (%) = VO / Step Length
-        const verticalRatio = (voCm / 100) / stepLength * 100;
+        const verticalRatio = stepLength > 0 ? (voCm / 100) / stepLength * 100 : 0;
 
         return {
             verticalOscillation: Math.round(voCm * 10) / 10,

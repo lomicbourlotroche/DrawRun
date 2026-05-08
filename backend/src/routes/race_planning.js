@@ -7,6 +7,7 @@ const router = express.Router();
 const { verifyToken } = require('../auth');
 const { logger } = require('../logger');
 const { getUserDb, dbGetMain } = require('../database');
+const GpxUtils = require('../utils/gpx_utils');
 const {
     RunningPerformance,
     Cardiovascular,
@@ -17,74 +18,144 @@ const {
 } = require('../algorithms/index');
 
 /**
+ * Analyse un profil GPX pour détecter automatiquement :
+ * - Le dénivelé total positif/négatif
+ * - Le type de terrain (flat/rolling/mountainous)
+ * - L'altitude moyenne
+ * - Les segments par km avec pente
+ */
+function analyzeGpxProfile(points) {
+    if (!points || points.length < 2) return null;
+
+    let elevGain = 0;
+    let elevLoss = 0;
+    let minEle = points[0].ele;
+    let maxEle = points[0].ele;
+    const totalDist = points[points.length - 1].dist; // meters
+
+    for (let i = 1; i < points.length; i++) {
+        const dEle = points[i].ele - points[i - 1].ele;
+        if (dEle > 0) elevGain += dEle;
+        else elevLoss += Math.abs(dEle);
+        if (points[i].ele < minEle) minEle = points[i].ele;
+        if (points[i].ele > maxEle) maxEle = points[i].ele;
+    }
+
+    const distKm = totalDist / 1000;
+    const gainPerKm = distKm > 0 ? elevGain / distKm : 0;
+
+    // Classification automatique du terrain
+    let terrainType;
+    if (gainPerKm < 10) {
+        terrainType = 'flat';
+    } else if (gainPerKm < 30) {
+        terrainType = 'rolling';
+    } else {
+        terrainType = 'mountainous';
+    }
+
+    // Segments par km avec pente
+    const kmSegments = [];
+    let segStart = 0;
+    let segStartDist = 0;
+    let segElevStart = points[0].ele;
+    let kmNum = 1;
+
+    for (let i = 1; i < points.length; i++) {
+        const distFromSegStart = points[i].dist - segStartDist;
+        if (distFromSegStart >= 1000 || i === points.length - 1) {
+            const segDist = points[i].dist - segStartDist;
+            const segElevChange = points[i].ele - segElevStart;
+            const grade = segDist > 0 ? (segElevChange / segDist) * 100 : 0;
+            kmSegments.push({
+                km: kmNum++,
+                distance: Math.round(segDist),
+                elevChange: Math.round(segElevChange),
+                grade: Math.round(grade * 10) / 10,
+                avgEle: Math.round((points[i].ele + segElevStart) / 2),
+            });
+            segStartDist = points[i].dist;
+            segElevStart = points[i].ele;
+        }
+    }
+
+    return {
+        elevGain: Math.round(elevGain),
+        elevLoss: Math.round(elevLoss),
+        elevMin: Math.round(minEle),
+        elevMax: Math.round(maxEle),
+        gainPerKm: Math.round(gainPerKm * 10) / 10,
+        terrainType,
+        kmSegments,
+        totalDistM: Math.round(totalDist),
+    };
+}
+
+/**
  * POST /api/race-planning/calculate
  * Calculate race plan with splits, nutrition strategy, and pacing
- * @route POST /api/race-planning/calculate
- * @body {number} distance - Race distance in km
- * @body {string} targetTime - Target time (HH:MM:SS format, optional)
- * @body {number} targetPace - Target pace in sec/km (optional)
- * @body {string} elevationProfile - 'flat', 'rolling', 'mountainous'
- * @body {number} fatigue - Fatigue level 0-10 (optional)
- * @body {number} temperature - Temperature in Celsius (optional)
- * @body {number} humidity - Humidity percentage (optional)
- * @body {number} altitude - Altitude in meters (optional)
- * @body {number} windSpeed - Wind speed km/h (optional)
- * @returns {object} Race plan with splits, predictions, and nutrition strategy
+ * Supports both simple mode (distance + profile) and GPX mode (gpxData)
  */
 router.post('/calculate', verifyToken, async (req, res) => {
     try {
         const userId = req.user.id;
         const {
-            distance,
+            distance: distanceInput,
             targetTime,
             targetPace,
-            elevationProfile = 'flat',
+            elevationProfile: elevationProfileInput = 'flat',
             fatigue = 0,
             temperature = 15,
             humidity = 50,
             altitude = 0,
             windSpeed = 0,
+            gpxData,           // NEW: GPX file content
+            strategyBias = 0,  // NEW: -1 (negative split) to +1 (positive split), 0 = even
         } = req.body;
+
+        // === GPX Mode: parse and auto-detect terrain ===
+        let gpxProfile = null;
+        let gpxPoints = null;
+        if (gpxData) {
+            gpxPoints = GpxUtils.parse(gpxData);
+            if (!gpxPoints || gpxPoints.length < 2) {
+                return res.status(400).json({ error: 'Fichier GPX invalide ou sans points de trace' });
+            }
+            gpxProfile = analyzeGpxProfile(gpxPoints);
+        }
+
+        // Use GPX-derived distance if available, else use input
+        const distance = gpxProfile ? gpxProfile.totalDistM / 1000 : distanceInput;
 
         // Validation
         const errors = [];
-
         if (!distance || distance <= 0 || distance > 200) {
             errors.push('Distance must be between 0.1 and 200 km');
         }
-
         if (!targetTime && !targetPace) {
             errors.push('Either targetTime or targetPace is required');
         }
-
         if (targetTime && !/^\d{1,2}:\d{2}:\d{2}$/.test(targetTime)) {
             errors.push('targetTime must be in HH:MM:SS format');
         }
-
         if (targetPace && (targetPace <= 0 || targetPace > 600)) {
             errors.push('targetPace must be between 1 and 600 sec/km');
         }
-
-        if (!['flat', 'rolling', 'mountainous'].includes(elevationProfile)) {
-            errors.push('elevationProfile must be flat, rolling, or mountainous');
-        }
-
         if (fatigue < 0 || fatigue > 10) {
             errors.push('fatigue must be between 0 and 10');
         }
-
+        if (strategyBias < -1 || strategyBias > 1) {
+            errors.push('strategyBias must be between -1 and 1');
+        }
         if (errors.length > 0) {
-            return res.status(400).json({
-                error: 'Paramètres invalides',
-                details: errors,
-            });
+            return res.status(400).json({ error: 'Paramètres invalides', details: errors });
         }
 
-        // Get user profile
-        const profile = await dbGetMain(
-            'SELECT profile_data FROM users WHERE id = ?',
-            [userId]
-        );
+        // Auto-detect elevation profile from GPX, or use input
+        const elevationProfile = gpxProfile ? gpxProfile.terrainType : elevationProfileInput;
+        if (!['flat', 'rolling', 'mountainous'].includes(elevationProfile)) {
+            return res.status(400).json({ error: 'elevationProfile must be flat, rolling, or mountainous' });
+        }
 
         let fcm = 180;
         let userVdot = null;
@@ -134,6 +205,7 @@ router.post('/calculate', verifyToken, async (req, res) => {
         const pacingStrategy = getPacingStrategy(distance);
 
         // Generate splits with scientific pacing, elevation, and cardiac drift
+        // Generate splits — use GPX km segments if available, else synthetic
         const splits = generateScientificSplits({
             distance,
             basePace: correctedPace,
@@ -143,6 +215,8 @@ router.post('/calculate', verifyToken, async (req, res) => {
             restingHR,
             totalRaceTime,
             weight,
+            strategyBias,
+            gpxKmSegments: gpxProfile ? gpxProfile.kmSegments : null,
         });
 
         // Multi-model race prediction
@@ -290,6 +364,7 @@ router.post('/calculate', verifyToken, async (req, res) => {
             taperRecommendation,
             environmentalImpact: envImpact,
             pacingStrategy,
+            gpxProfile,  // NEW: auto-detected terrain info
             summary: {
                 distance,
                 targetPace: Math.round(targetPaceSec),
@@ -297,10 +372,15 @@ router.post('/calculate', verifyToken, async (req, res) => {
                 totalTime: Math.round(totalRaceTime),
                 correctedTotalTime: Math.round(correctedPace * distance),
                 elevationProfile,
+                elevationAutoDetected: !!gpxProfile,
+                elevGain: gpxProfile ? gpxProfile.elevGain : null,
+                elevLoss: gpxProfile ? gpxProfile.elevLoss : null,
+                gainPerKm: gpxProfile ? gpxProfile.gainPerKm : null,
                 fcm,
                 vdot: userVdot,
                 tsb: tsbValue ? Math.round(tsbValue) : null,
                 ctl: ctlValue ? Math.round(ctlValue) : null,
+                strategyBias,
             },
         });
 
@@ -365,33 +445,49 @@ function getPacingStrategy(distance) {
 /**
  * Generate splits with scientific pacing, cardiac drift, and elevation
  */
-function generateScientificSplits({ distance, basePace, elevationProfile, pacingStrategy, fcm, restingHR, totalRaceTime, weight }) {
+function generateScientificSplits({ distance, basePace, elevationProfile, pacingStrategy, fcm, restingHR, totalRaceTime, weight, strategyBias = 0, gpxKmSegments = null }) {
     const splits = [];
     const numSplits = Math.ceil(distance);
     const totalHours = totalRaceTime / 3600;
+
+    // strategyBias: -1 = aggressive negative split (start slow), 0 = even, +1 = positive split (start fast)
+    const biasStartFactor = pacingStrategy.startFactor + strategyBias * 0.04;
+    const biasEndFactor   = pacingStrategy.endFactor   - strategyBias * 0.04;
 
     for (let km = 1; km <= numSplits; km++) {
         const kmDistance = km === numSplits ? distance - (km - 1) : 1;
         const kmProgress = km / numSplits;
 
-        // Pacing phase factor
+        // Pacing phase factor with strategyBias
         let paceFactor;
         if (kmProgress < 0.15) {
-            paceFactor = pacingStrategy.startFactor;
+            paceFactor = biasStartFactor;
         } else if (kmProgress < 0.85) {
             const midProgress = (kmProgress - 0.15) / 0.70;
-            paceFactor = pacingStrategy.startFactor + (pacingStrategy.midFactor - pacingStrategy.startFactor) * midProgress;
+            paceFactor = biasStartFactor + (pacingStrategy.midFactor - biasStartFactor) * midProgress;
         } else {
             const endProgress = (kmProgress - 0.85) / 0.15;
-            paceFactor = pacingStrategy.midFactor + (pacingStrategy.endFactor - pacingStrategy.midFactor) * endProgress;
+            paceFactor = pacingStrategy.midFactor + (biasEndFactor - pacingStrategy.midFactor) * endProgress;
         }
 
-        // Cardiac drift (HR increases ~1 bpm per 10 min at constant pace)
+        // Cardiac drift (~1 bpm per 10 min at constant pace)
         const driftBpm = Math.round((kmProgress * totalHours * 60) / 10);
 
-        // Elevation factor (simplified model)
+        // Elevation factor — real GPX data takes priority over synthetic
         let elevFactor = 1.0;
-        if (elevationProfile.gainPerKm > 0) {
+        let kmGrade = 0;
+        let kmElevChange = 0;
+
+        if (gpxKmSegments && gpxKmSegments[km - 1]) {
+            const seg = gpxKmSegments[km - 1];
+            kmGrade = seg.grade;
+            kmElevChange = seg.elevChange;
+            // Minetti polynomial approximation: +1% grade ≈ +3.5% pace, -1% ≈ -1.5%
+            elevFactor = kmGrade >= 0
+                ? 1 + kmGrade * 0.035
+                : 1 + kmGrade * 0.015;
+            elevFactor = Math.max(0.88, Math.min(1.30, elevFactor));
+        } else if (elevationProfile.gainPerKm > 0) {
             const simulatedGain = Math.sin(km * 0.7) * elevationProfile.gainPerKm;
             elevFactor = 1 + (simulatedGain / 100) * 0.01;
             elevFactor = Math.max(0.92, Math.min(1.15, elevFactor));
@@ -401,14 +497,10 @@ function generateScientificSplits({ distance, basePace, elevationProfile, pacing
         const splitTime = splitPace * kmDistance;
         const cumulativeTime = splits.reduce((acc, s) => acc + s.splitTime, 0) + splitTime;
 
-        // HR zones based on race phase
         const hrPhase = getRaceHRPhase(kmProgress, distance);
         const hrMin = Math.round(fcm * hrPhase.minPct + restingHR * (1 - hrPhase.minPct) * 0.3);
         const hrMax = Math.round(fcm * hrPhase.maxPct + restingHR * (1 - hrPhase.maxPct) * 0.3);
-        const hrDriftMin = hrMin + driftBpm;
-        const hrDriftMax = hrMax + Math.min(driftBpm, 15);
 
-        // Nutrition timing
         const nutrition = getSplitNutrition(km, cumulativeTime, totalRaceTime, distance, weight);
 
         splits.push({
@@ -419,9 +511,11 @@ function generateScientificSplits({ distance, basePace, elevationProfile, pacing
             pace: Math.round(splitPace),
             paceFactor: Math.round(paceFactor * 1000) / 1000,
             hrZone: hrPhase.name,
-            hrRange: `${hrDriftMin}-${hrDriftMax} bpm`,
+            hrRange: `${hrMin + driftBpm}-${hrMax + Math.min(driftBpm, 15)} bpm`,
             cardiacDrift: driftBpm,
             elevationFactor: Math.round(elevFactor * 100) / 100,
+            grade: kmGrade,
+            elevChange: kmElevChange,
             nutrition,
         });
     }

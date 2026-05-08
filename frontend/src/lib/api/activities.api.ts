@@ -85,7 +85,7 @@ export const activitiesApi = {
   /**
    * Importe un fichier GPX
    */
-  importGpx(name: string, gpxData: string): Promise<{ 
+  importGpx(name: string, gpxData: string, type = 'run'): Promise<{ 
     success: boolean; 
     id: number; 
     distance: number; 
@@ -94,7 +94,7 @@ export const activitiesApi = {
   }> {
     return client.request('/api/activities/import/gpx', {
       method: 'POST',
-      body: JSON.stringify({ name, gpxData }),
+      body: JSON.stringify({ name, gpxData, type }),
     });
   },
 };

@@ -274,13 +274,14 @@ async function performSuuntoSync(userId) {
             // Date range for sync
             const to = new Date().toISOString();
             let from;
+            const isFirstSync = !lastActivity?.last_date;
             if (lastActivity?.last_date) {
                 from = new Date(lastActivity.last_date).toISOString();
                 log(userId, `Incremental sync from ${from}`);
             } else {
-                // Full sync: last 2 years
-                from = new Date(Date.now() - 2 * 365 * 24 * 60 * 60 * 1000).toISOString();
-                log(userId, 'Full initial sync (last 2 years)');
+                // Full sync: fetch all history from Suunto epoch (2010-01-01)
+                from = new Date('2010-01-01T00:00:00.000Z').toISOString();
+                log(userId, 'Full initial sync — fetching all history from 2010');
             }
 
             // Fetch activities with pagination
@@ -302,7 +303,7 @@ async function performSuuntoSync(userId) {
 
             log(userId, `Found ${allActivities.length} activities`);
 
-            // Prepare activities for batch processing
+            // Prepare activities for batch processing with ALL available fields
             const activitiesToProcess = allActivities
                 .filter(activity => activity.id)
                 .map(activity => ({
@@ -314,14 +315,21 @@ async function performSuuntoSync(userId) {
                     moving_time: activity.duration || activity.durationInSeconds || 0,
                     elapsed_time: activity.duration || activity.durationInSeconds || 0,
                     total_elevation_gain: activity.elevationGain || activity.ascent || 0,
+                    elev_high: activity.maxAltitude || null,
+                    elev_low: activity.minAltitude || null,
                     average_heartrate: activity.avgHeartRate || activity.averageHeartRate || null,
                     max_heartrate: activity.maxHeartRate || activity.maximumHeartRate || null,
-                    average_speed: null, // Will calculate if needed
-                    max_speed: null,
+                    average_cadence: activity.avgCadence || activity.averageCadence || null,
+                    average_power: activity.avgPower || activity.averagePower || null,
+                    average_speed: activity.avgSpeed || activity.averageSpeed || null,
+                    max_speed: activity.maxSpeed || null,
                     calories: activity.calories || activity.energy || null,
+                    device_name: activity.deviceName || null,
+                    description: activity.description || null,
+                    running_index: activity.runningIndex || null,
                 }));
 
-            // Batch process using sync_utils
+            // Batch process using sync_utils — samples contain GPS track points
             const { processActivityList } = require('./sync_utils');
             const result = await processActivityList(userDb, 'suunto', activitiesToProcess,
                 (sourceId) => getActivitySamples(accessToken, sourceId)

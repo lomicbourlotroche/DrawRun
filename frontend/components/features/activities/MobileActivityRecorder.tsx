@@ -8,10 +8,17 @@ import { toast } from 'sonner';
 import { SportPicker } from './SportPicker';
 import type { SportType } from '@/types/sports';
 import { SPORTS, getSportCategory } from '@/types/sports';
+import ActivityMap from '@/components/ui/ActivityMap';
 import { 
   Play, Pause, Square, MapPin, Navigation, Mountain, ChevronDown, X, Save, Battery, BatteryMedium, BatteryLow,
   Target, TrendingUp, Footprints, Bike, Waves
 } from 'lucide-react';
+
+// ── Lightweight live map wrapper ─────────────────────────────────────────────
+function LiveMap({ points }: { points: Array<{ gps: { latitude: number; longitude: number } }> }) {
+  const latlng: [number, number][] = points.map(p => [p.gps.latitude, p.gps.longitude]);
+  return <ActivityMap latlng={latlng} className="h-48" color="#3B82F6" />;
+}
 
 interface GPSData {
   latitude: number;
@@ -121,6 +128,11 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   const lastPointRef = useRef<GPSData | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  // stateRef MUST be declared before addPoint/updateStatsLoop which reference it
+  const stateRef = useRef<RecordingState>('idle');
+  const setStateAndRef = (s: RecordingState) => { stateRef.current = s; setState(s); };
+  // currentGPS ref so updateStatsLoop always sees the latest value without stale closure
+  const currentGPSRef = useRef<GPSData | null>(null);
 
   const sport = SPORTS[activityType];
   const sportCategory = getSportCategory(activityType);
@@ -189,36 +201,22 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
    // Load user's routes
    const loadUserRoutes = async () => {
      try {
-       // In a real implementation, this would fetch from backend
-       // For now, we'll leave it empty or use mock data
-       // const routes = await api.getUserRoutes();
-       // setRoutes(routes);
-     } catch (error) {
-       console.error('Failed to load routes:', error);
-     }
+       // Routes loading not yet implemented — placeholder
+     } catch { /* silent */ }
    };
 
    // Load user's segments
    const loadUserSegments = async () => {
      try {
-       // In a real implementation, this would fetch from backend
-       // For now, we'll leave it empty or use mock data
-       // const segments = await api.getUserSegments();
-       // setSegments(segments);
-     } catch (error) {
-       console.error('Failed to load segments:', error);
-     }
+       // Segments loading not yet implemented — placeholder
+     } catch { /* silent */ }
    };
 
    // Load active coach session
    const loadActiveCoachSession = async () => {
      try {
-       // In a real implementation, this would fetch from backend
-       // const session = await coachApi.getActivePlan();
-       // setActiveCoachSession(session);
-     } catch (error) {
-       console.error('Failed to load active coach session:', error);
-     }
+       // Coach session loading not yet implemented — placeholder
+     } catch { /* silent */ }
    };
 
   const releaseWakeLock = () => {
@@ -291,47 +289,19 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
      return R * c;
    };
 
-   // Calculate distance from a point to a line segment (for route deviation)
-   const distanceToRouteSegment = (point: GPSData, segmentStart: GPSData, segmentEnd: GPSData): number => {
-     const x = point.longitude;
-     const y = point.latitude;
-     const x1 = segmentStart.longitude;
-     const y1 = segmentStart.latitude;
-     const x2 = segmentEnd.longitude;
-     const y2 = segmentEnd.latitude;
-     
-     const A = x - x1;
-     const B = y - y1;
-     const C = x2 - x1;
-     const D = y2 - y1;
-     
+   // Calculate distance from a point to a line segment (for route deviation detection)
+   const distanceToRouteSegment = (point: { latitude: number; longitude: number }, segStart: { latitude: number; longitude: number }, segEnd: { latitude: number; longitude: number }): number => {
+     const x = point.longitude, y = point.latitude;
+     const x1 = segStart.longitude, y1 = segStart.latitude;
+     const x2 = segEnd.longitude, y2 = segEnd.latitude;
+     const A = x - x1, B = y - y1, C = x2 - x1, D = y2 - y1;
      const dot = A * C + B * D;
      const len_sq = C * C + D * D;
-     let param = -1;
-     if (len_sq !== 0) { //in case of 0 length line
-        param = dot / len_sq;
-     }
-     
-     let xx, yy;
-     
-     if (param < 0) {
-       xx = x1;
-       yy = y1;
-     } else if (param > 1) {
-       xx = x2;
-       yy = y2;
-     } else {
-       xx = x1 + param * C;
-       yy = y1 + param * D;
-     }
-     
-     const dx = x - xx;
-     const dy = y - yy;
-     return Math.sqrt(dx * dx + dy * dy) * 111000; // Convert to meters (approximate)
+     const param = len_sq !== 0 ? dot / len_sq : -1;
+     const xx = param < 0 ? x1 : param > 1 ? x2 : x1 + param * C;
+     const yy = param < 0 ? y1 : param > 1 ? y2 : y1 + param * D;
+     return Math.sqrt((x - xx) ** 2 + (y - yy) ** 2) * 111000;
    };
-
-   // Calculate progress along a route (percentage)
-   const calculateRouteProgress = (points: RecordedPoint[], routePolyline: string): number => {
      if (points.length < 2 || !routePolyline) return 0;
      
      // Parse route polyline
@@ -383,21 +353,6 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
      );
    };
 
-   // Calculate distance between two GPS points
-   const calculateDistanceBetweenPoints = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-     const R = 6371e3; // Earth's radius in meters
-     const φ1 = lat1 * Math.PI / 180;
-     const φ2 = lat2 * Math.PI / 180;
-     const Δφ = (lat2 - lat1) * Math.PI / 180;
-     const Δλ = (lng2 - lng1) * Math.PI / 180;
-     
-     const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-               Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
-     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-     
-     return R * c;
-   };
-
    const startRecording = async () => {
      try {
        const permission = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
@@ -424,9 +379,10 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
              heading: position.coords.heading,
              timestamp: position.timestamp,
            };
+           currentGPSRef.current = gpsData;
            setCurrentGPS(gpsData);
            
-           if (state === 'recording' || state === 'idle') {
+           if (stateRef.current === 'recording') {
              addPoint(gpsData);
            }
          },
@@ -438,7 +394,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
 
        startTimeRef.current = Date.now();
        pausedDurationRef.current = 0;
-       setState('recording');
+       setStateAndRef('recording');
        updateStatsLoop();
      } catch {
        toast.error('Erreur lors du démarrage');
@@ -447,25 +403,19 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
 
     const addPoint = (gpsData: GPSData) => {
       const newPoint: RecordedPoint = { gps: gpsData, timestamp: Date.now() };
-      
+
       setPoints(prev => {
         const newPoints = [...prev, newPoint];
-        
-        // Only add distance if we have a last point and the movement is significant
-        // Filter out stationary points by checking speed and accuracy
+
         if (lastPointRef.current && gpsData.accuracy < 50) {
           const distance = calculateDistance(lastPointRef.current, gpsData);
-          
-          // Only count movement if:
-          // 1. Speed is significant (> 0.5 m/s or ~1.8 km/h) OR
-          // 2. Distance is substantial (> 5 meters) to account for slow movements
           const speedMs = gpsData.speed !== null ? gpsData.speed : 0;
           const isMoving = speedMs > 0.5 || distance > 5;
-          
-          if (isMoving && distance < 100) { // Still filter out unrealistic jumps
+
+          if (isMoving && distance < 100) {
             setStats(s => ({ ...s, distance: s.distance + distance }));
           }
-          
+
           if (gpsData.altitude !== null && lastPointRef.current.altitude !== null) {
             const elevationChange = gpsData.altitude - lastPointRef.current.altitude;
             if (elevationChange > 2) {
@@ -474,132 +424,133 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
               setStats(s => ({ ...s, elevationLoss: s.elevationLoss + Math.abs(elevationChange) }));
             }
           }
-          
-          // Update route progress if we have a selected route
+
+          // Route progress — use newPoints (not stale closure)
           if (selectedRoute) {
-            const progress = calculateRouteProgress(points, selectedRoute.polyline);
+            const progress = calculateRouteProgress(newPoints, selectedRoute.polyline);
             setRouteProgress(progress);
-            
-            // Optional: provide haptic feedback or visual cues for route deviation
-            // const deviation = distanceToRouteSegment(gpsData, 
-            //   { latitude: selectedRoute.polyline.split(';')[0].split(',')[0], longitude: selectedRoute.polyline.split(';')[0].split(',')[1] },
-            //   { latitude: selectedRoute.polyline.split(';')[selectedRoute.polyline.split(';').length-1].split(',')[0], longitude: selectedRoute.polyline.split(';')[selectedRoute.polyline.split(';').length-1].split(',')[1] }
-            // );
           }
-          
-          // Check for segment entry/exit
+
+          // Segment detection
           if (showSegmentsOnMap && segments.length > 0) {
             const nowInSegment = segments.find(segment => isPointInSegment(gpsData, segment));
-            
             if (nowInSegment && !activeSegment) {
-              // Entered a segment
               setActiveSegment(nowInSegment);
               setSegmentStartTime(Date.now());
             } else if (!nowInSegment && activeSegment) {
-              // Exited a segment
-              const segmentDuration = (Date.now() - (segmentStartTime || Date.now())) / 1000; // in seconds
-              
-              // Update personal record if this is better
+              const segmentDuration = (Date.now() - (segmentStartTime || Date.now())) / 1000;
               if (activeSegment.personalRecord === null || segmentDuration < activeSegment.personalRecord!) {
-                // In a real app, we would update this in the database
-                // For now, we'll just update the local state
-                setSegments(prevSegments => 
-                  prevSegments.map(seg => 
-                    seg.id === activeSegment!.id 
-                      ? { ...seg, personalRecord: segmentDuration } 
-                      : seg
+                setSegments(prevSegments =>
+                  prevSegments.map(seg =>
+                    seg.id === activeSegment!.id ? { ...seg, personalRecord: segmentDuration } : seg
                   )
                 );
               }
-              
               setActiveSegment(null);
               setSegmentStartTime(null);
             }
           }
         }
-        
+
         lastPointRef.current = gpsData;
         return newPoints;
       });
     };
 
+  // Use a ref for recording state so the rAF loop always sees the current value
+  // (stateRef and setStateAndRef are declared above near the other refs)
+
   const updateStatsLoop = () => {
-    if (state !== 'recording') return;
-    
-    const duration = (Date.now() - startTimeRef.current - pausedDurationRef.current) / 1000;
+    if (stateRef.current !== 'recording') return;
+
+    const duration = (Date.now() - startTimeRef.current) / 1000;
     setStats(s => {
       const avgSpeed = duration > 0 ? (s.distance / duration) * 3.6 : 0;
-      const currentSpeed = currentGPS?.speed ? currentGPS.speed * 3.6 : 0;
-      
-      return {
-        ...s,
-        duration,
-        avgSpeed,
-        maxSpeed: currentSpeed > s.maxSpeed ? currentSpeed : s.maxSpeed,
-      };
+      // Use ref to avoid stale closure on currentGPS
+      const currentSpeed = currentGPSRef.current?.speed ? currentGPSRef.current.speed * 3.6 : 0;
+      return { ...s, duration, avgSpeed, maxSpeed: currentSpeed > s.maxSpeed ? currentSpeed : s.maxSpeed };
     });
-    
+
     animationFrameRef.current = requestAnimationFrame(updateStatsLoop);
   };
 
   const pauseRecording = () => {
-    if (state === 'recording') {
-      setState('paused');
-      pausedDurationRef.current += Date.now() - startTimeRef.current;
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
+    if (stateRef.current === 'recording') {
+      setStateAndRef('paused');
+      // Freeze the start reference so duration doesn't advance while paused
+      startTimeRef.current = Date.now() - (stats.duration * 1000);
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     }
   };
 
   const resumeRecording = () => {
-    if (state === 'paused') {
-      setState('recording');
-      startTimeRef.current = Date.now() - pausedDurationRef.current;
+    if (stateRef.current === 'paused') {
+      // Restore start reference so duration continues from where it left off
+      startTimeRef.current = Date.now() - (stats.duration * 1000);
+      setStateAndRef('recording');
       updateStatsLoop();
     }
   };
 
   const stopRecording = () => {
-    setState('finished');
+    setStateAndRef('finished');
     if (watchIdRef.current !== null) {
       navigator.geolocation.clearWatch(watchIdRef.current);
       watchIdRef.current = null;
     }
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
+    if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     releaseWakeLock();
   };
 
   const saveActivity = async () => {
     try {
-      const polyline = points.length > 0 
-        ? points.map(p => `${p.gps.latitude.toFixed(6)},${p.gps.longitude.toFixed(6)}`).join(';')
-        : undefined;
+      const name = activityName || `${sport.nameFr} - ${new Date().toLocaleDateString('fr-FR')}`;
 
-      await api.addManualActivity({
-        name: activityName || `${sport.nameFr} - ${new Date().toLocaleDateString('fr-FR')}`,
-        type: activityType,
-        date: new Date().toISOString(),
-        distance: Math.round(stats.distance),
-        duration: Math.round(stats.duration),
-        elevation: Math.round(stats.elevationGain),
-      });
-      
+      if (points.length > 2) {
+        // Build a GPX from recorded points and import via the GPX endpoint
+        // This stores GPS streams, polyline, elevation properly
+        const startTime = new Date(points[0].timestamp).toISOString();
+        const gpxLines = [
+          '<?xml version="1.0" encoding="UTF-8"?>',
+          '<gpx version="1.1" creator="DrawRun">',
+          `<metadata><time>${startTime}</time></metadata>`,
+          '<trk><name>' + name.replace(/[<>&"']/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&apos;' }[c] ?? c)) + '</name><trkseg>',
+          ...points.map(p =>
+            `<trkpt lat="${p.gps.latitude.toFixed(6)}" lon="${p.gps.longitude.toFixed(6)}">` +
+            (p.gps.altitude != null ? `<ele>${p.gps.altitude.toFixed(1)}</ele>` : '') +
+            `<time>${new Date(p.timestamp).toISOString()}</time></trkpt>`
+          ),
+          '</trkseg></trk></gpx>',
+        ];
+        await api.importGpx(name, gpxLines.join('\n'), activityType);
+      } else {
+        // No GPS points — save as manual activity
+        await api.addManualActivity({
+          name,
+          type: activityType,
+          date: new Date().toISOString(),
+          distance: Math.round(stats.distance),
+          duration: Math.round(stats.duration),
+          elevation: Math.round(stats.elevationGain),
+        });
+      }
+
       toast.success('Activité sauvegardée !');
       resetState();
       onSave?.();
-    } catch {
-      toast.error('Erreur lors de la sauvegarde');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erreur lors de la sauvegarde';
+      toast.error(msg);
     }
   };
 
   const resetState = () => {
     setPoints([]);
     setStats({ distance: 0, duration: 0, avgSpeed: 0, maxSpeed: 0, elevationGain: 0, elevationLoss: 0, cadence: null });
-    setState('idle');
+    setStateAndRef('idle');
     lastPointRef.current = null;
+    currentGPSRef.current = null;
+    setCurrentGPS(null);
     setActivityName('');
   };
 
@@ -744,7 +695,16 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       <div className={`bg-gradient-to-r ${getSportColor()} text-white px-4 pt-12 pb-6`}>
         <div className="flex items-center justify-between mb-4">
           <button
-            onClick={state === 'idle' ? cancelRecording : undefined}
+            onClick={() => {
+              if (state === 'idle') {
+                cancelRecording();
+              } else if (state === 'recording' || state === 'paused') {
+                if (window.confirm('Abandonner l\'enregistrement en cours ?')) {
+                  stopRecording();
+                  setTimeout(() => cancelRecording(), 100);
+                }
+              }
+            }}
             className="p-2 rounded-xl bg-white/20 active:scale-95 transition-transform"
           >
             <X className="w-5 h-5" />
@@ -844,6 +804,14 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Live GPS Map — shown during recording/paused/finished when we have points */}
+        {points.length > 1 && (state === 'recording' || state === 'paused' || state === 'finished') && (
+          <div className="w-full max-w-sm mb-6 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
+            {/* Dynamic import to avoid SSR issues */}
+            <LiveMap points={points} />
           </div>
         )}
 

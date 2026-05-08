@@ -750,6 +750,19 @@ export interface RacePlanningRequest {
   humidity?: number;
   altitude?: number;
   windSpeed?: number;
+  gpxData?: string;       // NEW: raw GPX XML for auto-detection
+  strategyBias?: number;  // NEW: -1 (negative split) to +1 (positive split)
+}
+
+export interface GpxProfile {
+  elevGain: number;
+  elevLoss: number;
+  elevMin: number;
+  elevMax: number;
+  gainPerKm: number;
+  terrainType: 'flat' | 'rolling' | 'mountainous';
+  kmSegments: Array<{ km: number; distance: number; elevChange: number; grade: number; avgEle: number }>;
+  totalDistM: number;
 }
 
 export interface RacePlanningResponse {
@@ -790,6 +803,7 @@ export interface RacePlanningResponse {
     name: string;
     description: string;
   };
+  gpxProfile?: GpxProfile;  // NEW: auto-detected terrain info
   summary: {
     distance: number;
     targetPace: number;
@@ -797,10 +811,15 @@ export interface RacePlanningResponse {
     totalTime: number;
     correctedTotalTime?: number;
     elevationProfile: string;
+    elevationAutoDetected?: boolean;
+    elevGain?: number | null;
+    elevLoss?: number | null;
+    gainPerKm?: number | null;
     fcm: number;
     vdot?: number;
     tsb?: number | null;
     ctl?: number | null;
+    strategyBias?: number;
   };
 }
 

@@ -78,7 +78,7 @@ def main():
     parser.add_argument("--tokenstore", type=str, default="", help="Directory to persist garth OAuth tokens")
     parser.add_argument(
         "--mode", type=str, default="activities",
-        choices=["activities", "details", "health", "body", "metrics", "all"],
+        choices=["activities", "details", "health", "body", "metrics", "all", "gpx", "streams"],
     )
     parser.add_argument("--days", type=int, default=30)
     parser.add_argument("--limit", type=int, default=100)
@@ -138,6 +138,39 @@ def main():
                 sys.exit(1)
             detail = garmin.get_activity_details(args.id)
             print(json.dumps(detail))
+
+        elif args.mode == "gpx":
+            if not args.id:
+                print(json.dumps({"error": "Activity ID required for gpx mode"}))
+                sys.exit(1)
+            try:
+                gpx_data = garmin.download_activity(args.id, dl_fmt=garmin.ActivityDownloadFormat.GPX)
+                # Return as base64 string so JSON transport works
+                import base64
+                print(json.dumps({"gpx": base64.b64encode(gpx_data).decode("utf-8")}))
+            except Exception as e:
+                print(json.dumps({"error": f"GPX download failed: {e}"}))
+                sys.exit(1)
+
+        elif args.mode == "streams":
+            if not args.id:
+                print(json.dumps({"error": "Activity ID required for streams mode"}))
+                sys.exit(1)
+            # get_activity_details already contains the full metric streams
+            detail = garmin.get_activity_details(args.id)
+            # Also try to get the GPS track separately
+            result = {"detail": detail}
+            try:
+                splits = garmin.get_activity_splits(args.id)
+                result["splits"] = splits
+            except Exception:
+                pass
+            try:
+                hr_zones = garmin.get_activity_hr_in_timezones(args.id)
+                result["hr_zones"] = hr_zones
+            except Exception:
+                pass
+            print(json.dumps(result))
 
         elif args.mode == "health":
             effective_start = args.start_date or args.start

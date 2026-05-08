@@ -1,31 +1,90 @@
 /* eslint-disable eqeqeq, react/no-unescaped-entities */
 'use client';
 
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Badge } from '@/components/ui';
 import { api, coachApi } from '@/lib/api';
 import { client } from '@/lib/api/client';
 import { racePlanningApi } from '@/lib/api/race-planning.api';
-import type { RacePlanningResponse, RacePlanningRequest, Split } from '@/types';
-import { Trophy, Download, AlertTriangle, MapPin, Heart, Zap, Droplets, Save, Upload, Printer } from 'lucide-react';
+import type { RacePlanningResponse, RacePlanningRequest, Split, GpxProfile } from '@/types';
+import {
+  Trophy, Download, AlertTriangle, MapPin, Heart, Zap, Droplets, Save, Upload,
+  Printer, Mountain, TrendingUp, TrendingDown, Minus, Info
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { 
-  ResponsiveContainer, ComposedChart, CartesianGrid, XAxis, YAxis, Tooltip, Area, Line 
+import {
+  ResponsiveContainer, ComposedChart, CartesianGrid, XAxis, YAxis, Tooltip,
+  Area, Line, ReferenceLine, Legend
 } from 'recharts';
 
 const ELEVATION_PROFILES = [
-  { id: 'flat', label: 'Plat', description: 'Route plate sans dénivelé', factor: 1.0 },
-  { id: 'rolling', label: 'Vallonné', description: 'Montées et descentes modérées', factor: 1.05 },
-  { id: 'mountainous', label: 'Montagneux', description: 'Dénivelé important', factor: 1.15 },
+  { id: 'flat',        label: 'Plat',       description: 'Route plate sans dénivelé',       icon: Minus },
+  { id: 'rolling',     label: 'Vallonné',   description: 'Montées et descentes modérées',   icon: TrendingUp },
+  { id: 'mountainous', label: 'Montagneux', description: 'Dénivelé important',              icon: Mountain },
 ] as const;
 
 const DISTANCE_PRESETS = [
-  { label: '5K', km: 5 },
-  { label: '10K', km: 10 },
-  { label: 'Semi', km: 21.0975 },
-  { label: 'Marathon', km: 42.195 },
+  { label: '5K',      km: 5 },
+  { label: '10K',     km: 10 },
+  { label: 'Semi',    km: 21.0975 },
+  { label: 'Marathon',km: 42.195 },
 ];
+
+// ─── Strategy Bias Slider ────────────────────────────────────────────────────
+function StrategySlider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const labels = [
+    { v: -1,    label: 'Très négatif',  desc: 'Départ très lent, accélération forte' },
+    { v: -0.5,  label: 'Négatif',       desc: 'Départ conservateur' },
+    { v: 0,     label: 'Régulier',      desc: 'Allure constante' },
+    { v: 0.5,   label: 'Positif',       desc: 'Départ rapide, gestion' },
+    { v: 1,     label: 'Très positif',  desc: 'Départ à fond, résistance' },
+  ];
+  const current = labels.reduce((a, b) => Math.abs(b.v - value) < Math.abs(a.v - value) ? b : a);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <label className="text-sm font-medium">Stratégie d&apos;allure</label>
+        <span className="text-xs font-semibold text-primary px-2 py-0.5 bg-primary/10 rounded-full">
+          {current.label}
+        </span>
+      </div>
+      <input
+        type="range" min="-1" max="1" step="0.1"
+        value={value}
+        onChange={e => onChange(parseFloat(e.target.value))}
+        className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary"
+      />
+      <div className="flex justify-between text-xs text-muted">
+        <span className="flex items-center gap-1"><TrendingDown className="w-3 h-3" />Negative split</span>
+        <span>Régulier</span>
+        <span className="flex items-center gap-1">Positive split<TrendingUp className="w-3 h-3" /></span>
+      </div>
+      <p className="text-xs text-muted italic">{current.desc}</p>
+    </div>
+  );
+}
+
+// ─── GPX Profile Badge ───────────────────────────────────────────────────────
+function GpxProfileBadge({ profile }: { profile: GpxProfile }) {
+  const terrainLabel = { flat: 'Plat', rolling: 'Vallonné', mountainous: 'Montagneux' }[profile.terrainType];
+  const terrainColor = { flat: 'bg-green-100 text-green-700', rolling: 'bg-yellow-100 text-yellow-700', mountainous: 'bg-red-100 text-red-700' }[profile.terrainType];
+  return (
+    <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
+      <div className="flex items-center gap-2">
+        <Info className="w-4 h-4 text-primary" />
+        <span className="text-sm font-medium text-primary">Terrain détecté automatiquement</span>
+        <span className={cn('text-xs font-bold px-2 py-0.5 rounded-full', terrainColor)}>{terrainLabel}</span>
+      </div>
+      <div className="grid grid-cols-3 gap-2 text-xs">
+        <div className="text-center"><p className="font-bold text-green-600">+{profile.elevGain}m</p><p className="text-muted">Dénivelé +</p></div>
+        <div className="text-center"><p className="font-bold text-red-500">-{profile.elevLoss}m</p><p className="text-muted">Dénivelé -</p></div>
+        <div className="text-center"><p className="font-bold">{profile.gainPerKm}m/km</p><p className="text-muted">Gain/km</p></div>
+      </div>
+    </div>
+  );
+}
 
 export function RacePlanningContent() {
   const [form, setForm] = useState<RacePlanningRequest>({
@@ -37,7 +96,11 @@ export function RacePlanningContent() {
   const [targetTime, setTargetTime] = useState('00:50:00');
   const [targetPace, setTargetPace] = useState('05:00');
   const [mode, setMode] = useState<'simple' | 'gpx'>('simple');
-  const [points, setPoints] = useState<any[]>([]);
+  const [gpxRaw, setGpxRaw] = useState<string | null>(null);
+  const [gpxFileName, setGpxFileName] = useState<string | null>(null);
+  const [gpxPointCount, setGpxPointCount] = useState(0);
+  const [gpxDistKm, setGpxDistKm] = useState(0);
+  const [strategyBias, setStrategyBias] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<RacePlanningResponse | any | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -45,43 +108,32 @@ export function RacePlanningContent() {
   const handleCalculate = async () => {
     setIsLoading(true);
     try {
-      if (mode === 'simple') {
-        const params: RacePlanningRequest = {
-          distance: form.distance,
-          elevationProfile: form.elevationProfile,
-          fatigue: form.fatigue,
-        };
+      const params: RacePlanningRequest = {
+        distance: form.distance,
+        elevationProfile: form.elevationProfile,
+        fatigue: form.fatigue,
+        strategyBias,
+      };
 
-        if (targetMode === 'time') {
-          params.targetTime = targetTime;
-        } else {
-          const [mins, secs] = targetPace.split(':').map(Number);
-          params.targetPace = mins * 60 + secs;
-        }
-
-        const response = await api.calculateRacePlan(params);
-        setResult(response);
+      if (targetMode === 'time') {
+        params.targetTime = targetTime;
       } else {
-        if (points.length < 2) {
+        const [mins, secs] = targetPace.split(':').map(Number);
+        params.targetPace = mins * 60 + (secs || 0);
+      }
+
+      if (mode === 'gpx') {
+        if (!gpxRaw) {
           toast.error('Veuillez d\'abord importer un fichier GPX');
           setIsLoading(false);
           return;
         }
-
-        const goalTimeMinutes = targetMode === 'time' && targetTime ? 
-          targetTime.split(':').reduce((acc, val, i, arr) => acc + parseInt(val) * Math.pow(60, arr.length - 1 - i), 0) / 60 : 
-          undefined;
-
-        const response = await coachApi.calculateRaceStrategy({
-          points: points.map((p: any) => ({ dist: p.dist, elev: p.elev })),
-          params: {
-            temp: 15,
-            humidity: 50,
-            goalTime: goalTimeMinutes
-          }
-        });
-        setResult(response);
+        // Send raw GPX — backend auto-detects terrain + distance
+        params.gpxData = gpxRaw;
       }
+
+      const response = await api.calculateRacePlan(params);
+      setResult(response);
       toast.success('Plan de course calculé !');
     } catch (error) {
       console.error('Race planning error:', error);
@@ -91,58 +143,46 @@ export function RacePlanningContent() {
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
+    setGpxFileName(file.name);
     const reader = new FileReader();
     reader.onload = (event) => {
       const xml = event.target?.result as string;
-      const pts = parseGpx(xml);
-      if (pts.length > 0) {
-        setPoints(pts);
-        setForm({ ...form, distance: Math.round(pts[pts.length - 1].dist / 10) / 100 });
-        toast.success(`${pts.length} points importés`);
+      // Quick count of trackpoints for UI feedback
+      const matches = xml.match(/<trkpt/g);
+      const count = matches ? matches.length : 0;
+      // Quick distance estimate from first/last point
+      const trkptRe = /<trkpt lat="([^"]+)" lon="([^"]+)"/g;
+      const pts: [number, number][] = [];
+      let m;
+      while ((m = trkptRe.exec(xml)) !== null) {
+        pts.push([parseFloat(m[1]), parseFloat(m[2])]);
       }
+      let dist = 0;
+      for (let i = 1; i < pts.length; i++) {
+        const R = 6371000;
+        const dLat = (pts[i][0] - pts[i-1][0]) * Math.PI / 180;
+        const dLon = (pts[i][1] - pts[i-1][1]) * Math.PI / 180;
+        const a = Math.sin(dLat/2)**2 + Math.cos(pts[i-1][0]*Math.PI/180)*Math.cos(pts[i][0]*Math.PI/180)*Math.sin(dLon/2)**2;
+        dist += R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      }
+      const distKm = Math.round(dist / 10) / 100;
+      setGpxRaw(xml);
+      setGpxPointCount(count);
+      setGpxDistKm(distKm);
+      setForm(f => ({ ...f, distance: distKm }));
+      toast.success(`GPX chargé : ${count} points, ~${distKm} km`);
     };
     reader.readAsText(file);
-  };
+  }, []);
 
-  const parseGpx = (xml: string) => {
-    const pts: any[] = [];
-    const trkptRegex = /<trkpt lat="([^"]+)" lon="([^"]+)">([\s\S]*?)<\/trkpt>/g;
-    const eleRegex = /<ele>([^<]+)<\/ele>/;
-    let match;
-    let totalDist = 0;
-    let prevPoint: any = null;
-
-    while ((match = trkptRegex.exec(xml)) !== null) {
-      const lat = parseFloat(match[1]);
-      const lon = parseFloat(match[2]);
-      const eleMatch = match[3].match(eleRegex);
-      const elev = eleMatch ? parseFloat(eleMatch[1]) : 0;
-      if (prevPoint) totalDist += calculateDistance(prevPoint.lat, prevPoint.lon, lat, lon);
-      pts.push({ lat, lon, elev, dist: totalDist });
-      prevPoint = { lat, lon };
-    }
-    return pts;
-  };
-
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 6371000;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
+  const handlePrint = () => window.print();
 
   const handleExportCsv = () => {
     if (!result) return;
-    const filename = `race-plan-${form.distance}km-${new Date().toISOString().split('T')[0]}.csv`;
+    const filename = `race-plan-${(result.summary?.distance || form.distance).toFixed(1)}km-${new Date().toISOString().split('T')[0]}.csv`;
     racePlanningApi.downloadCsv(result.splits, filename);
     toast.success('Plan exporté en CSV');
   };
@@ -153,18 +193,18 @@ export function RacePlanningContent() {
       await client.request('/api/race-planning/save', {
         method: 'POST',
         body: JSON.stringify({
-          name: `${form.distance}km - ${new Date().toLocaleDateString('fr-FR')}`,
-          distance: form.distance,
-          targetPace: result.summary.targetPace,
-          totalTime: result.summary.totalTime,
-          elevationProfile: form.elevationProfile,
+          name: `${(result.summary?.distance || form.distance).toFixed(1)}km - ${new Date().toLocaleDateString('fr-FR')}`,
+          distance: result.summary?.distance || form.distance,
+          targetPace: result.summary?.targetPace,
+          totalTime: result.summary?.totalTime,
+          elevationProfile: result.summary?.elevationProfile || form.elevationProfile,
           fatigue: form.fatigue,
           splits: result.splits,
           nutritionStrategy: result.nutritionStrategy,
         }),
       });
       toast.success('Plan de course enregistré !');
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors de l\'enregistrement');
     }
   };
@@ -173,11 +213,25 @@ export function RacePlanningContent() {
     const hours = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    if (hours > 0) {
-      return `${hours}h ${mins}m ${secs}s`;
-    }
+    if (hours > 0) return `${hours}h ${mins}m ${secs}s`;
     return `${mins}m ${secs}s`;
   };
+
+  const fmtPace = (sec: number) => {
+    if (!sec || sec <= 0) return '--:--';
+    const m = Math.floor(sec / 60);
+    const s = Math.round(sec % 60);
+    return `${m}:${String(s).padStart(2, '0')}`;
+  };
+
+  // Build chart data from splits
+  const chartData = result?.splits?.map((s: any) => ({
+    km: s.km,
+    pace: s.pace,
+    elevation: s.elevChange ?? 0,
+    grade: s.grade ?? 0,
+    hr: s.hrRange ? parseInt(s.hrRange.split('-')[0]) : null,
+  })) ?? [];
 
   return (
     <div className="space-y-6 animate-fade-in max-w-6xl mx-auto">
@@ -192,13 +246,13 @@ export function RacePlanningContent() {
           </p>
         </div>
         <div className="flex bg-muted p-1 rounded-xl">
-          <button 
+          <button
             onClick={() => setMode('simple')}
             className={cn("px-4 py-2 rounded-lg text-sm font-medium transition-all", mode === 'simple' ? "bg-white text-primary shadow-sm" : "text-muted hover:text-foreground")}
           >
             Distance Simple
           </button>
-          <button 
+          <button
             onClick={() => setMode('gpx')}
             className={cn("px-4 py-2 rounded-lg text-sm font-medium transition-all", mode === 'gpx' ? "bg-white text-primary shadow-sm" : "text-muted hover:text-foreground")}
           >
@@ -238,20 +292,24 @@ export function RacePlanningContent() {
               />
             </div>
           ) : (
-            <div>
+            <div className="space-y-3">
               <label className="text-sm font-medium mb-2 block">Parcours GPX</label>
-              <div 
+              <div
                 onClick={() => fileInputRef.current?.click()}
                 className={cn(
                   "border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all",
-                  points.length > 0 ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                  gpxRaw ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
                 )}
               >
-                <Upload className={cn("w-8 h-8 mx-auto mb-2", points.length > 0 ? "text-primary" : "text-muted")} />
-                <p className="text-sm font-medium">{points.length > 0 ? `${points.length} points chargés` : "Cliquez pour importer un fichier .gpx"}</p>
-                {points.length > 0 && <p className="text-xs text-muted mt-1">Distance estimée: {(points[points.length-1].dist / 1000).toFixed(2)} km</p>}
+                <Upload className={cn("w-8 h-8 mx-auto mb-2", gpxRaw ? "text-primary" : "text-muted")} />
+                <p className="text-sm font-medium">
+                  {gpxRaw ? `${gpxFileName} — ${gpxPointCount} points` : "Cliquez pour importer un fichier .gpx"}
+                </p>
+                {gpxRaw && <p className="text-xs text-muted mt-1">Distance estimée : {gpxDistKm} km</p>}
               </div>
               <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".gpx" className="hidden" />
+              {/* Auto-detected profile shown after result */}
+              {result?.gpxProfile && <GpxProfileBadge profile={result.gpxProfile} />}
             </div>
           )}
 
@@ -338,6 +396,9 @@ export function RacePlanningContent() {
             </div>
           </div>
 
+          {/* Strategy Bias Slider */}
+          <StrategySlider value={strategyBias} onChange={setStrategyBias} />
+
           <Button onClick={handleCalculate} isLoading={isLoading} className="w-full">
             Calculer le plan de course
           </Button>
@@ -347,27 +408,64 @@ export function RacePlanningContent() {
       {/* Results */}
       {result && (
         <div className="space-y-6">
-          {/* Visualisation (GPX mode only) */}
-          {mode === 'gpx' && result && result.segments && (
+
+          {/* ── Strategy Curve Chart (both modes) ── */}
+          {result.splits && result.splits.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Profil d'Effort Dynamique</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                  Courbe de Stratégie d&apos;Allure
+                  {result.summary?.elevationAutoDetected && (
+                    <span className="text-xs font-normal text-primary bg-primary/10 px-2 py-0.5 rounded-full ml-2">
+                      Terrain auto-détecté depuis GPX
+                    </span>
+                  )}
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-80 w-full mt-4">
+                <div className="h-72 w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={result.segments}>
+                    <ComposedChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
-                      <XAxis dataKey="km" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
-                      <YAxis yAxisId="left" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} label={{ value: 'Altitude (m)', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 10 }} />
-                      <YAxis yAxisId="right" orientation="right" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} label={{ value: 'Allure (s/km)', angle: 90, position: 'insideRight', fill: '#64748b', fontSize: 10 }} />
-                      <Tooltip 
-                        contentStyle={{ backgroundColor: '#fff', border: 'none', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      <XAxis dataKey="km" stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} label={{ value: 'km', position: 'insideBottomRight', offset: -5, fontSize: 11 }} />
+                      {/* Left axis: pace in sec/km (reversed so faster = higher) */}
+                      <YAxis yAxisId="pace" orientation="left" reversed stroke="#818cf8" fontSize={11} tickLine={false} axisLine={false}
+                        tickFormatter={v => fmtPace(v)}
+                        label={{ value: 'Allure', angle: -90, position: 'insideLeft', fill: '#818cf8', fontSize: 10 }}
                       />
-                      <Area yAxisId="left" type="monotone" dataKey="elevGain" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.1} strokeWidth={2} />
-                      <Line yAxisId="right" type="stepAfter" dataKey="targetPaceSec" stroke="#818cf8" strokeWidth={3} dot={false} />
+                      {/* Right axis: elevation change */}
+                      <YAxis yAxisId="elev" orientation="right" stroke="#3b82f6" fontSize={11} tickLine={false} axisLine={false}
+                        tickFormatter={v => `${v > 0 ? '+' : ''}${v}m`}
+                        label={{ value: 'Dénivelé', angle: 90, position: 'insideRight', fill: '#3b82f6', fontSize: 10 }}
+                      />
+                      <Tooltip
+                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: 12 }}
+                        formatter={(value: any, name: string) => {
+                          if (name === 'pace') return [fmtPace(Number(value)) + '/km', 'Allure'];
+                          if (name === 'elevation') return [`${Number(value) > 0 ? '+' : ''}${value}m`, 'Dénivelé'];
+                          if (name === 'grade') return [`${value}%`, 'Pente'];
+                          return [value, name];
+                        }}
+                      />
+                      <Legend formatter={(v) => v === 'pace' ? 'Allure' : v === 'elevation' ? 'Dénivelé' : 'Pente'} />
+                      {/* Zero reference line for elevation */}
+                      <ReferenceLine yAxisId="elev" y={0} stroke="#64748b" strokeDasharray="3 3" />
+                      {/* Elevation bars */}
+                      <Area yAxisId="elev" type="monotone" dataKey="elevation" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.15} strokeWidth={1.5} name="elevation" />
+                      {/* Pace line — the strategy curve */}
+                      <Line yAxisId="pace" type="monotone" dataKey="pace" stroke="#818cf8" strokeWidth={3} dot={false} name="pace" />
                     </ComposedChart>
                   </ResponsiveContainer>
+                </div>
+                <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted">
+                  <div className="flex items-center gap-1.5"><div className="w-4 h-0.5 bg-indigo-400 rounded" /><span>Allure cible</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-4 h-3 bg-blue-400/20 border border-blue-400/40 rounded-sm" /><span>Dénivelé</span></div>
+                  {result.summary?.strategyBias !== undefined && (
+                    <div className="ml-auto text-xs font-medium text-primary">
+                      Stratégie : {result.summary.strategyBias < -0.1 ? '⬇ Negative split' : result.summary.strategyBias > 0.1 ? '⬆ Positive split' : '➡ Régulier'}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -585,6 +683,7 @@ export function RacePlanningContent() {
                       <th className="text-left py-2 px-2">Zone FC</th>
                       <th className="text-left py-2 px-2">FC</th>
                       <th className="text-left py-2 px-2 text-muted" title="Cardiac drift">Dérive</th>
+                      <th className="text-left py-2 px-2">Pente</th>
                       <th className="text-left py-2 px-2">Ravitaillement</th>
                     </tr>
                   </thead>
@@ -594,7 +693,7 @@ export function RacePlanningContent() {
                         <td className="py-2 px-2 font-medium">{split.km}</td>
                         <td className="py-2 px-2">{formatDuration(split.splitTime)}</td>
                         <td className="py-2 px-2">{formatDuration(split.cumulativeTime)}</td>
-                        <td className="py-2 px-2">{racePlanningApi.formatPace(split.pace)}</td>
+                        <td className="py-2 px-2 font-mono font-bold text-primary">{fmtPace(split.pace)}/km</td>
                         <td className="py-2 px-2">
                           <Badge variant="secondary" size="sm">
                             <Heart className="w-3 h-3 mr-1" />
@@ -606,18 +705,17 @@ export function RacePlanningContent() {
                           {split.cardiacDrift != null ? `+${split.cardiacDrift} bpm` : '-'}
                         </td>
                         <td className="py-2 px-2">
+                          {split.grade != null ? (
+                            <span className={cn('text-xs font-bold px-1.5 py-0.5 rounded-full', split.grade > 2 ? 'bg-red-100 text-red-700' : split.grade < -2 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600')}>
+                              {split.grade > 0 ? '+' : ''}{split.grade}%
+                            </span>
+                          ) : '-'}
+                        </td>
+                        <td className="py-2 px-2">
                           <div className="flex gap-1 flex-wrap">
-                            {split.nutrition.map((nut: any, idx: number) => (
-                              <Badge
-                                key={idx}
-                                variant={nut.type === 'water' ? 'secondary' : nut.type === 'gel' ? 'warning' : 'outline'}
-                                size="sm"
-                              >
-                                {nut.type === 'water' ? (
-                                  <Droplets className="w-3 h-3 mr-1" />
-                                ) : nut.type === 'gel' || nut.type === 'solid' ? (
-                                  <Zap className="w-3 h-3 mr-1" />
-                                ) : null}
+                            {split.nutrition?.map((nut: any, idx: number) => (
+                              <Badge key={idx} variant={nut.type === 'water' ? 'secondary' : nut.type === 'gel' ? 'warning' : 'outline'} size="sm">
+                                {nut.type === 'water' ? <Droplets className="w-3 h-3 mr-1" /> : <Zap className="w-3 h-3 mr-1" />}
                                 {nut.label}
                               </Badge>
                             ))}

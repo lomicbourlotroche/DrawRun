@@ -214,27 +214,51 @@ router.get('/', verifyToken, async (req, res) => {
  */
 router.post('/create', verifyToken, validateBody(validateActivityBody), async (req, res) => {
     try {
-        const { type, name, start_date, distance, moving_time, average_speed, 
-                average_heartrate, max_heartrate, calories, map_polyline,
-                elev_high, elev_low } = req.body;
-        
+        const {
+            type, name, start_date, distance, moving_time, average_speed,
+            average_heartrate, max_heartrate, calories, map_polyline,
+            elev_high, elev_low, total_elevation_gain, notes, description,
+        } = req.body;
+
+        if (!name || !String(name).trim()) {
+            return res.status(400).json({ error: 'name is required' });
+        }
+
         const userDb = await getUserDb(req.user.id);
-        
-        await dbRunUser(userDb, `
+
+        const result = await dbRunUser(userDb, `
             INSERT INTO activities (source, source_id, name, type, start_date, distance, moving_time,
                         average_speed, average_heartrate, max_heartrate, calories,
-                        map_polyline, elev_high, elev_low, is_manual)
-            VALUES ('manual', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
-        `, ['manual-' + Date.now(), name, type, start_date, distance, moving_time, 
-             average_speed, average_heartrate, max_heartrate, calories,
-             map_polyline, elev_high, elev_low]);
-        
-        // Calculer les métriques
-        if (average_heartrate) {
+                        map_polyline, elev_high, elev_low, total_elevation_gain,
+                        description, notes, is_manual)
+            VALUES ('manual', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+        `, [
+            'manual-' + Date.now(),
+            String(name).trim(),
+            type,
+            start_date,
+            distance || null,
+            moving_time || null,
+            average_speed || null,
+            average_heartrate || null,
+            max_heartrate || null,
+            calories || null,
+            map_polyline || null,
+            elev_high || null,
+            elev_low || null,
+            total_elevation_gain || null,
+            description || notes || null,
+            notes || null,
+        ]);
+
+        // Toujours calculer les métriques après création manuelle
+        try {
             await metrics.calculateAndStoreMetrics(req.user.id, userDb);
+        } catch (e) {
+            logger.warn('Metrics calculation failed after manual activity creation', { error: e.message });
         }
-        
-        res.json({ success: true, message: 'Activity created successfully' });
+
+        res.json({ success: true, id: result.lastID, message: 'Activity created successfully' });
     } catch (error) {
         logger.error('Create activity error', { error: error.message, stack: error.stack });
         res.status(500).json({ error: 'Failed to create activity' });
@@ -269,26 +293,28 @@ router.get('/:id/streams', verifyToken, async (req, res) => {
             return res.status(400).json({ error: 'Invalid activity ID' });
         }
         const userDb = await getUserDb(req.user.id);
-        const streams = await dbGetUser(userDb,
-            `SELECT streams_data FROM activities WHERE id = ?`, [activityId]);
-        if (!streams) {
-            return res.status(404).json({ error: 'Activity not found' });
-        }
-        if (!streams.streams_data) {
+        
+        // Récupérer tous les streams depuis la table activity_streams
+        const streamRows = await dbAllUser(userDb,
+            `SELECT stream_type, data FROM activity_streams WHERE activity_id = ?`, 
+            [activityId]
+        );
+
+        if (!streamRows || streamRows.length === 0) {
             return res.json({});
         }
-        try {
-            // Parse streams de manière asynchrone pour ne pas bloquer
-            const parsed = await new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    try { resolve(JSON.parse(streams.streams_data)); } 
-                    catch (e) { reject(e); }
-                }, 0);
-            });
-            res.json(parsed);
-        } catch {
-            res.json({});
+
+        // Construire l'objet streams
+        const streams = {};
+        for (const row of streamRows) {
+            try {
+                streams[row.stream_type] = JSON.parse(row.data);
+            } catch (e) {
+                logger.warn(`Failed to parse stream ${row.stream_type}`, { error: e.message });
+            }
         }
+
+        res.json(streams);
     } catch (error) {
         logger.error('Get streams error', { error: error.message });
         res.status(500).json({ error: 'Failed to fetch streams' });
@@ -304,16 +330,25 @@ router.get('/:id/splits', verifyToken, async (req, res) => {
         }
         const userDb = await getUserDb(req.user.id);
         const activity = await dbGetUser(userDb,
-            `SELECT distance, moving_time, average_heartrate, max_heartrate, average_cadence, streams_data FROM activities WHERE id = ?`,
+            `SELECT distance, moving_time, average_heartrate, max_heartrate, average_cadence FROM activities WHERE id = ?`,
             [activityId]);
         if (!activity) {
             return res.status(404).json({ error: 'Activity not found' });
         }
 
-        // Parse streams pour calculer les splits
-        let streams = {};
-        if (activity.streams_data) {
-            try { streams = JSON.parse(activity.streams_data); } catch { /* ignore */ }
+        // Récupérer les streams depuis activity_streams
+        const streamRows = await dbAllUser(userDb,
+            `SELECT stream_type, data FROM activity_streams WHERE activity_id = ?`, 
+            [activityId]
+        );
+
+        const streams = {};
+        for (const row of streamRows) {
+            try {
+                streams[row.stream_type] = JSON.parse(row.data);
+            } catch (e) {
+                logger.warn(`Failed to parse stream ${row.stream_type}`, { error: e.message });
+            }
         }
 
         const unit = req.query.unit === 'mi' ? 'mi' : 'km';
@@ -505,18 +540,17 @@ router.post('/import/gpx', verifyToken, async (req, res) => {
             return res.status(400).json({ error: 'gpxData is required' });
         }
 
+        // GPX size protection
+        const GPX_MAX_SIZE = 5 * 1024 * 1024; // 5MB
+        if (gpxData.length > GPX_MAX_SIZE) {
+            return res.status(413).json({ error: 'GPX file too large (max 5MB)' });
+        }
+
         // Parser le GPX (XML simple)
         const parseGpx = (xml) => {
             const getTag = (str, tag) => {
                 const m = str.match(new RegExp(`<${tag}[^>]*>([^<]*)</${tag}>`, 'i'));
                 return m ? m[1].trim() : null;
-            };
-            const getAllTags = (str, tag) => {
-                const re = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'gi');
-                const results = [];
-                let m;
-                while ((m = re.exec(str)) !== null) results.push(m[1]);
-                return results;
             };
             const getAttr = (str, attr) => {
                 const m = str.match(new RegExp(`${attr}="([^"]+)"`));
@@ -526,12 +560,6 @@ router.post('/import/gpx', verifyToken, async (req, res) => {
             // Extraire les trackpoints
             const trkpts = [];
             const trkptRe = /<trkpt([^>]*)>([\s\S]*?)<\/trkpt>/gi;
-            
-            // GPX ReDoS protection: limit file size and parse time
-            const GPX_MAX_SIZE = 5 * 1024 * 1024; // 5MB
-            if (gpxContent.length > GPX_MAX_SIZE) {
-              return res.status(413).json({ error: 'GPX file too large (max 5MB)' });
-            }
             let m;
             while ((m = trkptRe.exec(xml)) !== null) {
                 const attrs = m[1];
@@ -552,16 +580,18 @@ router.post('/import/gpx', verifyToken, async (req, res) => {
             // Calculer distance, durée, dénivelé
             let totalDist = 0;
             let elevGain = 0;
-            const latlng = [];
+            let elevLoss = 0;
+            let minEle = trkpts[0].ele;
+            let maxEle = trkpts[0].ele;
+            const latlng = [[trkpts[0].lat, trkpts[0].lon]];
             const hrArr = [];
-            const altArr = [];
+            const altArr = [trkpts[0].ele];
             const cadArr = [];
             const distArr = [0];
             const timeArr = [0];
 
             for (let i = 1; i < trkpts.length; i++) {
                 const p1 = trkpts[i - 1], p2 = trkpts[i];
-                // Haversine
                 const R = 6371000;
                 const dLat = (p2.lat - p1.lat) * Math.PI / 180;
                 const dLon = (p2.lon - p1.lon) * Math.PI / 180;
@@ -569,12 +599,16 @@ router.post('/import/gpx', verifyToken, async (req, res) => {
                 const d = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
                 totalDist += d;
                 distArr.push(Math.round(totalDist));
+                latlng.push([p2.lat, p2.lon]);
+                altArr.push(p2.ele);
 
                 if (p2.ele > p1.ele) elevGain += p2.ele - p1.ele;
+                else if (p2.ele < p1.ele) elevLoss += p1.ele - p2.ele;
+                if (p2.ele < minEle) minEle = p2.ele;
+                if (p2.ele > maxEle) maxEle = p2.ele;
+
                 if (p2.hr) hrArr.push(p2.hr);
-                if (p2.ele) altArr.push(p2.ele);
                 if (p2.cad) cadArr.push(p2.cad);
-                latlng.push([p2.lat, p2.lon]);
 
                 if (p1.time && p2.time) {
                     timeArr.push(Math.round((p2.time - trkpts[0].time) / 1000));
@@ -582,27 +616,28 @@ router.post('/import/gpx', verifyToken, async (req, res) => {
                     timeArr.push(i);
                 }
             }
-            latlng.unshift([trkpts[0].lat, trkpts[0].lon]);
 
             const duration = trkpts[0].time && trkpts[trkpts.length - 1].time
                 ? Math.round((trkpts[trkpts.length - 1].time - trkpts[0].time) / 1000)
                 : trkpts.length;
 
             const avgHR = hrArr.length ? Math.round(hrArr.reduce((a, b) => a + b, 0) / hrArr.length) : null;
+            const maxHR = hrArr.length ? Math.max(...hrArr) : null;
             const avgSpeed = duration > 0 ? (totalDist / duration) : 0;
-
-            // Polyline simplifiée (premier et dernier point)
-            const polyline = latlng.length > 0 ? `${latlng[0][0]},${latlng[0][1]}` : null;
 
             return {
                 distance: Math.round(totalDist),
                 duration,
                 elevGain: Math.round(elevGain),
+                elevLoss: Math.round(elevLoss),
+                elevMin: Math.round(minEle),
+                elevMax: Math.round(maxEle),
                 avgHR,
+                maxHR,
                 avgSpeed,
                 startDate: trkpts[0].time ? trkpts[0].time.toISOString() : new Date().toISOString(),
                 streams: { latlng, distance: distArr, time: timeArr, altitude: altArr, heartrate: hrArr, cadence: cadArr },
-                polyline,
+                mapPolyline: JSON.stringify(latlng),
             };
         };
 
@@ -612,24 +647,55 @@ router.post('/import/gpx', verifyToken, async (req, res) => {
         }
 
         const activityName = name || 'Activité GPX';
+        const activityType = req.body.type || 'run'; // allow caller to specify type
         const userDb = await getUserDb(req.user.id);
 
-        await dbRunUser(userDb, `
+        const result = await dbRunUser(userDb, `
             INSERT INTO activities (source, source_id, name, type, start_date, distance, moving_time,
-                        average_speed, average_heartrate, total_elevation_gain, map_polyline, streams_data, is_manual)
-            VALUES ('gpx', ?, ?, 'run', ?, ?, ?, ?, ?, ?, ?, ?, 1)
+                        average_speed, average_heartrate, max_heartrate, total_elevation_gain,
+                        elev_high, elev_low, map_polyline, is_manual)
+            VALUES ('gpx', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
         `, [
             'gpx-' + Date.now(),
             activityName,
+            activityType,
             parsed.startDate,
             parsed.distance,
             parsed.duration,
             Math.round(parsed.avgSpeed * 100) / 100,
             parsed.avgHR,
+            parsed.maxHR,
             parsed.elevGain,
-            parsed.polyline,
-            JSON.stringify(parsed.streams),
+            parsed.elevMax,
+            parsed.elevMin,
+            parsed.mapPolyline,
         ]);
+
+        const activityId = result.lastID;
+
+        // Stocker les streams dans activity_streams
+        if (activityId) {
+            const streamTypes = {
+                latlng: parsed.streams.latlng,
+                distance: parsed.streams.distance,
+                time: parsed.streams.time,
+                altitude: parsed.streams.altitude,
+                heartrate: parsed.streams.heartrate.length > 0 ? parsed.streams.heartrate : null,
+                cadence: parsed.streams.cadence.length > 0 ? parsed.streams.cadence : null,
+            };
+            for (const [streamType, data] of Object.entries(streamTypes)) {
+                if (data && (Array.isArray(data) ? data.length > 0 : true)) {
+                    try {
+                        await dbRunUser(userDb, `
+                            INSERT OR REPLACE INTO activity_streams (activity_id, stream_type, data)
+                            VALUES (?, ?, ?)
+                        `, [activityId, streamType, JSON.stringify(data)]);
+                    } catch (e) {
+                        logger.warn(`GPX stream insert failed: ${streamType}`, { error: e.message });
+                    }
+                }
+            }
+        }
 
         // Recalculer les métriques
         try {
@@ -638,8 +704,10 @@ router.post('/import/gpx', verifyToken, async (req, res) => {
 
         res.json({
             success: true,
+            id: activityId,
             distance: parsed.distance,
             duration: parsed.duration,
+            elevationGain: parsed.elevGain,
             trackpoints: parsed.streams.latlng.length,
         });
     } catch (error) {

@@ -185,14 +185,16 @@ async function decathlonRequest(userId, endpoint, options = {}) {
 }
 
 /**
- * Récupère toutes les activités avec pagination automatique.
- * L'API Decathlon retourne les activités avec un lien "next" en JSON-LD.
+ * Récupère les activités avec pagination automatique.
+ * Si afterDate est fourni (sync incrémental), filtre côté client après récupération
+ * car l'API Decathlon ne supporte pas toujours le filtre par date en query param.
+ * Pour le premier sync, récupère tout l'historique disponible.
  */
-async function fetchAllActivities(userId) {
+async function fetchAllActivities(userId, afterDate = null) {
     const allActivities = [];
     let endpoint = '/activities';
     let page = 0;
-    const maxPages = 20; // sécurité anti-boucle infinie
+    const maxPages = 100; // sécurité anti-boucle infinie (100 pages × ~30 items = ~3000 activités)
 
     while (endpoint && page < maxPages) {
         const response = await decathlonRequest(userId, endpoint);
@@ -216,10 +218,27 @@ async function fetchAllActivities(userId) {
             }
         }
 
-        allActivities.push(...items);
-        page++;
-
         if (items.length === 0) break;
+
+        // Pour le sync incrémental : si afterDate est fourni, on arrête la pagination
+        // dès qu'on atteint des activités plus anciennes que la date de référence
+        if (afterDate) {
+            const afterTs = new Date(afterDate).getTime();
+            const filteredItems = items.filter(item => {
+                const itemDate = item.startdate || item.startDate;
+                return itemDate && new Date(itemDate).getTime() > afterTs;
+            });
+            allActivities.push(...filteredItems);
+
+            // Si on a filtré des items (certains sont plus anciens), on peut arrêter la pagination
+            if (filteredItems.length < items.length) {
+                break;
+            }
+        } else {
+            allActivities.push(...items);
+        }
+
+        page++;
     }
 
     return allActivities;
@@ -304,11 +323,24 @@ async function performDecathlonSync(userId) {
 
         const userDb = await getUserDb(userId);
 
-        // Récupérer toutes les activités avec pagination
+        // Récupérer la date de dernière sync pour sync incrémental
+        const lastActivity = await dbGetUser(userDb,
+            'SELECT MAX(start_date) as last_date FROM activities WHERE source = "decathlon"'
+        );
+        const afterDate = lastActivity?.last_date || null;
+        const isFirstSync = !afterDate;
+
+        if (afterDate) {
+            log(userId, `Incremental sync from ${afterDate}`);
+        } else {
+            log(userId, 'Full initial sync — fetching all history');
+        }
+
+        // Récupérer toutes les activités avec pagination (et filtre incrémental si afterDate)
         let activities = [];
         try {
-            activities = await fetchAllActivities(userId);
-            log(userId, `Found ${activities.length} activities`);
+            activities = await fetchAllActivities(userId, afterDate);
+            log(userId, `Found ${activities.length} ${isFirstSync ? 'total' : 'new'} activities`);
         } catch (e) {
             log(userId, `Activities fetch failed: ${e.message}`);
             return { success: false, error: e.message };

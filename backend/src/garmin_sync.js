@@ -151,17 +151,21 @@ async function performGarminSync(userId) {
             'SELECT MAX(start_date) as last_date FROM activities WHERE source = "garmin"'
         );
         const startDate = lastActivity?.last_date || null;
+        const isFirstSync = !startDate;
+
         if (startDate) {
             log(userId, `Incremental sync from ${startDate}`);
         } else {
-            log(userId, 'Full initial sync (no previous Garmin activities)');
+            log(userId, 'Full initial sync (no previous Garmin activities) — fetching all history');
         }
 
         // === Phase 1: Activities List ===
+        // Premier sync : pas de limite pour récupérer tout l'historique
+        // Sync incrémental : limite à 100 pour les nouvelles activités récentes
         const activitiesResponse = await callGarminApi(userId, {
             mode: 'activities',
             start_date: startDate,
-            limit: 50
+            ...(isFirstSync ? {} : { limit: 100 })
         });
 
         // Le script Python retourne { activities: [...] } pour le mode 'activities'
@@ -174,30 +178,38 @@ async function performGarminSync(userId) {
         // Use batch operations from sync_utils
         const { processActivityList } = require('./sync_utils');
 
-        // Filter and prepare activities
+        // Filter and prepare activities with ALL available fields
         const activitiesToProcess = [];
         for (const activity of activityList) {
             const sourceId = activity.activityId ? String(activity.activityId) : null;
             if (!sourceId) continue;
             activitiesToProcess.push({
-                ...activity,
                 source_id: sourceId,
                 name: activity.activityName || 'Garmin Activity',
                 type: activity.activityType?.typeKey || 'workout',
-                start_date: activity.startTimeLocal,
+                start_date: activity.startTimeLocal || activity.startTimeGMT,
+                timezone: activity.timeZoneUnitDTO?.timeZone || null,
                 distance: activity.distance || 0,
-                moving_time: activity.duration || 0,
-                average_heartrate: activity.averageHR || null,
-                max_heartrate: activity.maxHR || null,
+                moving_time: activity.duration || activity.movingDuration || 0,
+                elapsed_time: activity.duration || 0,
                 average_speed: activity.averageSpeed || null,
                 max_speed: activity.maxSpeed || null,
+                average_heartrate: activity.averageHR || null,
+                max_heartrate: activity.maxHR || null,
+                average_cadence: activity.averageRunningCadenceInStepsPerMinute || activity.averageBikingCadenceInRevPerMinute || null,
+                average_power: activity.avgPower || null,
                 calories: activity.calories || null,
+                elev_high: activity.maxElevation || null,
+                elev_low: activity.minElevation || null,
+                total_elevation_gain: activity.elevationGain || null,
+                device_name: activity.deviceId ? String(activity.deviceId) : null,
+                description: activity.description || null,
             });
         }
 
-        // Batch process (check existing + insert new)
+        // Batch process (check existing + insert new + fetch details with GPS streams)
         const result = await processActivityList(userDb, 'garmin', activitiesToProcess, 
-            (sourceId) => callGarminApi(userId, { mode: 'details', id: sourceId })
+            (sourceId) => callGarminApi(userId, { mode: 'streams', id: sourceId })
         );
 
         importedCount = result.imported;

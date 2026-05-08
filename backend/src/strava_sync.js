@@ -359,27 +359,46 @@ async function performSync(userId) {
                     name: activity.name || 'Strava Activity',
                     type: mapStravaType(activity.type),
                     start_date: activity.start_date,
+                    timezone: activity.timezone || null,
                     distance: activity.distance || 0,
                     moving_time: activity.moving_time || activity.elapsed_time || 0,
-                    average_heartrate: activity.average_heartrate || null,
-                    max_heartrate: activity.max_heartrate || null,
+                    elapsed_time: activity.elapsed_time || activity.moving_time || 0,
                     average_speed: activity.average_speed || null,
                     max_speed: activity.max_speed || null,
+                    average_heartrate: activity.average_heartrate || null,
+                    max_heartrate: activity.max_heartrate || null,
+                    average_cadence: activity.average_cadence || null,
+                    average_power: activity.average_watts || null,
                     calories: activity.calories || null,
+                    total_elevation_gain: activity.total_elevation_gain || null,
+                    elev_high: activity.elev_high || null,
+                    elev_low: activity.elev_low || null,
+                    device_name: activity.device_name || null,
+                    upload_id: activity.upload_id ? String(activity.upload_id) : null,
+                    external_id: activity.external_id || null,
+                    is_commute: activity.commute ? 1 : 0,
+                    is_manual: activity.manual ? 1 : 0,
+                    map_summary_polyline: activity.map?.summary_polyline || null,
                 }));
 
-            // Batch process
+            // Batch process with full details + GPS streams
             const { processActivityList } = require('./sync_utils');
             const result = await processActivityList(userDb, 'strava', activitiesToProcess,
                 async (sourceId) => {
                     const detail = await getActivityDetail(page, sourceId);
                     if (!detail) return null;
+
+                    // Fetch GPS streams separately
+                    let streams = null;
+                    try {
+                        streams = await getActivityStreams(page, sourceId);
+                    } catch (e) {
+                        log(userId, `Streams fetch failed for ${sourceId}: ${e.message}`);
+                    }
+
                     return {
-                        average_heartrate: detail.average_heartrate || null,
-                        max_heartrate: detail.max_heartrate || null,
-                        average_speed: detail.average_speed || null,
-                        max_speed: detail.max_speed || null,
-                        calories: detail.calories || null,
+                        ...detail,
+                        _streams: streams,
                     };
                 }
             );
