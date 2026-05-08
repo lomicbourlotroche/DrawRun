@@ -6,7 +6,7 @@ const express = require('express');
 const router = express.Router({ mergeParams: true });
 const { verifyToken } = require('../auth');
 const { logger } = require('../logger');
-const { getUserDb } = require('../database');
+const { getUserDb, dbGetUser, dbRunUser } = require('../database');
 const { createCanvas } = require('canvas');
 const fs = require('fs');
 const path = require('path');
@@ -18,6 +18,75 @@ const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 if (!fs.existsSync(CACHE_DIR)) {
   fs.mkdirSync(CACHE_DIR, { recursive: true });
 }
+
+/**
+ * GET /api/activities/:id/share-settings
+ * Récupère les paramètres de partage d'une activité
+ */
+router.get('/share-settings', verifyToken, async (req, res) => {
+  try {
+    const activityId = parseInt(req.params.id);
+    if (!activityId || isNaN(activityId)) {
+      return res.status(400).json({ error: 'Invalid activity ID' });
+    }
+    const userDb = await getUserDb(req.user.id);
+    const activity = await dbGetUser(userDb,
+      `SELECT share_to_friends, share_to_groups, shared_data_fields FROM activities WHERE id = ?`,
+      [activityId]
+    );
+    if (!activity) {
+      return res.status(404).json({ error: 'Activity not found' });
+    }
+    res.json({
+      share_to_friends: activity.share_to_friends !== 0,
+      share_to_groups: activity.share_to_groups ? JSON.parse(activity.share_to_groups) : null,
+      shared_data_fields: activity.shared_data_fields
+        ? JSON.parse(activity.shared_data_fields)
+        : ['distance', 'time', 'pace', 'elevation', 'map'],
+    });
+  } catch (error) {
+    logger.error('[ShareSettings] GET error', { error: error.message });
+    res.status(500).json({ error: 'Failed to get share settings' });
+  }
+});
+
+/**
+ * PUT /api/activities/:id/share-settings
+ * Met à jour les paramètres de partage d'une activité
+ */
+router.put('/share-settings', verifyToken, async (req, res) => {
+  try {
+    const activityId = parseInt(req.params.id);
+    if (!activityId || isNaN(activityId)) {
+      return res.status(400).json({ error: 'Invalid activity ID' });
+    }
+    const { share_to_friends, share_to_groups, shared_data_fields } = req.body;
+    const userDb = await getUserDb(req.user.id);
+
+    const activity = await dbGetUser(userDb, 'SELECT id FROM activities WHERE id = ?', [activityId]);
+    if (!activity) {
+      return res.status(404).json({ error: 'Activity not found' });
+    }
+
+    await dbRunUser(userDb, `
+      UPDATE activities SET
+        share_to_friends = COALESCE(?, share_to_friends),
+        share_to_groups = COALESCE(?, share_to_groups),
+        shared_data_fields = COALESCE(?, shared_data_fields)
+      WHERE id = ?
+    `, [
+      share_to_friends !== undefined ? (share_to_friends ? 1 : 0) : null,
+      share_to_groups !== undefined ? JSON.stringify(share_to_groups) : null,
+      shared_data_fields !== undefined ? JSON.stringify(shared_data_fields) : null,
+      activityId,
+    ]);
+
+    res.json({ success: true, message: 'Share settings updated' });
+  } catch (error) {
+    logger.error('[ShareSettings] PUT error', { error: error.message });
+    res.status(500).json({ error: 'Failed to update share settings' });
+  }
+});
 
 /**
  * GET /api/activities/:id/share-image
@@ -36,8 +105,8 @@ router.get('/share-image', verifyToken, async (req, res) => {
 
     const userDb = await getUserDb(userId);
 
-    // Get activity details - use prepare + get to avoid SQL injection
-    const activityResult = userDb.prepare(`
+    // Get activity details using sql.js API
+    const activityRow = await dbGetUser(userDb, `
       SELECT 
         a.id,
         a.name,
@@ -48,22 +117,36 @@ router.get('/share-image', verifyToken, async (req, res) => {
         a.average_speed,
         a.average_heartrate,
         a.start_date,
-        a.type,
-        json_extract(u.profile_data, '$.name') as athlete_name
+        a.type
       FROM activities a
-      LEFT JOIN users u ON u.id = ?
       WHERE a.id = ?
-    `).get([userId, activityId]);
+    `, [activityId]);
 
-    if (!activityResult[0]?.values?.[0]) {
+    if (!activityRow) {
       return res.status(404).json({ error: 'Activité non trouvée' });
     }
 
-    const activity = activityResult[0].values[0];
-    const activityUserId = activity[0]; // activity.id
-    
-    // Verify activity belongs to user (or check ownership)
-    // For now, we assume if it's in the user's DB, they own it
+    // Get athlete name from main DB
+    const { dbGetMain } = require('../database');
+    const userRow = await dbGetMain('SELECT profile_data FROM users WHERE id = ?', [userId]);
+    let athleteName = null;
+    if (userRow?.profile_data) {
+      try { athleteName = JSON.parse(userRow.profile_data).name || null; } catch { /* ignore */ }
+    }
+
+    const activity = [
+      activityRow.id,
+      activityRow.name,
+      activityRow.distance,
+      activityRow.moving_time,
+      activityRow.elapsed_time,
+      activityRow.total_elevation_gain,
+      activityRow.average_speed,
+      activityRow.average_heartrate,
+      activityRow.start_date,
+      activityRow.type,
+      athleteName,
+    ];
 
     // Check cache
     const cacheFileName = `activity-${activityId}-user-${userId}.png`;

@@ -668,6 +668,15 @@ const MIGRATIONS = [
             try { db.run("ALTER TABLE activities ADD COLUMN shared_data_fields TEXT DEFAULT '[\"distance\",\"time\",\"pace\",\"elevation\",\"map\"]'"); } catch (_) {}
         },
     },
+    {
+        version: '022_add_training_session_columns',
+        description: 'Add expected_tss, progression_factor, phase columns to training_sessions table',
+        up: (db) => {
+            try { db.run('ALTER TABLE training_sessions ADD COLUMN expected_tss REAL'); } catch (_) {}
+            try { db.run("ALTER TABLE training_sessions ADD COLUMN progression_factor REAL DEFAULT 1.0"); } catch (_) {}
+            try { db.run("ALTER TABLE training_sessions ADD COLUMN phase TEXT DEFAULT 'base'"); } catch (_) {}
+        },
+    },
 ];
 
 async function runMigrations(db) {
