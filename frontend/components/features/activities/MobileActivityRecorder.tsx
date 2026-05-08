@@ -302,6 +302,9 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
      const yy = param < 0 ? y1 : param > 1 ? y2 : y1 + param * D;
      return Math.sqrt((x - xx) ** 2 + (y - yy) ** 2) * 111000;
    };
+
+   // Calculate route progress percentage
+   const calculateRouteProgress = (points: RecordedPoint[], routePolyline: string): number => {
      if (points.length < 2 || !routePolyline) return 0;
      
      // Parse route polyline

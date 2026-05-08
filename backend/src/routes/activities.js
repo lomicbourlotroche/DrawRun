@@ -750,13 +750,15 @@ router.put('/:id', verifyToken, async (req, res) => {
             UPDATE activities 
             SET gear_id = ?, 
                 efficiency_factor = ?, 
+                notes = COALESCE(?, notes),
                 description = COALESCE(?, description), 
                 name = COALESCE(?, name)
             WHERE id = ?
         `, [
             gear_id !== undefined ? gear_id : activity.gear_id, 
             efficiency_factor !== undefined ? efficiency_factor : activity.efficiency_factor, 
-            notes || null, 
+            notes !== undefined ? (notes || null) : null,
+            notes !== undefined ? (notes || null) : null,
             name || activity.name, 
             activityId
         ]);
@@ -765,6 +767,115 @@ router.put('/:id', verifyToken, async (req, res) => {
     } catch (error) {
         logger.error('Update activity error:', error);
         res.status(500).json({ error: 'Erreur lors de la mise à jour de l\'activité' });
+    }
+});
+
+/**
+ * PUT /activities/:id/share-settings
+ * Définit les paramètres de partage d'une activité :
+ * - share_to_friends : visible dans le fil d'amis
+ * - share_to_groups  : tableau d'IDs de groupes (null = aucun, [] = tous)
+ * - shared_data_fields : champs exposés aux autres (distance, time, pace, hr, map, power, cadence, splits)
+ */
+router.put('/:id/share-settings', verifyToken, async (req, res) => {
+    try {
+        const userDb = await getUserDb(req.user.id);
+        const activityId = parseInt(req.params.id);
+        if (!activityId || activityId <= 0) {
+            return res.status(400).json({ error: 'Invalid activity ID' });
+        }
+
+        const activity = await dbGetUser(userDb, 'SELECT id FROM activities WHERE id = ?', [activityId]);
+        if (!activity) {
+            return res.status(404).json({ error: 'Activité non trouvée' });
+        }
+
+        const { share_to_friends, share_to_groups, shared_data_fields } = req.body;
+
+        // Validate share_to_friends
+        if (share_to_friends !== undefined && typeof share_to_friends !== 'boolean' && share_to_friends !== 0 && share_to_friends !== 1) {
+            return res.status(400).json({ error: 'share_to_friends doit être un booléen' });
+        }
+
+        // Validate share_to_groups (null or array of integers)
+        if (share_to_groups !== undefined && share_to_groups !== null) {
+            if (!Array.isArray(share_to_groups) || !share_to_groups.every(id => Number.isInteger(id))) {
+                return res.status(400).json({ error: 'share_to_groups doit être null ou un tableau d\'IDs' });
+            }
+        }
+
+        // Validate shared_data_fields
+        const ALLOWED_FIELDS = ['distance', 'time', 'pace', 'elevation', 'map', 'hr', 'power', 'cadence', 'splits', 'calories'];
+        if (shared_data_fields !== undefined) {
+            if (!Array.isArray(shared_data_fields) || !shared_data_fields.every(f => ALLOWED_FIELDS.includes(f))) {
+                return res.status(400).json({ error: `shared_data_fields doit être un sous-ensemble de: ${ALLOWED_FIELDS.join(', ')}` });
+            }
+        }
+
+        const updates = [];
+        const values = [];
+
+        if (share_to_friends !== undefined) {
+            updates.push('share_to_friends = ?');
+            values.push(share_to_friends ? 1 : 0);
+        }
+        if (share_to_groups !== undefined) {
+            updates.push('share_to_groups = ?');
+            values.push(share_to_groups === null ? null : JSON.stringify(share_to_groups));
+        }
+        if (shared_data_fields !== undefined) {
+            updates.push('shared_data_fields = ?');
+            values.push(JSON.stringify(shared_data_fields));
+        }
+
+        if (updates.length === 0) {
+            return res.status(400).json({ error: 'Aucun paramètre à mettre à jour' });
+        }
+
+        values.push(activityId);
+        await dbRunUser(userDb, `UPDATE activities SET ${updates.join(', ')} WHERE id = ?`, values);
+
+        res.json({ success: true, message: 'Paramètres de partage mis à jour' });
+    } catch (error) {
+        logger.error('Update share settings error:', { error: error.message });
+        res.status(500).json({ error: 'Erreur lors de la mise à jour des paramètres de partage' });
+    }
+});
+
+/**
+ * GET /activities/:id/share-settings
+ * Récupère les paramètres de partage d'une activité
+ */
+router.get('/:id/share-settings', verifyToken, async (req, res) => {
+    try {
+        const userDb = await getUserDb(req.user.id);
+        const activityId = parseInt(req.params.id);
+        if (!activityId || activityId <= 0) {
+            return res.status(400).json({ error: 'Invalid activity ID' });
+        }
+
+        const activity = await dbGetUser(userDb,
+            'SELECT id, share_to_friends, share_to_groups, shared_data_fields FROM activities WHERE id = ?',
+            [activityId]
+        );
+        if (!activity) {
+            return res.status(404).json({ error: 'Activité non trouvée' });
+        }
+
+        let shareToGroups = null;
+        try { shareToGroups = activity.share_to_groups ? JSON.parse(activity.share_to_groups) : null; } catch (_) {}
+
+        let sharedDataFields = ['distance', 'time', 'pace', 'elevation', 'map'];
+        try { sharedDataFields = activity.shared_data_fields ? JSON.parse(activity.shared_data_fields) : sharedDataFields; } catch (_) {}
+
+        res.json({
+            share_to_friends: activity.share_to_friends !== 0,
+            share_to_groups: shareToGroups,
+            shared_data_fields: sharedDataFields,
+        });
+    } catch (error) {
+        logger.error('Get share settings error:', { error: error.message });
+        res.status(500).json({ error: 'Erreur lors de la récupération des paramètres de partage' });
     }
 });
 

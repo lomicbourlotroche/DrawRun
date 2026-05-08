@@ -462,20 +462,42 @@ router.get('/feed', verifyToken, async (req, res) => {
                 const activities = await dbAllUser(friendDb, `
                     SELECT id, name, type, start_date, distance, moving_time,
                            total_elevation_gain, average_speed, average_heartrate, max_heartrate,
-                           map_summary_polyline, source
+                           map_summary_polyline, source, share_to_friends, shared_data_fields
                     FROM activities
+                    WHERE share_to_friends = 1
                     ORDER BY start_date DESC
                     LIMIT 50
                 `, []);
 
                 for (const act of activities) {
-                    allActivities.push({
-                        ...act,
+                    // Parse shared_data_fields to filter exposed fields
+                    let allowedFields = ['distance', 'time', 'pace', 'elevation', 'map'];
+                    try {
+                        if (act.shared_data_fields) {
+                            allowedFields = JSON.parse(act.shared_data_fields);
+                        }
+                    } catch (_) {}
+
+                    // Filter activity data based on sharing preferences
+                    const filteredAct = {
+                        id: act.id,
+                        name: act.name,
+                        type: act.type,
+                        start_date: act.start_date,
                         owner_name: friendUser.name || friendUser.email.split('@')[0],
                         like_count: 0,
                         comment_count: 0,
                         photo_count: 0,
-                    });
+                        // Only include fields that are explicitly allowed
+                        distance: allowedFields.includes('distance') ? act.distance : null,
+                        moving_time: allowedFields.includes('time') ? act.moving_time : null,
+                        average_speed: allowedFields.includes('pace') ? act.average_speed : null,
+                        total_elevation_gain: allowedFields.includes('elevation') ? act.total_elevation_gain : null,
+                        map_summary_polyline: allowedFields.includes('map') ? act.map_summary_polyline : null,
+                        average_heartrate: allowedFields.includes('hr') ? act.average_heartrate : null,
+                        max_heartrate: allowedFields.includes('hr') ? act.max_heartrate : null,
+                    };
+                    allActivities.push(filteredAct);
                 }
             } catch (err) {
                 logger.warn(`Feed: could not load activities for user ${friendId}: ${err.message}`);

@@ -342,9 +342,52 @@ async function getGroupActivities(groupId, limit = 20, offset = 0) {
                 FROM activities a
                 JOIN users u ON a.user_id = u.id
                 WHERE a.user_id = ?
+                  AND (a.share_to_groups IS NULL OR a.share_to_groups = '[]' OR a.share_to_groups LIKE ?)
                 ORDER BY a.start_date DESC
-            `, [member.user_id]);
-            allActivities.push(...activities);
+            `, [member.user_id, `%${groupId}%`]);
+
+            // Filter activities based on share_to_groups
+            for (const act of activities) {
+                let shouldInclude = false;
+                if (!act.share_to_groups) {
+                    shouldInclude = false; // null = not shared with any group
+                } else if (act.share_to_groups === '[]') {
+                    shouldInclude = true; // [] = shared with all groups
+                } else {
+                    try {
+                        const sharedGroups = JSON.parse(act.share_to_groups);
+                        shouldInclude = sharedGroups.includes(groupId);
+                    } catch (_) {
+                        shouldInclude = false;
+                    }
+                }
+
+                if (shouldInclude) {
+                    // Parse shared_data_fields to filter exposed fields
+                    let allowedFields = ['distance', 'time', 'pace', 'elevation', 'map'];
+                    try {
+                        if (act.shared_data_fields) {
+                            allowedFields = JSON.parse(act.shared_data_fields);
+                        }
+                    } catch (_) {}
+
+                    // Filter activity data
+                    allActivities.push({
+                        id: act.id,
+                        name: act.name,
+                        type: act.type,
+                        start_date: act.start_date,
+                        owner_name: act.owner_name,
+                        distance: allowedFields.includes('distance') ? act.distance : null,
+                        moving_time: allowedFields.includes('time') ? act.moving_time : null,
+                        average_speed: allowedFields.includes('pace') ? act.average_speed : null,
+                        total_elevation_gain: allowedFields.includes('elevation') ? act.total_elevation_gain : null,
+                        map_summary_polyline: allowedFields.includes('map') ? act.map_summary_polyline : null,
+                        average_heartrate: allowedFields.includes('hr') ? act.average_heartrate : null,
+                        max_heartrate: allowedFields.includes('hr') ? act.max_heartrate : null,
+                    });
+                }
+            }
         } catch (_) {
             // Skip users whose DB is unavailable
         }

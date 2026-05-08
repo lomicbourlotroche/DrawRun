@@ -656,6 +656,18 @@ const MIGRATIONS = [
             try { db.run('ALTER TABLE users ADD COLUMN decathlon_user_id TEXT'); } catch (_) {}
         },
     },
+    {
+        version: '021_add_activity_share_settings',
+        description: 'Add share_to_friends, share_to_groups, shared_data_fields columns to activities table',
+        up: (db) => {
+            // share_to_friends: 1 = visible dans le fil d'amis (défaut: 1)
+            try { db.run('ALTER TABLE activities ADD COLUMN share_to_friends INTEGER DEFAULT 1'); } catch (_) {}
+            // share_to_groups: JSON array d'IDs de groupes, null = aucun groupe, '[]' = tous les groupes
+            try { db.run('ALTER TABLE activities ADD COLUMN share_to_groups TEXT DEFAULT NULL'); } catch (_) {}
+            // shared_data_fields: JSON array des champs partagés (ex: ["distance","time","hr","map","power"])
+            try { db.run("ALTER TABLE activities ADD COLUMN shared_data_fields TEXT DEFAULT '[\"distance\",\"time\",\"pace\",\"elevation\",\"map\"]'"); } catch (_) {}
+        },
+    },
 ];
 
 async function runMigrations(db) {

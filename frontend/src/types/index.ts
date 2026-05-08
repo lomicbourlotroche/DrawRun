@@ -89,10 +89,12 @@ export interface ActivityDetail extends Omit<Activity, 'type'> {
   map_polyline?: string | null;
   average_cadence?: number;
   average_watts?: number;
+  average_power?: number;
   weighted_average_watts?: number;
   max_watts?: number;
   average_temp?: number;
   description?: string;
+  notes?: string;
   tss?: number;
   calories?: number;
   intensity?: number;
@@ -105,7 +107,10 @@ export interface ActivityDetail extends Omit<Activity, 'type'> {
   trimp?: number;
   pwHr?: number;
   np?: number;
+  normalized_power?: number;
   ngp?: number;
+  normalized_speed?: number;
+  variability_index?: number;
   vam?: number;
   cadence?: number;
   strideLength?: number;
@@ -114,6 +119,16 @@ export interface ActivityDetail extends Omit<Activity, 'type'> {
   swolf?: number;
   strokeRate?: number;
   dps?: number;
+  // Advanced metrics
+  elev_high?: number | null;
+  elev_low?: number | null;
+  running_index?: number | null;
+  hrv_rmssd?: number | null;
+  is_race?: number | boolean;
+  is_commute?: number | boolean;
+  gear_id?: number | null;
+  external_id?: string | null;
+  device_name?: string | null;
 }
 
 export interface ActivityStreams {

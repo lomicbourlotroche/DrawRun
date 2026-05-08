@@ -177,6 +177,9 @@ export const api = {
   createActivity: activitiesApi.createActivity,
   addManualActivity: activitiesApi.addManualActivity,
   importGpx: activitiesApi.importGpx,
+  updateActivity: activitiesApi.updateActivity,
+  getActivityShareSettings: activitiesApi.getActivityShareSettings,
+  updateActivityShareSettings: activitiesApi.updateActivityShareSettings,
 
   // Sync endpoints
   sync: syncApi.sync,

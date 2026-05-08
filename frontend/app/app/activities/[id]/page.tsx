@@ -8,7 +8,7 @@ import ActivityMap from '@/components/ui/ActivityMap';
 import { api } from '@/lib/api';
 import type { ActivityDetail as ActivityDetailType, ActivityStreams } from '@/types';
 import type { SplitData, SplitSummary } from '@/types';
-import { ArrowLeft, Heart, Timer, Gauge, Mountain, Activity as ActivityIcon, Zap, Wind, MapPin, Clock } from 'lucide-react';
+import { ArrowLeft, Heart, Timer, Gauge, Mountain, Activity as ActivityIcon, Zap, Wind, MapPin, Clock, Pencil, Check, X, Dumbbell, Cpu } from 'lucide-react';
 import { toast } from 'sonner';
 import { BiomechanicsCard } from '@/components/features/activities/BiomechanicsCard';
 
@@ -47,6 +47,9 @@ export default function ActivityDetailPage() {
   const [analysis, setAnalysis] = useState<Record<string, number | null> | null>(null);
   const [splits, setSplits] = useState<{ splits: SplitData[]; summary: SplitSummary } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [notesValue, setNotesValue] = useState('');
+  const [savingNotes, setSavingNotes] = useState(false);
 
   const id = params.id as string;
 
@@ -60,6 +63,7 @@ export default function ActivityDetailPage() {
         api.getActivitySplits(Number(id)).catch(() => null),
       ]);
       setActivity(a);
+      if (a) setNotesValue(a.notes || a.description || '');
       setStreams(s);
       setAnalysis(an);
       setSplits(sp);
@@ -68,6 +72,21 @@ export default function ActivityDetailPage() {
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
+
+  const saveNotes = async () => {
+    if (!activity) return;
+    setSavingNotes(true);
+    try {
+      await api.updateActivity(Number(id), { notes: notesValue });
+      setActivity(prev => prev ? { ...prev, notes: notesValue } : prev);
+      setEditingNotes(false);
+      toast.success('Notes sauvegardées');
+    } catch {
+      toast.error('Erreur lors de la sauvegarde');
+    } finally {
+      setSavingNotes(false);
+    }
+  };
 
   if (isLoading) return <div className="space-y-6 max-w-4xl mx-auto"><Skeleton className="h-10 w-48" /><Skeleton className="h-32 w-full" /><Skeleton className="h-40 w-full" /></div>;
   if (!activity) return <div className="text-center py-12"><ActivityIcon className="w-12 h-12 mx-auto mb-4 text-muted opacity-50" /><p className="text-muted">Activité non trouvée</p><Button variant="secondary" onClick={() => router.push('/app/activities')} className="mt-4">Retour</Button></div>;
@@ -90,6 +109,7 @@ export default function ActivityDetailPage() {
   const spdData = extractData(streams?.velocity_smooth);
   const altData = extractData(streams?.altitude);
   const cadData = extractData(streams?.cadence);
+  const wattsData = extractData(streams?.watts);
   
   // Extract latlng for map
   const latlngData = streams?.latlng && Array.isArray(streams.latlng) 
@@ -223,6 +243,44 @@ export default function ActivityDetailPage() {
           <CardHeader><CardTitle className="text-base flex items-center gap-2"><Wind className="w-4 h-4 text-purple-400" />Cadence</CardTitle></CardHeader>
           <CardContent>
             <StreamChart data={cadData} color="#A855F7" fillColor="rgba(168,85,247,0.1)" unit="spm" formatValue={v => `${Math.round(v)}`} />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Power Chart */}
+      {wattsData && Array.isArray(wattsData) && wattsData.length > 10 && (
+        <Card>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Zap className="w-4 h-4 text-orange-400" />Puissance</CardTitle></CardHeader>
+          <CardContent>
+            <StreamChart
+              data={wattsData}
+              color="#F97316"
+              fillColor="rgba(249,115,22,0.1)"
+              unit="W"
+              min={Math.max(0, Math.min(...wattsData) - 20)}
+              max={Math.max(...wattsData) + 20}
+              formatValue={v => `${Math.round(v)}W`}
+            />
+            <div className="grid grid-cols-3 gap-2 mt-3 text-center">
+              {(activity.average_watts || activity.average_power) && (
+                <div className="p-2 rounded-lg bg-orange-500/10">
+                  <p className="text-sm font-bold text-orange-400">{Math.round(activity.average_watts || activity.average_power || 0)}W</p>
+                  <p className="text-xs text-muted">Moyenne</p>
+                </div>
+              )}
+              {(activity.normalized_power || activity.np) && (
+                <div className="p-2 rounded-lg bg-orange-500/10">
+                  <p className="text-sm font-bold text-orange-400">{Math.round(activity.normalized_power || activity.np || 0)}W</p>
+                  <p className="text-xs text-muted">NP</p>
+                </div>
+              )}
+              {activity.variability_index && (
+                <div className="p-2 rounded-lg bg-orange-500/10">
+                  <p className="text-sm font-bold text-orange-400">{toNum(activity.variability_index).toFixed(2)}</p>
+                  <p className="text-xs text-muted">VI</p>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
@@ -368,6 +426,101 @@ export default function ActivityDetailPage() {
           )}
         </>
       )}
+
+      {/* Advanced Metrics (elev_high/low, running_index, HRV, flags) */}
+      {(activity.elev_high != null || activity.elev_low != null || activity.running_index != null || activity.hrv_rmssd != null || activity.is_race || activity.is_commute || activity.device_name) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Cpu className="w-4 h-4 text-primary" />
+              Métriques avancées
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {activity.elev_low != null && activity.elev_high != null && (
+                <div className="text-center p-3 rounded-lg bg-background border border-border">
+                  <p className="text-lg font-bold text-foreground">{Math.round(toNum(activity.elev_low))}m – {Math.round(toNum(activity.elev_high))}m</p>
+                  <p className="text-xs text-muted">Altitude min – max</p>
+                </div>
+              )}
+              {activity.running_index != null && (
+                <div className="text-center p-3 rounded-lg bg-background border border-border">
+                  <p className="text-lg font-bold text-cyan-400">{toNum(activity.running_index).toFixed(1)}</p>
+                  <p className="text-xs text-muted">Running Index</p>
+                </div>
+              )}
+              {activity.hrv_rmssd != null && (
+                <div className="text-center p-3 rounded-lg bg-background border border-border">
+                  <p className="text-lg font-bold text-teal-400">{toNum(activity.hrv_rmssd).toFixed(1)} ms</p>
+                  <p className="text-xs text-muted">HRV (RMSSD)</p>
+                </div>
+              )}
+              {activity.device_name && (
+                <div className="text-center p-3 rounded-lg bg-background border border-border">
+                  <p className="text-sm font-bold text-foreground truncate">{toStr(activity.device_name)}</p>
+                  <p className="text-xs text-muted">Appareil</p>
+                </div>
+              )}
+            </div>
+            {(activity.is_race || activity.is_commute) && (
+              <div className="flex gap-2 mt-3">
+                {!!activity.is_race && <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-600">🏆 Course</span>}
+                {!!activity.is_commute && <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-600">🚴 Trajet</span>}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Notes */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Pencil className="w-4 h-4 text-muted" />
+              Notes
+            </CardTitle>
+            {!editingNotes && (
+              <Button variant="ghost" size="sm" onClick={() => { setNotesValue(activity.notes || activity.description || ''); setEditingNotes(true); }}>
+                <Pencil className="w-3.5 h-3.5 mr-1" />
+                Modifier
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {editingNotes ? (
+            <div className="space-y-3">
+              <textarea
+                value={notesValue}
+                onChange={e => setNotesValue(e.target.value)}
+                className="w-full p-3 rounded-lg border border-border bg-background text-foreground text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
+                rows={4}
+                placeholder="Ajouter des notes sur cette activité…"
+                autoFocus
+              />
+              <div className="flex gap-2 justify-end">
+                <Button variant="ghost" size="sm" onClick={() => setEditingNotes(false)} disabled={savingNotes}>
+                  <X className="w-3.5 h-3.5 mr-1" />
+                  Annuler
+                </Button>
+                <Button size="sm" onClick={saveNotes} isLoading={savingNotes}>
+                  <Check className="w-3.5 h-3.5 mr-1" />
+                  Sauvegarder
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted whitespace-pre-wrap">
+              {activity.notes || activity.description
+                ? (activity.notes || activity.description)
+                : <span className="italic opacity-50">Aucune note — cliquez sur Modifier pour en ajouter.</span>
+              }
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Splits / Kilometers Table */}
       {splits && splits.splits && splits.splits.length > 0 && (

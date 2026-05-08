@@ -83,18 +83,56 @@ export const activitiesApi = {
   },
 
   /**
+   * Met à jour une activité (notes, gear, etc.)
+   */
+  updateActivity(id: number, data: { notes?: string; gear_id?: number; name?: string }): Promise<{ success: boolean }> {
+    return client.request(`/api/activities/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
    * Importe un fichier GPX
    */
-  importGpx(name: string, gpxData: string, type = 'run'): Promise<{ 
-    success: boolean; 
-    id: number; 
-    distance: number; 
-    duration: number; 
-    trackpoints: number 
+  importGpx(name: string, gpxData: string, type = 'run'): Promise<{
+    success: boolean;
+    id: number;
+    distance: number;
+    duration: number;
+    trackpoints: number
   }> {
     return client.request('/api/activities/import/gpx', {
       method: 'POST',
       body: JSON.stringify({ name, gpxData, type }),
+    });
+  },
+
+  /**
+   * Récupère les paramètres de partage d'une activité
+   */
+  getActivityShareSettings(id: number): Promise<{
+    share_to_friends: boolean;
+    share_to_groups: number[] | null;
+    shared_data_fields: string[];
+  }> {
+    return client.request(`/api/activities/${id}/share-settings`);
+  },
+
+  /**
+   * Met à jour les paramètres de partage d'une activité
+   */
+  updateActivityShareSettings(
+    id: number,
+    data: {
+      share_to_friends?: boolean;
+      share_to_groups?: number[] | null;
+      shared_data_fields?: string[];
+    }
+  ): Promise<{ success: boolean; message: string }> {
+    return client.request(`/api/activities/${id}/share-settings`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
     });
   },
 };
