@@ -677,6 +677,36 @@ const MIGRATIONS = [
             try { db.run("ALTER TABLE training_sessions ADD COLUMN phase TEXT DEFAULT 'base'"); } catch (_) {}
         },
     },
+    {
+        version: '023_enrich_challenges',
+        description: 'Add challenge_mode, milestones, sport_type, weekly_target, streak_days, badge_icon to challenges table',
+        up: (db) => {
+            // challenge_mode: 'quota' | 'progressive' | 'streak' | 'pace' | 'frequency'
+            try { db.run("ALTER TABLE challenges ADD COLUMN challenge_mode TEXT DEFAULT 'quota'"); } catch (_) {}
+            // milestones: JSON array [{pct:25,label:'Bronze'},{pct:50,label:'Argent'},{pct:100,label:'Or'}]
+            try { db.run('ALTER TABLE challenges ADD COLUMN milestones TEXT'); } catch (_) {}
+            // weekly_target: for progressive mode — target per week (increases each week)
+            try { db.run('ALTER TABLE challenges ADD COLUMN weekly_target REAL'); } catch (_) {}
+            // weekly_increase_pct: % increase per week for progressive mode
+            try { db.run('ALTER TABLE challenges ADD COLUMN weekly_increase_pct REAL DEFAULT 10'); } catch (_) {}
+            // streak_days: for streak mode — number of consecutive days required
+            try { db.run('ALTER TABLE challenges ADD COLUMN streak_days INTEGER'); } catch (_) {}
+            // frequency_per_week: for frequency mode — sessions per week
+            try { db.run('ALTER TABLE challenges ADD COLUMN frequency_per_week INTEGER'); } catch (_) {}
+            // sport_type: 'run' | 'bike' | 'swim' | 'any'
+            try { db.run("ALTER TABLE challenges ADD COLUMN sport_type TEXT DEFAULT 'any'"); } catch (_) {}
+            // badge_icon: emoji for the challenge
+            try { db.run("ALTER TABLE challenges ADD COLUMN badge_icon TEXT DEFAULT '🏆'"); } catch (_) {}
+            // current_value: cached aggregate for leaderboard display
+            try { db.run('ALTER TABLE user_challenges ADD COLUMN current_value REAL DEFAULT 0'); } catch (_) {}
+            // streak_current: current streak count
+            try { db.run('ALTER TABLE user_challenges ADD COLUMN streak_current INTEGER DEFAULT 0'); } catch (_) {}
+            // streak_best: best streak achieved
+            try { db.run('ALTER TABLE user_challenges ADD COLUMN streak_best INTEGER DEFAULT 0'); } catch (_) {}
+            // last_activity_date: for streak tracking
+            try { db.run('ALTER TABLE user_challenges ADD COLUMN last_activity_date DATE'); } catch (_) {}
+        },
+    },
 ];
 
 async function runMigrations(db) {

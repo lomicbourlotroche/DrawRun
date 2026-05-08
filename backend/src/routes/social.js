@@ -1268,25 +1268,50 @@ router.get('/conversations/:id/participants', verifyToken, async (req, res) => {
 
 router.post('/challenges', verifyToken, async (req, res) => {
     try {
-        const { name, description, type, target, end_date } = req.body;
-        if (!name) {
-            return res.status(400).json({ error: 'name is required' });
+        const {
+            title, name, description, type = 'distance', target_value, target, end_date,
+            challenge_mode = 'quota', milestones, weekly_target, weekly_increase_pct = 10,
+            streak_days, frequency_per_week, sport_type = 'any', badge_icon = '🏆',
+            is_public = true, max_participants = null,
+        } = req.body;
+
+        const challengeTitle = title || name;
+        if (!challengeTitle) {
+            return res.status(400).json({ error: 'title is required' });
         }
-        try {
-            // Calculate duration in days from end_date if provided
-            let durationDays = 30;
-            if (end_date) {
-                const diff = new Date(end_date) - new Date();
-                durationDays = Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+
+        let durationDays = 30;
+        if (end_date) {
+            const diff = new Date(end_date) - new Date();
+            durationDays = Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+        }
+
+        // Determine target unit based on type
+        const unitMap = { distance: 'km', elevation: 'm', time: 'min', activities: 'sorties', pace: 'min/km', frequency: 'séances/sem' };
+        const targetUnit = unitMap[type] || 'km';
+
+        const result = await social.createChallenge(
+            req.user.id,
+            challengeTitle,
+            description || '',
+            type,
+            parseFloat(target_value || target) || 0,
+            targetUnit,
+            durationDays,
+            is_public !== false,
+            max_participants || null,
+            {
+                challengeMode: challenge_mode,
+                milestones: milestones || null,
+                weeklyTarget: weekly_target || null,
+                weeklyIncreasePct: weekly_increase_pct,
+                streakDays: streak_days || null,
+                frequencyPerWeek: frequency_per_week || null,
+                sportType: sport_type,
+                badgeIcon: badge_icon,
             }
-            const result = await social.createChallenge(
-                req.user.id, name, description || '', type || 'distance',
-                target || 0, 'km', durationDays, true, null
-            );
-            res.status(201).json(result);
-        } catch (_) {
-            res.status(500).json({ error: 'Failed to create challenge' });
-        }
+        );
+        res.status(201).json(result);
     } catch (error) {
         logger.error('Create challenge error:', { error: error.message });
         res.status(500).json({ error: 'Failed to create challenge' });
@@ -1299,8 +1324,10 @@ router.get('/challenges/public', verifyToken, async (req, res) => {
         try {
             const challenges = await dbAll(`
                 SELECT c.*,
-                    (SELECT COUNT(*) FROM user_challenges WHERE challenge_id = c.id) as participant_count
+                    (SELECT COUNT(*) FROM user_challenges WHERE challenge_id = c.id) as participant_count,
+                    json_extract(u.profile_data, '$.name') as creator_name
                 FROM challenges c
+                LEFT JOIN users u ON c.created_by = u.id
                 WHERE c.is_public = 1
                 ORDER BY c.created_at DESC
                 LIMIT ?

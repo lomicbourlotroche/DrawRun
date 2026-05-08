@@ -410,6 +410,14 @@ export interface CreateChallengeParams {
   team_size?: number;
   sport_type?: string;
   goal_type?: string;
+  // Extended fields
+  challenge_mode?: string;
+  milestones?: Array<{ pct: number; label: string; icon: string }>;
+  weekly_target?: number;
+  weekly_increase_pct?: number;
+  streak_days?: number;
+  frequency_per_week?: number;
+  badge_icon?: string;
 }
 
 export interface UpdateChallengeProgressParams {

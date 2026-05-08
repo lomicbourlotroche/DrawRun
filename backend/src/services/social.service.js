@@ -761,21 +761,53 @@ async function createGroupConversation(userId, groupId, title) {
     return createConversation(userId, [], 'group', groupId, title);
 }
 
-async function createChallenge(userId, title, description, type, targetValue, targetUnit, durationDays, isPublic = true, maxParticipants = null) {
-    
-    
+async function createChallenge(userId, title, description, type, targetValue, targetUnit, durationDays, isPublic = true, maxParticipants = null, options = {}) {
+    const {
+        challengeMode = 'quota',
+        milestones = null,
+        weeklyTarget = null,
+        weeklyIncreasePct = 10,
+        streakDays = null,
+        frequencyPerWeek = null,
+        sportType = 'any',
+        badgeIcon = '🏆',
+    } = options;
+
+    const defaultMilestones = JSON.stringify([
+        { pct: 25, label: 'Bronze', icon: '🥉' },
+        { pct: 50, label: 'Argent', icon: '🥈' },
+        { pct: 75, label: 'Or', icon: '🥇' },
+        { pct: 100, label: 'Légendaire', icon: '💎' },
+    ]);
+
     const result = await dbRun(`
-        INSERT INTO challenges (title, description, type, target_value, target_unit, duration_days, created_by, is_public, max_participants)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [title, description, type, targetValue, targetUnit, durationDays, userId, isPublic ? 1 : 0, maxParticipants]);
-    
+        INSERT INTO challenges (
+            title, description, type, target_value, target_unit, duration_days,
+            created_by, is_public, max_participants,
+            challenge_mode, milestones, weekly_target, weekly_increase_pct,
+            streak_days, frequency_per_week, sport_type, badge_icon
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+        title, description || '', type, targetValue, targetUnit, durationDays,
+        userId, isPublic ? 1 : 0, maxParticipants,
+        challengeMode,
+        milestones ? JSON.stringify(milestones) : defaultMilestones,
+        weeklyTarget,
+        weeklyIncreasePct,
+        streakDays,
+        frequencyPerWeek,
+        sportType,
+        badgeIcon,
+    ]);
+
     const challengeId = result.lastID;
-    
+
     await dbRun(`
         INSERT INTO user_challenges (user_id, challenge_id, start_date, end_date, progress, status)
         VALUES (?, ?, datetime('now'), datetime('now', '+' || ? || ' days'), 0, 'active')
     `, [userId, challengeId, durationDays]);
-    
+
     return { success: true, challengeId };
 }
 

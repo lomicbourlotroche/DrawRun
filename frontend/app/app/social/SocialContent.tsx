@@ -961,21 +961,72 @@ function GroupsTab() {
 // CHALLENGES TAB
 // ============================================================================
 
+// Challenge mode definitions
+const CHALLENGE_MODES = [
+  { id: 'quota',       label: 'Quota total',     icon: '🎯', desc: 'Atteindre un objectif cumulé sur la durée' },
+  { id: 'progressive', label: 'Jauge progressive', icon: '📈', desc: 'Objectif qui augmente chaque semaine' },
+  { id: 'streak',      label: 'Streak',           icon: '🔥', desc: 'Courir X jours consécutifs' },
+  { id: 'frequency',   label: 'Fréquence',        icon: '📅', desc: 'X sorties par semaine pendant N semaines' },
+  { id: 'pace',        label: 'Performance',      icon: '⚡', desc: 'Réaliser une sortie à une allure cible' },
+] as const;
+
+const CHALLENGE_TYPES = [
+  { id: 'distance',   label: 'Distance',    unit: 'km',         icon: '📏', modes: ['quota','progressive','streak'] },
+  { id: 'elevation',  label: 'Dénivelé',    unit: 'm',          icon: '⛰️', modes: ['quota','progressive'] },
+  { id: 'time',       label: 'Temps actif', unit: 'min',        icon: '⏱️', modes: ['quota','progressive','streak'] },
+  { id: 'activities', label: 'Activités',   unit: 'sorties',    icon: '📊', modes: ['quota','frequency','streak'] },
+  { id: 'pace',       label: 'Allure cible', unit: 'min/km',    icon: '⚡', modes: ['pace'] },
+] as const;
+
+const SPORT_TYPES = [
+  { id: 'any',  label: 'Tous sports', icon: '🏅' },
+  { id: 'run',  label: 'Course',      icon: '🏃' },
+  { id: 'bike', label: 'Vélo',        icon: '🚴' },
+  { id: 'swim', label: 'Natation',    icon: '🏊' },
+  { id: 'hike', label: 'Randonnée',   icon: '🥾' },
+];
+
+const BADGE_ICONS = ['🏆','🔥','⚡','🎯','💪','🌟','🚀','🏅','💎','🦁','🐉','🌈'];
+
+const PRESET_CHALLENGES = [
+  { title: '100km en 30 jours', type: 'distance', target_value: 100, duration_days: 30, challenge_mode: 'quota', badge_icon: '🏃', sport_type: 'run' },
+  { title: 'Everest Challenge', type: 'elevation', target_value: 8848, duration_days: 30, challenge_mode: 'quota', badge_icon: '⛰️', sport_type: 'any' },
+  { title: 'Streak 30 jours', type: 'activities', target_value: 30, duration_days: 30, challenge_mode: 'streak', streak_days: 30, badge_icon: '🔥', sport_type: 'any' },
+  { title: 'Montée en puissance', type: 'distance', target_value: 20, duration_days: 42, challenge_mode: 'progressive', weekly_target: 20, weekly_increase_pct: 10, badge_icon: '📈', sport_type: 'run' },
+  { title: '3 sorties/semaine', type: 'activities', target_value: 12, duration_days: 28, challenge_mode: 'frequency', frequency_per_week: 3, badge_icon: '📅', sport_type: 'any' },
+];
+
+type ChallengeForm = {
+  title: string; description: string; type: string; target_value: string;
+  end_date: string; challenge_mode: string; weekly_target: string;
+  weekly_increase_pct: string; streak_days: string; frequency_per_week: string;
+  sport_type: string; badge_icon: string; is_public: boolean;
+};
+
 function ChallengesTab() {
   const [publicChallenges, setPublicChallenges] = useState<Array<{
     id: number; title: string; description: string; type: string;
     target_value: number; target_unit: string; duration_days: number;
-    participant_count: number; created_at: string;
+    participant_count: number; created_at: string; challenge_mode?: string;
+    badge_icon?: string; sport_type?: string; milestones?: string;
+    weekly_target?: number; weekly_increase_pct?: number;
+    streak_days?: number; frequency_per_week?: number; creator_name?: string;
   }>>([]);
   const [myChallenges, setMyChallenges] = useState<Array<{
     id: number; title: string; description: string; type: string;
     target_value: number; target_unit: string; progress: number;
     user_status: string; start_date: string; end_date: string;
+    challenge_mode?: string; badge_icon?: string; milestones?: string;
+    streak_current?: number; streak_best?: number;
   }>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
-  const [newChallenge, setNewChallenge] = useState({
-    name: '', description: '', type: 'distance', target: '', end_date: ''
+  const [wizardStep, setWizardStep] = useState(1); // 1=mode, 2=type+target, 3=details
+  const [form, setForm] = useState<ChallengeForm>({
+    title: '', description: '', type: 'distance', target_value: '',
+    end_date: '', challenge_mode: 'quota', weekly_target: '',
+    weekly_increase_pct: '10', streak_days: '', frequency_per_week: '3',
+    sport_type: 'any', badge_icon: '🏆', is_public: true,
   });
   const [isCreating, setIsCreating] = useState(false);
 
@@ -994,23 +1045,50 @@ function ChallengesTab() {
 
   useEffect(() => { load(); }, [load]);
 
+  const applyPreset = (preset: typeof PRESET_CHALLENGES[number]) => {
+    setForm(p => ({
+      ...p,
+      title: preset.title,
+      type: preset.type,
+      target_value: String(preset.target_value),
+      challenge_mode: preset.challenge_mode,
+      badge_icon: preset.badge_icon,
+      sport_type: preset.sport_type,
+      weekly_target: 'weekly_target' in preset ? String((preset as {weekly_target?: number}).weekly_target ?? '') : '',
+      weekly_increase_pct: 'weekly_increase_pct' in preset ? String((preset as {weekly_increase_pct?: number}).weekly_increase_pct ?? '10') : '10',
+      streak_days: 'streak_days' in preset ? String((preset as {streak_days?: number}).streak_days ?? '') : '',
+      frequency_per_week: 'frequency_per_week' in preset ? String((preset as {frequency_per_week?: number}).frequency_per_week ?? '3') : '3',
+      end_date: new Date(Date.now() + preset.duration_days * 86400000).toISOString().split('T')[0],
+    }));
+    setWizardStep(2);
+  };
+
   const handleCreate = async () => {
-    if (!newChallenge.name.trim()) return;
+    if (!form.title.trim()) return;
     setIsCreating(true);
     try {
+      const durationDays = form.end_date
+        ? Math.max(1, Math.ceil((new Date(form.end_date).getTime() - Date.now()) / 86400000))
+        : 30;
       await api.createChallenge({
-        title: newChallenge.name,
-        description: newChallenge.description,
-        type: newChallenge.type,
-        target_value: parseFloat(newChallenge.target) || 0,
-        duration_days: newChallenge.end_date
-          ? Math.max(1, Math.ceil((new Date(newChallenge.end_date).getTime() - Date.now()) / 86400000))
-          : 30,
-        is_public: true,
+        title: form.title,
+        description: form.description,
+        type: form.type,
+        target_value: parseFloat(form.target_value) || 0,
+        duration_days: durationDays,
+        is_public: form.is_public,
+        challenge_mode: form.challenge_mode,
+        badge_icon: form.badge_icon,
+        sport_type: form.sport_type,
+        weekly_target: form.weekly_target ? parseFloat(form.weekly_target) : undefined,
+        weekly_increase_pct: form.weekly_increase_pct ? parseFloat(form.weekly_increase_pct) : undefined,
+        streak_days: form.streak_days ? parseInt(form.streak_days) : undefined,
+        frequency_per_week: form.frequency_per_week ? parseInt(form.frequency_per_week) : undefined,
       });
-      toast.success('Défi créé !');
+      toast.success('Défi créé ! 🏆');
       setShowCreate(false);
-      setNewChallenge({ name: '', description: '', type: 'distance', target: '', end_date: '' });
+      setWizardStep(1);
+      setForm({ title: '', description: '', type: 'distance', target_value: '', end_date: '', challenge_mode: 'quota', weekly_target: '', weekly_increase_pct: '10', streak_days: '', frequency_per_week: '3', sport_type: 'any', badge_icon: '🏆', is_public: true });
       load();
     } catch { toast.error('Erreur lors de la création'); }
     finally { setIsCreating(false); }
@@ -1019,15 +1097,35 @@ function ChallengesTab() {
   const handleJoin = async (id: number) => {
     try {
       const res = await api.joinChallenge(id);
-      if (res.success) { toast.success('Défi rejoint !'); load(); }
+      if (res.success) { toast.success('Défi rejoint ! 🎯'); load(); }
       else toast.error(res.error || 'Erreur');
     } catch { toast.error('Erreur'); }
   };
 
-  const typeLabel = (t: string) => ({ distance: 'Distance', elevation: 'Dénivelé', time: 'Temps', activities: 'Activités' }[t] || t);
-  const typeIcon = (t: string) => ({ distance: '🏃', elevation: '⛰️', time: '⏱️', activities: '📊' }[t] || '🏆');
+  const getModeInfo = (mode: string) => CHALLENGE_MODES.find(m => m.id === mode) || CHALLENGE_MODES[0];
+  const getTypeInfo = (type: string) => CHALLENGE_TYPES.find(t => t.id === type) || CHALLENGE_TYPES[0];
 
-  if (isLoading) return <div className="space-y-4">{[1,2,3].map(i => <Skeleton key={i} className="h-24 rounded-2xl" />)}</div>;
+  const getMilestones = (c: { milestones?: string }) => {
+    if (!c.milestones) return [{ pct: 25, label: 'Bronze', icon: '🥉' }, { pct: 50, label: 'Argent', icon: '🥈' }, { pct: 75, label: 'Or', icon: '🥇' }, { pct: 100, label: 'Légendaire', icon: '💎' }];
+    try { return JSON.parse(c.milestones); } catch { return []; }
+  };
+
+  const getProgressColor = (pct: number) => {
+    if (pct >= 100) return 'bg-yellow-400';
+    if (pct >= 75) return 'bg-green-500';
+    if (pct >= 50) return 'bg-blue-500';
+    if (pct >= 25) return 'bg-orange-400';
+    return 'bg-primary';
+  };
+
+  const formatDaysLeft = (endDate: string) => {
+    const days = Math.ceil((new Date(endDate).getTime() - Date.now()) / 86400000);
+    if (days < 0) return 'Terminé';
+    if (days === 0) return 'Dernier jour !';
+    return `${days}j restants`;
+  };
+
+  if (isLoading) return <div className="space-y-4">{[1,2,3].map(i => <Skeleton key={i} className="h-28 rounded-2xl" />)}</div>;
 
   return (
     <div className="space-y-6">
@@ -1037,7 +1135,7 @@ function ChallengesTab() {
           <Trophy className="w-5 h-5 text-yellow-500" />
           Défis
         </h3>
-        <Button size="sm" onClick={() => setShowCreate(true)} className="rounded-xl gap-1">
+        <Button size="sm" onClick={() => { setShowCreate(true); setWizardStep(1); }} className="rounded-xl gap-1">
           <Sparkles className="w-4 h-4" /> Créer un défi
         </Button>
       </div>
@@ -1046,34 +1144,60 @@ function ChallengesTab() {
       {myChallenges.length > 0 && (
         <div className="space-y-3">
           <p className="text-sm font-medium text-muted uppercase tracking-wide">Mes défis</p>
-          {myChallenges.map(c => (
-            <GlassCard key={c.id} padding="sm">
-              <GlassCardContent>
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-lg">{typeIcon(c.type)}</span>
-                      <p className="font-semibold text-sm truncate">{c.title}</p>
+          {myChallenges.map(c => {
+            const pct = Math.min(100, c.progress || 0);
+            const milestones = getMilestones(c);
+            const nextMilestone = milestones.find((m: {pct:number}) => m.pct > pct);
+            const mode = getModeInfo(c.challenge_mode || 'quota');
+            return (
+              <GlassCard key={c.id} padding="sm">
+                <GlassCardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-2xl">{c.badge_icon || '🏆'}</span>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-sm truncate">{c.title}</p>
+                          <p className="text-xs text-muted">{mode.icon} {mode.label} · {getTypeInfo(c.type).icon} {c.target_value} {c.target_unit}</p>
+                        </div>
+                      </div>
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium shrink-0 ${c.user_status === 'completed' ? 'bg-green-500/10 text-green-500' : 'bg-primary/10 text-primary'}`}>
+                        {c.user_status === 'completed' ? '✓ Terminé' : formatDaysLeft(c.end_date)}
+                      </span>
                     </div>
-                    <p className="text-xs text-muted mb-2">{typeLabel(c.type)} · {c.target_value} {c.target_unit}</p>
-                    {/* Progress bar */}
-                    <div className="w-full bg-border rounded-full h-2">
-                      <div
-                        className="bg-primary h-2 rounded-full transition-all"
-                        style={{ width: `${Math.min(100, c.progress || 0)}%` }}
-                      />
+                    {c.challenge_mode === 'streak' && (
+                      <div className="flex items-center gap-4 text-sm">
+                        <div className="flex items-center gap-1"><span className="text-orange-400">🔥</span><span className="font-bold">{c.streak_current || 0}</span><span className="text-muted text-xs">actuel</span></div>
+                        <div className="flex items-center gap-1"><span className="text-yellow-400">⭐</span><span className="font-bold">{c.streak_best || 0}</span><span className="text-muted text-xs">record</span></div>
+                      </div>
+                    )}
+                    <div className="space-y-1">
+                      <div className="relative w-full bg-border rounded-full h-3">
+                        <div className={`h-3 rounded-full transition-all duration-500 ${getProgressColor(pct)}`} style={{ width: `${pct}%` }} />
+                        {milestones.map((m: {pct:number}) => (
+                          <div key={m.pct} className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2" style={{ left: `${m.pct}%` }}>
+                            <div className={`w-0.5 h-4 rounded-full ${pct >= m.pct ? 'bg-white/80' : 'bg-muted/40'}`} />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex justify-between text-xs text-muted">
+                        <span className="font-medium text-foreground">{pct.toFixed(0)}%</span>
+                        {nextMilestone && <span>{(nextMilestone as {icon:string}).icon} {(nextMilestone as {label:string}).label} à {(nextMilestone as {pct:number}).pct}%</span>}
+                        <span>{c.target_value} {c.target_unit}</span>
+                      </div>
                     </div>
-                    <p className="text-xs text-muted mt-1">{c.progress || 0}% · Fin le {new Date(c.end_date).toLocaleDateString('fr-FR')}</p>
+                    <div className="flex gap-1">
+                      {milestones.map((m: {pct:number; label:string; icon:string}) => (
+                        <div key={m.pct} className={`flex-1 text-center py-1 rounded-lg text-xs transition-all ${pct >= m.pct ? 'bg-yellow-500/20 text-yellow-600 font-medium' : 'bg-border/50 text-muted'}`}>
+                          {m.icon} {m.label}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                    c.user_status === 'completed' ? 'bg-green-500/10 text-green-500' : 'bg-primary/10 text-primary'
-                  }`}>
-                    {c.user_status === 'completed' ? '✓ Terminé' : 'En cours'}
-                  </span>
-                </div>
-              </GlassCardContent>
-            </GlassCard>
-          ))}
+                </GlassCardContent>
+              </GlassCard>
+            );
+          })}
         </div>
       )}
 
@@ -1086,79 +1210,156 @@ function ChallengesTab() {
             <p className="text-muted text-sm">Aucun défi public pour l&apos;instant</p>
             <p className="text-xs text-muted mt-1">Soyez le premier à en créer un !</p>
           </div>
-        ) : (
-          publicChallenges.map(c => {
-            const alreadyJoined = myChallenges.some(m => m.id === c.id);
-            return (
-              <GlassCard key={c.id} padding="sm">
-                <GlassCardContent>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-lg">{typeIcon(c.type)}</span>
-                        <p className="font-semibold text-sm truncate">{c.title}</p>
+        ) : publicChallenges.map(c => {
+          const alreadyJoined = myChallenges.some(m => m.id === c.id);
+          const mode = getModeInfo(c.challenge_mode || 'quota');
+          return (
+            <GlassCard key={c.id} padding="sm">
+              <GlassCardContent>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                    <span className="text-2xl shrink-0">{c.badge_icon || '🏆'}</span>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm truncate">{c.title}</p>
+                      {c.description && <p className="text-xs text-muted mb-1 line-clamp-1">{c.description}</p>}
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        <span className="text-xs px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">{mode.icon} {mode.label}</span>
+                        <span className="text-xs px-1.5 py-0.5 rounded-md bg-border text-muted">{getTypeInfo(c.type).icon} {c.target_value} {c.target_unit}</span>
+                        <span className="text-xs px-1.5 py-0.5 rounded-md bg-border text-muted">⏳ {c.duration_days}j</span>
+                        <span className="text-xs px-1.5 py-0.5 rounded-md bg-border text-muted">👥 {c.participant_count || 0}</span>
                       </div>
-                      {c.description && <p className="text-xs text-muted mb-1 line-clamp-2">{c.description}</p>}
-                      <p className="text-xs text-muted">
-                        {typeLabel(c.type)} · {c.target_value} {c.target_unit} · {c.duration_days}j · {c.participant_count || 0} participants
-                      </p>
+                      {c.creator_name && <p className="text-xs text-muted mt-1">par {c.creator_name}</p>}
                     </div>
-                    {!alreadyJoined ? (
-                      <Button size="sm" variant="secondary" onClick={() => handleJoin(c.id)} className="rounded-xl shrink-0">
-                        Rejoindre
-                      </Button>
-                    ) : (
-                      <span className="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-500 font-medium shrink-0">✓ Rejoint</span>
-                    )}
                   </div>
-                </GlassCardContent>
-              </GlassCard>
-            );
-          })
-        )}
+                  {!alreadyJoined ? (
+                    <Button size="sm" variant="secondary" onClick={() => handleJoin(c.id)} className="rounded-xl shrink-0">Rejoindre</Button>
+                  ) : (
+                    <span className="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-500 font-medium shrink-0">✓ Rejoint</span>
+                  )}
+                </div>
+              </GlassCardContent>
+            </GlassCard>
+          );
+        })}
       </div>
 
-      {/* Modal création */}
+      {/* ===== WIZARD CRÉATION ===== */}
       {showCreate && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
-          <div className="bg-card rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-lg flex items-center gap-2"><Trophy className="w-5 h-5 text-yellow-500" />Créer un défi</h3>
-              <button onClick={() => setShowCreate(false)} className="p-2 rounded-xl hover:bg-border transition-colors"><X className="w-4 h-4" /></button>
-            </div>
-            <div className="space-y-3">
-              <Input label="Nom du défi *" value={newChallenge.name} onChange={e => setNewChallenge(p => ({ ...p, name: e.target.value }))} placeholder="Ex: 100km en juin" />
-              <div>
-                <label className="text-xs font-medium text-muted uppercase tracking-wide mb-1 block">Type</label>
-                <select
-                  value={newChallenge.type}
-                  onChange={e => setNewChallenge(p => ({ ...p, type: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-xl bg-background border border-border text-sm focus:border-primary outline-none"
-                >
-                  <option value="distance">🏃 Distance (km)</option>
-                  <option value="elevation">⛰️ Dénivelé (m)</option>
-                  <option value="time">⏱️ Temps (min)</option>
-                  <option value="activities">📊 Nombre d&apos;activités</option>
-                </select>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-card rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+            <div className="px-6 pt-5 pb-4 border-b border-border">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-bold text-lg flex items-center gap-2"><Trophy className="w-5 h-5 text-yellow-500" />Créer un défi</h3>
+                <button onClick={() => { setShowCreate(false); setWizardStep(1); }} className="p-2 rounded-xl hover:bg-border transition-colors"><X className="w-4 h-4" /></button>
               </div>
-              <Input label="Objectif" type="number" value={newChallenge.target} onChange={e => setNewChallenge(p => ({ ...p, target: e.target.value }))} placeholder="Ex: 100" />
-              <Input label="Date de fin" type="date" value={newChallenge.end_date} onChange={e => setNewChallenge(p => ({ ...p, end_date: e.target.value }))} />
-              <div>
-                <label className="text-xs font-medium text-muted uppercase tracking-wide mb-1 block">Description (optionnel)</label>
-                <textarea
-                  value={newChallenge.description}
-                  onChange={e => setNewChallenge(p => ({ ...p, description: e.target.value }))}
-                  placeholder="Décrivez votre défi..."
-                  rows={2}
-                  className="w-full px-3 py-2 rounded-xl bg-background border border-border text-sm focus:border-primary outline-none resize-none"
-                />
-              </div>
+              <div className="flex gap-1">{[1,2,3].map(s => <div key={s} className={`h-1 flex-1 rounded-full transition-all ${s <= wizardStep ? 'bg-primary' : 'bg-border'}`} />)}</div>
+              <p className="text-xs text-muted mt-2">{wizardStep === 1 && 'Étape 1 — Choisir le mode'}{wizardStep === 2 && 'Étape 2 — Définir l\'objectif'}{wizardStep === 3 && 'Étape 3 — Personnaliser'}</p>
             </div>
-            <div className="flex gap-3 pt-2">
-              <Button variant="secondary" onClick={() => setShowCreate(false)} className="flex-1 rounded-xl">Annuler</Button>
-              <Button onClick={handleCreate} disabled={isCreating || !newChallenge.name.trim()} className="flex-1 rounded-xl">
-                {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Créer'}
-              </Button>
+            <div className="px-6 py-5 max-h-[65vh] overflow-y-auto space-y-4">
+              {wizardStep === 1 && (
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-xs font-medium text-muted uppercase tracking-wide mb-2">⚡ Démarrage rapide</p>
+                    <div className="grid grid-cols-1 gap-2">
+                      {PRESET_CHALLENGES.map(p => (
+                        <button key={p.title} onClick={() => applyPreset(p)} className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-left">
+                          <span className="text-2xl">{p.badge_icon}</span>
+                          <div><p className="text-sm font-medium">{p.title}</p><p className="text-xs text-muted">{getModeInfo(p.challenge_mode).label} · {p.target_value} {getTypeInfo(p.type).unit}</p></div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="relative"><div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div><div className="relative flex justify-center"><span className="bg-card px-3 text-xs text-muted">ou créer sur mesure</span></div></div>
+                  <div>
+                    <p className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Mode du défi</p>
+                    <div className="grid grid-cols-1 gap-2">
+                      {CHALLENGE_MODES.map(m => (
+                        <button key={m.id} onClick={() => setForm(p => ({ ...p, challenge_mode: m.id }))} className={`flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${form.challenge_mode === m.id ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/30'}`}>
+                          <span className="text-xl">{m.icon}</span>
+                          <div className="flex-1"><p className="text-sm font-medium">{m.label}</p><p className="text-xs text-muted">{m.desc}</p></div>
+                          {form.challenge_mode === m.id && <Check className="w-4 h-4 text-primary shrink-0" />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+              {wizardStep === 2 && (
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Sport</p>
+                    <div className="flex flex-wrap gap-2">
+                      {SPORT_TYPES.map(s => (
+                        <button key={s.id} onClick={() => setForm(p => ({ ...p, sport_type: s.id }))} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm border transition-all ${form.sport_type === s.id ? 'border-primary bg-primary/10 font-medium' : 'border-border hover:border-primary/30'}`}>{s.icon} {s.label}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Métrique</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {CHALLENGE_TYPES.filter(t => (t.modes as readonly string[]).includes(form.challenge_mode)).map(t => (
+                        <button key={t.id} onClick={() => setForm(p => ({ ...p, type: t.id }))} className={`flex items-center gap-2 p-3 rounded-xl border transition-all ${form.type === t.id ? 'border-primary bg-primary/10 font-medium' : 'border-border hover:border-primary/30'}`}>
+                          <span>{t.icon}</span><div className="text-left"><p className="text-sm">{t.label}</p><p className="text-xs text-muted">{t.unit}</p></div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {form.challenge_mode !== 'streak' && form.challenge_mode !== 'frequency' && (
+                    <Input label={`Objectif (${getTypeInfo(form.type).unit})`} type="number" value={form.target_value} onChange={e => setForm(p => ({ ...p, target_value: e.target.value }))} placeholder={form.type === 'distance' ? 'Ex: 100' : form.type === 'elevation' ? 'Ex: 2000' : 'Ex: 600'} />
+                  )}
+                  {form.challenge_mode === 'progressive' && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input label={`Départ sem. 1 (${getTypeInfo(form.type).unit})`} type="number" value={form.weekly_target} onChange={e => setForm(p => ({ ...p, weekly_target: e.target.value }))} placeholder="Ex: 20" />
+                      <Input label="Augmentation/sem. (%)" type="number" value={form.weekly_increase_pct} onChange={e => setForm(p => ({ ...p, weekly_increase_pct: e.target.value }))} placeholder="Ex: 10" />
+                    </div>
+                  )}
+                  {form.challenge_mode === 'streak' && (
+                    <Input label="Jours consécutifs requis" type="number" value={form.streak_days} onChange={e => setForm(p => ({ ...p, streak_days: e.target.value, target_value: e.target.value }))} placeholder="Ex: 30" />
+                  )}
+                  {form.challenge_mode === 'frequency' && (
+                    <Input label="Sorties par semaine" type="number" value={form.frequency_per_week} onChange={e => setForm(p => ({ ...p, frequency_per_week: e.target.value }))} placeholder="Ex: 3" />
+                  )}
+                  <Input label="Date de fin" type="date" value={form.end_date} onChange={e => setForm(p => ({ ...p, end_date: e.target.value }))} min={new Date(Date.now() + 86400000).toISOString().split('T')[0]} />
+                </div>
+              )}
+              {wizardStep === 3 && (
+                <div className="space-y-4">
+                  <Input label="Nom du défi *" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Ex: 100km en juin" />
+                  <div>
+                    <label className="text-xs font-medium text-muted uppercase tracking-wide mb-1 block">Description</label>
+                    <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Décrivez votre défi, les règles, la motivation..." rows={3} className="w-full px-3 py-2 rounded-xl bg-background border border-border text-sm focus:border-primary outline-none resize-none" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Badge</p>
+                    <div className="flex flex-wrap gap-2">
+                      {BADGE_ICONS.map(icon => (
+                        <button key={icon} onClick={() => setForm(p => ({ ...p, badge_icon: icon }))} className={`w-10 h-10 text-xl rounded-xl border transition-all ${form.badge_icon === icon ? 'border-primary bg-primary/10 scale-110' : 'border-border hover:border-primary/30'}`}>{icon}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-xl border border-border">
+                    <div><p className="text-sm font-medium">Défi public</p><p className="text-xs text-muted">Visible et rejoignable par tous</p></div>
+                    <button onClick={() => setForm(p => ({ ...p, is_public: !p.is_public }))} className={`w-12 h-6 rounded-full transition-all relative ${form.is_public ? 'bg-primary' : 'bg-border'}`}>
+                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${form.is_public ? 'left-7' : 'left-1'}`} />
+                    </button>
+                  </div>
+                  <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-1">
+                    <p className="text-sm font-semibold">{form.badge_icon} {form.title || 'Mon défi'}</p>
+                    <p className="text-xs text-muted">{getModeInfo(form.challenge_mode).icon} {getModeInfo(form.challenge_mode).label} · {getTypeInfo(form.type).icon} {form.target_value || '?'} {getTypeInfo(form.type).unit}</p>
+                    {form.end_date && <p className="text-xs text-muted">⏳ Jusqu&apos;au {new Date(form.end_date).toLocaleDateString('fr-FR')}</p>}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="px-6 py-4 border-t border-border flex gap-3">
+              {wizardStep > 1 && <Button variant="secondary" onClick={() => setWizardStep(s => s - 1)} className="rounded-xl">← Retour</Button>}
+              {wizardStep < 3 ? (
+                <Button onClick={() => setWizardStep(s => s + 1)} className="flex-1 rounded-xl" disabled={wizardStep === 2 && !form.target_value && form.challenge_mode !== 'frequency'}>Suivant →</Button>
+              ) : (
+                <Button onClick={handleCreate} disabled={isCreating || !form.title.trim()} className="flex-1 rounded-xl">
+                  {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : '🏆 Créer le défi'}
+                </Button>
+              )}
             </div>
           </div>
         </div>
