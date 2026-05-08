@@ -958,6 +958,216 @@ function GroupsTab() {
 }
 
 // ============================================================================
+// CHALLENGES TAB
+// ============================================================================
+
+function ChallengesTab() {
+  const [publicChallenges, setPublicChallenges] = useState<Array<{
+    id: number; title: string; description: string; type: string;
+    target_value: number; target_unit: string; duration_days: number;
+    participant_count: number; created_at: string;
+  }>>([]);
+  const [myChallenges, setMyChallenges] = useState<Array<{
+    id: number; title: string; description: string; type: string;
+    target_value: number; target_unit: string; progress: number;
+    user_status: string; start_date: string; end_date: string;
+  }>>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newChallenge, setNewChallenge] = useState({
+    name: '', description: '', type: 'distance', target: '', end_date: ''
+  });
+  const [isCreating, setIsCreating] = useState(false);
+
+  const load = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [pub, mine] = await Promise.all([
+        api.getPublicChallenges().catch(() => []),
+        api.getUserChallenges().catch(() => []),
+      ]);
+      setPublicChallenges((pub as typeof publicChallenges) || []);
+      setMyChallenges((mine as typeof myChallenges) || []);
+    } catch { /* silent */ }
+    finally { setIsLoading(false); }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleCreate = async () => {
+    if (!newChallenge.name.trim()) return;
+    setIsCreating(true);
+    try {
+      await api.createChallenge({
+        title: newChallenge.name,
+        description: newChallenge.description,
+        type: newChallenge.type,
+        target_value: parseFloat(newChallenge.target) || 0,
+        duration_days: newChallenge.end_date
+          ? Math.max(1, Math.ceil((new Date(newChallenge.end_date).getTime() - Date.now()) / 86400000))
+          : 30,
+        is_public: true,
+      });
+      toast.success('Défi créé !');
+      setShowCreate(false);
+      setNewChallenge({ name: '', description: '', type: 'distance', target: '', end_date: '' });
+      load();
+    } catch { toast.error('Erreur lors de la création'); }
+    finally { setIsCreating(false); }
+  };
+
+  const handleJoin = async (id: number) => {
+    try {
+      const res = await api.joinChallenge(id);
+      if (res.success) { toast.success('Défi rejoint !'); load(); }
+      else toast.error(res.error || 'Erreur');
+    } catch { toast.error('Erreur'); }
+  };
+
+  const typeLabel = (t: string) => ({ distance: 'Distance', elevation: 'Dénivelé', time: 'Temps', activities: 'Activités' }[t] || t);
+  const typeIcon = (t: string) => ({ distance: '🏃', elevation: '⛰️', time: '⏱️', activities: '📊' }[t] || '🏆');
+
+  if (isLoading) return <div className="space-y-4">{[1,2,3].map(i => <Skeleton key={i} className="h-24 rounded-2xl" />)}</div>;
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-foreground flex items-center gap-2">
+          <Trophy className="w-5 h-5 text-yellow-500" />
+          Défis
+        </h3>
+        <Button size="sm" onClick={() => setShowCreate(true)} className="rounded-xl gap-1">
+          <Sparkles className="w-4 h-4" /> Créer un défi
+        </Button>
+      </div>
+
+      {/* Mes défis en cours */}
+      {myChallenges.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-muted uppercase tracking-wide">Mes défis</p>
+          {myChallenges.map(c => (
+            <GlassCard key={c.id} padding="sm">
+              <GlassCardContent>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg">{typeIcon(c.type)}</span>
+                      <p className="font-semibold text-sm truncate">{c.title}</p>
+                    </div>
+                    <p className="text-xs text-muted mb-2">{typeLabel(c.type)} · {c.target_value} {c.target_unit}</p>
+                    {/* Progress bar */}
+                    <div className="w-full bg-border rounded-full h-2">
+                      <div
+                        className="bg-primary h-2 rounded-full transition-all"
+                        style={{ width: `${Math.min(100, c.progress || 0)}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-muted mt-1">{c.progress || 0}% · Fin le {new Date(c.end_date).toLocaleDateString('fr-FR')}</p>
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                    c.user_status === 'completed' ? 'bg-green-500/10 text-green-500' : 'bg-primary/10 text-primary'
+                  }`}>
+                    {c.user_status === 'completed' ? '✓ Terminé' : 'En cours'}
+                  </span>
+                </div>
+              </GlassCardContent>
+            </GlassCard>
+          ))}
+        </div>
+      )}
+
+      {/* Défis publics */}
+      <div className="space-y-3">
+        <p className="text-sm font-medium text-muted uppercase tracking-wide">Défis publics</p>
+        {publicChallenges.length === 0 ? (
+          <div className="text-center py-12">
+            <Trophy className="w-12 h-12 mx-auto mb-3 text-muted opacity-30" />
+            <p className="text-muted text-sm">Aucun défi public pour l&apos;instant</p>
+            <p className="text-xs text-muted mt-1">Soyez le premier à en créer un !</p>
+          </div>
+        ) : (
+          publicChallenges.map(c => {
+            const alreadyJoined = myChallenges.some(m => m.id === c.id);
+            return (
+              <GlassCard key={c.id} padding="sm">
+                <GlassCardContent>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-lg">{typeIcon(c.type)}</span>
+                        <p className="font-semibold text-sm truncate">{c.title}</p>
+                      </div>
+                      {c.description && <p className="text-xs text-muted mb-1 line-clamp-2">{c.description}</p>}
+                      <p className="text-xs text-muted">
+                        {typeLabel(c.type)} · {c.target_value} {c.target_unit} · {c.duration_days}j · {c.participant_count || 0} participants
+                      </p>
+                    </div>
+                    {!alreadyJoined ? (
+                      <Button size="sm" variant="secondary" onClick={() => handleJoin(c.id)} className="rounded-xl shrink-0">
+                        Rejoindre
+                      </Button>
+                    ) : (
+                      <span className="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-500 font-medium shrink-0">✓ Rejoint</span>
+                    )}
+                  </div>
+                </GlassCardContent>
+              </GlassCard>
+            );
+          })
+        )}
+      </div>
+
+      {/* Modal création */}
+      {showCreate && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-card rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-lg flex items-center gap-2"><Trophy className="w-5 h-5 text-yellow-500" />Créer un défi</h3>
+              <button onClick={() => setShowCreate(false)} className="p-2 rounded-xl hover:bg-border transition-colors"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="space-y-3">
+              <Input label="Nom du défi *" value={newChallenge.name} onChange={e => setNewChallenge(p => ({ ...p, name: e.target.value }))} placeholder="Ex: 100km en juin" />
+              <div>
+                <label className="text-xs font-medium text-muted uppercase tracking-wide mb-1 block">Type</label>
+                <select
+                  value={newChallenge.type}
+                  onChange={e => setNewChallenge(p => ({ ...p, type: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-xl bg-background border border-border text-sm focus:border-primary outline-none"
+                >
+                  <option value="distance">🏃 Distance (km)</option>
+                  <option value="elevation">⛰️ Dénivelé (m)</option>
+                  <option value="time">⏱️ Temps (min)</option>
+                  <option value="activities">📊 Nombre d&apos;activités</option>
+                </select>
+              </div>
+              <Input label="Objectif" type="number" value={newChallenge.target} onChange={e => setNewChallenge(p => ({ ...p, target: e.target.value }))} placeholder="Ex: 100" />
+              <Input label="Date de fin" type="date" value={newChallenge.end_date} onChange={e => setNewChallenge(p => ({ ...p, end_date: e.target.value }))} />
+              <div>
+                <label className="text-xs font-medium text-muted uppercase tracking-wide mb-1 block">Description (optionnel)</label>
+                <textarea
+                  value={newChallenge.description}
+                  onChange={e => setNewChallenge(p => ({ ...p, description: e.target.value }))}
+                  placeholder="Décrivez votre défi..."
+                  rows={2}
+                  className="w-full px-3 py-2 rounded-xl bg-background border border-border text-sm focus:border-primary outline-none resize-none"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Button variant="secondary" onClick={() => setShowCreate(false)} className="flex-1 rounded-xl">Annuler</Button>
+              <Button onClick={handleCreate} disabled={isCreating || !newChallenge.name.trim()} className="flex-1 rounded-xl">
+                {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Créer'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
 // NOTIFICATIONS TAB
 // ============================================================================
 
@@ -1079,13 +1289,14 @@ function NotificationsTab() {
 // ============================================================================
 
 export default function SocialContent() {
-  const [activeTab, setActiveTab] = useState<'feed' | 'friends' | 'groups' | 'rankings'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'friends' | 'groups' | 'challenges' | 'rankings'>('feed');
 
   const tabs = [
     { id: 'feed', label: 'Fil', icon: Flame },
     { id: 'friends', label: 'Amis', icon: Users },
     { id: 'groups', label: 'Groupes', icon: Users2 },
-    { id: 'rankings', label: 'Classement', icon: Trophy },
+    { id: 'challenges', label: 'Défis', icon: Trophy },
+    { id: 'rankings', label: 'Classement', icon: TrendingUp },
   ] as const;
 
   return (
@@ -1122,6 +1333,7 @@ export default function SocialContent() {
         {activeTab === 'feed' && <FeedTab />}
         {activeTab === 'friends' && <FriendsTab />}
         {activeTab === 'groups' && <GroupsTab />}
+        {activeTab === 'challenges' && <ChallengesTab />}
         {activeTab === 'rankings' && <LeaderboardTab />}
       </div>
     </div>
