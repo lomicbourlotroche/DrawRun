@@ -11,6 +11,7 @@ import type { SplitData, SplitSummary } from '@/types';
 import { ArrowLeft, Heart, Timer, Gauge, Mountain, Activity as ActivityIcon, Zap, Wind, MapPin, Clock, Pencil, Check, X, Dumbbell, Cpu } from 'lucide-react';
 import { toast } from 'sonner';
 import { BiomechanicsCard } from '@/components/features/activities/BiomechanicsCard';
+import { ShareSettingsPanel } from '@/components/features/activities';
 
 function fmt(s: number) {
   const h = Math.floor(s / 3600);
@@ -603,6 +604,19 @@ export default function ActivityDetailPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Share Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Heart className="w-4 h-4 text-primary" />
+            Partage social
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ShareSettingsPanel activityId={Number(id)} onSave={() => toast.success('Paramètres de partage mis à jour')} />
+        </CardContent>
+      </Card>
     </div>
   );
 }
