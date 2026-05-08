@@ -19,6 +19,7 @@ const PAGE_TITLES: { prefix: string; label: string; exact?: boolean }[] = [
   { prefix: '/app/performance', label: 'Performance' },
   { prefix: '/app/coach', label: 'Coach' },
   { prefix: '/app/social', label: 'Social' },
+  { prefix: '/app/settings', label: 'Paramètres' },
   { prefix: '/app/profile', label: 'Profil' },
   { prefix: '/app/explore', label: 'Explorer' },
 ];
@@ -217,7 +218,7 @@ export default function Header() {
                      Mon profil
                    </Link>
                    <Link
-                     href="/app/profile"
+                     href="/app/settings"
                      onClick={() => setIsUserMenuOpen(false)}
                      className="flex items-center gap-2.5 px-4 py-3 min-h-[44px] text-sm text-neutral-600 hover:text-neutral-900 hover:bg-primary-50/50 transition-colors"
                    >
