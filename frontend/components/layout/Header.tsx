@@ -4,11 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useAuthStore, useSyncStore } from '@/stores';
+import { useAuthStore, useSyncStore, useNotificationsStore } from '@/stores';
 import { ThemeToggle } from '@/components/providers/ThemeToggle';
 import { LanguageToggle } from '@/components/providers/LanguageToggle';
 import { InstallPrompt } from '@/components/providers/InstallPrompt';
-import { RefreshCw, Settings, LogOut, User, ChevronDown } from 'lucide-react';
+import { RefreshCw, Settings, LogOut, User, ChevronDown, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 
 /** Map pathname prefixes to human-readable page titles */
@@ -36,8 +36,10 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationsStore();
   const { sync, isSyncing } = useSyncStore();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
 
   const pageTitle = getPageTitle(pathname);
 
@@ -94,6 +96,79 @@ export default function Header() {
             <RefreshCw className={cn('w-4 h-4', isSyncing && 'animate-spin')} />
             <span className="hidden sm:inline">Sync</span>
           </button>
+
+          {/* Notifications */}
+          <div className="relative">
+            <button
+              onClick={() => setIsNotifOpen(!isNotifOpen)}
+              className={cn(
+                'inline-flex items-center justify-center w-10 h-10 min-h-[44px] rounded-xl transition-all duration-200',
+                'bg-white/80 border border-neutral-200 text-neutral-600',
+                'hover:bg-primary-50 hover:border-primary-200 hover:text-primary-700',
+                isNotifOpen && 'bg-primary-50 border-primary-200 text-primary-700'
+              )}
+              aria-label="Notifications"
+            >
+              <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {isNotifOpen && (
+              <>
+                {/* Backdrop */}
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setIsNotifOpen(false)}
+                />
+                {/* Dropdown */}
+                <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white/95 backdrop-blur-xl border border-neutral-200/60 rounded-2xl shadow-lg z-50 py-2 animate-slide-down overflow-hidden max-h-[70vh] overflow-y-auto">
+                  <div className="flex items-center justify-between px-4 py-2 border-b border-neutral-100">
+                    <h3 className="font-semibold text-sm">Notifications</h3>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={() => markAllAsRead()}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Tout marquer comme lu
+                      </button>
+                    )}
+                  </div>
+                  {notifications.length === 0 ? (
+                    <div className="px-4 py-8 text-center text-sm text-neutral-500">
+                      Aucune notification
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-neutral-100">
+                      {notifications.slice(0, 10).map((n) => (
+                        <button
+                          key={n.id}
+                          onClick={() => {
+                            if (n.unread) markAsRead(n.id);
+                            setIsNotifOpen(false);
+                          }}
+                          className={cn(
+                            'w-full px-4 py-3 text-left transition-colors hover:bg-primary-50/50',
+                            n.unread ? 'bg-primary-50/30' : 'bg-white'
+                          )}
+                        >
+                          <p className={cn('text-sm', n.unread ? 'font-medium' : 'text-neutral-600')}>
+                            {n.message}
+                          </p>
+                          <p className="text-xs text-neutral-400 mt-1">
+                            {new Date(n.created_at || Date.now()).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
 
           <ThemeToggle />
           <LanguageToggle />

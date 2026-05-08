@@ -14,8 +14,8 @@ import { api } from '@/lib/api';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import type { User as UserType } from '@/types';
 import {
-  User, Mail, Scale, Heart, LogOut, RefreshCw, CheckCircle, XCircle, 
-  Trash2, AlertTriangle, Gift, Watch, Settings, Lock, Eye, EyeOff, Shield, Monitor, Moon, Sun,
+  User, Mail, Scale, Heart, LogOut, RefreshCw, CheckCircle, XCircle,
+  Trash2, AlertTriangle, Gift, Watch, Lock, Eye, EyeOff, Shield, Monitor, Moon, Sun,
   Globe, Layout, Bell, BellOff, Camera
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -995,7 +995,7 @@ function SettingsTab() {
 function ProfilePageContent() {
   const searchParams = useSearchParams();
   const isNewUser = searchParams.get('new') === 'true';
-  const [activeTab, setActiveTab] = useState<'profile' | 'sync' | 'settings'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'sync'>('profile');
 
   useEffect(() => {
     if (api.isAuthenticated()) {
@@ -1006,7 +1006,6 @@ function ProfilePageContent() {
   const tabs = [
     { id: 'profile', label: 'Profil', icon: User },
     { id: 'sync', label: 'Sync', icon: RefreshCw },
-    { id: 'settings', label: 'Paramètres', icon: Settings },
   ] as const;
 
   return (
@@ -1040,7 +1039,6 @@ function ProfilePageContent() {
       {/* Content */}
       {activeTab === 'profile' && <ProfileTab isNewUser={isNewUser} />}
       {activeTab === 'sync' && <SyncTab />}
-      {activeTab === 'settings' && <SettingsTab />}
     </div>
   );
 }

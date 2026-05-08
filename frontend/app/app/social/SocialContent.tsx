@@ -1079,14 +1079,13 @@ function NotificationsTab() {
 // ============================================================================
 
 export default function SocialContent() {
-  const [activeTab, setActiveTab] = useState<'feed' | 'friends' | 'groups' | 'rankings' | 'notifications'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'friends' | 'groups' | 'rankings'>('feed');
 
   const tabs = [
     { id: 'feed', label: 'Fil', icon: Flame },
     { id: 'friends', label: 'Amis', icon: Users },
     { id: 'groups', label: 'Groupes', icon: Users2 },
     { id: 'rankings', label: 'Classement', icon: Trophy },
-    { id: 'notifications', label: 'Notifs', icon: Bell },
   ] as const;
 
   return (
@@ -1124,7 +1123,6 @@ export default function SocialContent() {
         {activeTab === 'friends' && <FriendsTab />}
         {activeTab === 'groups' && <GroupsTab />}
         {activeTab === 'rankings' && <LeaderboardTab />}
-        {activeTab === 'notifications' && <NotificationsTab />}
       </div>
     </div>
   );
