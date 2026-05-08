@@ -107,18 +107,57 @@
 }
 
 .dark {
-  --background: #0F172A;
-  --bg: #0F172A;
-  --bg-secondary: #1E293B;
-  --surface: #1E293B;
-  --border: #334155;
-  --muted: #64748B;
-  --text-muted: #64748B;
-  --text-secondary: #94A3B8;
-  --text-primary: #F1F5F9;
-  --foreground: #F1F5F9;
-  --danger: #EF4444;
-  --info: #007AFF;
+  /* ================================================================
+   * DARK THEME — DrawRun Night Mode
+   * Design: Deep space noir avec accents néon bleu/violet
+   * ================================================================ */
+
+  /* Backgrounds — couches de profondeur */
+  --background:    #080C14;   /* fond principal — noir profond bleuté */
+  --bg:            #080C14;
+  --bg-secondary:  #0D1117;   /* fond secondaire — légèrement plus clair */
+  --surface:       #111827;   /* cartes / surfaces — gris ardoise foncé */
+  --surface-elevated: #1A2235; /* surfaces surélevées — modals, dropdowns */
+
+  /* Borders */
+  --border:        #1E2D45;   /* bordures subtiles */
+  --border-strong: #2A3F5F;   /* bordures accentuées */
+
+  /* Text */
+  --foreground:    #E8EDF5;   /* texte principal — blanc légèrement bleuté */
+  --text-primary:  #E8EDF5;
+  --text-secondary: #8B9BB4;  /* texte secondaire */
+  --muted:         #4A5568;   /* texte désactivé */
+  --text-muted:    #4A5568;
+
+  /* Brand colors — plus lumineux en dark */
+  --primary:       #3B82F6;   /* bleu vif */
+  --primary-500:   #3B82F6;
+  --primary-600:   #2563EB;
+  --primary-400:   #60A5FA;
+
+  /* Status */
+  --success:       #10B981;   /* vert émeraude */
+  --danger:        #F87171;   /* rouge doux */
+  --warning:       #FBBF24;   /* ambre */
+  --info:          #38BDF8;   /* cyan */
+
+  /* Shadows — plus prononcées en dark */
+  --shadow-card:   0 4px 24px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(59, 130, 246, 0.15);
+  --shadow-elevated: 0 16px 48px rgba(0, 0, 0, 0.7), 0 4px 16px rgba(0, 0, 0, 0.4);
+
+  /* Glow effects — néon en dark */
+  --shadow-glow-primary: 0 0 20px rgba(59, 130, 246, 0.5), 0 0 60px rgba(59, 130, 246, 0.2);
+  --shadow-glow-success: 0 0 20px rgba(16, 185, 129, 0.5), 0 0 60px rgba(16, 185, 129, 0.2);
+  --shadow-glow-warning: 0 0 20px rgba(251, 191, 36, 0.5), 0 0 60px rgba(251, 191, 36, 0.2);
+  --shadow-glow-danger:  0 0 20px rgba(248, 113, 113, 0.5), 0 0 60px rgba(248, 113, 113, 0.2);
+  --shadow-button-primary: 0 4px 20px rgba(59, 130, 246, 0.4);
+  --shadow-button-primary-hover: 0 8px 30px rgba(59, 130, 246, 0.6);
+
+  /* Gradients dark */
+  --gradient-primary: linear-gradient(135deg, #1D4ED8 0%, #7C3AED 100%);
+  --gradient-surface: linear-gradient(135deg, #111827 0%, #1A2235 100%);
 }
 
 body {
@@ -126,6 +165,85 @@ body {
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Dark mode — amélioration des composants Tailwind */
+.dark body {
+  background-color: var(--background);
+}
+
+/* Scrollbar dark */
+.dark ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.dark ::-webkit-scrollbar-track {
+  background: #0D1117;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #1E2D45;
+  border-radius: 3px;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #2A3F5F;
+}
+
+/* Selection dark */
+.dark ::selection {
+  background: rgba(59, 130, 246, 0.3);
+  color: #E8EDF5;
+}
+
+/* Glass cards dark — effet verre dépoli */
+.dark .glass-card,
+.dark [class*="GlassCard"] {
+  background: rgba(17, 24, 39, 0.8);
+  backdrop-filter: blur(12px);
+  border-color: rgba(30, 45, 69, 0.8);
+}
+
+/* Input dark */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #0D1117;
+  border-color: #1E2D45;
+  color: #E8EDF5;
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #4A5568;
+}
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Tailwind bg-card override in dark */
+.dark .bg-card {
+  background-color: #111827 !important;
+}
+.dark .bg-background {
+  background-color: #080C14 !important;
+}
+.dark .border-border {
+  border-color: #1E2D45 !important;
+}
+.dark .text-muted {
+  color: #4A5568 !important;
+}
+.dark .text-foreground {
+  color: #E8EDF5 !important;
+}
+
+/* Hover states dark */
+.dark .hover\:bg-border:hover {
+  background-color: #1E2D45 !important;
+}
+.dark .hover\:bg-card:hover {
+  background-color: #1A2235 !important;
 }
 
 @layer components {
