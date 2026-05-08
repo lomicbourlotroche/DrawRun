@@ -608,81 +608,33 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     }
   };
 
-   if (showSportPicker) {
+   if (showSportPicker || showRoutePicker || showSegmentPicker) {
+     const title = showSportPicker ? 'Choisir un sport' : showRoutePicker ? 'Choisir un parcours' : 'Gérer les segments';
+     const onClose = showSportPicker ? () => setShowSportPicker(false) : showRoutePicker ? () => setShowRoutePicker(false) : () => setShowSegmentPicker(false);
      return (
        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center">
          <div className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden">
            <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Choisir un sport</h3>
-             <button
-               onClick={() => setShowSportPicker(false)}
-               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-             >
+             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
+             <button onClick={onClose} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                <X className="w-5 h-5 text-slate-500" />
              </button>
            </div>
            <div className="p-4 overflow-y-auto max-h-[70vh]">
-             <SportPicker
-               selectedSport={activityType}
-               onSelect={(sport) => {
-                 setActivityType(sport);
-                 setShowSportPicker(false);
-               }}
-             />
-           </div>
-         </div>
-       </div>
-     );
-   }
-
-   if (showRoutePicker) {
-     return (
-       <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center">
-         <div className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden">
-           <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Choisir un parcours</h3>
-             <button
-               onClick={() => setShowRoutePicker(false)}
-               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-             >
-               <X className="w-5 h-5 text-slate-500" />
-             </button>
-           </div>
-           <div className="p-4 overflow-y-auto max-h-[70vh]">
-             {/* Route picker content would go here */}
-             <div className="space-y-4">
-               <p className="text-center text-slate-500">Sélecteur de parcours à implémenter</p>
-               <Button onClick={() => setShowRoutePicker(false)} className="w-full">
-                 Retour
-               </Button>
-             </div>
-           </div>
-         </div>
-       </div>
-     );
-   }
-
-   if (showSegmentPicker) {
-     return (
-       <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center">
-         <div className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden">
-           <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Gérer les segments</h3>
-             <button
-               onClick={() => setShowSegmentPicker(false)}
-               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-             >
-               <X className="w-5 h-5 text-slate-500" />
-             </button>
-           </div>
-           <div className="p-4 overflow-y-auto max-h-[70vh]">
-             {/* Segment picker content would go here */}
-             <div className="space-y-4">
-               <p className="text-center text-slate-500">Gestionnaire de segments à implémenter</p>
-               <Button onClick={() => setShowSegmentPicker(false)} className="w-full">
-                 Retour
-               </Button>
-             </div>
+             {showSportPicker && (
+               <SportPicker
+                 selectedSport={activityType}
+                 onSelect={(sport) => { setActivityType(sport); setShowSportPicker(false); }}
+               />
+             )}
+             {(showRoutePicker || showSegmentPicker) && (
+               <div className="space-y-4">
+                 <p className="text-center text-slate-500">
+                   {showRoutePicker ? 'Sélecteur de parcours à implémenter' : 'Gestionnaire de segments à implémenter'}
+                 </p>
+                 <Button onClick={onClose} className="w-full">Retour</Button>
+               </div>
+             )}
            </div>
          </div>
        </div>
