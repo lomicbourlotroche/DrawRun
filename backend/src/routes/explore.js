@@ -7,6 +7,7 @@ const { verifyToken } = require('../auth');
 const segments = require('../services/segments.service');
 const routes = require('../services/routes.service');
 const { dbGetMain, dbAllMain } = require('../database');
+const elevationService = require('../services/elevation.service');
 const { logger } = require('../logger');
 
 const router = express.Router();
@@ -442,6 +443,62 @@ router.get('/heatmap/popular', verifyToken, async (req, res) => {
     } catch (error) {
         logger.error('Get popular locations error:', error);
         res.status(500).json({ error: 'Failed to get popular locations' });
+    }
+});
+
+/**
+ * @swagger
+ * /explore/elevation:
+ *   post:
+ *     summary: Get elevation profile for a set of coordinates
+ *     tags: [Explore]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               locations:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     lat: { type: number }
+ *                     lng: { type: number }
+ */
+router.post('/elevation', verifyToken, async (req, res) => {
+    try {
+        const { locations } = req.body;
+
+        if (!locations || !Array.isArray(locations) || locations.length < 2) {
+            return res.status(400).json({ error: 'At least 2 locations required' });
+        }
+
+        // Validate coordinate format
+        for (const loc of locations) {
+            if (typeof loc.lat !== 'number' || typeof loc.lng !== 'number') {
+                return res.status(400).json({ error: 'Each location must have lat and lng as numbers' });
+            }
+        }
+
+        const profile = await elevationService.getElevationProfile(locations);
+        const totalGain = elevationService.calculateTotalGain(profile);
+
+        res.json({
+            success: true,
+            profile,
+            stats: {
+                total_gain: totalGain,
+                max_elevation: profile.length > 0 ? Math.max(...profile.map(p => p.elevation)) : 0,
+                min_elevation: profile.length > 0 ? Math.min(...profile.map(p => p.elevation)) : 0,
+            }
+        });
+    } catch (error) {
+        logger.error('Get elevation profile error:', error);
+        res.status(500).json({ error: 'Failed to get elevation profile' });
     }
 });
 

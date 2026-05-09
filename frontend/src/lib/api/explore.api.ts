@@ -232,4 +232,25 @@ export const exploreApi = {
     if (limit) query.set('limit', String(limit));
     return client.request(`/api/explore/heatmap/popular?${query.toString()}`);
   },
+
+  // ============================================================================
+  // Elevation
+  // ============================================================================
+
+  getElevationProfile(
+    locations: Array<{ lat: number; lng: number }>
+  ): Promise<{
+    success: boolean;
+    profile: Array<{ distance: number; elevation: number; lat: number; lng: number }>;
+    stats: {
+      total_gain: number;
+      max_elevation: number;
+      min_elevation: number;
+    };
+  }> {
+    return client.request('/api/explore/elevation', {
+      method: 'POST',
+      body: JSON.stringify({ locations }),
+    });
+  },
 };

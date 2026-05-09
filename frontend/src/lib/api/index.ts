@@ -327,6 +327,7 @@ export const api = {
   getFavoriteRoutes: exploreApi.getFavoriteRoutes,
   getHeatmap: exploreApi.getHeatmap,
   getPopularLocations: exploreApi.getPopularLocations,
+  getElevationProfile: exploreApi.getElevationProfile,
 
   // Metrics endpoints
   getPmc: metricsApi.getPmc, // Simple version without params - returns PmcDataPoint[]
