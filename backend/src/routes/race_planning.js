@@ -163,15 +163,25 @@ router.post('/calculate', verifyToken, async (req, res) => {
         let weight = 70;
         let restingHR = 60;
 
-        if (profile?.profile_data) {
-            try {
-                const data = JSON.parse(profile.profile_data);
-                fcm = data.fcm || fcm;
-                age = data.age || age;
-                userVdot = data.vdot || null;
-                weight = data.weight || weight;
-                restingHR = data.restingHR || restingHR;
-            } catch (_) { }
+        // Fetch user profile from database
+        try {
+            const profile = await dbGetMain(
+                'SELECT profile_data FROM users WHERE id = ?',
+                [userId]
+            );
+            
+            if (profile?.profile_data) {
+                try {
+                    const data = JSON.parse(profile.profile_data);
+                    fcm = data.fcm || fcm;
+                    age = data.age || age;
+                    userVdot = data.vdot || null;
+                    weight = data.weight || weight;
+                    restingHR = data.restingHR || restingHR;
+                } catch (_) { }
+            }
+        } catch (error) {
+            logger.warn('[RacePlanning] Failed to fetch user profile', { error: error.message });
         }
 
         // Parse target time to seconds

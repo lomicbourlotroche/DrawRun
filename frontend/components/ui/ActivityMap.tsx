@@ -8,9 +8,19 @@ interface ActivityMapProps {
   latlng?: [number, number][];
   className?: string;
   color?: string;
+  currentPosition?: [number, number] | null;
+  accuracy?: number;
+  showTrailAnimation?: boolean;
+  segments?: Array<{
+    startLat: number;
+    startLng: number;
+    endLat: number;
+    endLng: number;
+    color?: string;
+  }>;
+  onMapReady?: (map: any) => void;
 }
 
-// Decode Google Polyline format
 function decodePolyline(encoded: string): [number, number][] {
   const points: [number, number][] = [];
   let index = 0;
@@ -49,89 +59,141 @@ function decodePolyline(encoded: string): [number, number][] {
   return points;
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export default function ActivityMap({ polyline, latlng, className = '', color = '#FF3B30' }: ActivityMapProps) {
+export default function ActivityMap({
+  polyline, latlng, className = '', color = '#FF3B30',
+  currentPosition, accuracy, showTrailAnimation = false,
+  segments, onMapReady,
+}: ActivityMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  // @ts-ignore
-  const mapInstanceRef = useRef<{ remove: () => void } | null>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const trailLayerRef = useRef<any>(null);
+  const positionMarkerRef = useRef<any>(null);
+  const accuracyCircleRef = useRef<any>(null);
+  const segmentLayersRef = useRef<any[]>([]);
+  const animationProgressRef = useRef(0);
+  const animationFrameRef = useRef<number | null>(null);
+  const prevPointsLength = useRef(0);
 
   useEffect(() => {
-    if (!mapRef.current) return;
-
-    // Only run on client side
-    if (typeof window === 'undefined') return;
+    if (!mapRef.current || typeof window === 'undefined') return;
 
     const initMap = async () => {
       const L = await import('leaflet');
 
-      // Clean up existing map
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
 
-      // Get coordinates
       let coordinates: [number, number][] = [];
-      
-      if (polyline) {
-        coordinates = decodePolyline(polyline);
-      } else if (latlng && latlng.length > 0) {
-        coordinates = latlng;
-      }
+      if (polyline) coordinates = decodePolyline(polyline);
+      else if (latlng && latlng.length > 0) coordinates = latlng;
 
-      if (coordinates.length === 0) {
-        return;
-      }
+      if (coordinates.length === 0 && !currentPosition) return;
 
-      // Create map
       const map = L.map(mapRef.current!, {
         zoomControl: false,
         attributionControl: false,
+        zoom: 16,
+        center: currentPosition || (coordinates.length > 0 ? coordinates[0] : [48.8566, 2.3522]),
       });
 
-      // Add tile layer
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
       }).addTo(map);
 
-      // Add polyline
-      const polylineLayer = L.polyline(coordinates, {
-        color: color,
-        weight: 4,
-        opacity: 0.8,
-      }).addTo(map);
-
-      // Fit bounds
-      map.fitBounds(polylineLayer.getBounds(), { padding: [20, 20] });
-
-      // Add start marker
+      // Trail polyline with progressive animation
       if (coordinates.length > 0) {
-        L.circleMarker(coordinates[0], {
-          radius: 8,
-          fillColor: '#22c55e',
-          color: '#fff',
-          weight: 2,
-          fillOpacity: 1,
-        }).addTo(map);
+        if (showTrailAnimation && coordinates.length > 1) {
+          const trailLine = L.polyline([coordinates[0]], {
+            color, weight: 4, opacity: 0.8,
+          }).addTo(map);
+          trailLayerRef.current = trailLine;
+
+          const totalLen = coordinates.length;
+          let i = 1;
+          const animateTrail = () => {
+            if (i >= totalLen || !trailLine) return;
+            const chunkSize = Math.max(1, Math.floor(totalLen / 60));
+            const end = Math.min(i + chunkSize, totalLen);
+            const segment = coordinates.slice(0, end);
+            trailLine.setLatLngs(segment);
+            i = end;
+            animationFrameRef.current = requestAnimationFrame(animateTrail);
+          };
+          animateTrail();
+        } else {
+          const trailLine = L.polyline(coordinates, {
+            color, weight: 4, opacity: 0.8,
+          }).addTo(map);
+          trailLayerRef.current = trailLine;
+        }
+
+        map.fitBounds(L.latLngBounds(coordinates), { padding: [20, 20], maxZoom: 17 });
+
+        if (coordinates.length > 0) {
+          L.circleMarker(coordinates[0], {
+            radius: 8, fillColor: '#22c55e', color: '#fff', weight: 2, fillOpacity: 1,
+          }).addTo(map);
+        }
+        if (coordinates.length > 1) {
+          L.circleMarker(coordinates[coordinates.length - 1], {
+            radius: 8, fillColor: '#ef4444', color: '#fff', weight: 2, fillOpacity: 1,
+          }).addTo(map);
+        }
       }
 
-      // Add end marker
-      if (coordinates.length > 1) {
-        L.circleMarker(coordinates[coordinates.length - 1], {
-          radius: 8,
-          fillColor: '#ef4444',
-          color: '#fff',
-          weight: 2,
-          fillOpacity: 1,
-        }).addTo(map);
+      // Current position marker (pulsing)
+      if (currentPosition) {
+        const pulseIcon = L.divIcon({
+          className: 'gps-pulse-marker',
+          html: `<div style="
+            width: 18px; height: 18px;
+            background: #3B82F6;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 0 0 4px rgba(59,130,246,0.3), 0 0 0 8px rgba(59,130,246,0.15);
+            animation: gps-pulse 2s ease-in-out infinite;
+          "></div>`,
+          iconSize: [18, 18],
+          iconAnchor: [9, 9],
+        });
+
+        const marker = L.marker(currentPosition, { icon: pulseIcon, zIndexOffset: 1000 }).addTo(map);
+        positionMarkerRef.current = marker;
+
+        if (accuracy && accuracy > 0 && accuracy < 200) {
+          const circle = L.circle(currentPosition, {
+            radius: accuracy,
+            color: '#3B82F6',
+            fillColor: '#3B82F6',
+            fillOpacity: 0.1,
+            weight: 1,
+            opacity: 0.3,
+          }).addTo(map);
+          accuracyCircleRef.current = circle;
+        }
+      }
+
+      // Segment overlays
+      if (segments && segments.length > 0) {
+        segments.forEach(seg => {
+          const segColor = seg.color || '#8B5CF6';
+          const segLine = L.polyline([[seg.startLat, seg.startLng], [seg.endLat, seg.endLng]], {
+            color: segColor, weight: 6, opacity: 0.6, dashArray: '10 6',
+          }).addTo(map);
+          segmentLayersRef.current.push(segLine);
+        });
       }
 
       mapInstanceRef.current = map;
+      onMapReady?.(map);
     };
 
     initMap();
 
     return () => {
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -139,7 +201,34 @@ export default function ActivityMap({ polyline, latlng, className = '', color = 
     };
   }, [polyline, latlng, color]);
 
-  const hasData = polyline || (latlng && latlng.length > 0);
+  // Update trail progressively when new points arrive
+  useEffect(() => {
+    if (!mapInstanceRef.current || !latlng || latlng.length === 0) return;
+
+    const map = mapInstanceRef.current;
+    const L = (window as any).L;
+
+    if (latlng.length > prevPointsLength.current && trailLayerRef.current) {
+      trailLayerRef.current.setLatLngs(latlng);
+
+      if (currentPosition) {
+        map.panTo(currentPosition, { animate: true, duration: 0.3 });
+      }
+    }
+
+    // Update position marker position
+    if (currentPosition && positionMarkerRef.current) {
+      positionMarkerRef.current.setLatLng(currentPosition);
+      if (accuracyCircleRef.current && accuracy) {
+        accuracyCircleRef.current.setLatLng(currentPosition);
+        accuracyCircleRef.current.setRadius(accuracy);
+      }
+    }
+
+    prevPointsLength.current = latlng.length;
+  }, [latlng, currentPosition, accuracy]);
+
+  const hasData = polyline || (latlng && latlng.length > 0) || !!currentPosition;
 
   if (!hasData) {
     return (
@@ -156,6 +245,13 @@ export default function ActivityMap({ polyline, latlng, className = '', color = 
 
   return (
     <div className={`rounded-lg overflow-hidden border border-border ${className}`}>
+      <style>{`
+        @keyframes gps-pulse {
+          0% { box-shadow: 0 0 0 4px rgba(59,130,246,0.3); }
+          50% { box-shadow: 0 0 0 4px rgba(59,130,246,0.3), 0 0 0 12px rgba(59,130,246,0.1); }
+          100% { box-shadow: 0 0 0 4px rgba(59,130,246,0.3); }
+        }
+      `}</style>
       <div ref={mapRef} style={{ height: '100%', minHeight: '250px' }} />
     </div>
   );

@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
@@ -25,9 +26,148 @@ import {
 } from '@/lib/offlineQueue';
 import { fetchWeather, type WeatherData } from '@/lib/weather';
 
-function LiveMap({ points, height = 'h-48' }: { points: Array<{ gps: { latitude: number; longitude: number } }>; height?: string }) {
+function LiveMap({ points, height = 'h-48', currentPosition, accuracy, segments }: {
+  points: Array<{ gps: { latitude: number; longitude: number } }>;
+  height?: string;
+  currentPosition?: [number, number] | null;
+  accuracy?: number;
+  segments?: Array<{ startLat: number; startLng: number; endLat: number; endLng: number; color?: string }>;
+}) {
   const latlng: [number, number][] = points.map(p => [p.gps.latitude, p.gps.longitude]);
-  return <ActivityMap latlng={latlng} className={height} color="#3B82F6" />;
+  return (
+    <ActivityMap
+      latlng={latlng}
+      className={height}
+      color="#3B82F6"
+      showTrailAnimation
+      currentPosition={currentPosition}
+      accuracy={accuracy}
+      segments={segments}
+    />
+  );
+}
+
+// ── Animated sub-components ──
+
+function TimerFlip({ seconds }: { seconds: number }) {
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+  const display = hrs > 0
+    ? `${hrs}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+    : `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+  return (
+    <div className="flex items-center justify-center gap-1">
+      {display.split('').map((char, i) => (
+        <motion.span
+          key={`${i}-${char}`}
+          initial={{ rotateX: -90, opacity: 0 }}
+          animate={{ rotateX: 0, opacity: 1 }}
+          exit={{ rotateX: 90, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20, delay: i * 0.03 }}
+          className="inline-block w-[0.6em] text-center font-mono"
+        >
+          {char}
+        </motion.span>
+      ))}
+    </div>
+  );
+}
+
+function RollingNumber({ value, suffix = '' }: { value: number; suffix?: string }) {
+  return (
+    <motion.span
+      key={Math.round(value * 100)}
+      initial={{ y: 10, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+    >
+      {value.toFixed(2)}{suffix}
+    </motion.span>
+  );
+}
+
+function IntervalRing({ timeLeft, total, phase }: { timeLeft: number; total: number; phase: 'work' | 'rest' }) {
+  const pct = total > 0 ? (timeLeft / total) * 100 : 0;
+  const circumference = 2 * Math.PI * 28;
+  const offset = circumference - (pct / 100) * circumference;
+  const color = phase === 'work'
+    ? `hsl(${Math.round((timeLeft / total) * 120)}, 80%, 50%)`
+    : '#818CF8';
+
+  return (
+    <div className="relative w-16 h-16">
+      <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
+        <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" strokeWidth="4" className="text-slate-200 dark:text-slate-700" />
+        <motion.circle
+          cx="32" cy="32" r="28" fill="none" strokeWidth="4"
+          stroke={color}
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          initial={false}
+          animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 0.5, ease: 'easeInOut' }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <motion.span
+          key={timeLeft}
+          initial={{ scale: 1.3 }}
+          animate={{ scale: 1 }}
+          className="text-xs font-mono font-bold text-slate-900 dark:text-white"
+        >
+          {timeLeft}s
+        </motion.span>
+      </div>
+    </div>
+  );
+}
+
+function SpeedGauge({ speed, maxSpeed = 25 }: { speed: number; maxSpeed?: number }) {
+  const pct = Math.min(100, (speed / maxSpeed) * 100);
+  const angle = (pct / 100) * 180;
+
+  return (
+    <div className="relative w-12 h-6 overflow-hidden">
+      <svg className="w-12 h-6" viewBox="0 0 48 24">
+        <path d="M4 20 A20 20 0 0 1 44 20" fill="none" stroke="#e2e8f0" strokeWidth="3" strokeLinecap="round" />
+        <motion.path
+          d="M4 20 A20 20 0 0 1 44 20"
+          fill="none"
+          stroke={speed > 20 ? '#ef4444' : speed > 12 ? '#f59e0b' : '#22c55e'}
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeDasharray="62.8"
+          strokeDashoffset={62.8 - (pct / 100) * 62.8}
+          initial={false}
+          animate={{ strokeDashoffset: 62.8 - (pct / 100) * 62.8 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+        />
+        <motion.line
+          x1="24" y1="20" x2="24" y2="8"
+          stroke="#64748b" strokeWidth="1.5" strokeLinecap="round"
+          animate={{ rotate: angle - 90, originX: '24px', originY: '20px' }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+        />
+      </svg>
+    </div>
+  );
+}
+
+function HrPulse({ bpm }: { bpm: number }) {
+  const interval = bpm > 0 ? 60000 / bpm : 1000;
+
+  return (
+    <motion.div
+      className="relative"
+      animate={{ scale: [1, 1.15, 1] }}
+      transition={{ duration: interval / 1000, repeat: Infinity, ease: 'easeInOut' }}
+    >
+      <Heart className="w-4 h-4 text-red-500 fill-red-500" />
+    </motion.div>
+  );
 }
 
 interface GPSData {
@@ -920,8 +1060,21 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
                     () => setShowSegmentPicker(false);
 
     return (
-      <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center">
-        <div className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ y: '100%' }}
+          animate={{ y: 0 }}
+          exit={{ y: '100%' }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden"
+          onClick={e => e.stopPropagation()}
+        >
           <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
             <button onClick={onClose} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
@@ -936,14 +1089,21 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
               />
             )}
             {showRoutePicker && (
-              <div className="space-y-3">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ staggerChildren: 0.05 }}
+                className="space-y-3"
+              >
                 {loadingRoutes && <p className="text-center text-slate-500">Chargement...</p>}
                 {!loadingRoutes && userRoutes.length === 0 && (
                   <p className="text-center text-slate-500 py-8">Aucun parcours enregistré</p>
                 )}
                 {userRoutes.map(route => (
-                  <button
+                  <motion.button
                     key={route.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
                     onClick={() => { setSelectedRoute(route); setShowRoutePicker(false); toast.info(`Parcours: ${route.name}`); }}
                     className="w-full text-left p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 transition-colors"
                   >
@@ -951,13 +1111,18 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
                     <p className="text-sm text-slate-500 mt-1">
                       {formatDistance(route.distance)} · {Math.round(route.elevationGain)}m D+
                     </p>
-                  </button>
+                  </motion.button>
                 ))}
                 <Button onClick={onClose} className="w-full">Retour</Button>
-              </div>
+              </motion.div>
             )}
             {showSegmentPicker && (
-              <div className="space-y-3">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ staggerChildren: 0.05 }}
+                className="space-y-3"
+              >
                 <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 mb-3">
                   <input type="checkbox" checked={showSegmentsOnMap} onChange={e => setShowSegmentsOnMap(e.target.checked)} className="rounded" />
                   Afficher les segments sur la carte
@@ -966,7 +1131,12 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
                   <p className="text-center text-slate-500 py-8">Aucun segment à proximité</p>
                 )}
                 {nearbySegments.map(seg => (
-                  <div key={seg.id} className="p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                  <motion.div
+                    key={seg.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 rounded-xl border border-slate-200 dark:border-slate-700"
+                  >
                     <div className="flex items-center justify-between">
                       <p className="font-medium text-slate-900 dark:text-white">{seg.name}</p>
                       {seg.personalRecord && (
@@ -974,30 +1144,49 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
                       )}
                     </div>
                     <p className="text-sm text-slate-500">{formatDistance(seg.distance)} · {Math.round(seg.elevationGain)}m D+</p>
-                  </div>
+                  </motion.div>
                 ))}
                 {activeSegment && (
-                  <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
+                  >
                     <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Segment en cours: {activeSegment.name}</p>
-                  </div>
+                  </motion.div>
                 )}
                 <Button onClick={onClose} className="w-full">Retour</Button>
-              </div>
+              </motion.div>
             )}
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     );
   }
 
   // ── Summary/Review Screen ──
-  if (state === 'review') {
-    return (
-      <div className="fixed inset-0 z-40 bg-white dark:bg-slate-950 flex flex-col">
-        <div className={`bg-gradient-to-r ${getSportColor()} text-white px-4 pt-12 pb-8`}>
+  const reviewScreen = (
+    <motion.div
+      key="review"
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -50 }}
+      transition={{ type: 'spring', stiffness: 250, damping: 25 }}
+      className="fixed inset-0 z-40 bg-white dark:bg-slate-950 flex flex-col"
+    >
+      <div className={`bg-gradient-to-r ${getSportColor()} text-white px-4 pt-12 pb-8`}>
+        <div className="flex items-center justify-center gap-2">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 300, delay: 0.2 }}
+          >
+            {getSportIcon()}
+          </motion.div>
           <h2 className="text-xl font-bold text-center">Résumé de l&apos;activité</h2>
-          <p className="text-center text-white/70 text-sm mt-1">{activityName || sport.nameFr}</p>
         </div>
+        <p className="text-center text-white/70 text-sm mt-1">{activityName || sport.nameFr}</p>
+      </div>
 
         <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
           <div className="grid grid-cols-2 gap-4">
@@ -1113,13 +1302,19 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             <Save className="w-5 h-5 mr-2" />Sauvegarder
           </Button>
         </div>
-      </div>
-    );
-  }
+    </motion.div>
+  );
 
   // ── Main recording screen ──
-  return (
-    <div className="fixed inset-0 z-40 bg-white dark:bg-slate-950 flex flex-col">
+  const mainScreen = (
+    <motion.div
+      key="main"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, y: 50 }}
+      transition={{ duration: 0.3 }}
+      className="fixed inset-0 z-40 bg-white dark:bg-slate-950 flex flex-col"
+    >
       <ScreenLockOverlay isLocked={screenLocked} onUnlock={unlockScreen} />
 
       {/* Header */}
@@ -1213,57 +1408,138 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-4 overflow-y-auto">
         {/* Timer */}
         <div className="text-center mb-4">
-          <div className="text-6xl font-mono font-bold text-slate-900 dark:text-white tracking-tight">
-            {formatDuration(stats.duration)}
-          </div>
+          <motion.div
+            className="text-6xl font-mono font-bold text-slate-900 dark:text-white tracking-tight"
+            key={state === 'paused' ? 'paused' : state === 'recording' ? 'recording' : 'idle'}
+            animate={{ scale: state === 'recording' ? [1, 1.02, 1] : 1 }}
+            transition={{ duration: 2, repeat: state === 'recording' ? Infinity : 0 }}
+          >
+            <TimerFlip seconds={stats.duration} />
+          </motion.div>
           {stats.elapsedTime > stats.duration && (
-            <div className="text-xs text-slate-400 font-mono">
+            <motion.div
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-xs text-slate-400 font-mono"
+            >
               écoulé: {formatDuration(stats.elapsedTime)}
-            </div>
+            </motion.div>
           )}
           {state === 'recording' && (
-            <div className="flex items-center justify-center gap-2 mt-1">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center justify-center gap-2 mt-1"
+            >
               <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
               </span>
-              <span className="text-xs font-medium text-red-500 uppercase tracking-wider">Enregistrement</span>
-            </div>
+              <motion.span
+                className="text-xs font-medium text-red-500 uppercase tracking-wider"
+                animate={{ opacity: [1, 0.5, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                Enregistrement
+              </motion.span>
+            </motion.div>
           )}
           {state === 'paused' && (
-            <span className="text-xs font-medium text-amber-500 uppercase tracking-wider">
+            <motion.span
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-xs font-medium text-amber-500 uppercase tracking-wider"
+            >
               {isAutoPaused ? 'Pause automatique' : 'En pause'}
-            </span>
+            </motion.span>
           )}
 
           {/* Interval display */}
           {currentInterval && (
-            <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-medium">
-              <Zap className="w-4 h-4" />
-              <span>{currentInterval.phase === 'work' ? 'Effort' : 'Récup'}</span>
-              <span className="font-mono">{formatDuration(intervalTimeLeft)}</span>
-              <span className="text-indigo-400">| Série {currentInterval.round}/{intervalConfig?.repeats}</span>
-            </div>
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+              className="mt-2 flex flex-col items-center gap-1"
+            >
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-medium">
+                <Zap className="w-4 h-4" />
+                <span>{currentInterval.phase === 'work' ? 'Effort' : 'Récup'}</span>
+                <span className="text-indigo-400">| Série {currentInterval.round}/{intervalConfig?.repeats}</span>
+              </div>
+              <IntervalRing
+                timeLeft={intervalTimeLeft}
+                total={currentInterval.phase === 'work' ? (intervalConfig?.work || 60) : (intervalConfig?.rest || 30)}
+                phase={currentInterval.phase}
+              />
+            </motion.div>
           )}
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-3 gap-3 w-full max-w-sm mb-4">
-          <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-3 text-center">
+          <motion.div
+            className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-3 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            whileHover={{ scale: 1.02 }}
+          >
             <Navigation className="w-4 h-4 mx-auto mb-1 text-blue-500" />
-            <div className="text-lg font-bold text-slate-900 dark:text-white">{formatDistance(stats.distance)}</div>
+            <div className="text-lg font-bold text-slate-900 dark:text-white">
+              {stats.distance < 1000
+                ? <motion.span key={Math.round(stats.distance)} initial={{ y: 5, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>{Math.round(stats.distance)}</motion.span>
+                : <RollingNumber value={stats.distance / 1000} />
+              }
+              <span className="text-xs ml-0.5">{stats.distance < 1000 ? 'm' : 'km'}</span>
+            </div>
             <div className="text-[10px] text-slate-500 mt-0.5">Distance</div>
-          </div>
-          <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-3 text-center">
-            <TrendingUp className="w-4 h-4 mx-auto mb-1 text-green-500" />
-            <div className="text-lg font-bold text-slate-900 dark:text-white">{stats.avgSpeed > 0 ? stats.avgSpeed.toFixed(1) : '--'}</div>
+          </motion.div>
+          <motion.div
+            className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-3 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            whileHover={{ scale: 1.02 }}
+          >
+            <div className="flex items-center justify-center gap-1">
+              <TrendingUp className="w-4 h-4 text-green-500" />
+              {stats.avgSpeed > 0 && <SpeedGauge speed={stats.avgSpeed} />}
+            </div>
+            <div className="text-lg font-bold text-slate-900 dark:text-white">
+              {stats.avgSpeed > 0 ? (
+                <motion.span
+                  key={Math.round(stats.avgSpeed * 10)}
+                  initial={{ y: 5, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                >
+                  {stats.avgSpeed.toFixed(1)}
+                </motion.span>
+              ) : '--'}
+            </div>
             <div className="text-[10px] text-slate-500 mt-0.5">km/h</div>
-          </div>
-          <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-3 text-center">
+          </motion.div>
+          <motion.div
+            className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-3 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            whileHover={{ scale: 1.02 }}
+          >
             <Target className="w-4 h-4 mx-auto mb-1 text-orange-500" />
-            <div className="text-lg font-bold text-slate-900 dark:text-white">{stats.avgSpeed > 0 ? formatPace(stats.avgSpeed) : '--:--'}</div>
+            <div className="text-lg font-bold text-slate-900 dark:text-white">
+              {stats.avgSpeed > 0 ? (
+                <motion.span
+                  key={Math.round(stats.avgSpeed * 10)}
+                  initial={{ y: 5, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                >
+                  {formatPace(stats.avgSpeed)}
+                </motion.span>
+              ) : '--:--'}
+            </div>
             <div className="text-[10px] text-slate-500 mt-0.5">allure</div>
-          </div>
+          </motion.div>
         </div>
 
         {/* Secondary Stats Row */}
@@ -1283,10 +1559,14 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             </div>
           )}
           {hrConnected && hrData && (
-            <div className="bg-red-50 dark:bg-red-900/20 rounded-xl px-3 py-1.5 flex items-center gap-1.5 text-xs">
-              <Heart className="w-3.5 h-3.5 text-red-500" />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-red-50 dark:bg-red-900/20 rounded-xl px-3 py-1.5 flex items-center gap-1.5 text-xs"
+            >
+              <HrPulse bpm={hrData.heartRate} />
               <span className="font-medium text-red-700 dark:text-red-300">{hrData.heartRate} bpm</span>
-            </div>
+            </motion.div>
           )}
           {stats.gap && (
             <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl px-3 py-1.5 flex items-center gap-1.5 text-xs">
@@ -1304,9 +1584,24 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
 
         {/* Live Map */}
         {points.length > 1 && state !== 'idle' && (
-          <div className="w-full max-w-sm mb-3 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
-            <LiveMap points={points} height={state === 'finished' ? 'h-40' : 'h-36'} />
-          </div>
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            transition={{ duration: 0.5 }}
+            className="w-full max-w-sm mb-3 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm"
+          >
+            <LiveMap
+              points={points}
+              height={state === 'finished' ? 'h-40' : 'h-36'}
+              currentPosition={currentGPS ? [currentGPS.latitude, currentGPS.longitude] : null}
+              accuracy={currentGPS?.accuracy}
+              segments={showSegmentsOnMap && segments.length > 0 ? segments.map(s => ({
+                startLat: s.startLat, startLng: s.startLng,
+                endLat: s.endLat, endLng: s.endLng,
+                color: '#8B5CF6',
+              })) : undefined}
+            />
+          </motion.div>
         )}
 
         {/* Activity Name (when finished) */}
@@ -1325,140 +1620,224 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
 
       {/* Controls */}
       <div className="px-4 pb-6 pt-3 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800">
-        <div className="flex items-center justify-center gap-3 max-w-sm mx-auto">
+        <motion.div
+          className="flex items-center justify-center gap-3 max-w-sm mx-auto"
+          layout
+        >
           {state === 'idle' && (
-            <>
-              <button
+            <motion.div
+              key="idle-controls"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ staggerChildren: 0.08 }}
+              className="flex items-center justify-center gap-3"
+            >
+              <motion.button
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={() => setShowRoutePicker(true)}
-                className="w-14 h-14 rounded-full bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/30 flex items-center justify-center active:scale-95 transition-transform"
+                className="w-14 h-14 rounded-full bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/30 flex items-center justify-center"
               >
                 <MapPin className="w-6 h-6 fill-white text-white" />
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.08 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={startRecording}
                 disabled={permissionStatus === 'denied' || permissionStatus === 'unsupported'}
-                className="w-20 h-20 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-lg shadow-green-500/30 flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
+                className="w-20 h-20 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-lg shadow-green-500/30 flex items-center justify-center disabled:opacity-50"
               >
                 <Play className="w-8 h-8 fill-white text-white ml-1" />
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.16 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={() => setShowSegmentPicker(true)}
-                className="w-14 h-14 rounded-full bg-purple-500 hover:bg-purple-600 shadow-lg shadow-purple-500/30 flex items-center justify-center active:scale-95 transition-transform"
+                className="w-14 h-14 rounded-full bg-purple-500 hover:bg-purple-600 shadow-lg shadow-purple-500/30 flex items-center justify-center"
               >
                 <Target className="w-6 h-6 text-white" />
-              </button>
-            </>
+              </motion.button>
+            </motion.div>
           )}
 
           {state === 'recording' && (
-            <>
+            <motion.div
+              key="recording-controls"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ staggerChildren: 0.05 }}
+              className="flex items-center justify-center gap-3"
+            >
               {/* HR Connect */}
-              {!hrConnected ? (
-                <button
-                  onClick={connectHR}
-                  disabled={isScanning}
-                  className="w-12 h-12 rounded-full bg-pink-500 hover:bg-pink-600 shadow-lg shadow-pink-500/30 flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50 text-xs text-white"
-                >
-                  <Heart className="w-5 h-5" />
-                </button>
-              ) : (
-                <button
-                  onClick={disconnectHR}
-                  className="w-12 h-12 rounded-full bg-pink-600 shadow-lg flex items-center justify-center active:scale-95 transition-transform text-xs text-white/80"
-                  title={hrData ? `${hrData.heartRate} bpm` : 'Connecté'}
-                >
-                  <BluetoothConnected className="w-5 h-5" />
-                </button>
-              )}
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0 }}
+              >
+                {!hrConnected ? (
+                  <button
+                    onClick={connectHR}
+                    disabled={isScanning}
+                    className="w-12 h-12 rounded-full bg-pink-500 hover:bg-pink-600 shadow-lg shadow-pink-500/30 flex items-center justify-center disabled:opacity-50"
+                  >
+                    <Heart className="w-5 h-5 text-white" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={disconnectHR}
+                    className="w-12 h-12 rounded-full bg-pink-600 shadow-lg flex items-center justify-center"
+                    title={hrData ? `${hrData.heartRate} bpm` : 'Connecté'}
+                  >
+                    <BluetoothConnected className="w-5 h-5 text-white" />
+                  </button>
+                )}
+              </motion.div>
 
               {/* Lap button */}
-              <button
+              <motion.button
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.05 }}
+                whileTap={{ scale: 0.85 }}
                 onClick={markLap}
-                className="w-12 h-12 rounded-full bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/30 flex items-center justify-center active:scale-95 transition-transform"
+                className="w-12 h-12 rounded-full bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/30 flex items-center justify-center"
               >
                 <Flag className="w-5 h-5 text-white" />
-              </button>
+              </motion.button>
 
               {/* Pause */}
-              <button
+              <motion.button
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
+                whileTap={{ scale: 0.85 }}
                 onClick={pauseRecording}
-                className="w-16 h-16 rounded-full bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/30 flex items-center justify-center active:scale-95 transition-transform"
+                className="w-16 h-16 rounded-full bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/30 flex items-center justify-center"
               >
                 <Pause className="w-7 h-7 fill-white text-white" />
-              </button>
+              </motion.button>
 
               {/* Stop */}
-              <button
+              <motion.button
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.15 }}
+                whileTap={{ scale: 0.85 }}
                 onClick={stopRecording}
-                className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30 flex items-center justify-center active:scale-95 transition-transform"
+                className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30 flex items-center justify-center"
               >
                 <Square className="w-7 h-7 fill-white text-white" />
-              </button>
+              </motion.button>
 
               {/* Lock */}
-              <button
+              <motion.button
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
+                whileTap={{ scale: 0.85 }}
                 onClick={lockScreen}
-                className="w-12 h-12 rounded-full bg-slate-500 hover:bg-slate-600 shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+                className="w-12 h-12 rounded-full bg-slate-500 hover:bg-slate-600 shadow-lg flex items-center justify-center"
               >
                 <Lock className="w-5 h-5 text-white" />
-              </button>
+              </motion.button>
 
               {/* Photo */}
-              <button
+              <motion.button
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.25 }}
+                whileTap={{ scale: 0.85 }}
                 onClick={takePhoto}
-                className="w-12 h-12 rounded-full bg-emerald-500 hover:bg-emerald-600 shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+                className="w-12 h-12 rounded-full bg-emerald-500 hover:bg-emerald-600 shadow-lg flex items-center justify-center"
               >
                 <Camera className="w-5 h-5 text-white" />
-              </button>
+              </motion.button>
 
               {/* Intervals */}
               {!intervalConfig && (
-                <button
+                <motion.button
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.3 }}
+                  whileTap={{ scale: 0.85 }}
                   onClick={startIntervalMode}
-                  className="w-12 h-12 rounded-full bg-indigo-500 hover:bg-indigo-600 shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+                  className="w-12 h-12 rounded-full bg-indigo-500 hover:bg-indigo-600 shadow-lg flex items-center justify-center"
                 >
                   <Zap className="w-5 h-5 text-white" />
-                </button>
+                </motion.button>
               )}
-            </>
+            </motion.div>
           )}
 
           {state === 'paused' && (
-            <>
-              <button
+            <motion.div
+              key="paused-controls"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+              className="flex items-center justify-center gap-3"
+            >
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={resumeRecording}
-                className="w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-lg shadow-green-500/30 flex items-center justify-center active:scale-95 transition-transform"
+                className="w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-lg shadow-green-500/30 flex items-center justify-center"
               >
                 <Play className="w-7 h-7 fill-white text-white ml-1" />
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={stopRecording}
-                className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30 flex items-center justify-center active:scale-95 transition-transform"
+                className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30 flex items-center justify-center"
               >
                 <Square className="w-7 h-7 fill-white text-white" />
-              </button>
-            </>
+              </motion.button>
+            </motion.div>
           )}
 
           {state === 'finished' && (
-            <>
-              <button
+            <motion.div
+              key="finished-controls"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+              className="flex items-center justify-center gap-3 w-full max-w-sm"
+            >
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={cancelRecording}
-                className="flex-1 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center gap-2 text-sm font-medium active:scale-95 transition-transform"
+                className="flex-1 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center gap-2 text-sm font-medium"
               >
                 <X className="w-4 h-4" />
                 Supprimer
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setStateAndRef('review')}
-                className="flex-1 h-12 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-lg shadow-blue-500/30 text-white flex items-center justify-center gap-2 text-sm font-medium active:scale-95 transition-transform"
+                className="flex-1 h-12 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-lg shadow-blue-500/30 text-white flex items-center justify-center gap-2 text-sm font-medium"
               >
                 <Save className="w-4 h-4" />
-Voir le résumé
-              </button>
-            </>
+                Voir le résumé
+              </motion.button>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
 
         {/* Extra controls row - only during recording */}
         {state === 'recording' && (
@@ -1510,6 +1889,12 @@ Voir le résumé
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
+  );
+
+  return (
+    <AnimatePresence mode="wait">
+      {state === 'review' ? reviewScreen : mainScreen}
+    </AnimatePresence>
   );
 }
