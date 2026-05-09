@@ -502,4 +502,43 @@ router.post('/elevation', verifyToken, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /explore/community/traces:
+ *   get:
+ *     summary: Get anonymized community route traces for the map overlay
+ *     tags: [Explore]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [Run, Bike, Swim, Hike]
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 200
+ */
+router.get('/community/traces', verifyToken, async (req, res) => {
+    try {
+        const { type, limit } = req.query;
+        const traces = await routes.getCommunityTraces(
+            null,
+            type || null,
+            limit ? parseInt(limit) : 200
+        );
+        res.json({
+            success: true,
+            traces,
+            total: traces.length
+        });
+    } catch (error) {
+        logger.error('Get community traces error:', error);
+        res.status(500).json({ error: 'Failed to get community traces' });
+    }
+});
+
 module.exports = router;

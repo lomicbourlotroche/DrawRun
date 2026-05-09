@@ -244,6 +244,118 @@ async function deleteRoute(userId, routeId) {
     }
 }
 
+/**
+ * Simplify an encoded polyline by reducing point count.
+ * Uses a simple Douglas-Peucker-like approach: keeps the most significant points.
+ */
+function simplifyPolyline(encoded, maxPoints = 50) {
+    if (!encoded) return null;
+    
+    // Decode
+    let index = 0;
+    let lat = 0;
+    let lng = 0;
+    const points = [];
+    
+    while (index < encoded.length) {
+        let shift = 0;
+        let result = 0;
+        let byte;
+        do {
+            byte = encoded.charCodeAt(index++) - 63;
+            result |= (byte & 0x1f) << shift;
+            shift += 5;
+        } while (byte >= 0x20);
+        const dlat = (result & 1) ? ~(result >> 1) : result >> 1;
+        lat += dlat;
+        
+        shift = 0;
+        result = 0;
+        do {
+            byte = encoded.charCodeAt(index++) - 63;
+            result |= (byte & 0x1f) << shift;
+            shift += 5;
+        } while (byte >= 0x20);
+        const dlng = (result & 1) ? ~(result >> 1) : result >> 1;
+        lng += dlng;
+        
+        points.push([lat / 1e5, lng / 1e5]);
+    }
+    
+    if (points.length <= maxPoints) return encoded;
+    
+    // Sample evenly: keep first, last, and evenly spaced points in between
+    const sampled = [];
+    const step = (points.length - 1) / (maxPoints - 1);
+    for (let i = 0; i < maxPoints; i++) {
+        const idx = Math.min(Math.round(i * step), points.length - 1);
+        sampled.push(points[idx]);
+    }
+    
+    // Re-encode
+    let result = '';
+    let elat = 0;
+    let elng = 0;
+    for (const p of sampled) {
+        const dLat = Math.round((p[0] - elat) * 1e5);
+        const dLng = Math.round((p[1] - elng) * 1e5);
+        elat += dLat / 1e5;
+        elng += dLng / 1e5;
+        
+        const enc = (v) => {
+            v = v < 0 ? ~(v << 1) : v << 1;
+            let s = '';
+            while (v >= 0x20) {
+                s += String.fromCharCode((0x20 | (v & 0x1f)) + 63);
+                v >>= 5;
+            }
+            s += String.fromCharCode(v + 63);
+            return s;
+        };
+        result += enc(dLat);
+        result += enc(dLng);
+    }
+    return result;
+}
+
+/**
+ * Récupérer les traces anonymisées de la communauté
+ */
+async function getCommunityTraces(bounds, activityType, limit = 200) {
+    let query = `
+        SELECT r.id, r.polyline, r.distance, r.activity_type,
+               r.difficulty, r.elevation_gain
+        FROM routes r
+        WHERE r.is_public = 1
+          AND r.polyline IS NOT NULL
+          AND r.polyline != ''
+    `;
+    const params = [];
+
+    if (activityType) {
+        query += ' AND r.activity_type = ?';
+        params.push(activityType);
+    }
+
+    query += ' ORDER BY r.usage_count DESC, r.avg_rating DESC LIMIT ?';
+    params.push(limit);
+
+    try {
+        const rows = await dbAll(query, params);
+        return rows.map(r => ({
+            id: r.id,
+            polyline: simplifyPolyline(r.polyline, 30),
+            distance: r.distance,
+            activity_type: r.activity_type,
+            difficulty: r.difficulty,
+            elevation_gain: r.elevation_gain,
+        })).filter(r => r.polyline !== null);
+    } catch (error) {
+        logger.error('Error fetching community traces:', error);
+        return [];
+    }
+}
+
 module.exports = {
     createRoute,
     getRoute,
@@ -254,5 +366,6 @@ module.exports = {
     removeFromFavorites,
     incrementRouteUsage,
     rateRoute,
-    deleteRoute
+    deleteRoute,
+    getCommunityTraces
 };

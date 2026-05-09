@@ -327,6 +327,7 @@ export const api = {
   getFavoriteRoutes: exploreApi.getFavoriteRoutes,
   getHeatmap: exploreApi.getHeatmap,
   getPopularLocations: exploreApi.getPopularLocations,
+  getCommunityTraces: exploreApi.getCommunityTraces,
   getElevationProfile: exploreApi.getElevationProfile,
 
   // Metrics endpoints

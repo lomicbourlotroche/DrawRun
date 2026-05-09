@@ -9,6 +9,7 @@ import ExplorePanel from '@/components/features/explore/ExplorePanel';
 import MapLayerSwitcher from '@/components/features/explore/MapLayerSwitcher';
 import LocationSearch from '@/components/features/explore/LocationSearch';
 import RoutePlanner from '@/components/features/explore/RoutePlanner';
+import CommunityTracesLayer from '@/components/features/explore/CommunityTracesLayer';
 
 const ExploreMap = dynamic(
   () => import('@/components/features/explore/ExploreMap'),
@@ -113,6 +114,10 @@ export default function ExplorePage() {
   const [routePlannerOpen, setRoutePlannerOpen] = useState(false);
   const [waypoints, setWaypoints] = useState<Waypoint[]>([]);
   const [isLoop, setIsLoop] = useState(false);
+
+  // Community traces
+  const [showCommunityTraces, setShowCommunityTraces] = useState(false);
+  const [mapInstance, setMapInstance] = useState<any>(null);
 
   // Has user been located
   const locatedRef = useRef(false);
@@ -291,11 +296,33 @@ export default function ExplorePage() {
           onWaypointAdd={handleWaypointAdd}
           onWaypointDrag={handleWaypointDrag}
           isLoop={isLoop}
+          onMapReady={setMapInstance}
         />
       </div>
 
+      {/* Community traces layer */}
+      {mapInstance && (
+        <CommunityTracesLayer
+          map={mapInstance}
+          visible={showCommunityTraces && !routePlannerOpen}
+        />
+      )}
+
       {/* Control overlays */}
       <div className="absolute top-4 right-4 z-[500] flex flex-col gap-2">
+        <button
+          onClick={() => setShowCommunityTraces((p) => !p)}
+          className={`flex items-center justify-center w-9 h-9 rounded-lg shadow-md border transition-all ${
+            showCommunityTraces
+              ? 'bg-purple-600 text-white border-purple-600'
+              : 'bg-white/90 backdrop-blur-sm border-border hover:bg-white text-muted-foreground'
+          }`}
+          title="Traces de la communauté"
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 5h16M4 12h16M4 19h7" />
+          </svg>
+        </button>
         <MapLayerSwitcher activeLayer={mapLayer} onLayerChange={setMapLayer} />
       </div>
 

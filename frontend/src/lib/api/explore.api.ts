@@ -234,6 +234,31 @@ export const exploreApi = {
   },
 
   // ============================================================================
+  // Community Traces
+  // ============================================================================
+
+  getCommunityTraces(
+    type?: string,
+    limit?: number
+  ): Promise<{
+    success: boolean;
+    traces: Array<{
+      id: number;
+      polyline: string;
+      distance: number;
+      activity_type: string;
+      difficulty?: string;
+      elevation_gain?: number;
+    }>;
+    total: number;
+  }> {
+    const query = new URLSearchParams();
+    if (type) query.set('type', type);
+    if (limit) query.set('limit', String(limit));
+    return client.request(`/api/explore/community/traces?${query.toString()}`);
+  },
+
+  // ============================================================================
   // Elevation
   // ============================================================================
 
