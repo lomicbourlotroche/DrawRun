@@ -153,10 +153,30 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
 
   useEffect(() => {
     if (user) {
-      setForm({ name: user.name || '', weight: user.weight?.toString() || '', fcm: user.fcm?.toString() || '', vma: user.vma?.toString() || '' });
-      const profileData = (user as any).profile_data;
-      if (profileData?.avatar_url) {
-        setAvatarUrl(profileData.avatar_url);
+      const hasMissingFields = !user.fcm && !user.vma && !user.weight;
+      if (hasMissingFields) {
+        api.getProfile().then((profile) => {
+          updateUser({
+            name: profile.name,
+            weight: profile.weight,
+            fcm: profile.fcm,
+            vma: profile.vma,
+            restingHR: profile.restingHR,
+            sex: profile.sex,
+            age: profile.age,
+          });
+          setForm({
+            name: profile.name || '',
+            weight: profile.weight?.toString() || '',
+            fcm: profile.fcm?.toString() || '',
+            vma: profile.vma?.toString() || '',
+          });
+          if ((profile as any).avatar_url) setAvatarUrl((profile as any).avatar_url);
+        }).catch(() => {});
+      } else {
+        setForm({ name: user.name || '', weight: user.weight?.toString() || '', fcm: user.fcm?.toString() || '', vma: user.vma?.toString() || '' });
+        const profileData = (user as any).profile_data;
+        if (profileData?.avatar_url) setAvatarUrl(profileData?.avatar_url);
       }
     }
   }, [user]);

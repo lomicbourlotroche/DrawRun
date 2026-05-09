@@ -86,13 +86,14 @@ router.get('/wizard-defaults', verifyToken, async (req, res) => {
             // Chercher la meilleure performance sur une distance ≥ 3km
             const goodRuns = activities
                 .filter(a => a.distance >= 3000 && a.moving_time > 0)
-                .map(a => ({
-                    distKm: a.distance / 1000,
-                    timeMin: a.moving_time / 60,
-                    vdot: RunningPerformance.estimateVDOT
-                        ? RunningPerformance.estimateVDOT(a.distance / 1000, a.moving_time / 60)
-                        : null,
-                }))
+                .map(a => {
+                    const vdotVal = RunningPerformance.calculateVDOT(a.distance, a.moving_time / 60);
+                    return {
+                        distKm: a.distance / 1000,
+                        timeMin: a.moving_time / 60,
+                        vdot: vdotVal || null,
+                    };
+                })
                 .filter(r => r.vdot && r.vdot > 20);
 
             if (goodRuns.length > 0) {

@@ -222,7 +222,11 @@ export default function PerformanceContent() {
           {/* Tab content */}
           {activeTab === 'metrics' && (
             <div className="space-y-6">
-              <PerformanceMetrics sport={sport} metrics={{}} />
+              <PerformanceMetrics sport={sport} metrics={{
+                vma: profile?.vma ?? undefined,
+                vdot: profile?.vdot ?? undefined,
+                vo2max: profile?.fcm ? Math.round((profile.fcm - (profile.restingHR || 60)) * 0.15 + 30) : undefined,
+              }} />
               <GlassCard>
                 <GlassCardHeader>
                   <GlassCardTitle className="flex items-center gap-2">
@@ -249,7 +253,12 @@ export default function PerformanceContent() {
               </GlassCard>
             </div>
           )}
-          {activeTab === 'zones' && <PerformanceZones zones={zones as any} />}
+          {activeTab === 'zones' && <PerformanceZones zones={{
+            ...zones,
+            fcm: profile?.fcm || 0,
+            vma: profile?.vma || 0,
+            vdot: profile?.vdot || 0,
+          } as any} />}
           {activeTab === 'stats' && (
             (() => {
               const stats = computeStats(activities);

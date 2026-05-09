@@ -53,6 +53,21 @@ export const profileApi = {
     });
   },
 
+  getConstants(): Promise<{
+    fcm: number | null;
+    fcmSource: string;
+    vma: number | null;
+    vmaSource: string;
+    vdot: number | null;
+    vdotSource: string;
+    restingHR: number;
+    age: number;
+    sex: string;
+    weight: number | null;
+  }> {
+    return client.request('/api/metrics/constants');
+  },
+
   getAthlete(): Promise<Record<string, unknown>> {
     return client.request('/api/profile/athlete');
   },

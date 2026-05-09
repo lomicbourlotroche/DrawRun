@@ -167,6 +167,7 @@ export const api = {
   getAthlete: profileApi.getAthlete,
   getAthleteStats: profileApi.getAthleteStats,
   uploadAvatar: profileApi.uploadAvatar,
+  getConstants: profileApi.getConstants,
 
   // Activities endpoints
   getActivities: activitiesApi.getActivities,

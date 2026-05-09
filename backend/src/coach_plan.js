@@ -36,6 +36,7 @@ const {
     Polarization,
     Recommendations,
 } = require('./algorithms');
+const { resolveUserConstants } = require('./services/userConstants.service');
 
 const SESSION_TYPES = {
     E: 'Endurance',
@@ -117,7 +118,7 @@ const FATIGUE_THRESHOLDS = {
 /**
  * Génère des sessions avec periodisation avancée et adaptation
  */
-function generateSessionsForPlan(planId, weeks, sessionsPerWeek, trainingDays, goal, vdot, targetDistance, usePPG = false, userHistory = null) {
+function generateSessionsForPlan(planId, weeks, sessionsPerWeek, trainingDays, goal, vdot, targetDistance, usePPG = false, userHistory = null, userFcm = null, userRestingHR = 60) {
     const sessions = [];
     const goalDuration = GOAL_DURATIONS[goal] || 10;
     
@@ -145,7 +146,9 @@ function generateSessionsForPlan(planId, weeks, sessionsPerWeek, trainingDays, g
             adjustedVolume,
             week === 1,
             usePPG,
-            userProfile
+            userProfile,
+            userFcm,
+            userRestingHR
         );
         
         for (const session of weekSessions) {
@@ -366,7 +369,7 @@ function getPhaseForWeek(week, totalWeeks) {
     return 'taper';
 }
 
-function generateWeekSessions(phase, weekNum, sessionsPerWeek, trainingDays, goal, vdot, weeklyVolume, isFirstWeek, usePPG = false, userProfile = null) {
+function generateWeekSessions(phase, weekNum, sessionsPerWeek, trainingDays, goal, vdot, weeklyVolume, isFirstWeek, usePPG = false, userProfile = null, userFcm = null, userRestingHR = 60) {
     const sessions = [];
     const weekDistance = weeklyVolume;
 
@@ -402,7 +405,9 @@ function generateWeekSessions(phase, weekNum, sessionsPerWeek, trainingDays, goa
             isLongDay,
             isFirstWeek,
             goal,
-            userProfile
+            userProfile,
+            userFcm,
+            userRestingHR
         );
 
         sessions.push(session);
@@ -528,9 +533,9 @@ function getPPGTypeDistribution(phase, sessionsPerWeek) {
 /**
  * Crée une session d'entraînement avec spécifications avancées
  */
-function createSession(day, type, weekAvgDistance, phase, vdot, isLongDay, isFirstWeek, goal = 'improvement', userProfile = null) {
+function createSession(day, type, weekAvgDistance, phase, vdot, isLongDay, isFirstWeek, goal = 'improvement', userProfile = null, userFcm = null, userRestingHR = 60) {
     const paces = calculatePaces(vdot);
-    const hrZones = calculateHRZones(vdot);
+    const hrZones = calculateHRZones(vdot, userFcm, userRestingHR);
 
     // Power zones if FTP available
     const powerZones = userProfile?.ftp ? Cardiovascular.calculatePowerZones?.(userProfile.ftp) : null;
@@ -709,9 +714,9 @@ function createSession(day, type, weekAvgDistance, phase, vdot, isLongDay, isFir
     };
 }
 
-function calculateHRZones(vdot) {
-    // Estimation FCM basée sur VDOT (approximation)
-    const estimatedFCM = Math.round(205 - (vdot / 2));
+function calculateHRZones(vdot, userFcm = null, userRestingHR = 60) {
+    // Utiliser la FCM réelle si disponible, sinon estimer depuis VDOT
+    const estimatedFCM = userFcm || Math.round(205 - (vdot / 2));
     return {
         z1: `${Math.round(estimatedFCM * 0.5)}-${Math.round(estimatedFCM * 0.6)}`,
         z2: `${Math.round(estimatedFCM * 0.6)}-${Math.round(estimatedFCM * 0.7)}`,
@@ -797,16 +802,23 @@ async function createTrainingPlan(userId, planData) {
     const userDb = await getUserDb(userId);
     const userHistory = await getUserTrainingHistory(userDb, userId);
     
+    // Résoudre les constantes physiologiques (FCM, VMA, VDOT, FC repos, etc.)
+    const userConstants = await resolveUserConstants(userId);
+    
     // Calculer le VDOT avec précision
-    let vdot = vdotValue;
+    let vdot = vdotValue || userConstants.vdot;
     if (!vdot && vmaValue) {
         vdot = estimateVDOTFromVMA(vmaValue);
+    } else if (!vdot && userConstants.vma) {
+        vdot = estimateVDOTFromVMA(userConstants.vma);
     } else if (!vdot) {
         vdot = calculateVDOTFromWeeklyKm(currentWeeklyKm, experienceLevel);
     }
     
     // Ajuster selon le niveau d'expérience
     const adjustedVDOT = adjustVDOTForExperience(vdot, experienceLevel);
+    const userFcm = userConstants.fcm || null;
+    const userRestingHR = userConstants.restingHR || 60;
     
     const planName = getPlanName(goals, targetDistance, weeks);
     const planType = usePPG ? 'polarized' : 'adaptive';
@@ -835,6 +847,8 @@ async function createTrainingPlan(userId, planData) {
             sessionsPerWeek,
             trainingDays,
             vdot: adjustedVDOT,
+            fcm: userFcm,
+            restingHR: userRestingHR,
             currentWeeklyKm,
             questionnaire,
             usePPG,
@@ -865,7 +879,9 @@ async function createTrainingPlan(userId, planData) {
         adjustedVDOT,
         targetDistance,
         usePPG,
-        userHistory
+        userHistory,
+        userFcm,
+        userRestingHR
     );
     
     // Insérer les sessions avec métadonnées complètes

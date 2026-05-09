@@ -197,6 +197,14 @@ router.post('/login', async (req, res) => {
         // Audit log successful login
         auditLog('LOGIN', user.id, { method: 'password', ip: req.ip }, req);
         
+        // Parse profile_data for additional fields
+        let profileData = {};
+        try {
+            profileData = user.profile_data ? JSON.parse(user.profile_data) : {};
+        } catch {
+            profileData = {};
+        }
+        
         // Trigger background sync if user has connected services
         const hasStrava = !!user.strava_client_id;
         const hasGarmin = !!user.garmin_username;
@@ -221,6 +229,12 @@ router.post('/login', async (req, res) => {
                 id: user.id,
                 email: user.email,
                 name: profileName || user.email.split('@')[0],
+                fcm: profileData.fcm || null,
+                vma: profileData.vma || null,
+                weight: profileData.weight || null,
+                restingHR: profileData.restingHR || null,
+                sex: profileData.sex || null,
+                age: profileData.age || null,
                 strava_enabled: hasStrava,
                 garmin_enabled: hasGarmin,
                 suunto_enabled: hasSuunto,

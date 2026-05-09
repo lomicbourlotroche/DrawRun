@@ -11,6 +11,7 @@ const express = require('express');
 const { verifyToken } = require('../auth');
 const { getUserDb, dbGetUser } = require('../database');
 const metrics = require('../metrics_calculator');
+const { resolveUserConstants } = require('../services/userConstants.service');
 
 const router = express.Router();
 
@@ -80,6 +81,18 @@ router.post('/sleep', verifyToken, async (req, res) => {
         res.json({ success: true, message: 'Sommeil enregistré' });
     } catch (error) {
         res.status(500).json({ error: 'Failed to store sleep' });
+    }
+});
+
+// GET /api/constants — user physiological constants resolved from all sources
+router.get('/constants', verifyToken, async (req, res) => {
+    try {
+        const constants = await resolveUserConstants(req.user.id);
+        res.json(constants);
+    } catch (error) {
+        const { logger } = require('../logger');
+        logger.error('Failed to resolve user constants', { error: error.message, userId: req.user.id });
+        res.status(500).json({ error: 'Failed to resolve constants' });
     }
 });
 

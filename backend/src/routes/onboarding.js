@@ -17,7 +17,13 @@ const router = express.Router();
 router.get('/status', verifyToken, async (req, res) => {
     try {
         const userDb = await getUserDb(req.user.id);
-        const profile = await dbGetMain('SELECT fcm, vma, vdot FROM users WHERE id = ?', [req.user.id]);
+        const userRow = await dbGetMain('SELECT profile_data FROM users WHERE id = ?', [req.user.id]);
+        let profileData = {};
+        try {
+            profileData = userRow?.profile_data ? JSON.parse(userRow.profile_data) : {};
+        } catch {
+            profileData = {};
+        }
 
         // Ces tables peuvent ne pas exister si la DB utilisateur est neuve
         let plan = null;
@@ -29,11 +35,14 @@ router.get('/status', verifyToken, async (req, res) => {
             activity = await dbGetUser(userDb, 'SELECT id FROM activities LIMIT 1', []);
         } catch (_) { /* table absente */ }
 
+        const hasFcm = !!(profileData.fcm || profileData.max_heart_rate);
+        const hasVma = !!profileData.vma;
+
         res.json({
-            completed: !!(profile?.fcm && plan && activity),
+            completed: !!(hasFcm && plan && activity),
             steps: {
-                profile: !!profile?.fcm,
-                vma: !!profile?.vma,
+                profile: hasFcm,
+                vma: hasVma,
                 plan: !!plan,
                 first_activity: !!activity
             }

@@ -20,6 +20,7 @@ const fs = require('fs').promises;
 const { verifyToken } = require('../auth');
 const { dbGetMain, dbRunMain } = require('../database');
 const { validateBody, validateProfileBody } = require('../validators');
+const { updateUserProfileFromMain } = require('../services/userConstants.service');
 
 const router = express.Router();
 
@@ -90,7 +91,22 @@ router.get('/', verifyToken, async (req, res) => {
             [req.user.id]
         );
         if (!user) return res.status(404).json({ error: 'User not found' });
-        res.json(user);
+
+        let profileData = {};
+        try {
+            profileData = user.profile_data ? JSON.parse(user.profile_data) : {};
+        } catch {
+            profileData = {};
+        }
+
+        res.json({
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            ...profileData,
+            createdAt: user.created_at,
+            updatedAt: user.updated_at,
+        });
     } catch (error) {
         logger.error('Get profile error:', error);
         res.status(500).json({ error: 'Failed to fetch profile' });
@@ -124,6 +140,8 @@ router.put('/', verifyToken, validateBody(validateProfileBody), async (req, res)
             UPDATE users SET name = ?, profile_data = ?, updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
         `, [name, JSON.stringify(profileData), req.user.id]);
+
+        await updateUserProfileFromMain(req.user.id, profileData);
         
         res.json({ success: true });
     } catch (error) {

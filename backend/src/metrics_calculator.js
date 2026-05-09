@@ -20,6 +20,7 @@ const { logger } = require('./logger');
 
 const { dbGetUser, dbRunUser, dbAllUser, getUserDb, dbGetMain } = require('./database');
 const { RunningPerformance, TrainingLoad, PMC, Cardiovascular, SportAnalysis } = require('./algorithms');
+const { resolveUserConstants } = require('./services/userConstants.service');
 
 async function calculateAndStoreMetrics(userId, userDb) {
     logger.info(`[MetricsCalculator] Starting calculations for user ${userId}`);
@@ -120,10 +121,25 @@ async function calculateAndStoreMetrics(userId, userDb) {
             }
         }
         
-        // 5. Mettre à jour le profil avec le meilleur VDOT
+        // 5. Mettre à jour le profil avec le meilleur VDOT, FCM, VMA
         if (bestVDOT && bestVDOT !== profile.vdot) {
             await updateUserProfile(userId, userDb, { vdot: bestVDOT });
             logger.info(`[MetricsCalculator] Updated VDOT to ${bestVDOT}`);
+        }
+
+        if (!profile.fcm || !profile.vma) {
+            const fcmFromActivities = Cardiovascular.estimateDynamicFCM(activities, Cardiovascular.calculateMaxHR(profile.age || 30));
+            const updates = {};
+            if (!profile.fcm && fcmFromActivities) {
+                updates.fcm = fcmFromActivities;
+            }
+            if (!profile.vma && bestVDOT) {
+                updates.vma = Math.round(RunningPerformance.estimateVMA(bestVDOT) * 10) / 10;
+            }
+            if (Object.keys(updates).length > 0) {
+                await updateUserProfile(userId, userDb, updates);
+                logger.info(`[MetricsCalculator] Updated profile: ${JSON.stringify(updates)}`);
+            }
         }
         
         // 6. Calculer PMC (CTL, ATL, TSB)
@@ -299,42 +315,15 @@ async function calculateAndStoreMetrics(userId, userDb) {
 }
 
 async function getUserProfile(userId, userDb) {
-    // Essayer d'abord user_profiles
-    let profile = await dbGetUser(userDb, `
-        SELECT * FROM user_profiles WHERE user_id = ?
-    `, [userId]).catch(() => null);
-    
-    if (profile) {
-        return {
-            fcm: profile.fcm,
-            resting_hr: profile.resting_hr,
-            vma: profile.vma,
-            vdot: profile.vdot,
-            age: profile.age,
-            sex: profile.sex,
-            weight: profile.weight
-        };
-    }
-    
-    // Sinon, essayer de construire depuis les métriques
-    const fcmMetric = await dbGetUser(userDb, `
-        SELECT metric_value FROM performance_metrics 
-        WHERE user_id = ? AND metric_type = 'fcm' 
-        ORDER BY recorded_at DESC LIMIT 1
-    `, [userId]).catch(() => null);
-    
-    const vdotMetric = await dbGetUser(userDb, `
-        SELECT metric_value FROM performance_metrics 
-        WHERE user_id = ? AND metric_type = 'vdot' 
-        ORDER BY recorded_at DESC LIMIT 1
-    `, [userId]).catch(() => null);
-    
+    const constants = await resolveUserConstants(userId);
     return {
-        fcm: fcmMetric?.metric_value || null,
-        resting_hr: 60,
-        vdot: vdotMetric?.metric_value || null,
-        age: 30,
-        sex: 'M'
+        fcm: constants.fcm || null,
+        resting_hr: constants.restingHR || 60,
+        vma: constants.vma || null,
+        vdot: constants.vdot || null,
+        age: constants.age || 30,
+        sex: constants.sex || 'M',
+        weight: constants.weight || null,
     };
 }
 
