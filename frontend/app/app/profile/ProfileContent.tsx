@@ -163,7 +163,6 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
             vma: profile.vma,
             restingHR: profile.restingHR,
             sex: profile.sex,
-            age: profile.age,
           });
           setForm({
             name: profile.name || '',
