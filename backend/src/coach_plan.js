@@ -135,7 +135,7 @@ function generateSessionsForPlan(planId, weeks, sessionsPerWeek, trainingDays, g
         const predictedFatigue = predictWeeklyFatigue(sessions, week, userProfile);
         const adjustedVolume = adjustVolumeForFatigue(baseVolume * weekProgression, predictedFatigue);
         
-        const weekSessions = generateWeekSessionsAdvanced(
+        const weekSessions = generateWeekSessions(
             phase, 
             week, 
             sessionsPerWeek, 
@@ -366,11 +366,9 @@ function getPhaseForWeek(week, totalWeeks) {
     return 'taper';
 }
 
-function generateWeekSessions(phase, weekNum, sessionsPerWeek, trainingDays, goal, vdot, targetDistance, isFirstWeek, usePPG = false, userProfile = null) {
+function generateWeekSessions(phase, weekNum, sessionsPerWeek, trainingDays, goal, vdot, weeklyVolume, isFirstWeek, usePPG = false, userProfile = null) {
     const sessions = [];
-    const baseVolume = targetDistance > 0 ? targetDistance / 12 : 30;
-    const volumeMultiplier = getVolumeMultiplier(phase, weekNum);
-    const weekDistance = baseVolume * volumeMultiplier;
+    const weekDistance = weeklyVolume;
 
     // Adjust volume based on HRV readiness if available
     let readinessFactor = 1.0;
@@ -877,7 +875,7 @@ async function createTrainingPlan(userId, planData) {
                 plan_id, user_id, week_number, day_number, type, title, description,
                 target_distance, target_time, intensity, target_pace, target_hr_zones,
                 expected_tss, progression_factor, phase
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             session.plan_id,
             userId,

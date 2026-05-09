@@ -10,7 +10,7 @@ import { useAuthStore, useActivitiesStore, useSyncStore } from '@/stores';
 import { api } from '@/lib/api';
 import { ActivityList, MobileActivityRecorder } from '@/components/features/activities';
 import { Button, Modal, Input, Select } from '@/components/ui';
-import { RefreshCw, Plus, Upload, FileUp, Play } from 'lucide-react';
+import { RefreshCw, Plus, FileUp, Play } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { toast } from 'sonner';
@@ -197,20 +197,16 @@ export default function ActivitiesContent() {
          </div>
        </Modal>
 
-      {/* Mobile Activity Recorder Modal */}
-      <Modal 
-        isOpen={showRecordModal} 
-        onClose={() => setShowRecordModal(false)} 
-        title="Enregistrer une activité" 
-        size="lg"
-      >
+      {/* Mobile Activity Recorder — fullscreen, not wrapped in Modal */}
+      {showRecordModal && (
         <MobileActivityRecorder
           onSave={async () => {
             setShowRecordModal(false);
             await loadActivities();
           }}
+          onCancel={() => setShowRecordModal(false)}
         />
-      </Modal>
+      )}
     </div>
   );
 }

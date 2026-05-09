@@ -66,6 +66,8 @@ export const activitiesApi = {
    * Ajoute une activité manuelle
    */
   addManualActivity(data: AddManualActivityParams): Promise<{ success: boolean; id: number }> {
+    const avgSpeed = data.avg_speed ?? (data.duration > 0 ? data.distance / data.duration : undefined);
+
     return client.request('/api/activities/create', {
       method: 'POST',
       body: JSON.stringify({
@@ -74,8 +76,9 @@ export const activitiesApi = {
         start_date: data.date,
         distance: data.distance,
         moving_time: data.duration,
-        avg_hr: data.avg_hr,
-        max_hr: data.max_hr,
+        average_speed: avgSpeed,
+        average_heartrate: data.avg_hr,
+        max_heartrate: data.max_hr,
         total_elevation_gain: data.elevation,
         calories: data.calories,
       }),

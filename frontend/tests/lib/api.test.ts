@@ -258,10 +258,10 @@ describe('API Client', () => {
       const result = await api.getActivities();
 
       expect(fetch).toHaveBeenCalledWith(
-        `${API_BASE_URL}/api/activities`,
+        `${API_BASE_URL}/api/activities?page=1&per_page=20`,
         expect.any(Object)
       );
-      expect(result).toEqual(mockActivities.data);
+      expect(result).toEqual(mockActivities);
     });
 
     it('should create activity', async () => {

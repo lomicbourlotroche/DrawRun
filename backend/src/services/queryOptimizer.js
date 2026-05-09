@@ -110,23 +110,27 @@ class BatchLoader {
 async function batchLoadActivityDraws(activityIds, userId) {
   if (!activityIds.length) return [];
 
+  if (!userId) return [];
+
   const placeholders = activityIds.map(() => '?').join(',');
   
-  // Récupérer tous les counts en une seule requête
+  // Récupérer tous les counts en une seule requête (scope par activity_owner_id)
   const counts = await dbAllMain(`
     SELECT activity_id, COUNT(*) as count
     FROM activity_draws
     WHERE activity_id IN (${placeholders})
+    AND activity_owner_id = ?
     GROUP BY activity_id
-  `, activityIds);
+  `, [...activityIds, userId]);
 
   // Récupérer les draws de l'utilisateur courant
-  const userDraws = userId ? await dbAllMain(`
+  const userDraws = await dbAllMain(`
     SELECT activity_id
     FROM activity_draws
     WHERE activity_id IN (${placeholders})
+    AND activity_owner_id = ?
     AND from_user_id = ?
-  `, [...activityIds, userId]) : [];
+  `, [...activityIds, userId, userId]);
 
   const userDrawnIds = new Set(userDraws.map(d => d.activity_id));
 

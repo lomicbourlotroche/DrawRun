@@ -586,6 +586,7 @@ export interface AddManualActivityParams {
   date: string;
   distance: number;
   duration: number;
+  avg_speed?: number;
   avg_hr?: number;
   max_hr?: number;
   elevation?: number;

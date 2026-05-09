@@ -183,6 +183,7 @@ router.post('/start-plan', verifyToken, validateBody(validatePlanBody), async (r
         const result = await coachPlan.createTrainingPlan(req.user.id, req.body);
         res.json(result);
     } catch (error) {
+        logger.error('Start plan error', { error: error.message, stack: error.stack });
         res.status(500).json({ error: 'Failed to create training plan' });
     }
 });

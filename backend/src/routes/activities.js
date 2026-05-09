@@ -215,7 +215,7 @@ router.get('/', verifyToken, async (req, res) => {
 router.post('/create', verifyToken, validateBody(validateActivityBody), async (req, res) => {
     try {
         const {
-            type, name, start_date, distance, moving_time, average_speed,
+            type, name, start_date, distance, moving_time, elapsed_time, average_speed,
             average_heartrate, max_heartrate, calories, map_polyline,
             elev_high, elev_low, total_elevation_gain, notes, description,
         } = req.body;
@@ -228,10 +228,10 @@ router.post('/create', verifyToken, validateBody(validateActivityBody), async (r
 
         const result = await dbRunUser(userDb, `
             INSERT INTO activities (source, source_id, name, type, start_date, distance, moving_time,
-                        average_speed, average_heartrate, max_heartrate, calories,
+                        elapsed_time, average_speed, average_heartrate, max_heartrate, calories,
                         map_polyline, elev_high, elev_low, total_elevation_gain,
                         description, notes, is_manual)
-            VALUES ('manual', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+            VALUES ('manual', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
         `, [
             'manual-' + Date.now(),
             String(name).trim(),
@@ -239,6 +239,7 @@ router.post('/create', verifyToken, validateBody(validateActivityBody), async (r
             start_date,
             distance || null,
             moving_time || null,
+            elapsed_time || null,
             average_speed || null,
             average_heartrate || null,
             max_heartrate || null,
@@ -535,9 +536,27 @@ router.get('/:id/analysis', verifyToken, async (req, res) => {
 // POST /api/activities/import/gpx — import d'un fichier GPX
 router.post('/import/gpx', verifyToken, async (req, res) => {
     try {
-        const { name, gpxData } = req.body;
+        const { name, gpxData, type } = req.body;
         if (!gpxData) {
             return res.status(400).json({ error: 'gpxData is required' });
+        }
+
+        // Validate activity type
+        const ALLOWED_TYPES = [
+            'run', 'trail_run', 'race_walk', 'walk', 'hike',
+            'bike', 'mountain_bike', 'gravel_bike', 'indoor_cycling', 'virtual_ride',
+            'swim', 'open_water_swim',
+            'triathlon', 'duathlon', 'aquathlon',
+            'crossfit', 'weight_training', 'strength_training', 'cardio_training', 'hiit', 'circuit_training', 'pilates', 'yoga',
+            'rowing', 'kayak', 'canoe', 'stand_up_paddle',
+            'ski_alpine', 'ski_touring', 'ski_cross_country', 'snowboard', 'roller_ski',
+            'tennis', 'badminton', 'squash',
+            'basketball', 'football', 'soccer', 'rugby', 'volleyball', 'handball', 'golf',
+            'climbing', 'via_ferrata', 'mountaineering', 'land_sailing',
+            'other',
+        ];
+        if (type && !ALLOWED_TYPES.includes(type)) {
+            return res.status(400).json({ error: `Invalid activity type: ${type}` });
         }
 
         // GPX size protection
@@ -758,7 +777,7 @@ router.put('/:id', verifyToken, async (req, res) => {
             gear_id !== undefined ? gear_id : activity.gear_id, 
             efficiency_factor !== undefined ? efficiency_factor : activity.efficiency_factor, 
             notes !== undefined ? (notes || null) : null,
-            notes !== undefined ? (notes || null) : null,
+            description !== undefined ? (description || null) : null,
             name || activity.name, 
             activityId
         ]);
