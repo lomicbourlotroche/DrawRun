@@ -112,6 +112,7 @@ export default function ExplorePage() {
   // Route planner
   const [routePlannerOpen, setRoutePlannerOpen] = useState(false);
   const [waypoints, setWaypoints] = useState<Waypoint[]>([]);
+  const [isLoop, setIsLoop] = useState(false);
 
   // Has user been located
   const locatedRef = useRef(false);
@@ -262,12 +263,14 @@ export default function ExplorePage() {
   const openRoutePlanner = useCallback(() => {
     setRoutePlannerOpen(true);
     setWaypoints([]);
+    setIsLoop(false);
     setPanelOpen(false);
   }, []);
 
   const closeRoutePlanner = useCallback(() => {
     setRoutePlannerOpen(false);
     setWaypoints([]);
+    setIsLoop(false);
     setPanelOpen(true);
   }, []);
 
@@ -287,6 +290,7 @@ export default function ExplorePage() {
           onMapClick={handleMapClick}
           onWaypointAdd={handleWaypointAdd}
           onWaypointDrag={handleWaypointDrag}
+          isLoop={isLoop}
         />
       </div>
 
@@ -346,6 +350,8 @@ export default function ExplorePage() {
           waypoints={waypoints}
           onWaypointsChange={setWaypoints}
           onClose={closeRoutePlanner}
+          isLoop={isLoop}
+          onLoopChange={setIsLoop}
         />
       )}
     </div>

@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { api } from '@/lib/api';
 import { Button, Input, Badge } from '@/components/ui';
-import { X, Undo2, Save, Trash2, Map, Navigation } from 'lucide-react';
+import { X, Undo2, Save, Trash2, Map, Navigation, Repeat } from 'lucide-react';
 import { toast } from 'sonner';
 import ElevationProfile from './ElevationProfile';
 
@@ -16,6 +16,8 @@ interface RoutePlannerProps {
   waypoints: Waypoint[];
   onWaypointsChange: (waypoints: Waypoint[]) => void;
   onClose: () => void;
+  isLoop?: boolean;
+  onLoopChange?: (loop: boolean) => void;
 }
 
 function haversineDistance(a: Waypoint, b: Waypoint): number {
@@ -64,6 +66,8 @@ export default function RoutePlanner({
   waypoints,
   onWaypointsChange,
   onClose,
+  isLoop = false,
+  onLoopChange,
 }: RoutePlannerProps) {
   const [history, setHistory] = useState<Waypoint[][]>([waypoints]);
   const [historyIdx, setHistoryIdx] = useState(0);
@@ -107,11 +111,14 @@ export default function RoutePlanner({
     for (let i = 1; i < waypoints.length; i++) {
       totalDist += haversineDistance(waypoints[i - 1], waypoints[i]);
     }
+    if (isLoop && waypoints.length >= 3) {
+      totalDist += haversineDistance(waypoints[waypoints.length - 1], waypoints[0]);
+    }
     return {
       distance: totalDist,
       elevationGain: 0,
     };
-  }, [waypoints]);
+  }, [waypoints, isLoop]);
 
   // Mock elevation profile (will be replaced with API data)
   const elevationData = useMemo(() => {
@@ -129,6 +136,14 @@ export default function RoutePlanner({
     return result;
   }, [waypoints, stats.distance]);
 
+  const handleToggleLoop = useCallback(() => {
+    const next = !isLoop;
+    onLoopChange?.(next);
+    if (next && waypoints.length >= 2) {
+      pushHistory(waypoints);
+    }
+  }, [isLoop, onLoopChange, waypoints, pushHistory]);
+
   const handleSave = async () => {
     if (!name.trim()) {
       toast.error('Veuillez donner un nom au parcours');
@@ -138,10 +153,15 @@ export default function RoutePlanner({
       toast.error('Ajoutez au moins 2 points sur la carte');
       return;
     }
+    if (isLoop && waypoints.length < 3) {
+      toast.error('Ajoutez au moins 3 points pour une boucle');
+      return;
+    }
 
     setIsSaving(true);
     try {
-      const polyPoints = waypoints.map((w) => [w.lat, w.lng] as [number, number]);
+      const rawPoints = waypoints.map((w) => [w.lat, w.lng] as [number, number]);
+      const polyPoints = isLoop ? [...rawPoints, rawPoints[0]] : rawPoints;
       const polyline = encodePolyline(polyPoints);
 
       const result = await api.createRoute({
@@ -214,13 +234,19 @@ export default function RoutePlanner({
 
       <div className="p-4 space-y-4">
         {/* Stats bar */}
-        <div className="flex items-center gap-4 text-sm">
+        <div className="flex items-center gap-4 text-sm flex-wrap">
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <Navigation className="w-4 h-4" />
             <span className="font-semibold text-foreground">
               {(stats.distance / 1000).toFixed(2)} km
             </span>
           </div>
+          {isLoop && (
+            <Badge className="bg-blue-100 text-blue-700 border-blue-300">
+              <Repeat className="w-3 h-3 mr-1" />
+              Boucle
+            </Badge>
+          )}
           <Badge variant="secondary">
             {waypoints.length} point{waypoints.length > 1 ? 's' : ''}
           </Badge>
@@ -229,9 +255,30 @@ export default function RoutePlanner({
               ~{Math.round(stats.distance / 1000 / 10 * 60)} min
             </Badge>
           )}
-          <span className="text-xs text-muted-foreground ml-auto">
+          <span className="text-xs text-muted-foreground ml-auto hidden sm:inline">
             Cliquez sur la carte pour ajouter des points
           </span>
+        </div>
+
+        {/* Loop toggle */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleToggleLoop}
+            disabled={waypoints.length < 2}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
+              isLoop
+                ? 'bg-blue-50 text-blue-700 border-blue-300 shadow-sm'
+                : 'bg-background text-muted-foreground border-border hover:border-blue-300 hover:text-blue-600'
+            } disabled:opacity-30 disabled:cursor-not-allowed`}
+          >
+            <Repeat className={`w-4 h-4 ${isLoop ? 'text-blue-600' : ''}`} />
+            {isLoop ? 'Boucle activée' : 'Générer une boucle'}
+          </button>
+          {isLoop && waypoints.length >= 3 && (
+            <span className="text-xs text-muted-foreground">
+              +{haversineDistance(waypoints[waypoints.length - 1], waypoints[0]).toFixed(0)}m de retour
+            </span>
+          )}
         </div>
 
         {/* Elevation profile */}

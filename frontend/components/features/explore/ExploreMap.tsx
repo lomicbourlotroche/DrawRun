@@ -34,6 +34,7 @@ interface ExploreMapProps {
   onWaypointAdd?: (latlng: { lat: number; lng: number }) => void;
   onWaypointDrag?: (index: number, latlng: { lat: number; lng: number }) => void;
   currentRoutePolyline?: string;
+  isLoop?: boolean;
 }
 
 function decodePolyline(encoded: string): [number, number][] {
@@ -107,6 +108,7 @@ export default function ExploreMap({
   onWaypointAdd,
   onWaypointDrag,
   currentRoutePolyline,
+  isLoop = false,
 }: ExploreMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -357,6 +359,14 @@ export default function ExploreMap({
         creationPolylineRef.current = null;
       }
 
+      // Remove old loop closure layer
+      layersRef.current.forEach((layer, key) => {
+        if (key === 'loop_closure') {
+          map.removeLayer(layer);
+          layersRef.current.delete(key);
+        }
+      });
+
       if (routeCreationPoints.length === 0) return;
 
       routeCreationPoints.forEach((pt, idx) => {
@@ -394,6 +404,22 @@ export default function ExploreMap({
       }).addTo(map);
       creationPolylineRef.current = polyline;
 
+      // Render loop closure as dashed line
+      if (isLoop && routeCreationPoints.length >= 3) {
+        const first = routeCreationPoints[0];
+        const last = routeCreationPoints[routeCreationPoints.length - 1];
+        const loopLine = L.polyline(
+          [[last.lat, last.lng], [first.lat, first.lng]],
+          {
+            color: '#3b82f6',
+            weight: 3,
+            opacity: 0.6,
+            dashArray: '8 6',
+          }
+        ).addTo(map);
+        layersRef.current.set('loop_closure', loopLine);
+      }
+
       map.fitBounds(L.latLngBounds(polyPoints), { padding: [40, 40], maxZoom: 17 });
     })();
 
@@ -404,7 +430,7 @@ export default function ExploreMap({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [routeCreationPoints, mapReady]);
+  }, [routeCreationPoints, mapReady, isLoop]);
 
   // Render current route polyline (for route detail preview)
   useEffect(() => {
