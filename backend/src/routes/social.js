@@ -359,6 +359,71 @@ router.post('/groups/:id/conversation', verifyToken, async (req, res) => {
 });
 
 // ============================================================================
+// GROUP CHALLENGES
+// ============================================================================
+
+// GET /api/social/groups/:id/challenges — list group challenges
+router.get('/groups/:id/challenges', verifyToken, async (req, res) => {
+    try {
+        const groupId = parseInt(req.params.id);
+        if (!groupId || groupId <= 0) return res.status(400).json({ error: 'Invalid group ID' });
+        const challenges = await social.getGroupChallenges(groupId);
+        res.json(challenges || []);
+    } catch (error) {
+        logger.error('Get group challenges error:', { error: error.message });
+        res.status(500).json({ error: 'Failed to get group challenges' });
+    }
+});
+
+// POST /api/social/groups/:id/challenges — create a group challenge
+router.post('/groups/:id/challenges', verifyToken, async (req, res) => {
+    try {
+        const groupId = parseInt(req.params.id);
+        if (!groupId || groupId <= 0) return res.status(400).json({ error: 'Invalid group ID' });
+
+        const {
+            title, description, type = 'distance', target_value, end_date,
+            challenge_mode = 'quota', milestones, weekly_target, weekly_increase_pct = 10,
+            streak_days, frequency_per_week, sport_type = 'any', badge_icon = '🏆',
+            max_participants = null,
+        } = req.body;
+
+        if (!title) return res.status(400).json({ error: 'title is required' });
+
+        let durationDays = 30;
+        if (end_date) {
+            const diff = new Date(end_date) - new Date();
+            durationDays = Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+        }
+
+        const unitMap = { distance: 'km', elevation: 'm', time: 'min', activities: 'sorties', pace: 'min/km', frequency: 'séances/sem' };
+        const targetUnit = unitMap[type] || 'km';
+
+        const result = await social.createChallenge(
+            req.user.id, title, description || '', type,
+            parseFloat(target_value) || 0, targetUnit, durationDays,
+            false, // group challenges are not globally public
+            max_participants,
+            {
+                challengeMode: challenge_mode,
+                milestones: milestones || null,
+                weeklyTarget: weekly_target || null,
+                weeklyIncreasePct: weekly_increase_pct,
+                streakDays: streak_days || null,
+                frequencyPerWeek: frequency_per_week || null,
+                sportType: sport_type,
+                badgeIcon: badge_icon,
+                groupId,
+            }
+        );
+        res.status(201).json(result);
+    } catch (error) {
+        logger.error('Create group challenge error:', { error: error.message });
+        res.status(500).json({ error: 'Failed to create group challenge' });
+    }
+});
+
+// ============================================================================
 // LEADERBOARD
 // ============================================================================
 

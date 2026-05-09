@@ -707,6 +707,14 @@ const MIGRATIONS = [
             try { db.run('ALTER TABLE user_challenges ADD COLUMN last_activity_date DATE'); } catch (_) {}
         },
     },
+    {
+        version: '024_add_group_id_to_challenges',
+        description: 'Add group_id to challenges for group-specific challenges',
+        up: (db) => {
+            try { db.run('ALTER TABLE challenges ADD COLUMN group_id INTEGER DEFAULT NULL'); } catch (_) {}
+            try { db.run('CREATE INDEX IF NOT EXISTS idx_challenges_group ON challenges(group_id)'); } catch (_) {}
+        },
+    },
 ];
 
 async function runMigrations(db) {

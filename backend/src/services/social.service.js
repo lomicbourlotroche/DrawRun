@@ -771,6 +771,7 @@ async function createChallenge(userId, title, description, type, targetValue, ta
         frequencyPerWeek = null,
         sportType = 'any',
         badgeIcon = '🏆',
+        groupId = null,
     } = options;
 
     const defaultMilestones = JSON.stringify([
@@ -785,9 +786,9 @@ async function createChallenge(userId, title, description, type, targetValue, ta
             title, description, type, target_value, target_unit, duration_days,
             created_by, is_public, max_participants,
             challenge_mode, milestones, weekly_target, weekly_increase_pct,
-            streak_days, frequency_per_week, sport_type, badge_icon
+            streak_days, frequency_per_week, sport_type, badge_icon, group_id
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
         title, description || '', type, targetValue, targetUnit, durationDays,
         userId, isPublic ? 1 : 0, maxParticipants,
@@ -799,6 +800,7 @@ async function createChallenge(userId, title, description, type, targetValue, ta
         frequencyPerWeek,
         sportType,
         badgeIcon,
+        groupId,
     ]);
 
     const challengeId = result.lastID;
@@ -1026,6 +1028,18 @@ async function notifyChallengeInvite(userId, challengeId, fromUserId) {
         `${userName} invited you to join "${challengeTitle}"`, { challengeId, fromUserId });
 }
 
+async function getGroupChallenges(groupId) {
+    return await dbAll(`
+        SELECT c.*,
+            (SELECT COUNT(*) FROM user_challenges WHERE challenge_id = c.id) as participant_count,
+            json_extract(u.profile_data, '$.name') as creator_name
+        FROM challenges c
+        LEFT JOIN users u ON c.created_by = u.id
+        WHERE c.group_id = ?
+        ORDER BY c.created_at DESC
+    `, [groupId]);
+}
+
 module.exports = {
     sendFriendRequest,
     acceptFriendRequest,
@@ -1098,6 +1112,7 @@ module.exports = {
     // Phase 2: Events
     createEvent,
     joinEvent,
+    getGroupChallenges,
     
     // Phase 2: Partner Suggestions
     generatePartnerSuggestions,

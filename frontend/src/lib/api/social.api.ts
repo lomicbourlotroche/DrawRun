@@ -398,6 +398,27 @@ export const socialApi = {
     return client.request(`/api/social/challenges/${challengeId}/join`, { method: 'POST' });
   },
 
+  // ============================================================================
+  // Group Challenges
+  // ============================================================================
+
+  getGroupChallenges(groupId: number): Promise<Array<{
+    id: number; title: string; description: string; type: string;
+    target_value: number; target_unit: string; duration_days: number;
+    participant_count: number; created_at: string; challenge_mode?: string;
+    badge_icon?: string; sport_type?: string; milestones?: string;
+    creator_name?: string; group_id: number;
+  }>> {
+    return client.request(`/api/social/groups/${groupId}/challenges`);
+  },
+
+  createGroupChallenge(groupId: number, params: CreateChallengeParams): Promise<{ success: boolean; challengeId?: number; error?: string }> {
+    return client.request(`/api/social/groups/${groupId}/challenges`, {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  },
+
   updateChallengeProgress(params: UpdateChallengeProgressParams): Promise<{ 
     success: boolean; 
     status?: string; 
