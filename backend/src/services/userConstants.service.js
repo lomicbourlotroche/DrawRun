@@ -15,10 +15,12 @@ async function resolveUserConstants(userId) {
 
     const manual = await getManualConstants(userId, userDb);
     const activities = await getRelevantActivities(userDb);
+    const autoUpdate = await getAutoUpdate(userId);
 
-    const fcm = await resolveFCM(userId, userDb, manual, activities);
-    const vdot = await resolveVDOT(userId, userDb, manual, activities);
+    const fcm = resolveFCM(userId, userDb, manual, activities, autoUpdate);
+    const vdot = resolveVDOT(userId, userDb, manual, activities, autoUpdate);
     const vma = resolveVMA(manual, vdot);
+    const vo2max = resolveVO2max(manual, vma, vdot);
     const restingHR = resolveRestingHR(manual, fcm);
     const age = manual.age || 30;
     const sex = manual.sex || 'M';
@@ -31,12 +33,25 @@ async function resolveUserConstants(userId) {
         vmaSource: vma.source,
         vdot: vdot.value,
         vdotSource: vdot.source,
+        vo2max: vo2max.value,
+        vo2maxSource: vo2max.source,
         restingHR: restingHR.value,
         restingHRSource: restingHR.source,
         age,
         sex,
         weight,
     };
+}
+
+async function getAutoUpdate(userId) {
+    const row = await dbGetMain('SELECT profile_data FROM users WHERE id = ?', [userId]).catch(() => null);
+    if (row?.profile_data) {
+        try {
+            const p = JSON.parse(row.profile_data);
+            return p.auto_update !== false;
+        } catch (_) {}
+    }
+    return true;
 }
 
 async function getManualConstants(userId, userDb) {
@@ -89,40 +104,45 @@ async function getRelevantActivities(userDb) {
     `).catch(() => []);
 }
 
-async function resolveFCM(userId, userDb, manual, activities) {
-    if (manual.fcm) {
-        return { value: manual.fcm, source: RESOLUTION_SOURCES.MANUAL };
+function resolveFCM(userId, userDb, manual, activities, autoUpdate) {
+    if (!autoUpdate) {
+        if (manual.fcm) {
+            return { value: manual.fcm, source: RESOLUTION_SOURCES.MANUAL };
+        }
+        const age = manual.age || 30;
+        return { value: Cardiovascular.calculateMaxHR(age), source: RESOLUTION_SOURCES.ESTIMATED };
     }
 
-    const age = manual.age || 30;
-    const formulaFCM = Cardiovascular.calculateMaxHR(age);
+    const formulaFCM = Cardiovascular.calculateMaxHR(manual.age || 30);
 
-    if (activities.length > 0) {
-        const estimatedFCM = Cardiovascular.estimateDynamicFCM(activities, formulaFCM);
-        if (estimatedFCM && estimatedFCM !== formulaFCM) {
-            return { value: estimatedFCM, source: RESOLUTION_SOURCES.COMPUTED };
+    const maxHRs = activities
+        .filter(a => a.max_heartrate && a.max_heartrate > 0)
+        .map(a => a.max_heartrate);
+
+    if (maxHRs.length > 0) {
+        const observedMax = Math.max(...maxHRs);
+        if (observedMax >= formulaFCM * 0.85) {
+            return { value: Math.round(observedMax), source: RESOLUTION_SOURCES.COMPUTED };
+        }
+        if (observedMax > 0) {
+            return { value: Math.round(Math.max(observedMax, formulaFCM)), source: RESOLUTION_SOURCES.COMPUTED };
         }
     }
 
     return { value: formulaFCM, source: RESOLUTION_SOURCES.ESTIMATED };
 }
 
-async function resolveVDOT(userId, userDb, manual, activities) {
-    if (manual.vdot) {
-        return { value: manual.vdot, source: RESOLUTION_SOURCES.MANUAL };
-    }
-
-    const metricVdot = await dbGetUser(userDb,
-        "SELECT metric_value FROM performance_metrics WHERE metric_type = 'vdot' ORDER BY recorded_at DESC LIMIT 1",
-        [userId]
-    ).catch(() => null);
-    if (metricVdot?.metric_value) {
-        return { value: metricVdot.metric_value, source: RESOLUTION_SOURCES.MANUAL };
+function resolveVDOT(userId, userDb, manual, activities, autoUpdate) {
+    if (!autoUpdate) {
+        if (manual.vdot) {
+            return { value: manual.vdot, source: RESOLUTION_SOURCES.MANUAL };
+        }
+        return { value: null, source: RESOLUTION_SOURCES.ESTIMATED };
     }
 
     const runs = activities.filter(a =>
         (a.type === 'run' || a.type === 'Run' || a.type === 'trail_run') &&
-        a.distance >= 3000 && a.moving_time >= 900
+        a.distance >= 1000 && a.moving_time >= 300
     );
 
     if (runs.length > 0) {
@@ -139,19 +159,45 @@ async function resolveVDOT(userId, userDb, manual, activities) {
         }
     }
 
+    if (manual.vdot) {
+        return { value: manual.vdot, source: RESOLUTION_SOURCES.MANUAL };
+    }
+
     return { value: null, source: RESOLUTION_SOURCES.ESTIMATED };
 }
 
 function resolveVMA(manual, vdot) {
+    if (!manual.vma && vdot.value) {
+        const vma = RunningPerformance.estimateVMA(vdot.value);
+        if (vma && vma > 0) {
+            return { value: Math.round(vma * 10) / 10, source: vdot.source };
+        }
+    }
+
     if (manual.vma) {
         return { value: manual.vma, source: RESOLUTION_SOURCES.MANUAL };
     }
 
-    if (vdot.value) {
-        const vma = RunningPerformance.estimateVMA(vdot.value);
-        if (vma && vma > 0) {
-            return { value: Math.round(vma * 10) / 10, source: vdot.source === RESOLUTION_SOURCES.MANUAL ? RESOLUTION_SOURCES.COMPUTED : vdot.source };
+    return { value: null, source: RESOLUTION_SOURCES.ESTIMATED };
+}
+
+function resolveVO2max(manual, vma, vdot) {
+    if (manual.vma && vma.value) {
+        const vo2 = RunningPerformance.estimateVO2max(manual.vma);
+        if (vo2 && vo2 > 0) {
+            return { value: Math.round(vo2 * 10) / 10, source: RESOLUTION_SOURCES.MANUAL };
         }
+    }
+
+    if (vma.value) {
+        const vo2 = RunningPerformance.estimateVO2max(vma.value);
+        if (vo2 && vo2 > 0) {
+            return { value: Math.round(vo2 * 10) / 10, source: vma.source };
+        }
+    }
+
+    if (vdot.value) {
+        return { value: Math.round(vdot.value * 10) / 10, source: vdot.source };
     }
 
     return { value: null, source: RESOLUTION_SOURCES.ESTIMATED };

@@ -24,7 +24,17 @@ const { resolveUserConstants } = require('./services/userConstants.service');
 
 async function calculateAndStoreMetrics(userId, userDb) {
     logger.info(`[MetricsCalculator] Starting calculations for user ${userId}`);
-    
+
+    // Check auto_update flag
+    const mainUser = await dbGetMain('SELECT profile_data FROM users WHERE id = ?', [userId]).catch(() => null);
+    let autoUpdate = true;
+    if (mainUser?.profile_data) {
+        try {
+            const pd = JSON.parse(mainUser.profile_data);
+            autoUpdate = pd.auto_update !== false;
+        } catch (_) {}
+    }
+
     try {
         // 1. Récupérer le profil utilisateur
         const profile = await getUserProfile(userId, userDb);
@@ -121,24 +131,26 @@ async function calculateAndStoreMetrics(userId, userDb) {
             }
         }
         
-        // 5. Mettre à jour le profil avec le meilleur VDOT, FCM, VMA
-        if (bestVDOT && bestVDOT !== profile.vdot) {
-            await updateUserProfile(userId, userDb, { vdot: bestVDOT });
-            logger.info(`[MetricsCalculator] Updated VDOT to ${bestVDOT}`);
-        }
+        // 5. Mettre à jour le profil avec le meilleur VDOT, FCM, VMA (seulement si auto_update)
+        if (autoUpdate) {
+            if (bestVDOT && bestVDOT !== profile.vdot) {
+                await updateUserProfile(userId, userDb, { vdot: bestVDOT });
+                logger.info(`[MetricsCalculator] Updated VDOT to ${bestVDOT}`);
+            }
 
-        if (!profile.fcm || !profile.vma) {
-            const fcmFromActivities = Cardiovascular.estimateDynamicFCM(activities, Cardiovascular.calculateMaxHR(profile.age || 30));
-            const updates = {};
-            if (!profile.fcm && fcmFromActivities) {
-                updates.fcm = fcmFromActivities;
-            }
-            if (!profile.vma && bestVDOT) {
-                updates.vma = Math.round(RunningPerformance.estimateVMA(bestVDOT) * 10) / 10;
-            }
-            if (Object.keys(updates).length > 0) {
-                await updateUserProfile(userId, userDb, updates);
-                logger.info(`[MetricsCalculator] Updated profile: ${JSON.stringify(updates)}`);
+            if (!profile.fcm || !profile.vma) {
+                const fcmFromActivities = getObservedFCM(activities, Cardiovascular.calculateMaxHR(profile.age || 30));
+                const updates = {};
+                if (!profile.fcm && fcmFromActivities) {
+                    updates.fcm = fcmFromActivities;
+                }
+                if (!profile.vma && bestVDOT) {
+                    updates.vma = Math.round(RunningPerformance.estimateVMA(bestVDOT) * 10) / 10;
+                }
+                if (Object.keys(updates).length > 0) {
+                    await updateUserProfile(userId, userDb, updates);
+                    logger.info(`[MetricsCalculator] Updated profile: ${JSON.stringify(updates)}`);
+                }
             }
         }
         
@@ -336,6 +348,18 @@ async function getUserProfile(userId, userDb) {
         sex: userProfile?.sex || profileData.sex || 'M',
         weight: userProfile?.weight || profileData.weight || 70,
     };
+}
+
+function getObservedFCM(activities, formulaFCM) {
+    const maxHRs = activities
+        .filter(a => a.max_heartrate && a.max_heartrate > 0)
+        .map(a => a.max_heartrate);
+    if (maxHRs.length > 0) {
+        const observed = Math.max(...maxHRs);
+        if (observed >= formulaFCM * 0.85) return Math.round(observed);
+        if (observed > 0) return Math.round(Math.max(observed, formulaFCM));
+    }
+    return formulaFCM;
 }
 
 async function updateUserProfile(userId, userDb, updates) {

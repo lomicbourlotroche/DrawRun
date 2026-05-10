@@ -1,12 +1,12 @@
 /* eslint-disable eqeqeq, react/no-unescaped-entities */
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Badge } from '@/components/ui';
-import { api, coachApi } from '@/lib/api';
+import { api } from '@/lib/api';
 import { client } from '@/lib/api/client';
 import { racePlanningApi } from '@/lib/api/race-planning.api';
-import type { RacePlanningResponse, RacePlanningRequest, Split, GpxProfile } from '@/types';
+import type { RacePlanningResponse, RacePlanningRequest, GpxProfile } from '@/types';
 import {
   Trophy, Download, AlertTriangle, MapPin, Heart, Zap, Droplets, Save, Upload,
   Printer, Mountain, TrendingUp, TrendingDown, Minus, Info
@@ -32,7 +32,7 @@ const DISTANCE_PRESETS = [
 ];
 
 // ─── Strategy Bias Slider ────────────────────────────────────────────────────
-function StrategySlider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+function StrategySlider({ value, onChange }: { value: number; onChange: (_v: number) => void }) {
   const labels = [
     { v: -1,    label: 'Très négatif',  desc: 'Départ très lent, accélération forte' },
     { v: -0.5,  label: 'Négatif',       desc: 'Départ conservateur' },
@@ -40,7 +40,7 @@ function StrategySlider({ value, onChange }: { value: number; onChange: (v: numb
     { v: 0.5,   label: 'Positif',       desc: 'Départ rapide, gestion' },
     { v: 1,     label: 'Très positif',  desc: 'Départ à fond, résistance' },
   ];
-  const current = labels.reduce((a, b) => Math.abs(b.v - value) < Math.abs(a.v - value) ? b : a);
+  const current = labels.reduce((a, b) => Math.abs(b.v - value) < Math.abs(a.v - value) ? b : a, labels[0]);
 
   return (
     <div className="space-y-3">
@@ -93,8 +93,8 @@ export function RacePlanningContent() {
     fatigue: 0,
   });
   const [targetMode, setTargetMode] = useState<'time' | 'pace'>('time');
-  const [targetTime, setTargetTime] = useState('00:50:00');
-  const [targetPace, setTargetPace] = useState('05:00');
+  const [targetTime, setTargetTime] = useState('');
+  const [targetPace, setTargetPace] = useState('');
   const [mode, setMode] = useState<'simple' | 'gpx'>('simple');
   const [gpxRaw, setGpxRaw] = useState<string | null>(null);
   const [gpxFileName, setGpxFileName] = useState<string | null>(null);
@@ -104,6 +104,10 @@ export function RacePlanningContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<RacePlanningResponse | any | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [temperature, setTemperature] = useState(15);
+  const [humidity, setHumidity] = useState(50);
 
   const handleCalculate = async () => {
     setIsLoading(true);
@@ -115,12 +119,13 @@ export function RacePlanningContent() {
         strategyBias,
       };
 
-      if (targetMode === 'time') {
+      if (targetMode === 'time' && targetTime.trim()) {
         params.targetTime = targetTime;
-      } else {
+      } else if (targetMode === 'pace' && targetPace.trim()) {
         const [mins, secs] = targetPace.split(':').map(Number);
         params.targetPace = mins * 60 + (secs || 0);
       }
+      // Si vide: backend utilise la prédiction VDOT
 
       if (mode === 'gpx') {
         if (!gpxRaw) {
@@ -128,8 +133,17 @@ export function RacePlanningContent() {
           setIsLoading(false);
           return;
         }
-        // Send raw GPX — backend auto-detects terrain + distance
         params.gpxData = gpxRaw;
+        // GPX mode: ces champs sont auto-détectés
+        if (gpxDistKm > 0) params.distance = gpxDistKm;
+        delete params.elevationProfile;
+        delete params.fatigue;
+      }
+
+      // Envoyer les conditions météo avancées
+      if (showAdvanced) {
+        params.temperature = temperature;
+        params.humidity = humidity;
       }
 
       const response = await api.calculateRacePlan(params);
@@ -264,139 +278,195 @@ export function RacePlanningContent() {
       {/* Configuration Form */}
       <Card>
         <CardHeader>
-          <CardTitle>Configuration de la course</CardTitle>
+          <CardTitle>
+            {mode === 'simple' ? 'Configuration de la course' : 'Configuration via GPX'}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Mode Simple vs GPX Inputs */}
-          {mode === 'simple' ? (
-            <div>
-              <label className="text-sm font-medium mb-2 block">Distance</label>
-              <div className="flex gap-2 mb-3">
-                {DISTANCE_PRESETS.map((preset) => (
-                  <Button
-                    key={preset.label}
-                    variant={form.distance === preset.km ? 'primary' : 'secondary'}
-                    size="sm"
-                    onClick={() => setForm({ ...form, distance: preset.km })}
-                  >
-                    {preset.label}
-                  </Button>
-                ))}
+          {/* Mode Simple: full form */}
+          {mode === 'simple' && (
+            <>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Distance</label>
+                <div className="flex gap-2 mb-3">
+                  {DISTANCE_PRESETS.map((preset) => (
+                    <Button
+                      key={preset.label}
+                      variant={form.distance === preset.km ? 'primary' : 'secondary'}
+                      size="sm"
+                      onClick={() => setForm({ ...form, distance: preset.km })}
+                    >
+                      {preset.label}
+                    </Button>
+                  ))}
+                </div>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={form.distance}
+                  onChange={(e) => setForm({ ...form, distance: parseFloat(e.target.value) || 0 })}
+                  label="Distance personnalisée (km)"
+                />
               </div>
-              <Input
-                type="number"
-                step="0.1"
-                value={form.distance}
-                onChange={(e) => setForm({ ...form, distance: parseFloat(e.target.value) || 0 })}
-                label="Distance personnalisée (km)"
-              />
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <label className="text-sm font-medium mb-2 block">Parcours GPX</label>
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className={cn(
-                  "border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all",
-                  gpxRaw ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                )}
-              >
-                <Upload className={cn("w-8 h-8 mx-auto mb-2", gpxRaw ? "text-primary" : "text-muted")} />
-                <p className="text-sm font-medium">
-                  {gpxRaw ? `${gpxFileName} — ${gpxPointCount} points` : "Cliquez pour importer un fichier .gpx"}
-                </p>
-                {gpxRaw && <p className="text-xs text-muted mt-1">Distance estimée : {gpxDistKm} km</p>}
+
+              {/* Elevation Profile */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Profil du terrain</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {ELEVATION_PROFILES.map((profile) => (
+                    <button
+                      key={profile.id}
+                      onClick={() => setForm({ ...form, elevationProfile: profile.id })}
+                      className={`p-3 rounded-lg border-2 text-left transition-all ${
+                        form.elevationProfile === profile.id
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <MapPin className={`w-4 h-4 mb-1 ${
+                        form.elevationProfile === profile.id ? 'text-primary' : 'text-muted'
+                      }`} />
+                      <p className="text-sm font-medium">{profile.label}</p>
+                      <p className="text-xs text-muted">{profile.description}</p>
+                    </button>
+                  ))}
+                </div>
               </div>
-              <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".gpx" className="hidden" />
-              {/* Auto-detected profile shown after result */}
-              {result?.gpxProfile && <GpxProfileBadge profile={result.gpxProfile} />}
-            </div>
+
+              {/* Fatigue Level */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Niveau de fatigue (0-10)
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="10"
+                  value={form.fatigue}
+                  onChange={(e) => setForm({ ...form, fatigue: parseInt(e.target.value) })}
+                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                />
+                <div className="flex justify-between text-xs text-muted mt-1">
+                  <span>Reposé (0)</span>
+                  <span className="font-medium">{form.fatigue}</span>
+                  <span>Fatigué (10)</span>
+                </div>
+              </div>
+            </>
           )}
 
-          {/* Target Mode */}
-          <div>
-            <label className="text-sm font-medium mb-2 block">Objectif</label>
-            <div className="flex gap-2 mb-3">
-              <Button
-                variant={targetMode === 'time' ? 'primary' : 'secondary'}
-                size="sm"
-                onClick={() => setTargetMode('time')}
-              >
-                Temps final
-              </Button>
-              <Button
-                variant={targetMode === 'pace' ? 'primary' : 'secondary'}
-                size="sm"
-                onClick={() => setTargetMode('pace')}
-              >
-                Allure cible
-              </Button>
-            </div>
-
-            {targetMode === 'time' ? (
-              <Input
-                type="text"
-                value={targetTime}
-                onChange={(e) => setTargetTime(e.target.value)}
-                label="Temps objectif (HH:MM:SS)"
-                placeholder="00:45:00"
-              />
-            ) : (
-              <Input
-                type="text"
-                value={targetPace}
-                onChange={(e) => setTargetPace(e.target.value)}
-                label="Allure cible (MM:SS/km)"
-                placeholder="04:30"
-              />
-            )}
-          </div>
-
-          {/* Elevation Profile */}
-          <div>
-            <label className="text-sm font-medium mb-2 block">Profil du terrain</label>
-            <div className="grid grid-cols-3 gap-2">
-              {ELEVATION_PROFILES.map((profile) => (
-                <button
-                  key={profile.id}
-                  onClick={() => setForm({ ...form, elevationProfile: profile.id })}
-                  className={`p-3 rounded-lg border-2 text-left transition-all ${
-                    form.elevationProfile === profile.id
-                      ? 'border-primary bg-primary/10'
-                      : 'border-border hover:border-primary/50'
-                  }`}
+          {/* Mode GPX: simplified — GPX auto-detects everything */}
+          {mode === 'gpx' && (
+            <>
+              <div className="space-y-3">
+                <label className="text-sm font-medium mb-2 block">Parcours GPX</label>
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className={cn(
+                    "border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all",
+                    gpxRaw ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                  )}
                 >
-                  <MapPin className={`w-4 h-4 mb-1 ${
-                    form.elevationProfile === profile.id ? 'text-primary' : 'text-muted'
-                  }`} />
-                  <p className="text-sm font-medium">{profile.label}</p>
-                  <p className="text-xs text-muted">{profile.description}</p>
+                  <Upload className={cn("w-8 h-8 mx-auto mb-2", gpxRaw ? "text-primary" : "text-muted")} />
+                  <p className="text-sm font-medium">
+                    {gpxRaw ? `${gpxFileName} — ${gpxPointCount} points` : "Cliquez pour importer un fichier .gpx"}
+                  </p>
+                  {gpxRaw && <p className="text-xs text-muted mt-1">Distance estimée : {gpxDistKm} km</p>}
+                </div>
+                <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".gpx" className="hidden" />
+
+                {/* Live GPX info after upload + result GPX profile */}
+                {gpxRaw && (
+                  <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-1.5">
+                    <div className="flex items-center gap-2 text-xs text-muted">
+                      <MapPin className="w-3.5 h-3.5 text-primary" />
+                      <span>Distance auto-détectée : <strong>{gpxDistKm} km</strong></span>
+                    </div>
+                    <p className="text-xs text-muted italic">
+                      Le profil de terrain, la fatigue et l'altitude sont détectés automatiquement depuis le GPX.
+                    </p>
+                  </div>
+                )}
+                {result?.gpxProfile && <GpxProfileBadge profile={result.gpxProfile} />}
+              </div>
+
+              {/* Target time/pace with VDOT suggestion */}
+              <div>
+                <label className="text-sm font-medium mb-1 block">Objectif (optionnel)</label>
+                <p className="text-xs text-muted mb-2">
+                  Laissez vide pour une prédiction automatique basée sur votre VDOT
+                </p>
+                <div className="flex gap-2 mb-3">
+                  <Button
+                    variant={targetMode === 'time' ? 'primary' : 'secondary'}
+                    size="sm"
+                    onClick={() => setTargetMode('time')}
+                  >
+                    Temps final
+                  </Button>
+                  <Button
+                    variant={targetMode === 'pace' ? 'primary' : 'secondary'}
+                    size="sm"
+                    onClick={() => setTargetMode('pace')}
+                  >
+                    Allure cible
+                  </Button>
+                </div>
+                {targetMode === 'time' ? (
+                  <Input
+                    type="text"
+                    value={targetTime}
+                    onChange={(e) => setTargetTime(e.target.value)}
+                    label="Temps objectif (HH:MM:SS)"
+                    placeholder="00:45:00"
+                  />
+                ) : (
+                  <Input
+                    type="text"
+                    value={targetPace}
+                    onChange={(e) => setTargetPace(e.target.value)}
+                    label="Allure cible (MM:SS/km)"
+                    placeholder="04:30"
+                  />
+                )}
+                {result?.racePrediction?.recommendedPace && mode === 'gpx' && (
+                  <p className="text-xs text-primary mt-1">
+                    Prédiction VDOT : {result.racePrediction.recommendedPace}s/km 
+                    ({fmtPace(result.racePrediction.recommendedPace)}/km)
+                  </p>
+                )}
+              </div>
+
+              {/* Options avancées (météo) */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                  className="text-xs text-primary font-medium hover:underline flex items-center gap-1"
+                >
+                  {showAdvanced ? '▼' : '▶'} Options avancées (météo)
                 </button>
-              ))}
-            </div>
-          </div>
+                {showAdvanced && (
+                  <div className="grid grid-cols-2 gap-3 mt-2">
+                    <Input
+                      type="number"
+                      value={temperature}
+                      onChange={(e) => setTemperature(parseFloat(e.target.value) || 15)}
+                      label="Température (°C)"
+                    />
+                    <Input
+                      type="number"
+                      value={humidity}
+                      onChange={(e) => setHumidity(parseFloat(e.target.value) || 50)}
+                      label="Humidité (%)"
+                    />
+                  </div>
+                )}
+              </div>
+            </>
+          )}
 
-          {/* Fatigue Level */}
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Niveau de fatigue (0-10)
-            </label>
-            <input
-              type="range"
-              min="0"
-              max="10"
-              value={form.fatigue}
-              onChange={(e) => setForm({ ...form, fatigue: parseInt(e.target.value) })}
-              className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-            />
-            <div className="flex justify-between text-xs text-muted mt-1">
-              <span>Reposé (0)</span>
-              <span className="font-medium">{form.fatigue}</span>
-              <span>Fatigué (10)</span>
-            </div>
-          </div>
-
-          {/* Strategy Bias Slider */}
+          {/* Strategy Bias Slider (always shown) */}
           <StrategySlider value={strategyBias} onChange={setStrategyBias} />
 
           <Button onClick={handleCalculate} isLoading={isLoading} className="w-full">

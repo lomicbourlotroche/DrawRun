@@ -153,7 +153,7 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
   const [autoUpdate, setAutoUpdate] = useState(true);
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [isSavingConstants, setIsSavingConstants] = useState(false);
-  const [constForm, setConstForm] = useState({ fcm: '', vma: '', vdot: '' });
+  const [constForm, setConstForm] = useState({ fcm: '', vma: '', vdot: '', vo2max: '' });
   const { data: constantsData, fetchConstants, invalidate } = useUserConstantsStore();
 
   useEffect(() => {
@@ -179,6 +179,7 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
         fcm: constantsData.profile.fcm?.toString() || '',
         vma: constantsData.profile.vma?.toString() || '',
         vdot: constantsData.profile.vdot?.toString() || '',
+        vo2max: constantsData.profile.vo2max?.toString() || '',
       });
     }
   }, [constantsData]);
@@ -249,6 +250,7 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
                     alt={user?.name || 'Avatar'}
                     width={64}
                     height={64}
+                    unoptimized
                     className="w-16 h-16 rounded-full object-cover border-2 border-border"
                   />
                 ) : (
@@ -306,12 +308,13 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
           </GlassCardTitle>
         </GlassCardHeader>
         <GlassCardContent className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { key: 'fcm' as const, label: 'FCM', source: constantsData?.sources.fcm, unit: 'bpm', placeholder: '185' },
               { key: 'vma' as const, label: 'VMA', source: constantsData?.sources.vma, unit: 'km/h', placeholder: '15' },
               { key: 'vdot' as const, label: 'VDOT', source: constantsData?.sources.vdot, unit: '', placeholder: '45' },
-            ].map(item => {
+              { key: 'vo2max' as const, label: 'VO2max', source: constantsData?.sources.vo2max, unit: 'ml/kg/min', placeholder: '50', readOnly: true },
+            ].map((item: { key: 'fcm' | 'vma' | 'vdot' | 'vo2max'; label: string; source?: string; unit: string; placeholder: string; readOnly?: boolean }) => {
               const src = item.source || 'estimated';
               const isEditable = !autoUpdate;
               const badgeColor = src === 'manual' ? 'bg-green-500/15 text-green-400' : src === 'computed' ? 'bg-blue-500/15 text-blue-400' : 'bg-yellow-500/15 text-yellow-400';
@@ -323,9 +326,10 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
                     <input
                       type="number"
                       value={constForm[item.key]}
-                      onChange={e => setConstForm(prev => ({ ...prev, [item.key]: e.target.value }))}
+                      onChange={e => !item.readOnly && setConstForm(prev => ({ ...prev, [item.key]: e.target.value }))}
                       placeholder={item.placeholder}
-                      className="w-full text-center text-xl font-bold bg-transparent border-b border-primary/30 focus:outline-none focus:border-primary py-1"
+                      readOnly={item.readOnly}
+                      className={`w-full text-center text-xl font-bold bg-transparent border-b py-1 ${item.readOnly ? 'border-muted cursor-not-allowed opacity-60' : 'border-primary/30 focus:outline-none focus:border-primary'}`}
                     />
                   ) : (
                     <p className={`text-2xl font-bold ${item.source ? 'text-foreground' : 'text-muted'}`}>

@@ -758,17 +758,17 @@ export interface NutritionStrategy {
 }
 
 export interface RacePlanningRequest {
-  distance: number;
+  distance?: number;       // Optionnel en mode GPX (auto-détecté)
   targetTime?: string;
   targetPace?: number;
-  elevationProfile: 'flat' | 'rolling' | 'mountainous';
-  fatigue?: number;
+  elevationProfile?: 'flat' | 'rolling' | 'mountainous'; // Auto-détecté en mode GPX
+  fatigue?: number;        // Auto-détecté depuis TSB en mode GPX
   temperature?: number;
   humidity?: number;
   altitude?: number;
   windSpeed?: number;
-  gpxData?: string;       // NEW: raw GPX XML for auto-detection
-  strategyBias?: number;  // NEW: -1 (negative split) to +1 (positive split)
+  gpxData?: string;        // GPX XML brut pour auto-détection
+  strategyBias?: number;   // -1 (negative split) to +1 (positive split)
 }
 
 export interface GpxProfile {
@@ -819,6 +819,7 @@ export interface RacePlanningResponse {
     type: string;
     name: string;
     description: string;
+    phases?: Array<{ start: number; end: number; factor: number; label: string }>;
   };
   gpxProfile?: GpxProfile;  // NEW: auto-detected terrain info
   summary: {

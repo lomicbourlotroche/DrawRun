@@ -17,6 +17,9 @@ interface BeforeInstallPromptEvent extends Event {
  * Affiche un bouton "Installer l'app" quand l'appli peut être installée
  * Capture l'événement beforeinstallprompt pour le déclencher au clic
  */
+// Module-level flag to only suppress the default prompt once per session
+let hasSuppressedDefaultPrompt = false;
+
 export function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isStandalone, setIsStandalone] = useState(false);
@@ -34,9 +37,12 @@ export function InstallPrompt() {
 
     checkStandalone();
 
-    // Capturer l'événement beforeinstallprompt
+    // Capturer l'événement beforeinstallprompt une seule fois par session
     const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
+      if (!hasSuppressedDefaultPrompt) {
+        e.preventDefault();
+        hasSuppressedDefaultPrompt = true;
+      }
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       setIsVisible(true);
     };

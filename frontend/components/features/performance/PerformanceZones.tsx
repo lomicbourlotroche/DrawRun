@@ -45,8 +45,9 @@ export function PerformanceZones({ zones, isLoading }: PerformanceZonesProps) {
   }
 
   const displayZones = <T extends { zone: number }>(zoneList: T[]): T[] => {
-    if (isProMode) return zoneList;
-    return zoneList.filter((z) => z.zone <= 5);
+    const list = zoneList ?? [];
+    if (isProMode) return list;
+    return list.filter((z) => z.zone <= 5);
   };
 
   return (

@@ -53,7 +53,7 @@ export function ProgressionChart({ activities, sport }: ProgressionChartProps) {
         break;
     }
     
-    return activities
+    return (activities ?? [])
       .filter(activity => activity.type === sport)
       .filter(activity => new Date(activity.date) >= cutoffDate)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());

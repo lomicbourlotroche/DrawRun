@@ -15,6 +15,7 @@ export interface UserProfile {
   weight: number;
   vma: number | null;
   vdot: number | null;
+  vo2max: number | null;
   ftp: number | null;
   calculatedFcm: number;
 }

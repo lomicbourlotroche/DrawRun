@@ -130,9 +130,10 @@ export default function ExplorePage() {
       if (lat && lng) {
         const res = await api.getNearbySegments(lat, lng, 10000);
         if (res.success) {
-          setSegments(res.segments as Segment[]);
+          const segs = (res.segments ?? []) as Segment[];
+          setSegments(segs);
           setMapSegments(
-            (res.segments as Segment[])
+            segs
               .filter((s) => s.start_lat && s.start_lng && s.end_lat && s.end_lng)
               .map((s) => ({
                 id: s.id,
@@ -149,7 +150,7 @@ export default function ExplorePage() {
       } else {
         const res = await api.getPublicSegments();
         if (res.success) {
-          setSegments(res.segments as Segment[]);
+          setSegments((res.segments ?? []) as Segment[]);
         }
       }
     } catch {
@@ -164,7 +165,7 @@ export default function ExplorePage() {
     try {
       const res = await api.getPublicRoutes(type, difficulty);
       if (res.success) {
-        const r = res.routes as RouteItem[];
+        const r = (res.routes ?? []) as RouteItem[];
         setRoutes(r);
         setMapRoutes(
           r.filter((rt) => rt.polyline).map((rt, idx) => ({

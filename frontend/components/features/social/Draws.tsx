@@ -45,7 +45,7 @@ export function ActivityDraws({
         // Retirer le draw
         const response = await api.toggleActivityDraw(activityId, 0); // 0 pour retirer
         if (response.success) {
-          const newDraws = draws.filter(d => d.user_id !== 0); // Filtrer le draw de l'utilisateur actuel
+          const newDraws = (draws ?? []).filter(d => d.user_id !== 0); // Filtrer le draw de l'utilisateur actuel
           const newCount = response.draw_count;
           onDrawUpdate?.(newDraws, newCount, false);
           toast.success('Draw retiré');
@@ -109,7 +109,7 @@ export function ActivityDraws({
       )}
 
       {/* Drawers List */}
-      {showDrawers && draws.length > 0 && (
+      {showDrawers && (draws ?? []).length > 0 && (
         <div className="absolute top-full left-0 mt-2 w-80 bg-card border border-border rounded-lg shadow-lg z-50">
           <div className="p-4">
             <h4 className="font-semibold mb-3 flex items-center gap-2">
@@ -168,7 +168,7 @@ export function SocialDraw({
       if (hasDrawn) {
         const response = await api.toggleActivityDraw(itemId, 0); // 0 pour retirer
         if (response.success) {
-          setDraws(draws.filter(d => d.user_id !== 0)); // Filtrer le draw de l'utilisateur actuel
+          setDraws((draws ?? []).filter(d => d.user_id !== 0)); // Filtrer le draw de l'utilisateur actuel
           setDrawCount(response.draw_count);
           setHasDrawn(false);
         }

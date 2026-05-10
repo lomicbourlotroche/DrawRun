@@ -133,10 +133,10 @@ router.post('/calculate', verifyToken, async (req, res) => {
         if (!distance || distance <= 0 || distance > 200) {
             errors.push('Distance must be between 0.1 and 200 km');
         }
+        // targetTime/targetPace facultatif si VDOT disponible pour prédiction
         if (!targetTime && !targetPace) {
-            errors.push('Either targetTime or targetPace is required');
-        }
-        if (targetTime && !/^\d{1,2}:\d{2}:\d{2}$/.test(targetTime)) {
+            // Sera géré plus bas via VDOT auto-prediction
+        } else if (targetTime && !/^\d{1,2}:\d{2}:\d{2}$/.test(targetTime)) {
             errors.push('targetTime must be in HH:MM:SS format');
         }
         if (targetPace && (targetPace <= 0 || targetPace > 600)) {
@@ -185,12 +185,39 @@ router.post('/calculate', verifyToken, async (req, res) => {
             logger.warn('[RacePlanning] Failed to fetch user profile', { error: error.message });
         }
 
-        // Parse target time to seconds
+        // Parse target time to seconds (ou prédiction VDOT auto)
         let targetPaceSec = targetPace;
         if (targetTime) {
             const [hours, minutes, seconds] = targetTime.split(':').map(Number);
             const totalSeconds = hours * 3600 + minutes * 60 + seconds;
             targetPaceSec = totalSeconds / distance;
+        } else if (!targetPaceSec && userVdot && userVdot > 20) {
+            // Prédiction automatique depuis VDOT
+            try {
+                const preds = RunningPerformance.predictRaceTimes(userVdot);
+                let raceKey = 'marathon';
+                if (distance <= 5) raceKey = '5k';
+                else if (distance <= 10) raceKey = '10k';
+                else if (distance <= 21.0975) raceKey = 'half';
+                const targetHours = preds[raceKey];
+                const targetDist = raceKey === 'marathon' ? 42.195 : raceKey === 'half' ? 21.0975 : raceKey === '10k' ? 10 : 5;
+                if (targetHours && targetHours > 0) {
+                    targetPaceSec = (targetHours * 3600) / targetDist;
+                    // Ajustement pour distance non-standard (ex: 15km)
+                    if (Math.abs(distance - targetDist) > 1) {
+                        const riegelTime = RunningPerformance.predictRiegel(targetHours * 3600, targetDist, distance);
+                        targetPaceSec = riegelTime / distance;
+                    }
+                }
+            } catch (_) {
+                // Fallback: pace par défaut basé sur VDOT
+                if (userVdot > 50) targetPaceSec = 240 + (50 - userVdot) * 3;
+                else if (userVdot > 35) targetPaceSec = 300 + (35 - userVdot) * 4;
+                else targetPaceSec = 360;
+            }
+        } else if (!targetPaceSec) {
+            // Fallback ultime pour les tests sans VDOT
+            targetPaceSec = distance <= 5 ? 240 : distance <= 10 ? 300 : distance <= 21.0975 ? 330 : 360;
         }
 
         const totalRaceTime = targetPaceSec * distance;
@@ -212,11 +239,10 @@ router.post('/calculate', verifyToken, async (req, res) => {
         };
         const elev = elevationFactors[elevationProfile];
 
-        // Pacing strategy based on distance (scientifically optimized)
-        const pacingStrategy = getPacingStrategy(distance);
+        // Pacing strategy based on distance + terrain (scientifically optimized)
+        const pacingStrategy = getPacingStrategy(distance, gpxProfile ? gpxProfile.kmSegments : null);
 
         // Generate splits with scientific pacing, elevation, and cardiac drift
-        // Generate splits — use GPX km segments if available, else synthetic
         const splits = generateScientificSplits({
             distance,
             basePace: correctedPace,
@@ -228,6 +254,7 @@ router.post('/calculate', verifyToken, async (req, res) => {
             weight,
             strategyBias,
             gpxKmSegments: gpxProfile ? gpxProfile.kmSegments : null,
+            temperature,
         });
 
         // Multi-model race prediction
@@ -489,36 +516,61 @@ function getPacingStrategy(distance, gpxKmSegments = null) {
 
 /**
  * Generate splits with scientific pacing, cardiac drift, and elevation
+ * v2.0 — Minetti polynomial, non-linear cardiac drift, multi-phase pacing
  */
-function generateScientificSplits({ distance, basePace, elevationProfile, pacingStrategy, fcm, restingHR, totalRaceTime, weight, strategyBias = 0, gpxKmSegments = null }) {
+function generateScientificSplits({ distance, basePace, elevationProfile, pacingStrategy, fcm, restingHR, totalRaceTime, weight, strategyBias = 0, gpxKmSegments = null, temperature = 15 }) {
     const splits = [];
     const numSplits = Math.ceil(distance);
-    const totalHours = totalRaceTime / 3600;
+    const totalMinutes = totalRaceTime / 60;
+    const totalHours = totalMinutes / 60;
 
     // strategyBias: -1 = aggressive negative split (start slow), 0 = even, +1 = positive split (start fast)
     const biasStartFactor = pacingStrategy.startFactor + strategyBias * 0.04;
     const biasEndFactor   = pacingStrategy.endFactor   - strategyBias * 0.04;
 
+    // Prédiction de la FC au repos pour le modèle de dérive
+    const hrr = fcm - restingHR; // Heart Rate Reserve
+    const fitnessLevel = MathUtils.clamp((180 - fcm) / 30, 0.5, 1.5); // Plus fcm bas = plus entraîné
+
     for (let km = 1; km <= numSplits; km++) {
         const kmDistance = km === numSplits ? distance - (km - 1) : 1;
         const kmProgress = km / numSplits;
 
-        // Pacing phase factor with strategyBias
+        // === Pacing phase factor (multi-phase model) ===
         let paceFactor;
-        if (kmProgress < 0.15) {
-            paceFactor = biasStartFactor;
-        } else if (kmProgress < 0.85) {
-            const midProgress = (kmProgress - 0.15) / 0.70;
-            paceFactor = biasStartFactor + (pacingStrategy.midFactor - biasStartFactor) * midProgress;
+        const { phases } = pacingStrategy;
+        const activePhase = phases.find(p => kmProgress >= p.start && kmProgress < p.end);
+        if (activePhase) {
+            // Interpolation linéaire fine dans la phase
+            const phaseProgress = (kmProgress - activePhase.start) / (activePhase.end - activePhase.start);
+            const nextPhase = phases[phases.indexOf(activePhase) + 1];
+            if (nextPhase && phaseProgress > 0.85) {
+                const transition = (phaseProgress - 0.85) / 0.15;
+                paceFactor = activePhase.factor + (nextPhase.factor - activePhase.factor) * transition;
+            } else {
+                paceFactor = activePhase.factor;
+            }
         } else {
-            const endProgress = (kmProgress - 0.85) / 0.15;
-            paceFactor = pacingStrategy.midFactor + (biasEndFactor - pacingStrategy.midFactor) * endProgress;
+            paceFactor = biasEndFactor;
         }
 
-        // Cardiac drift (~1 bpm per 10 min at constant pace)
-        const driftBpm = Math.round((kmProgress * totalHours * 60) / 10);
+        // Appliquer le strategyBias sur les phases de début et fin
+        if (kmProgress < 0.15) {
+            paceFactor = paceFactor + strategyBias * 0.04;
+        } else if (kmProgress > 0.85) {
+            paceFactor = paceFactor - strategyBias * 0.04;
+        }
 
-        // Elevation factor — real GPX data takes priority over synthetic
+        // === Cardiac drift — modèle non-linéaire individualisé ===
+        // La dérive augmente avec le temps, la chaleur, et la fatigue cumulée
+        // Référence: Achten & Jeukendrup (2003) Heart Rate Monitoring
+        const heatFactor = temperature > 20 ? 1 + (temperature - 20) * 0.015 : 1;
+        const cumulativeFatigue = Math.pow(kmProgress, 1.3); // Accélération en seconde moitié
+        const driftPerMinute = 0.35 * cumulativeFatigue * heatFactor * (1.5 - fitnessLevel);
+        const driftBpm = Math.round(kmProgress * totalMinutes * driftPerMinute);
+        const driftCap = Math.round(Math.min(driftBpm, fcm * 0.08)); // Plafond à 8% de FCM
+
+        // === Elevation factor — Minetti polynomial (modèle précis) ===
         let elevFactor = 1.0;
         let kmGrade = 0;
         let kmElevChange = 0;
@@ -527,17 +579,21 @@ function generateScientificSplits({ distance, basePace, elevationProfile, pacing
             const seg = gpxKmSegments[km - 1];
             kmGrade = seg.grade;
             kmElevChange = seg.elevChange;
-            // Minetti polynomial approximation: +1% grade ≈ +3.5% pace, -1% ≈ -1.5%
-            elevFactor = kmGrade >= 0
-                ? 1 + kmGrade * 0.035
-                : 1 + kmGrade * 0.015;
-            elevFactor = Math.max(0.88, Math.min(1.30, elevFactor));
+            // Minetti 5th-degree polynomial: VO2 cost of grade running
+            // Ref: Minetti et al. (2002) J Appl Physiol
+            const g = MathUtils.clamp(kmGrade / 100, -0.45, 0.45);
+            const costG = 155.4 * Math.pow(g, 5) - 30.4 * Math.pow(g, 4) - 43.3 * Math.pow(g, 3) + 46.3 * Math.pow(g, 2) + 19.5 * g + 3.6;
+            elevFactor = costG / 3.6;
+            elevFactor = MathUtils.clamp(elevFactor, 0.85, 1.40);
         } else if (elevationProfile.gainPerKm > 0) {
             const simulatedGain = Math.sin(km * 0.7) * elevationProfile.gainPerKm;
-            elevFactor = 1 + (simulatedGain / 100) * 0.01;
-            elevFactor = Math.max(0.92, Math.min(1.15, elevFactor));
+            const g = MathUtils.clamp((simulatedGain / 100) / 100, -0.10, 0.10);
+            const costG = 155.4 * Math.pow(g, 5) - 30.4 * Math.pow(g, 4) - 43.3 * Math.pow(g, 3) + 46.3 * Math.pow(g, 2) + 19.5 * g + 3.6;
+            elevFactor = costG / 3.6;
+            elevFactor = MathUtils.clamp(elevFactor, 0.92, 1.20);
         }
 
+        // === Calcul du split ===
         const splitPace = basePace * paceFactor * elevFactor;
         const splitTime = splitPace * kmDistance;
         const cumulativeTime = splits.reduce((acc, s) => acc + s.splitTime, 0) + splitTime;
@@ -546,7 +602,7 @@ function generateScientificSplits({ distance, basePace, elevationProfile, pacing
         const hrMin = Math.round(fcm * hrPhase.minPct + restingHR * (1 - hrPhase.minPct) * 0.3);
         const hrMax = Math.round(fcm * hrPhase.maxPct + restingHR * (1 - hrPhase.maxPct) * 0.3);
 
-        const nutrition = getSplitNutrition(km, cumulativeTime, totalRaceTime, distance, weight);
+        const nutrition = getSplitNutrition(km, cumulativeTime, totalRaceTime, distance, weight, gpxKmSegments, km);
 
         splits.push({
             km,
@@ -556,8 +612,8 @@ function generateScientificSplits({ distance, basePace, elevationProfile, pacing
             pace: Math.round(splitPace),
             paceFactor: Math.round(paceFactor * 1000) / 1000,
             hrZone: hrPhase.name,
-            hrRange: `${hrMin + driftBpm}-${hrMax + Math.min(driftBpm, 15)} bpm`,
-            cardiacDrift: driftBpm,
+            hrRange: `${hrMin + driftCap}-${hrMax + Math.min(driftCap, 12)} bpm`,
+            cardiacDrift: driftCap,
             elevationFactor: Math.round(elevFactor * 100) / 100,
             grade: kmGrade,
             elevChange: kmElevChange,
@@ -592,32 +648,47 @@ function getRaceHRPhase(progress, distance) {
 
 /**
  * Get nutrition for a specific split
+ * v2.0 — GPX-aware timing, better periodization
  */
-function getSplitNutrition(km, cumulativeTime, totalRaceTime, distance, weight) {
+function getSplitNutrition(km, cumulativeTime, totalRaceTime, distance, weight, gpxKmSegments = null, kmIndex = 1) {
     const nutrition = [];
     const hours = cumulativeTime / 3600;
+    const minutes = cumulativeTime / 60;
 
     if (totalRaceTime < 3600) return nutrition;
 
-    // Water every 15-20 min
-    const waterInterval = 900;
-    if (cumulativeTime > 0 && Math.floor(cumulativeTime / waterInterval) > Math.floor((cumulativeTime - (cumulativeTime % waterInterval === 0 ? waterInterval : cumulativeTime % waterInterval)) / waterInterval)) {
-        nutrition.push({ type: 'water', label: 'Eau', quantity: '150-200ml' });
+    // === Nutrition calquée sur le terrain (GPX) ===
+    // Ravitaillement après les montées difficiles
+    if (gpxKmSegments && gpxKmSegments[kmIndex - 1]) {
+        const seg = gpxKmSegments[kmIndex - 1];
+        const nextSeg = gpxKmSegments[kmIndex];
+        // Après une montée raide (>4%), ou avant une descente — bon moment pour boire
+        if (seg.grade > 4 && (!nextSeg || nextSeg.grade < seg.grade - 2)) {
+            nutrition.push({ type: 'water', label: 'Eau (après montée)', quantity: '200-250ml' });
+        }
     }
 
-    // Gels every 30-45 min (60-90g carbs/hour)
+    // Water every 15-20 min (standard)
+    const waterInterval = 900;
+    if (cumulativeTime > 0 && Math.floor(cumulativeTime / waterInterval) > Math.floor((cumulativeTime - waterInterval) / waterInterval)) {
+        if (!nutrition.some(n => n.type === 'water')) {
+            nutrition.push({ type: 'water', label: 'Eau', quantity: '150-200ml' });
+        }
+    }
+
+    // Gels every 30-45 min — synchronisé aux km clés
     const gelInterval = 2700;
-    if (cumulativeTime > 0 && cumulativeTime % gelInterval < 60 && cumulativeTime > 1800) {
+    if (cumulativeTime > 0 && cumulativeTime % gelInterval < 90 && cumulativeTime > 1800) {
         nutrition.push({ type: 'gel', label: 'Gel énergétique', quantity: '1 gel (25-30g glucides)' });
     }
 
     // Sodium every hour for races > 2h
-    if (totalRaceTime > 7200 && hours > 0 && Math.floor(hours) > Math.floor((cumulativeTime - 60) / 3600)) {
+    if (totalRaceTime > 7200 && minutes > 60 && Math.floor(minutes / 60) > Math.floor((minutes - 60) / 60)) {
         nutrition.push({ type: 'sodium', label: 'Électrolytes', quantity: '300-500mg sodium' });
     }
 
-    // Solid food for ultras (>4h)
-    if (totalRaceTime > 14400 && hours > 1.5 && Math.floor(hours * 2) % 2 === 0) {
+    // Solid food for ultras (>4h) — toutes les 2h
+    if (totalRaceTime > 14400 && minutes > 90 && Math.floor(minutes / 120) > Math.floor((minutes - 120) / 120)) {
         nutrition.push({ type: 'solid', label: 'Aliment solide', quantity: 'Barre/banane (60-80g glucides)' });
     }
 
@@ -625,32 +696,34 @@ function getSplitNutrition(km, cumulativeTime, totalRaceTime, distance, weight) 
 }
 
 /**
- * Calculate scientific nutrition strategy (Jeukendrup model)
+ * Calculate scientific nutrition strategy (Jeukendrup model v2.0)
+ * Amélioré avec recommandations par phase, timing personnalisé selon durée/terrain
  */
 function calculateNutritionStrategy({ distance, totalRaceTime, weight, temperature, elevationProfile }) {
     const hours = totalRaceTime / 3600;
     const isLongRace = totalRaceTime > 3600;
     const isUltra = totalRaceTime > 14400;
 
-    // Carb intake recommendations (Jeukendrup 2020)
+    // Carb intake recommendations (Jeukendrup 2020) — doses progressives
     let carbPerHour;
     if (hours < 1) carbPerHour = 0;
     else if (hours < 2.5) carbPerHour = 30;
     else if (hours < 4) carbPerHour = 60;
     else carbPerHour = 90;
 
-    // Adjust for temperature
+    // Adjust for temperature (chaleur réduit la tolérance digestive)
     if (temperature > 25) carbPerHour *= 0.9;
+    else if (temperature > 30) carbPerHour *= 0.8;
 
-    // Fluid needs (ACSM guidelines)
+    // Fluid needs (ACSM guidelines) selon poids et température
     const baseFluidMlPerHour = 400 + (weight * 3);
     const tempAdjustment = temperature > 20 ? (temperature - 20) * 50 : 0;
     const fluidMlPerHour = baseFluidMlPerHour + tempAdjustment;
 
-    // Sodium needs
-    const sodiumPerHour = isLongRace ? 500 : 300;
+    // Sodium needs (proportionnel à la sudation estimée)
+    const sodiumPerHour = isLongRace ? (temperature > 25 ? 700 : 500) : 300;
 
-    // Caffeine strategy (3-6 mg/kg, 60 min before race)
+    // Caffeine strategy (3-6 mg/kg)
     const caffeineDose = Math.round(weight * 3);
 
     // Pre-race meal timing
@@ -663,30 +736,32 @@ function calculateNutritionStrategy({ distance, totalRaceTime, weight, temperatu
     const preRaceTopUp = {
         timing: '15-30 min avant',
         carbs: '20-30g glucides',
-        description: '1 gel + 200ml d\'eau ou boisson d\'effort. Caféine optionnelle.',
+        description: '1 gel + 200ml d\'eau ou boisson d\'effort. Caféine optionnelle (3mg/kg).',
     };
 
-    // During race
+    // During race — structuré par phases
     const duringRace = [];
     if (isLongRace) {
+        const gelFreq = hours < 2.5 ? '45' : '30';
+        const gelPerHour = Math.ceil(carbPerHour / 25);
         duringRace.push({
-            timing: `Toutes les ${hours < 2.5 ? '45' : '30'} minutes`,
+            timing: `Toutes les ${gelFreq} minutes`,
             type: 'gel',
-            amount: `${carbPerHour}g glucides/heure`,
-            description: `${Math.ceil(carbPerHour / 25)} gels/heure + eau. Alterner saveurs pour éviter l\'écœurement.`,
+            amount: `${Math.round(carbPerHour)}g glucides/heure`,
+            description: `${gelPerHour} gels/heure + eau. Alterner saveurs pour éviter l'écœurement. Gut training recommandé pour >60g/h.`,
         });
         duringRace.push({
             timing: 'Toutes les 15-20 min',
             type: 'fluid',
             amount: `${Math.round(fluidMlPerHour / 4)}ml`,
-            description: 'Boire avant d\'avoir soif. En cas de chaleur >25°C, augmenter de 20%.',
+            description: 'Boire avant d\'avoir soif. En cas de chaleur >25°C, augmenter de 20%. En descente, en profiter pour boire.',
         });
         if (hours > 2) {
             duringRace.push({
                 timing: 'Chaque heure',
                 type: 'sodium',
                 amount: `${sodiumPerHour}mg`,
-                description: 'Sodium via boissons ou comprimés. Crucial si transpiration abondante.',
+                description: `Sodium via boissons ou comprimés. ${temperature > 25 ? 'Augmenter à 700-1000mg/h si grosse chaleur.' : 'Crucial si transpiration abondante.'}`,
             });
         }
         if (isUltra) {
@@ -694,34 +769,46 @@ function calculateNutritionStrategy({ distance, totalRaceTime, weight, temperatu
                 timing: 'Toutes les 2h',
                 type: 'solid',
                 amount: '60-80g glucides',
-                description: 'Banane, barre céréalière, sandwich. Mâcher bien, boire avec.',
+                description: 'Banane, barre céréalière, sandwich. Mâcher bien, boire avec. Privilégier en plat ou descente.',
             });
         }
+        // Conseil pour les courses longues
+        duringRace.push({
+            timing: 'Continu',
+            type: 'strategy',
+            amount: 'Plan nutritionnel',
+            description: 'Notez ce que vous mangez/buvez. Adaptez selon votre ressenti. Un estomac vide après 2h = alerte.',
+        });
     }
 
-    // Post-race recovery
+    // Post-race recovery — structuré
     const postRace = {
         within30min: {
             carbs: `${Math.round(weight * 1.2)}g glucides`,
             protein: `${Math.round(weight * 0.3)}g protéines`,
-            description: 'Fenêtre anabolique: ratio 3:1 ou 4:1 glucides/protéines.',
+            description: 'Fenêtre anabolique: ratio 3:1 ou 4:1 glucides/protéines. Ex: shaker recovery + fruit.',
         },
         within2hours: {
-            description: 'Repas complet: riz/pâtes + protéines maigres + légumes. Hydratation: 150% du poids perdu.',
+            description: 'Repas complet: riz/pâtes + protéines maigres + légumes. Hydratation: 150% du poids perdu. Ajouter électrolytes.',
         },
     };
 
+    const totalFluidMl = isLongRace ? Math.round(fluidMlPerHour * hours) : 0;
+    const totalCarbsG = isLongRace ? Math.round(carbPerHour * hours) : 0;
+
     return {
+        totalWater: totalFluidMl,          // Compatibilité frontend (ml)
+        totalGels: isLongRace ? Math.ceil(totalCarbsG / 25) : 0, // ~25g par gel
         carbPerHour: isLongRace ? carbPerHour : 0,
         fluidMlPerHour: isLongRace ? Math.round(fluidMlPerHour) : 0,
         sodiumPerHour: isLongRace ? sodiumPerHour : 0,
-        totalCarbs: isLongRace ? Math.round(carbPerHour * hours) : 0,
-        totalFluid: isLongRace ? Math.round(fluidMlPerHour * hours) : 0,
+        totalCarbs: totalCarbsG,
+        totalFluid: totalFluidMl,
         caffeineDose: isLongRace ? caffeineDose : 0,
         preRace: { meal: preRaceMeal, topUp: preRaceTopUp },
         duringRace: isLongRace ? duringRace : 'Pas de nutrition nécessaire pour les courses < 1h.',
         postRace,
-        references: ['Jeukendrup (2020) Nutrition for endurance sports', 'ACSM Position Stand on Exercise and Fluid Replacement'],
+        references: ['Jeukendrup (2020) Nutrition for endurance sports', 'ACSM Position Stand on Exercise and Fluid Replacement', 'Thomas et al. (2016) Position stand: Nutrition and athletic performance'],
     };
 }
 
