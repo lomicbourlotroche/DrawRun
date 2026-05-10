@@ -115,7 +115,7 @@ router.get('/', verifyToken, async (req, res) => {
 
 router.put('/', verifyToken, validateBody(validateProfileBody), async (req, res) => {
     try {
-        const { name, fcm, vma, weight, height, restingHR, sex, age, fav_sports } = req.body;
+        const { name, fcm, vma, weight, height, restingHR, sex, age, fav_sports, weeklyKm, vdot, goal } = req.body;
         
         // Get current profile_data
         const currentUser = await dbGetMain('SELECT profile_data FROM users WHERE id = ?', [req.user.id]);
@@ -135,11 +135,22 @@ router.put('/', verifyToken, validateBody(validateProfileBody), async (req, res)
         if (sex !== undefined) profileData.sex = sex;
         if (age !== undefined) profileData.age = age;
         if (fav_sports !== undefined) profileData.fav_sports = fav_sports;
+        if (weeklyKm !== undefined) profileData.weeklyKm = weeklyKm;
+        if (vdot !== undefined) profileData.vdot = vdot;
+        if (goal !== undefined) profileData.goal = goal;
 
-        await dbRunMain(`
-            UPDATE users SET name = ?, profile_data = ?, updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-        `, [name, JSON.stringify(profileData), req.user.id]);
+        const effectiveName = name !== undefined && name !== '' ? name : undefined;
+        if (effectiveName) {
+            await dbRunMain(`
+                UPDATE users SET name = ?, profile_data = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            `, [name, JSON.stringify(profileData), req.user.id]);
+        } else {
+            await dbRunMain(`
+                UPDATE users SET profile_data = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            `, [JSON.stringify(profileData), req.user.id]);
+        }
 
         await updateUserProfileFromMain(req.user.id, profileData);
         

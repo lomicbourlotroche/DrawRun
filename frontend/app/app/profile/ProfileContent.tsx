@@ -9,14 +9,14 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent, Button, Input, GradientBadge, Avatar, Modal } from '@/components/ui';
-import { useAuthStore, useSyncStore } from '@/stores';
+import { useAuthStore, useSyncStore, useUserConstantsStore } from '@/stores';
 import { api } from '@/lib/api';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import type { User as UserType } from '@/types';
 import {
   User, Mail, Scale, Heart, LogOut, RefreshCw, CheckCircle, XCircle,
   Trash2, AlertTriangle, Gift, Watch, Lock, Eye, EyeOff, Shield, Monitor, Moon, Sun,
-  Globe, Layout, Bell, BellOff, Camera
+  Globe, Layout, Bell, BellOff, Camera, Zap, ToggleLeft, ToggleRight, RotateCcw
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -150,9 +150,14 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
   const [form, setForm] = useState({ name: '', weight: '', fcm: '', vma: '' });
   const [isUploading, setIsUploading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
+  const [autoUpdate, setAutoUpdate] = useState(true);
+  const [isRecalculating, setIsRecalculating] = useState(false);
+  const { data: constantsData, fetchConstants } = useUserConstantsStore();
 
   useEffect(() => {
     if (user) {
+      fetchConstants();
+      setAutoUpdate((user as any).auto_update !== false);
       const hasMissingFields = !user.fcm && !user.vma && !user.weight;
       if (hasMissingFields) {
         api.getProfile().then((profile) => {
@@ -293,6 +298,88 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
             <Input label="FCM (bpm)" type="number" value={form.fcm} onChange={(e) => setForm({ ...form, fcm: e.target.value })} disabled={!isEditing} leftIcon={<Heart className="w-4 h-4" />} />
             <Input label="VMA (km/h)" type="number" value={form.vma} onChange={(e) => setForm({ ...form, vma: e.target.value })} disabled={!isEditing} />
           </div>
+        </GlassCardContent>
+      </GlassCard>
+
+      {/* Constantes physiologiques */}
+      <GlassCard>
+        <GlassCardHeader>
+          <GlassCardTitle className="flex items-center gap-2">
+            <Zap className="w-5 h-5 text-primary" />
+            Constantes physiologiques
+          </GlassCardTitle>
+        </GlassCardHeader>
+        <GlassCardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { label: 'FCM', value: constantsData?.profile.fcm, source: constantsData?.sources.fcm, unit: 'bpm' },
+              { label: 'VMA', value: constantsData?.profile.vma, source: constantsData?.sources.vma, unit: 'km/h' },
+              { label: 'VDOT', value: constantsData?.profile.vdot, source: constantsData?.sources.vdot, unit: '' },
+            ].map(item => {
+              const src = item.source || 'estimated';
+              const badgeColor = src === 'manual' ? 'bg-green-500/15 text-green-400' : src === 'computed' ? 'bg-blue-500/15 text-blue-400' : 'bg-yellow-500/15 text-yellow-400';
+              const badgeLabel = src === 'manual' ? 'Manuel' : src === 'computed' ? 'Auto' : 'Estimé';
+              return (
+                <div key={item.label} className="p-3 rounded-xl bg-card border border-border text-center">
+                  <p className="text-xs text-muted mb-1">{item.label}</p>
+                  <p className={`text-2xl font-bold ${item.value ? 'text-foreground' : 'text-muted'}`}>
+                    {item.value ?? '--'}
+                    {item.unit && <span className="text-sm text-muted font-normal ml-1">{item.unit}</span>}
+                  </p>
+                  <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${badgeColor}`}>
+                    {badgeLabel}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+            <div className="flex items-center gap-2">
+              {autoUpdate ? (
+                <ToggleRight className="w-5 h-5 text-primary" />
+              ) : (
+                <ToggleLeft className="w-5 h-5 text-muted" />
+              )}
+              <div>
+                <p className="text-sm font-medium">Mise à jour automatique</p>
+                <p className="text-xs text-muted">Recalculer automatiquement depuis les activités</p>
+              </div>
+            </div>
+            <button
+              onClick={async () => {
+                const next = !autoUpdate;
+                setAutoUpdate(next);
+                try {
+                  await api.updateProfile({ auto_update: next } as any);
+                } catch { /* silencieux */ }
+              }}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${autoUpdate ? 'bg-primary' : 'bg-muted'}`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${autoUpdate ? 'translate-x-6' : 'translate-x-1'}`} />
+            </button>
+          </div>
+
+          <Button
+            variant="secondary"
+            className="w-full"
+            leftIcon={<RotateCcw className="w-4 h-4" />}
+            isLoading={isRecalculating}
+            onClick={async () => {
+              setIsRecalculating(true);
+              try {
+                await api.recalculateMetrics();
+                await fetchConstants();
+                toast.success('Constantes recalculées');
+              } catch {
+                toast.error('Erreur de calcul');
+              } finally {
+                setIsRecalculating(false);
+              }
+            }}
+          >
+            Recalculer depuis les activités
+          </Button>
         </GlassCardContent>
       </GlassCard>
     </div>

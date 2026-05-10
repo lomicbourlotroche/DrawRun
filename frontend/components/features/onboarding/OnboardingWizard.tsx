@@ -45,7 +45,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
       const status = await api.getOnboardingStatus();
       setStepStatus({
         profile: status.steps.profile.completed,
-        fcm: status.steps.fcm.completed,
+        fcm: status.steps.profile.completed,
         vma: status.steps.vma.completed,
         plan: status.steps.plan.completed,
         first_activity: status.steps.first_activity.completed,
@@ -138,15 +138,47 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
 
   const handleSkip = async () => {
     await api.completeOnboardingStep(steps[currentStep].id.toString());
+    setStepStatus(prev => ({ ...prev, [stepKeyMap[currentStep + 1]]: true }));
     handleNext();
+  };
+
+  const stepFields: Record<number, string> = {
+    1: 'name,sex,weeklyKm',
+    2: 'fcm,restingHR',
+    3: 'vma,vdot',
+    4: 'goal',
+  };
+
+  const stepKeyMap: Record<number, string> = {
+    1: 'profile',
+    2: 'fcm',
+    3: 'vma',
+    4: 'plan',
   };
 
   const handleSaveStep = async () => {
     setIsLoading(true);
     try {
-      await api.updateProfile(formData);
+      const fields = stepFields[currentStep + 1].split(',');
+      const payload: Record<string, any> = {};
+      for (const f of fields) {
+        const val = formData[f];
+        if (val !== undefined && val !== '') {
+          payload[f] = val;
+        } else {
+          const fieldDef = steps[currentStep].fields.find(fd => fd.name === f);
+          if (fieldDef?.required) {
+            toast.error(`Veuillez remplir le champ "${fieldDef.label}"`);
+            setIsLoading(false);
+            return;
+          }
+        }
+      }
+      if (Object.keys(payload).length > 0) {
+        await api.updateProfile(payload);
+      }
       await api.completeOnboardingStep(steps[currentStep].id.toString());
-      setStepStatus(prev => ({ ...prev, [steps[currentStep].id]: true }));
+      setStepStatus(prev => ({ ...prev, [stepKeyMap[currentStep + 1]]: true }));
       toast.success('Étape complétée !');
 
       if (currentStep === steps.length - 1) {

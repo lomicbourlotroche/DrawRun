@@ -57,16 +57,16 @@ function validateProfileBody(body) {
     const errors = [];
     if (!body || typeof body !== 'object') return { valid: false, errors: ['Request body is required'] };
 
-    if (body.fcm !== undefined && !validatePositiveNumber(body.fcm, 100, 250)) {
+    if (body.fcm !== undefined && body.fcm !== '' && !validatePositiveNumber(body.fcm, 100, 250)) {
         errors.push('fcm must be a number between 100 and 250');
     }
-    if (body.vma !== undefined && !validatePositiveNumber(body.vma, 5, 30)) {
+    if (body.vma !== undefined && body.vma !== '' && !validatePositiveNumber(body.vma, 5, 30)) {
         errors.push('vma must be a number between 5 and 30 km/h');
     }
-    if (body.weight !== undefined && !validatePositiveNumber(body.weight, 20, 300)) {
+    if (body.weight !== undefined && body.weight !== '' && !validatePositiveNumber(body.weight, 20, 300)) {
         errors.push('weight must be a number between 20 and 300 kg');
     }
-    if (body.age !== undefined && !validatePositiveNumber(body.age, 10, 120)) {
+    if (body.age !== undefined && body.age !== '' && !validatePositiveNumber(body.age, 10, 120)) {
         errors.push('age must be a number between 10 and 120');
     }
     if (body.sex !== undefined && !['M', 'F', 'O'].includes(body.sex)) {
