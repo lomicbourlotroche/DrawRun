@@ -147,7 +147,7 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
   const { user, updateUser } = useAuthStore();
   const [isEditing, setIsEditing] = useState(isNewUser);
   const [isSaving, setIsSaving] = useState(false);
-  const [form, setForm] = useState({ name: '', weight: '', fcm: '', vma: '' });
+  const [form, setForm] = useState({ name: '', weight: '' });
   const [isUploading, setIsUploading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [autoUpdate, setAutoUpdate] = useState(true);
@@ -158,30 +158,16 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
     if (user) {
       fetchConstants();
       setAutoUpdate((user as any).auto_update !== false);
-      const hasMissingFields = !user.fcm && !user.vma && !user.weight;
-      if (hasMissingFields) {
-        api.getProfile().then((profile) => {
-          updateUser({
-            name: profile.name,
-            weight: profile.weight,
-            fcm: profile.fcm,
-            vma: profile.vma,
-            restingHR: profile.restingHR,
-            sex: profile.sex,
-          });
-          setForm({
-            name: profile.name || '',
-            weight: profile.weight?.toString() || '',
-            fcm: profile.fcm?.toString() || '',
-            vma: profile.vma?.toString() || '',
-          });
-          if ((profile as any).avatar_url) setAvatarUrl((profile as any).avatar_url);
-        }).catch(() => {});
-      } else {
-        setForm({ name: user.name || '', weight: user.weight?.toString() || '', fcm: user.fcm?.toString() || '', vma: user.vma?.toString() || '' });
-        const profileData = (user as any).profile_data;
-        if (profileData?.avatar_url) setAvatarUrl(profileData?.avatar_url);
-      }
+      api.getProfile().then((profile) => {
+        if (profile.name) updateUser({ name: profile.name });
+        setForm({
+          name: profile.name || user.name || '',
+          weight: (profile.weight || user.weight)?.toString() || '',
+        });
+        if ((profile as any).avatar_url) setAvatarUrl((profile as any).avatar_url);
+      }).catch(() => {
+        setForm({ name: user.name || '', weight: user.weight?.toString() || '' });
+      });
     }
   }, [user]);
 
@@ -220,8 +206,8 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await api.updateProfile({ name: form.name, weight: parseFloat(form.weight) || undefined, fcm: parseInt(form.fcm) || undefined, vma: parseFloat(form.vma) || undefined });
-      updateUser({ name: form.name, weight: parseFloat(form.weight) || undefined, fcm: parseInt(form.fcm) || undefined, vma: parseFloat(form.vma) || undefined });
+      await api.updateProfile({ name: form.name, weight: parseFloat(form.weight) || undefined });
+      updateUser({ name: form.name, weight: parseFloat(form.weight) || undefined });
       setIsEditing(false);
       toast.success('Profil mis à jour');
     } catch { toast.error('Erreur'); }
@@ -283,7 +269,7 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
           </div>
           {isEditing ? (
             <div className="flex gap-2">
-              <Button variant="secondary" size="sm" onClick={() => setForm({ name: user?.name || '', weight: user?.weight?.toString() || '', fcm: user?.fcm?.toString() || '', vma: user?.vma?.toString() || '' })}>Annuler</Button>
+              <Button variant="secondary" size="sm" onClick={() => setForm({ name: user?.name || '', weight: user?.weight?.toString() || '' })}>Annuler</Button>
               <Button size="sm" onClick={handleSave} isLoading={isSaving}>Enregistrer</Button>
             </div>
           ) : (
@@ -295,8 +281,6 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
             <Input label="Nom" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} disabled={!isEditing} leftIcon={<User className="w-4 h-4" />} />
             <Input label="Email" value={user?.email || ''} disabled leftIcon={<Mail className="w-4 h-4" />} />
             <Input label="Poids (kg)" type="number" value={form.weight} onChange={(e) => setForm({ ...form, weight: e.target.value })} disabled={!isEditing} leftIcon={<Scale className="w-4 h-4" />} />
-            <Input label="FCM (bpm)" type="number" value={form.fcm} onChange={(e) => setForm({ ...form, fcm: e.target.value })} disabled={!isEditing} leftIcon={<Heart className="w-4 h-4" />} />
-            <Input label="VMA (km/h)" type="number" value={form.vma} onChange={(e) => setForm({ ...form, vma: e.target.value })} disabled={!isEditing} />
           </div>
         </GlassCardContent>
       </GlassCard>
