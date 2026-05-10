@@ -39,12 +39,13 @@ router.get('/status', verifyToken, async (req, res) => {
         const hasVma = !!profileData.vma;
 
         res.json({
-            completed: !!(hasFcm && plan && activity),
+            completed: !!((hasFcm || hasVma) && activity),
             steps: {
-                profile: hasFcm,
-                vma: hasVma,
-                plan: !!plan,
-                first_activity: !!activity
+                profile: { completed: hasFcm },
+                vma: { completed: hasVma },
+                plan: { completed: !!plan },
+                first_activity: { completed: !!activity },
+                sync: { completed: !!(profileData.has_strava || profileData.has_garmin) }
             }
         });
     } catch (error) {

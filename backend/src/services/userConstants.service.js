@@ -94,14 +94,6 @@ async function resolveFCM(userId, userDb, manual, activities) {
         return { value: manual.fcm, source: RESOLUTION_SOURCES.MANUAL };
     }
 
-    const metricFcm = await dbGetUser(userDb,
-        "SELECT metric_value FROM performance_metrics WHERE metric_type = 'fcm' ORDER BY recorded_at DESC LIMIT 1",
-        [userId]
-    ).catch(() => null);
-    if (metricFcm?.metric_value) {
-        return { value: metricFcm.metric_value, source: RESOLUTION_SOURCES.MANUAL };
-    }
-
     const age = manual.age || 30;
     const formulaFCM = Cardiovascular.calculateMaxHR(age);
 

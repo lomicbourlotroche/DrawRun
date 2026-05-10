@@ -315,15 +315,26 @@ async function calculateAndStoreMetrics(userId, userDb) {
 }
 
 async function getUserProfile(userId, userDb) {
-    const constants = await resolveUserConstants(userId);
+    // Raw DB values — NE PAS utiliser resolveUserConstants ici car il rajoute
+    // des estimations par défaut (Tanaka pour FCM), ce qui empêche le calcul
+    // depuis les activités de se déclencher.
+    const userRow = await dbGetMain('SELECT profile_data FROM users WHERE id = ?', [userId]);
+    let profileData = {};
+    try { profileData = userRow?.profile_data ? JSON.parse(userRow.profile_data) : {}; } catch {}
+
+    const userProfile = await dbGetUser(userDb,
+        'SELECT fcm, vma, vdot, resting_hr, age, sex, weight FROM user_profiles WHERE user_id = ?',
+        [userId]
+    ).catch(() => null);
+
     return {
-        fcm: constants.fcm || null,
-        resting_hr: constants.restingHR || 60,
-        vma: constants.vma || null,
-        vdot: constants.vdot || null,
-        age: constants.age || 30,
-        sex: constants.sex || 'M',
-        weight: constants.weight || null,
+        fcm: userProfile?.fcm || profileData.fcm || profileData.max_heart_rate || null,
+        resting_hr: userProfile?.resting_hr || profileData.restingHR || 60,
+        vma: userProfile?.vma || profileData.vma || null,
+        vdot: userProfile?.vdot || profileData.vdot || null,
+        age: userProfile?.age || profileData.age || 30,
+        sex: userProfile?.sex || profileData.sex || 'M',
+        weight: userProfile?.weight || profileData.weight || 70,
     };
 }
 
