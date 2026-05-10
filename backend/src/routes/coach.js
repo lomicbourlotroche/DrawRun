@@ -16,6 +16,8 @@ const coachPlan = require('../coach_plan');
 const { validateBody, validatePlanBody } = require('../validators');
 const { logger } = require('../logger');
 
+const { resolveUserConstants } = require('../services/userConstants.service');
+
 const router = express.Router();
 
 // ============================================================================
@@ -24,24 +26,13 @@ const router = express.Router();
 
 router.get('/wizard-defaults', verifyToken, async (req, res) => {
     try {
-        const { dbGetMain, getUserDb, dbAllUser, dbGetUser } = require('../database');
-        const { RunningPerformance, PMC } = require('../algorithms');
+        const { getUserDb, dbAllUser } = require('../database');
 
-        // Profil utilisateur (FCM, VDOT, VMA, poids)
-        const user = await dbGetMain(
-            'SELECT profile_data FROM users WHERE id = ?',
-            [req.user.id]
-        );
-        let fcm = null, vdot = null, vma = null, weight = null;
-        if (user?.profile_data) {
-            try {
-                const p = JSON.parse(user.profile_data);
-                fcm  = p.fcm  || p.max_heart_rate  || null;
-                vdot = p.vdot || null;
-                vma  = p.vma  || null;
-                weight = p.weight || null;
-            } catch { /* ignore */ }
-        }
+        // Constantes utilisateur (source de vérité unique)
+        const constants = await resolveUserConstants(req.user.id);
+        const fcm = constants.fcm;
+        const vdot = constants.vdot;
+        const vma = constants.vma;
 
         // Activités des 90 derniers jours
         const userDb = await getUserDb(req.user.id);
@@ -72,43 +63,11 @@ router.get('/wizard-defaults', verifyToken, async (req, res) => {
         else if (defaults.currentWeeklyKm >= 25) defaults.experienceLevel = 'intermediate';
         else defaults.experienceLevel = 'beginner';
 
-        // 3. FCM depuis les activités si pas dans le profil
-        if (!fcm) {
-            const maxHRs = activities.map(a => a.max_heartrate).filter(Boolean);
-            if (maxHRs.length > 0) {
-                fcm = Math.max(...maxHRs);
-            }
-        }
+        // 3. FCM, VDOT, VMA résolus via resolveUserConstants (source de vérité unique)
         if (fcm) defaults.fcm = fcm;
-
-        // 4. VDOT estimé depuis la meilleure performance récente
-        if (!vdot) {
-            // Chercher la meilleure performance sur une distance ≥ 3km
-            const goodRuns = activities
-                .filter(a => a.distance >= 3000 && a.moving_time > 0)
-                .map(a => {
-                    const vdotVal = RunningPerformance.calculateVDOT(a.distance, a.moving_time / 60);
-                    return {
-                        distKm: a.distance / 1000,
-                        timeMin: a.moving_time / 60,
-                        vdot: vdotVal || null,
-                    };
-                })
-                .filter(r => r.vdot && r.vdot > 20);
-
-            if (goodRuns.length > 0) {
-                vdot = Math.max(...goodRuns.map(r => r.vdot));
-                vdot = Math.round(vdot * 10) / 10;
-            }
-        }
         if (vdot) {
             defaults.vdotValue = vdot;
             defaults.hasVDOT = true;
-        }
-
-        // 5. VMA estimée depuis VDOT (VDOT ≈ VMA * 0.82 pour coureurs moyens)
-        if (!vma && vdot) {
-            vma = Math.round(vdot / 0.82 * 10) / 10;
         }
         if (vma) {
             defaults.vmaValue = vma;
