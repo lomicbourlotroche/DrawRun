@@ -154,7 +154,7 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [isSavingConstants, setIsSavingConstants] = useState(false);
   const [constForm, setConstForm] = useState({ fcm: '', vma: '', vdot: '' });
-  const { data: constantsData, fetchConstants } = useUserConstantsStore();
+  const { data: constantsData, fetchConstants, invalidate } = useUserConstantsStore();
 
   useEffect(() => {
     if (user) {
@@ -359,6 +359,8 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
                 setAutoUpdate(next);
                 try {
                   await api.updateProfile({ auto_update: next } as any);
+                  updateUser({ auto_update: next } as any);
+                  invalidate();
                 } catch { /* silencieux */ }
               }}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${autoUpdate ? 'bg-primary' : 'bg-muted'}`}
@@ -377,6 +379,7 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
                 setIsRecalculating(true);
                 try {
                   await api.recalculateMetrics();
+                  invalidate();
                   await fetchConstants();
                   toast.success('Constantes recalculées');
                 } catch {
@@ -402,6 +405,8 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
                   if (constForm.vdot) payload.vdot = parseFloat(constForm.vdot);
                   if (Object.keys(payload).length > 0) {
                     await api.updateProfile(payload as any);
+                    updateUser({ ...payload, auto_update: false } as any);
+                    invalidate();
                     await fetchConstants();
                     toast.success('Constantes mises à jour');
                   }

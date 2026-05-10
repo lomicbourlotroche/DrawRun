@@ -38,17 +38,6 @@ self.addEventListener('activate', (event) => {
 });
 
 // ============================================================================
-// FETCH — laisser passer TOUT (pas de cache SW pour les assets)
-// Next.js gère lui-même le cache des chunks via Cache-Control: immutable
-// ============================================================================
-
-self.addEventListener('fetch', (event) => {
-  // Ne rien intercepter — laisser le navigateur gérer le cache HTTP natif
-  // Cela évite les URLs malformées et les chunks périmés
-  return;
-});
-
-// ============================================================================
 // PUSH — afficher une notification système
 // ============================================================================
 

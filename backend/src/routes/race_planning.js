@@ -15,6 +15,7 @@ const {
     Taper,
     Overtraining,
     TrainingLoad,
+    MathUtils,
 } = require('../algorithms/index');
 
 /**
@@ -401,50 +402,84 @@ router.post('/calculate', verifyToken, async (req, res) => {
 });
 
 /**
- * Get optimal pacing strategy based on race distance
+ * Get optimal pacing strategy based on race distance and terrain
+ * Amélioré avec phases granulaires et gestion du "mur" du marathon
  */
-function getPacingStrategy(distance) {
+function getPacingStrategy(distance, gpxKmSegments = null) {
+    const hasClimbs = gpxKmSegments && gpxKmSegments.some(s => s.grade > 3);
+    const hasDescents = gpxKmSegments && gpxKmSegments.some(s => s.grade < -3);
+
     if (distance <= 5) {
         return {
             type: 'even',
             name: 'Allure régulière',
             description: 'Sur 5K, maintenez une allure constante du début à la fin.',
+            phases: [
+                { start: 0.00, end: 0.15, factor: 1.00, label: 'Mise en route' },
+                { start: 0.15, end: 0.85, factor: 1.00, label: 'Allure cible' },
+                { start: 0.85, end: 1.00, factor: 0.97, label: 'Final' },
+            ],
             startFactor: 1.00,
             midFactor: 1.00,
-            endFactor: 0.98,
+            endFactor: 0.97,
         };
     } else if (distance <= 10) {
         return {
             type: 'slight-negative',
             name: 'Negative split léger',
-            description: 'Premier km +2%, milieu stable, dernier km à fond.',
+            description: hasClimbs ? 'Gérez les montées sans forcer, relancez dans les descentes.' : 'Premier km +2%, milieu stable, dernier km à fond.',
+            phases: [
+                { start: 0.00, end: 0.10, factor: 1.02, label: 'Départ contenu' },
+                { start: 0.10, end: 0.80, factor: 1.00, label: 'Allure cible' },
+                { start: 0.80, end: 0.95, factor: 0.99, label: 'Accélération progressive' },
+                { start: 0.95, end: 1.00, factor: 0.96, label: 'Sprint final' },
+            ],
             startFactor: 1.02,
             midFactor: 1.00,
-            endFactor: 0.97,
+            endFactor: 0.96,
         };
     } else if (distance <= 21.0975) {
         return {
             type: 'negative-split',
-            name: 'Negative split',
-            description: 'Départ conservateur (+3%), allure cible au milieu, accélération progressive.',
+            name: 'Negative split progressif',
+            description: 'Départ conservateur (+3%), allure cible au milieu, accélération sur dernier 5K.',
+            phases: [
+                { start: 0.00, end: 0.10, factor: 1.03, label: 'Départ très contenu' },
+                { start: 0.10, end: 0.75, factor: 1.00, label: 'Allure cible' },
+                { start: 0.75, end: 0.90, factor: 0.99, label: 'Progression' },
+                { start: 0.90, end: 1.00, factor: 0.97, label: 'Accélération finale' },
+            ],
             startFactor: 1.03,
             midFactor: 1.00,
-            endFactor: 0.98,
+            endFactor: 0.97,
         };
     } else if (distance <= 42.195) {
         return {
             type: 'conservative-negative',
-            name: 'Départ très conservateur',
-            description: 'Premiers 5K +4-5%, allure cible au 10K, gestion jusqu\'au 35K, tout au dernier 7K.',
+            name: 'Marathon — Gestion optimale',
+            description: 'Départ très contrôlé (+4%), allure cible au 10K, gestion jusqu\'au 32K, relance si possible.',
+            phases: [
+                { start: 0.00, end: 0.08, factor: 1.04, label: 'Départ très contrôlé' },
+                { start: 0.08, end: 0.20, factor: 1.02, label: 'Mise en jambes' },
+                { start: 0.20, end: 0.75, factor: 1.00, label: 'Allure cible' },
+                { start: 0.75, end: 0.88, factor: 1.01, label: 'Zone de gestion (risque de mur)' },
+                { start: 0.88, end: 0.95, factor: 1.02, label: 'Dernière ligne droite' },
+                { start: 0.95, end: 1.00, factor: 0.98, label: 'Final — tout donner' },
+            ],
             startFactor: 1.04,
             midFactor: 1.01,
-            endFactor: 0.99,
+            endFactor: 0.98,
         };
     } else {
         return {
             type: 'ultra-conservative',
-            name: 'Ultra conservateur',
-            description: 'Départ très lent (+8%), marche dans les montées, gestion énergétique stricte.',
+            name: 'Ultra — Gestion énergétique',
+            description: 'Départ très lent (+8%), marche dans les montées, gestion stricte du glycogène, nutrition clé.',
+            phases: [
+                { start: 0.00, end: 0.10, factor: 1.08, label: 'Départ très lent' },
+                { start: 0.10, end: 0.80, factor: 1.02, label: 'Allure de croisière' },
+                { start: 0.80, end: 1.00, factor: 1.00, label: 'Gestion jusqu\'à la fin' },
+            ],
             startFactor: 1.08,
             midFactor: 1.02,
             endFactor: 1.00,
