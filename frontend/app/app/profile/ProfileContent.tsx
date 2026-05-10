@@ -152,6 +152,8 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
   const [autoUpdate, setAutoUpdate] = useState(true);
   const [isRecalculating, setIsRecalculating] = useState(false);
+  const [isSavingConstants, setIsSavingConstants] = useState(false);
+  const [constForm, setConstForm] = useState({ fcm: '', vma: '', vdot: '' });
   const { data: constantsData, fetchConstants } = useUserConstantsStore();
 
   useEffect(() => {
@@ -170,6 +172,16 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
       });
     }
   }, [user]);
+
+  useEffect(() => {
+    if (constantsData) {
+      setConstForm({
+        fcm: constantsData.profile.fcm?.toString() || '',
+        vma: constantsData.profile.vma?.toString() || '',
+        vdot: constantsData.profile.vdot?.toString() || '',
+      });
+    }
+  }, [constantsData]);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -296,20 +308,31 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
         <GlassCardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
-              { label: 'FCM', value: constantsData?.profile.fcm, source: constantsData?.sources.fcm, unit: 'bpm' },
-              { label: 'VMA', value: constantsData?.profile.vma, source: constantsData?.sources.vma, unit: 'km/h' },
-              { label: 'VDOT', value: constantsData?.profile.vdot, source: constantsData?.sources.vdot, unit: '' },
+              { key: 'fcm' as const, label: 'FCM', source: constantsData?.sources.fcm, unit: 'bpm', placeholder: '185' },
+              { key: 'vma' as const, label: 'VMA', source: constantsData?.sources.vma, unit: 'km/h', placeholder: '15' },
+              { key: 'vdot' as const, label: 'VDOT', source: constantsData?.sources.vdot, unit: '', placeholder: '45' },
             ].map(item => {
               const src = item.source || 'estimated';
+              const isEditable = !autoUpdate;
               const badgeColor = src === 'manual' ? 'bg-green-500/15 text-green-400' : src === 'computed' ? 'bg-blue-500/15 text-blue-400' : 'bg-yellow-500/15 text-yellow-400';
               const badgeLabel = src === 'manual' ? 'Manuel' : src === 'computed' ? 'Auto' : 'Estimé';
               return (
-                <div key={item.label} className="p-3 rounded-xl bg-card border border-border text-center">
+                <div key={item.key} className={`p-3 rounded-xl bg-card border ${isEditable ? 'border-primary/30' : 'border-border'} text-center`}>
                   <p className="text-xs text-muted mb-1">{item.label}</p>
-                  <p className={`text-2xl font-bold ${item.value ? 'text-foreground' : 'text-muted'}`}>
-                    {item.value ?? '--'}
-                    {item.unit && <span className="text-sm text-muted font-normal ml-1">{item.unit}</span>}
-                  </p>
+                  {isEditable ? (
+                    <input
+                      type="number"
+                      value={constForm[item.key]}
+                      onChange={e => setConstForm(prev => ({ ...prev, [item.key]: e.target.value }))}
+                      placeholder={item.placeholder}
+                      className="w-full text-center text-xl font-bold bg-transparent border-b border-primary/30 focus:outline-none focus:border-primary py-1"
+                    />
+                  ) : (
+                    <p className={`text-2xl font-bold ${item.source ? 'text-foreground' : 'text-muted'}`}>
+                      {constantsData?.profile[item.key] ?? '--'}
+                      {item.unit && <span className="text-sm text-muted font-normal ml-1">{item.unit}</span>}
+                    </p>
+                  )}
                   <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${badgeColor}`}>
                     {badgeLabel}
                   </span>
@@ -344,26 +367,54 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
             </button>
           </div>
 
-          <Button
-            variant="secondary"
-            className="w-full"
-            leftIcon={<RotateCcw className="w-4 h-4" />}
-            isLoading={isRecalculating}
-            onClick={async () => {
-              setIsRecalculating(true);
-              try {
-                await api.recalculateMetrics();
-                await fetchConstants();
-                toast.success('Constantes recalculées');
-              } catch {
-                toast.error('Erreur de calcul');
-              } finally {
-                setIsRecalculating(false);
-              }
-            }}
-          >
-            Recalculer depuis les activités
-          </Button>
+          {autoUpdate ? (
+            <Button
+              variant="secondary"
+              className="w-full"
+              leftIcon={<RotateCcw className="w-4 h-4" />}
+              isLoading={isRecalculating}
+              onClick={async () => {
+                setIsRecalculating(true);
+                try {
+                  await api.recalculateMetrics();
+                  await fetchConstants();
+                  toast.success('Constantes recalculées');
+                } catch {
+                  toast.error('Erreur de calcul');
+                } finally {
+                  setIsRecalculating(false);
+                }
+              }}
+            >
+              Recalculer depuis les activités
+            </Button>
+          ) : (
+            <Button
+              className="w-full"
+              leftIcon={<Heart className="w-4 h-4" />}
+              isLoading={isSavingConstants}
+              onClick={async () => {
+                setIsSavingConstants(true);
+                try {
+                  const payload: Record<string, any> = {};
+                  if (constForm.fcm) payload.fcm = parseInt(constForm.fcm);
+                  if (constForm.vma) payload.vma = parseFloat(constForm.vma);
+                  if (constForm.vdot) payload.vdot = parseFloat(constForm.vdot);
+                  if (Object.keys(payload).length > 0) {
+                    await api.updateProfile(payload as any);
+                    await fetchConstants();
+                    toast.success('Constantes mises à jour');
+                  }
+                } catch {
+                  toast.error('Erreur');
+                } finally {
+                  setIsSavingConstants(false);
+                }
+              }}
+            >
+              Enregistrer les valeurs manuelles
+            </Button>
+          )}
         </GlassCardContent>
       </GlassCard>
     </div>

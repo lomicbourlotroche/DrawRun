@@ -115,7 +115,7 @@ router.get('/', verifyToken, async (req, res) => {
 
 router.put('/', verifyToken, validateBody(validateProfileBody), async (req, res) => {
     try {
-        const { name, fcm, vma, weight, height, restingHR, sex, age, fav_sports, weeklyKm, vdot, goal } = req.body;
+        const { name, fcm, vma, weight, height, restingHR, sex, age, fav_sports, weeklyKm, vdot, goal, auto_update } = req.body;
         
         // Get current profile_data
         const currentUser = await dbGetMain('SELECT profile_data FROM users WHERE id = ?', [req.user.id]);
@@ -138,6 +138,7 @@ router.put('/', verifyToken, validateBody(validateProfileBody), async (req, res)
         if (weeklyKm !== undefined) profileData.weeklyKm = weeklyKm;
         if (vdot !== undefined) profileData.vdot = vdot;
         if (goal !== undefined) profileData.goal = goal;
+        if (auto_update !== undefined) profileData.auto_update = auto_update;
 
         const effectiveName = name !== undefined && name !== '' ? name : undefined;
         if (effectiveName) {
