@@ -42,6 +42,8 @@ export interface User {
   dateOfBirth?: string;
   sex?: 'M' | 'F';
   restingHR?: number | null;
+  weeklyKm?: number | null;
+  goal?: string | null;
 }
 
 export interface Activity {

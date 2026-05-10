@@ -20,6 +20,7 @@ const { validatePagination, validateBody, validateActivityBody } = require('../v
 const metrics = require('../metrics_calculator');
 const { logger } = require('../logger');
 const { enrichActivitiesWithDraws } = require('../services/queryOptimizer');
+const heatmapService = require('../services/heatmap.service');
 
 const router = express.Router();
 
@@ -720,6 +721,13 @@ router.post('/import/gpx', verifyToken, async (req, res) => {
         try {
             await metrics.calculateAndStoreMetrics(req.user.id, userDb);
         } catch { /* non-bloquant */ }
+
+        // Update heatmap
+        if (parsed.streams && parsed.streams.latlng) {
+            heatmapService.updateHeatmap(parsed.streams.latlng, activityType).catch(e => 
+                logger.warn('Heatmap update failed', { error: e.message })
+            );
+        }
 
         res.json({
             success: true,

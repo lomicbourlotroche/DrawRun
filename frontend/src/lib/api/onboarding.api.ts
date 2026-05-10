@@ -35,7 +35,7 @@ export const onboardingApi = {
    * Complète une étape d'onboarding
    */
   completeOnboardingStep(step: string): Promise<{ success: boolean }> {
-    return client.request('/api/onboarding/step', {
+    return client.request('/api/onboarding/complete', {
       method: 'POST',
       body: JSON.stringify({ step }),
     });

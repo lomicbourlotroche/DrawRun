@@ -9,6 +9,7 @@ import ExplorePanel from '@/components/features/explore/ExplorePanel';
 import MapLayerSwitcher from '@/components/features/explore/MapLayerSwitcher';
 import LocationSearch from '@/components/features/explore/LocationSearch';
 import RoutePlanner from '@/components/features/explore/RoutePlanner';
+import RouteDetailPopup from '@/components/features/explore/RouteDetailPopup';
 import CommunityTracesLayer from '@/components/features/explore/CommunityTracesLayer';
 
 const ExploreMap = dynamic(
@@ -114,6 +115,7 @@ export default function ExplorePage() {
   const [routePlannerOpen, setRoutePlannerOpen] = useState(false);
   const [waypoints, setWaypoints] = useState<Waypoint[]>([]);
   const [isLoop, setIsLoop] = useState(false);
+  const [selectedRoute, setSelectedRoute] = useState<RouteItem | null>(null);
 
   // Community traces
   const [showCommunityTraces, setShowCommunityTraces] = useState(false);
@@ -170,7 +172,7 @@ export default function ExplorePage() {
             polyline: rt.polyline,
             color: ROUTE_COLORS[idx % ROUTE_COLORS.length],
             name: rt.name,
-            onClick: () => router.push(`/app/explore/routes/${rt.id}`),
+            onClick: () => setSelectedRoute(rt),
           }))
         );
       }
@@ -280,7 +282,7 @@ export default function ExplorePage() {
   }, []);
 
   return (
-    <div className="relative w-full h-[calc(100vh-4rem)] overflow-hidden -m-4 lg:-m-6">
+    <div className="relative w-full overflow-hidden -m-4 lg:-m-6" style={{ height: 'calc(100dvh - 4rem)' }}>
       {/* Map */}
       <div className="absolute inset-0">
         <ExploreMap
@@ -370,6 +372,27 @@ export default function ExplorePage() {
         isOpen={panelOpen}
         onToggle={() => setPanelOpen((p) => !p)}
       />
+
+      {/* Route detail popup */}
+      {selectedRoute && !routePlannerOpen && (
+        <RouteDetailPopup
+          route={selectedRoute}
+          onClose={() => setSelectedRoute(null)}
+          onViewDetails={() => {
+            setSelectedRoute(null);
+            router.push(`/app/explore/routes/${selectedRoute.id}`);
+          }}
+          onUseRoute={async () => {
+            try {
+              await api.useRoute(selectedRoute.id);
+              toast.success('Parcours ajouté à vos activités');
+              setSelectedRoute(null);
+            } catch {
+              toast.error('Erreur lors de l\'utilisation du parcours');
+            }
+          }}
+        />
+      )}
 
       {/* Route planner (bottom sheet) */}
       {routePlannerOpen && (

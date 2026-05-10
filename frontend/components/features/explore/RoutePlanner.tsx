@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
-import { api } from '@/lib/api';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { api, exploreApi } from '@/lib/api';
 import { Button, Input, Badge } from '@/components/ui';
-import { X, Undo2, Save, Trash2, Map, Navigation, Repeat } from 'lucide-react';
+import { X, Undo2, Save, Trash2, Map, Navigation, Repeat, Redo2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import ElevationProfile from './ElevationProfile';
 
@@ -76,6 +76,10 @@ export default function RoutePlanner({
   const [activityType, setActivityType] = useState('Run');
   const [difficulty, setDifficulty] = useState('medium');
   const [isSaving, setIsSaving] = useState(false);
+  const [elevationData, setElevationData] = useState<{ distance: number; elevation: number }[]>([]);
+  const [elevationStats, setElevationStats] = useState({ total_gain: 0, max_elevation: 0, min_elevation: 0 });
+  const [elevationLoading, setElevationLoading] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   const pushHistory = useCallback((wps: Waypoint[]) => {
     setHistory((prev) => {
@@ -94,6 +98,14 @@ export default function RoutePlanner({
     }
   }, [historyIdx, history, onWaypointsChange]);
 
+  const handleRedo = useCallback(() => {
+    if (historyIdx < history.length - 1) {
+      const newIdx = historyIdx + 1;
+      setHistoryIdx(newIdx);
+      onWaypointsChange([...history[newIdx]]);
+    }
+  }, [historyIdx, history, onWaypointsChange]);
+
   const handleRemoveLast = useCallback(() => {
     if (waypoints.length === 0) return;
     const next = waypoints.slice(0, -1);
@@ -106,6 +118,47 @@ export default function RoutePlanner({
     pushHistory([]);
   }, [onWaypointsChange, pushHistory]);
 
+  // Fetch real elevation data from API
+  useEffect(() => {
+    if (waypoints.length < 2) {
+      setElevationData([]);
+      setElevationStats({ total_gain: 0, max_elevation: 0, min_elevation: 0 });
+      return;
+    }
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(async () => {
+      setElevationLoading(true);
+      try {
+        const res = await exploreApi.getElevationProfile(waypoints);
+        if (res.success) {
+          setElevationData(res.profile);
+          setElevationStats(res.stats);
+        }
+      } catch {
+        const totalDist = waypoints.slice(1).reduce((sum, wp, i) =>
+          sum + haversineDistance(waypoints[i], wp), 0);
+        const numPoints = Math.max(10, waypoints.length * 3);
+        const fallback: { distance: number; elevation: number }[] = [];
+        for (let i = 0; i <= numPoints; i++) {
+          const frac = i / numPoints;
+          fallback.push({
+            distance: totalDist * frac,
+            elevation: 50 + Math.sin(frac * Math.PI * 4) * 20 + Math.random() * 5,
+          });
+        }
+        setElevationData(fallback);
+      } finally {
+        setElevationLoading(false);
+      }
+    }, 500);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [waypoints]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const stats = useMemo(() => {
     let totalDist = 0;
     for (let i = 1; i < waypoints.length; i++) {
@@ -116,25 +169,9 @@ export default function RoutePlanner({
     }
     return {
       distance: totalDist,
-      elevationGain: 0,
+      elevationGain: elevationStats.total_gain,
     };
-  }, [waypoints, isLoop]);
-
-  // Mock elevation profile (will be replaced with API data)
-  const elevationData = useMemo(() => {
-    if (waypoints.length < 2) return [];
-    const totalDist = stats.distance;
-    const numPoints = Math.max(10, waypoints.length * 3);
-    const result: { distance: number; elevation: number }[] = [];
-    for (let i = 0; i <= numPoints; i++) {
-      const frac = i / numPoints;
-      result.push({
-        distance: totalDist * frac,
-        elevation: 50 + Math.sin(frac * Math.PI * 4) * 20 + Math.random() * 5,
-      });
-    }
-    return result;
-  }, [waypoints, stats.distance]);
+  }, [waypoints, isLoop, elevationStats.total_gain]);
 
   const handleToggleLoop = useCallback(() => {
     const next = !isLoop;
@@ -169,7 +206,7 @@ export default function RoutePlanner({
         description: description.trim(),
         polyline,
         distance: Math.round(stats.distance),
-        elevation_gain: Math.round(stats.elevationGain),
+        elevation_gain: Math.round(elevationStats.total_gain),
         elevation_loss: 0,
         activity_type: activityType,
         difficulty,
@@ -192,7 +229,8 @@ export default function RoutePlanner({
 
   return (
     <div className="absolute bottom-0 left-0 right-0 z-[600] bg-white/95 backdrop-blur-md border-t border-border
-                    rounded-t-xl shadow-xl max-h-[50vh] overflow-y-auto">
+                    rounded-t-xl shadow-xl overflow-y-auto"
+         style={{ maxHeight: 'min(60dvh, 50vh)' }}>
       <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-white/95 z-10">
         <h3 className="font-bold flex items-center gap-2">
           <Map className="w-5 h-5 text-primary" />
@@ -206,6 +244,14 @@ export default function RoutePlanner({
             title="Annuler"
           >
             <Undo2 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={handleRedo}
+            disabled={historyIdx >= history.length - 1}
+            className="p-2 rounded-md hover:bg-surface transition-colors disabled:opacity-30"
+            title="Refaire"
+          >
+            <Redo2 className="w-4 h-4" />
           </button>
           <button
             onClick={handleRemoveLast}
@@ -282,12 +328,26 @@ export default function RoutePlanner({
         </div>
 
         {/* Elevation profile */}
-        {elevationData.length > 0 && (
-          <div className="bg-muted/20 rounded-lg p-3">
-            <p className="text-xs text-muted-foreground mb-1 font-medium">Profil d&apos;élévation</p>
-            <ElevationProfile data={elevationData} height={100} />
+        <div className="bg-muted/20 rounded-lg p-3 min-h-[60px]">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-xs text-muted-foreground font-medium">Profil d&apos;élévation</p>
+            {elevationLoading && (
+              <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
+            )}
+            {!elevationLoading && elevationStats.total_gain > 0 && (
+              <span className="text-xs font-semibold text-green-600">
+                D+ {elevationStats.total_gain} m
+              </span>
+            )}
           </div>
-        )}
+          {elevationData.length > 0 ? (
+            <ElevationProfile data={elevationData} height={100} />
+          ) : (
+            <div className="flex items-center justify-center text-xs text-muted-foreground" style={{ height: 100 }}>
+              {waypoints.length < 2 ? 'Ajoutez au moins 2 points' : 'Chargement...'}
+            </div>
+          )}
+        </div>
 
         {/* Save form */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

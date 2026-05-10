@@ -318,6 +318,7 @@ const MIGRATIONS = [
             `);
             db.run('CREATE INDEX IF NOT EXISTS idx_heatmap_location ON heatmap_data(lat, lng)');
             db.run('CREATE INDEX IF NOT EXISTS idx_heatmap_type ON heatmap_data(activity_type)');
+            db.run('CREATE UNIQUE INDEX IF NOT EXISTS idx_heatmap_upsert ON heatmap_data(lat, lng, activity_type)');
         },
     },
     {

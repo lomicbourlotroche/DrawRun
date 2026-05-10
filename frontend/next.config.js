@@ -19,6 +19,7 @@ const nextConfig = {
   },
   poweredByHeader: false,
   generateEtags: false,
+  turbopack: {},
 };
 
 module.exports = withBundleAnalyzer(nextConfig);

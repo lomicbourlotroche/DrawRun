@@ -1,6 +1,7 @@
 /* eslint-disable */
 'use client';
 
+import 'leaflet/dist/leaflet.css';
 import { useEffect, useRef, useState } from 'react';
 
 interface ExploreMapProps {
@@ -127,6 +128,10 @@ export default function ExploreMap({
 
     const init = async () => {
       const L = await import('leaflet');
+      // @ts-ignore
+      window.L = L;
+      // @ts-ignore
+      await import('leaflet.heat');
 
       const map = L.map(mapRef.current!, {
         zoomControl: false,
@@ -338,7 +343,7 @@ export default function ExploreMap({
         blur: 15,
         maxZoom: 17,
         max: 1.0,
-        gradient: { 0.2: '#blue', 0.5: '#lime', 0.8: '#yellow', 1.0: '#red' },
+        gradient: { 0.2: '#313695', 0.4: '#4575b4', 0.6: '#74add1', 0.8: '#fdae61', 1.0: '#f46d43' },
       }).addTo(map);
       heatmapLayerRef.current = heat;
     }
