@@ -20,7 +20,7 @@ DrawRun is a full-stack sports performance tracking application.
 - **JWT + Refresh Token** — access tokens (15 min), refresh tokens (7 days) with rotation; both stored in `sessionStorage`
 - **AES-256-GCM encryption** — all third-party credentials (Garmin, Suunto, Strava passwords) encrypted at rest
 - **Formal schema migrations** — `schema_migrations` table in `main.db`; migrations run at startup
-- **Winston logging** — never use `console.log` in backend source; use `logger.info/warn/error` from `./src/logger`
+- **Winston logging** — never use `console.log` in backend source; use `logger.info/warn/error` from `./src/utils/logger`
 
 ---
 
@@ -36,57 +36,92 @@ DrawRun-New/
 │   ├── .env.example                # Template for all env vars
 │   ├── .eslintrc.json              # ESLint (security + node plugins)
 │   ├── src/
-│   │   ├── database.js             # LRU cache, per-user DB, migrations
-│   │   ├── auth.js                 # JWT auth, refresh endpoint, 2FA, credentials
-│   │   ├── auth2fa.js              # TOTP / QR code 2FA
-│   │   ├── jwt_tokens.js           # Token generation, verification, rotation
-│   │   ├── crypto_utils.js         # AES-256-GCM encrypt/decrypt
-│   │   ├── logger.js               # Winston logger (use this, not console.log)
-│   │   ├── validators.js           # Input validation helpers
-│   │   ├── db_helpers.js           # maskEmail, clamp, sleep, etc.
-│   │   ├── api_routes.js           # Scientific algorithm routes
-│   │   ├── coach_plan.js           # Adaptive coaching engine
-│   │   ├── metrics_calculator.js   # PMC / TSS / VDOT metrics
-│   │   ├── tss_calculator.js       # TSS route handler
-│   │   ├── strava_sync.js          # Strava OAuth2 sync
-│   │   ├── garmin_sync.js          # Garmin sync
-│   │   ├── monitoring.js           # Performance monitoring
-│   │   ├── performance.js          # Performance analysis
-│   │   ├── sync_queue.js           # Sync queue management
-│   │   ├── swagger.js              # Swagger/OpenAPI setup
+│   │   ├── database.js             # Re-exports from database/
+│   │   ├── database/
+│   │   │   ├── index.js            # Core: sql.js init, per-user DB, helpers
+│   │   │   └── migrations.js       # Schema migrations (MIGRATIONS, runMigrations)
+│   │   ├── api_routes.js           # Re-exports from routes/algo/
+│   │   ├── coach_plan.js           # Re-exports from services/coach/
+│   │   ├── config/
+│   │   │   └── swagger.js          # Swagger/OpenAPI setup
 │   │   ├── algorithms/
-│   │   │   ├── index.js            # Cardiovascular, PMC, TrainingLoad, etc.
+│   │   │   ├── index.js            # All algorithm exports (Cardiovascular, PMC, etc.)
 │   │   │   ├── tss.js              # TSS/TRIMP calculation
-│   │   │   └── sports.js           # Sports management
+│   │   │   ├── sports.js           # Sports management
+│   │   │   └── ... (21 files)      # Scientific algorithm modules
 │   │   ├── routes/
+│   │   │   ├── auth.js             # Express router: login, register, 2FA, credentials
 │   │   │   ├── activities.js       # GET/POST /api/activities
 │   │   │   ├── coach.js            # /api/coach/*
-│   │   │   ├── social.js           # /api/social/*
-│   │   │   ├── profile.js          # /api/profile
-│   │   │   ├── pmc.js              # /api/pmc
-│   │   │   ├── sync.js             # /api/sync
+│   │   │   ├── social.js           # Re-exports from routes/social/
+│   │   │   ├── social/             # Social routes by domain (friends, groups, feed, etc.)
+│   │   │   │   └── index.js        # All social endpoints (to be split further)
+│   │   │   ├── algo/               # Scientific algorithm routes (split from api_routes.js)
+│   │   │   │   ├── index.js        # Aggregator + recommendations, health, constants, analyze
+│   │   │   │   ├── zones.js        # /zones, /vdot
+│   │   │   │   ├── pmc.js          # /pmc, /readiness, /overtraining
+│   │   │   │   └── training.js     # /polarization, /taper, /tss, /critical-power
+│   │   │   ├── explore.js          # /api/explore (segments, routes, heatmap)
+│   │   │   ├── gear.js             # /api/gear (CRUD) — verifyToken fixed
 │   │   │   ├── metrics.js          # /api/metrics
-│   │   │   ├── preferences.js      # /api/preferences
+│   │   │   ├── notifications.js    # /api/notifications (push/subscribe)
 │   │   │   ├── onboarding.js       # /api/onboarding
 │   │   │   ├── overtraining.js     # /api/overtraining
-│   │   │   └── tss.js              # /api/tss
+│   │   │   ├── pmc.js              # /api/pmc
+│   │   │   ├── preferences.js      # /api/preferences
+│   │   │   ├── profile.js          # /api/profile
+│   │   │   ├── race_planning.js    # /api/race-planning
+│   │   │   ├── share.js            # /api/activities/:id/share-image
+│   │   │   ├── sync.js             # /api/sync
+│   │   │   ├── user-constants.js   # /api/user/constants
+│   │   │   └── weather.js          # /api/activities/:id/weather
 │   │   ├── services/
 │   │   │   ├── cache.js            # Redis / in-memory cache
-│   │   │   ├── metrics.js          # Prometheus metrics
-│   │   │   ├── draws.service.js    # DrawRun kudos system
-│   │   │   ├── push.service.js     # Push notifications
-│   │   │   ├── queryOptimizer.js   # Query optimization
-│   │   │   ├── routes.service.js   # Routes service
-│   │   │   ├── segments.service.js # Segments service
-│   │   │   └── social.service.js   # Social features (friends, groups, feed, challenges)
+│   │   │   ├── coach/              # Coach engine (split from coach_plan.js)
+│   │   │   │   ├── index.js        # Orchestration (getCoachProfile, getGamification)
+│   │   │   │   ├── plan.service.js # Plan creation, periodization, helpers
+│   │   │   │   └── session.service.js  # Session CRUD, test scheduling, adaptation
+│   │   │   ├── metricsCalculator.service.js # PMC / TSS / VDOT post-sync metrics
+│   │   │   ├── queryOptimizer.js   # BatchLoader, N+1 prevention
+│   │   │   ├── userConstants.service.js  # User physiological constants
+│   │   │   ├── social.service.js   # Re-exports from services/social/
+│   │   │   ├── social/             # Social services by domain
+│   │   │   │   ├── index.js        # All social service functions (to be split further)
+│   │   │   │   ├── draws.service.js  # DrawRun kudos system
+│   │   │   │   ├── friends.service.js
+│   │   │   │   ├── feed.service.js
+│   │   │   │   ├── groups.service.js
+│   │   │   │   ├── challenges.service.js
+│   │   │   │   ├── conversations.service.js
+│   │   │   │   ├── engagement.service.js
+│   │   │   │   └── notifications.service.js
+│   │   │   ├── explore/            # Explore domain (segments, routes, heatmap)
+│   │   │   │   ├── elevation.service.js
+│   │   │   │   ├── routes.service.js
+│   │   │   │   ├── segments.service.js
+│   │   │   │   └── heatmap.service.js
+│   │   │   ├── notifications/
+│   │   │   │   └── push.service.js # Push notifications
+│   │   │   ├── sync/               # Sync providers
+│   │   │   │   ├── strava.js       # Strava sync via Playwright
+│   │   │   │   ├── garmin.js       # Garmin sync via Python bridge
+│   │   │   │   ├── suunto.js       # Suunto sync via reverse-engineered API
+│   │   │   │   ├── decathlon.js    # Decathlon sync via OAuth2
+│   │   │   │   └── utils.js        # Shared sync helpers (batch insert, merge details)
+│   │   │   ├── auth/
+│   │   │   │   └── 2fa.service.js   # TOTP / QR code 2FA helpers
+│   │   │   └── userConstants.service.js  # User physiological constants
 │   │   ├── middleware/
-│   │   │   ├── auth.js             # JWT verification middleware
 │   │   │   ├── cache.js            # Cache middleware
-│   │   │   └── security.js         # Helmet, rate limiting, CORS, CSP
-│   │   ├── utils/
-│   │   │   ├── planIntegration.js
-│   │   │   ├── plans.js
-│   │   │   └── validation.js
+│   │   │   ├── security.js         # Helmet, rate limiting, CORS, CSP
+│   │   │   └── performance.js      # LRU computation cache, compression, perf metrics
+│   │   └── utils/
+│   │       ├── crypto.js           # AES-256-GCM encrypt/decrypt
+│   │       ├── jwt.js              # Token generation, verifyAccessToken, rotation
+│   │       ├── validators.js       # Input validation helpers
+│   │       ├── logger.js           # Winston logger (use this, not console.log)
+│   │       ├── gpx_utils.js        # GPX parsing, Haversine
+│   │       └── helpers.js          # maskEmail, sleep, clamp (replaces db_helpers.js)
 │   ├── tests/
 │   │   ├── setup.js                # Jest global setup (env vars, console mocks)
 │   │   ├── algorithms.test.js      # Scientific algorithm tests (55 tests)
@@ -279,7 +314,7 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
 
 | ❌ Forbidden | ✅ Correct alternative |
 |-------------|----------------------|
-| `console.log(...)` in backend `src/` | `logger.info(...)` from `./src/logger` |
+| `console.log(...)` in backend `src/` | `logger.info(...)` from `./src/utils/logger` |
 | `console.error(...)` in backend `src/` | `logger.error(...)` |
 | `fetch(process.env.NEXT_PUBLIC_API_URL + '/api/...')` in components | `api.methodName(...)` from `@/lib/api` |
 | Hardcode `http://localhost:3000` anywhere | Use `API_BASE_URL` from `@/lib/constants` |
@@ -292,10 +327,10 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
 
 - **All HTTP calls** from frontend must go through `api` from `@/lib/api` — never use raw `fetch` in components
 - **All backend logging** must use Winston `logger` — never `console.log`
-- **All sensitive data** (passwords, tokens) must be encrypted with `encrypt()` from `crypto_utils.js` before DB storage
+- **All sensitive data** (passwords, tokens) must be encrypted with `encrypt()` from `utils/crypto.js` before DB storage
 - **All new DB schema changes** must be added as a migration in the `MIGRATIONS` array in `database.js`
 - **TypeScript strict mode** — `tsc --noEmit` must pass with 0 errors after every change
-- **Tests must pass** — `npm test` must show 107/107 passing after every backend change
+- **Tests must pass** — `npm test` must show 107/107 passing (120 with extended) after every backend change
 - **No junk files** — LRU tests must mock `fs.writeFileSync` globally (see `database.test.js` `beforeAll`)
 
 ### 5.3 Token & Auth flow
@@ -350,11 +385,12 @@ await dbRunUser(userDb, 'INSERT INTO activities ...', [...values]);
 
 ## 6. Testing
 
-### Backend (Jest) — 107 tests, 7 suites
+### Backend (Jest) — 120 tests, 8 suites (107 core + 13 extended)
 
 | Suite | Tests | What it covers |
 |-------|-------|----------------|
 | `algorithms.test.js` | 55 | Scientific algorithms (VDOT, PMC, TSS, HRV, etc.) |
+| `extended_algorithms.test.js` | 13 | Biomechanics, Taper, RaceStrategy, property-based |
 | `auth.test.js` | 14 | JWT, refresh endpoint, credential encryption, Property 11 |
 | `crypto.test.js` | 5 | AES-256-GCM encrypt/decrypt, Property 12 |
 | `database.test.js` | 12 | LRU cache, migrations, Properties 1-3, 13 |
@@ -463,7 +499,7 @@ Before committing any change, verify:
 - [ ] New endpoints protected with `verifyToken` middleware
 - [ ] Rate limiting applied to sensitive endpoints
 - [ ] `tsc --noEmit` passes (frontend)
-- [ ] `npm test` passes 107/107 (backend)
+- [ ] `npm test` passes 120/120 (backend) [107 core + 13 extended]
 - [ ] No new files created in `backend/` root (LRU test isolation)
 
 ---
@@ -533,6 +569,59 @@ Before committing any change, verify:
 | POST | `/api/social/groups` | Create group |
 | GET | `/api/social/challenges/public` | Public challenges |
 
+### Scientific algorithm endpoints (`/api/algo`)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/algo/zones` | — | Training zones (HR, speed, pace) |
+| GET | `/api/algo/vdot` | — | VDOT and race time prediction |
+| GET | `/api/algo/pmc` | — | PMC calculation |
+| GET | `/api/algo/recommendations` | — | Training recommendations |
+| GET | `/api/algo/polarization` | — | Polarization analysis (80/20, pyramidal) |
+| GET | `/api/algo/hrv` | — | HRV analysis |
+| GET | `/api/algo/taper` | — | Optimal taper calculation |
+| GET | `/api/algo/overtraining` | — | Overtraining risk detection |
+| GET | `/api/algo/critical-power` | — | Critical power / W' estimation |
+| GET | `/api/algo/tss` | — | TSS/TRIMP calculation |
+| GET | `/api/algo/readiness` | — | Readiness assessment |
+| GET | `/api/algo/health` | — | Health check for algo module |
+| GET | `/api/algo/constants` | — | Scientific constants |
+| POST | `/api/algo/analyze` | — | Full activity analysis |
+| GET | `/api/algo/sports` | — | Sports management data |
+
+### Additional route endpoints
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/explore/segments` | JWT | List segments |
+| POST | `/api/explore/segments` | JWT | Create segment |
+| GET | `/api/explore/segments/:id` | JWT | Segment details |
+| GET | `/api/explore/segments/:id/leaderboard` | JWT | Segment leaderboard |
+| POST | `/api/explore/routes` | JWT | Create route |
+| GET | `/api/explore/routes` | JWT | List routes |
+| GET | `/api/explore/routes/:id` | JWT | Route details |
+| GET | `/api/explore/routes/my` | JWT | My routes |
+| GET | `/api/explore/routes/favorites` | JWT | Favorite routes |
+| GET | `/api/explore/heatmap` | JWT | Heatmap data |
+| GET | `/api/explore/heatmap/popular` | JWT | Popular segments heatmap |
+| GET | `/api/explore/community/traces` | JWT | Community traces |
+| GET | `/api/notifications/vapid-key` | JWT | VAPID public key |
+| POST | `/api/notifications/subscribe` | JWT | Subscribe to push |
+| DELETE | `/api/notifications/unsubscribe` | JWT | Unsubscribe from push |
+| POST | `/api/notifications/test` | JWT | Test push notification |
+| POST | `/api/race-planning/calculate` | JWT | Calculate race plan |
+| POST | `/api/race-planning/save` | JWT | Save race plan |
+| GET | `/api/race-planning/list` | JWT | List race plans |
+| DELETE | `/api/race-planning/:id` | JWT | Delete race plan |
+| POST | `/api/coach/race-planner/race-strategy` | JWT | Generate race strategy |
+| GET | `/api/activities/:id/weather` | JWT | Activity weather data |
+| GET | `/api/activities/:id/share-image` | JWT | Generate share image |
+| GET | `/api/user/constants` | JWT | User physiological constants |
+| GET | `/api/gear` | JWT | List gear |
+| POST | `/api/gear` | JWT | Add gear item |
+| PUT | `/api/gear/:id` | JWT | Update gear item |
+| DELETE | `/api/gear/:id` | JWT | Delete gear item |
+
 ---
 
 ## 10. Logging
@@ -540,7 +629,7 @@ Before committing any change, verify:
 All backend logging uses Winston. Import and use:
 
 ```javascript
-const { logger } = require('./logger');   // or '../logger' depending on depth
+const { logger } = require('./utils/logger');   // or '../utils/logger' depending on depth
 
 logger.info('Message');
 logger.warn('Warning', { context: 'value' });

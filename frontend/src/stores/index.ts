@@ -557,6 +557,12 @@ export const useUserConstantsStore = create<UserConstantsState>()((set, get) => 
   data: null,
   isLoading: false,
   lastFetched: null,
+  profile: null,
+  zones: null,
+  vdot: null,
+  vma: null,
+  fcm: null,
+  ftp: null,
 
   fetchConstants: async () => {
     // Cache for 5 minutes
@@ -568,7 +574,17 @@ export const useUserConstantsStore = create<UserConstantsState>()((set, get) => 
     set({ isLoading: true });
     try {
       const data = await api.getUserConstants();
-      set({ data, isLoading: false, lastFetched: Date.now() });
+      set({
+        data,
+        profile: data?.profile ?? null,
+        zones: data?.zones ?? null,
+        vdot: data?.profile?.vdot ?? null,
+        vma: data?.profile?.vma ?? null,
+        fcm: data?.profile?.fcm ?? null,
+        ftp: data?.profile?.ftp ?? null,
+        isLoading: false,
+        lastFetched: Date.now(),
+      });
       return data;
     } catch (error) {
       logger.error('Failed to fetch user constants', { 
@@ -581,29 +597,5 @@ export const useUserConstantsStore = create<UserConstantsState>()((set, get) => 
 
   invalidate: () => {
     set({ lastFetched: null });
-  },
-
-  get profile() {
-    return get().data?.profile ?? null;
-  },
-
-  get zones() {
-    return get().data?.zones ?? null;
-  },
-
-  get vdot() {
-    return get().data?.profile.vdot ?? null;
-  },
-
-  get vma() {
-    return get().data?.profile.vma ?? null;
-  },
-
-  get fcm() {
-    return get().data?.profile.fcm ?? null;
-  },
-
-  get ftp() {
-    return get().data?.profile.ftp ?? null;
   },
 }));

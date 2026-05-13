@@ -12,14 +12,14 @@
  */
 
 'use strict';
-const { logger } = require('../logger');
+const { logger } = require('../utils/logger');
 
 const express = require('express');
 const path = require('path');
 const fs = require('fs').promises;
-const { verifyToken } = require('../auth');
+const { verifyToken } = require('./auth');
 const { dbGetMain, dbRunMain } = require('../database');
-const { validateBody, validateProfileBody } = require('../validators');
+const { validateBody, validateProfileBody } = require('../utils/validators');
 const { updateUserProfileFromMain } = require('../services/userConstants.service');
 
 const router = express.Router();

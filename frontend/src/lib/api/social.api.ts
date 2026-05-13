@@ -27,7 +27,6 @@ import type {
   UserSearchResult,
   PublicProfile,
   Comment,
-  Reaction,
   Activity,
 } from '@/types';
 import type {

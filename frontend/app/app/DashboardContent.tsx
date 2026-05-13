@@ -53,7 +53,7 @@ export default function DashboardContent() {
       } catch { /* onboarding optionnel */ }
       setOnboardingChecked(true);
 
-      const [activities, pmc, recommendations] = await Promise.allSettled([
+      const [activities, pmc, _recommendations] = await Promise.allSettled([
         api.getActivities(),
         api.getPmc(),
         api.getRecommendations(),

@@ -19,13 +19,7 @@ import { api } from '@/lib/api';
 import { 
   Button, 
   Card, 
-  Input, 
-  Progress, 
-  Select, 
-  Tabs, 
-  TabsList, 
-  TabsTrigger, 
-  TabsContent 
+  Input 
 } from '@/components/ui';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { 
@@ -42,11 +36,11 @@ import {
 import { TaperingChart } from '@/components/features/coach/TaperingChart';
 
 export default function RacePlannerPage() {
-  const router = useRouter();
+  const _router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [step, setStep] = useState(1);
-  const [isUploading, setIsUploading] = useState(false);
+  const [_isUploading, _setIsUploading] = useState(false);
   const [gpxData, setGpxData] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   
@@ -284,8 +278,8 @@ export default function RacePlannerPage() {
               <div className="flex items-start gap-3">
                 <Info className="w-4 h-4 text-muted-foreground mt-1 shrink-0" />
                 <p className="text-xs text-muted-foreground">
-                  L'algorithme analyse le relief mètre par mètre pour ajuster l'effort cible.
-                  Une correction de &quot;cardiac drift&quot; est appliquée pour les efforts longs ({'>'}90min).
+                   L&apos;algorithme analyse le relief mètre par mètre pour ajuster l&apos;effort cible.
+                   Une correction de &quot;cardiac drift&quot; est appliqu&eacute;e pour les efforts longs ({'>'}90min).
                 </p>
               </div>
             </div>

@@ -6,7 +6,7 @@
  */
 
 'use strict';
-const { logger } = require('../logger');
+const { logger } = require('../utils/logger');
 
 const Redis = require('ioredis');
 

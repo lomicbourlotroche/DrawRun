@@ -4,8 +4,8 @@
 
 const express = require('express');
 const router = express.Router({ mergeParams: true });
-const { verifyToken } = require('../auth');
-const { logger } = require('../logger');
+const { verifyToken } = require('./auth');
+const { logger } = require('../utils/logger');
 const { getUserDb, dbGetMain } = require('../database');
 const axios = require('axios');
 

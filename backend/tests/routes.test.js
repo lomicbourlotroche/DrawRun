@@ -46,16 +46,9 @@ describe('Route Structure', () => {
             '../src/routes/coach'
         ];
         
-        // Note: These will fail without proper JWT_SECRET setup
-        // but we're just checking the structure
         routes.forEach(route => {
-            try {
-                const router = require(route);
-                expect(router).toBeDefined();
-            } catch (e) {
-                // Expected if JWT_SECRET not set
-                expect(e).toBeDefined();
-            }
+            const router = require(route);
+            expect(router).toBeDefined();
         });
     });
 });

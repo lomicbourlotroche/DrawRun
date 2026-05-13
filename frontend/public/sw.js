@@ -9,7 +9,7 @@
 
 // Version incrémentée à chaque déploiement pour forcer le remplacement du SW
 const SW_VERSION = 'drawrun-v3';
-const CACHE_NAME = SW_VERSION;
+const _CACHE_NAME = SW_VERSION;
 
 // ============================================================================
 // INSTALL — skip waiting immédiatement, pas de pré-cache

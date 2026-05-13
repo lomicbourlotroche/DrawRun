@@ -11,7 +11,7 @@ interface SearchResult {
 }
 
 interface LocationSearchProps {
-  onSelectLocation: (lat: number, lng: number, label: string) => void;
+  onSelectLocation: (_lat: number, _lng: number, _label: string) => void;
   placeholder?: string;
 }
 

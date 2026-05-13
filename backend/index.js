@@ -13,20 +13,8 @@
 'use strict';
 
 // ===========================================================================
-// OPEN TELEMETRY INITIALIZATION - Must be first
+// INITIALIZATION ORDER - dotenv must be loaded first
 // ===========================================================================
-const { initializeTracing } = require('./src/monitoring/tracing');
-
-// Initialize tracing before anything else
-initializeTracing({
-  serviceName: 'drawrun-backend',
-  serviceVersion: '4.1.0',
-  enablePrometheus: true,
-  enableJaeger: process.env.NODE_ENV === 'production',
-}).catch(error => {
-  console.error('Failed to initialize tracing:', error);
-  // Continue without tracing in development
-});
 
 // ===========================================================================
 // CONFIGURATION
@@ -36,14 +24,6 @@ require('dotenv').config({ path: require('path').join(__dirname, '.env'), overri
 // Fail fast if JWT_SECRET is missing (no fallback)
 if (!process.env.JWT_SECRET) {
     console.error('FATAL: JWT_SECRET is required. Set it in .env or environment.');
-    process.exit(1);
-}
-
-// ============================================================================
-// STARTUP VALIDATION - Fail fast on missing critical config
-// ============================================================================
-if (!process.env.JWT_SECRET) {
-    console.error('FATAL: JWT_SECRET environment variable is required');
     // eslint-disable-next-line no-process-exit
     process.exit(1);
 }
@@ -90,7 +70,7 @@ if (process.env.NODE_ENV !== 'production') {
 // ============================================================================
 // CHARGEMENT MODULES
 // ============================================================================
-const { logger } = require('./src/logger');
+const { logger } = require('./src/utils/logger');
 logger.info('Loading database...');
 const database = require('./src/database');
 
@@ -115,7 +95,7 @@ const database = require('./src/database');
         // PUSH NOTIFICATION SERVICE INITIALIZATION
         // ============================================================================
         logger.info('Initializing push notification service...');
-        const { initializeVapidKeys } = require('./src/services/push.service');
+        const { initializeVapidKeys } = require('./src/services/notifications/push.service');
         initializeVapidKeys();
         
         // ============================================================================
@@ -130,13 +110,11 @@ const database = require('./src/database');
         const preferencesRoutes = require('./src/routes/preferences');
         const onboardingRoutes = require('./src/routes/onboarding');
         const overtrainingRoutes = require('./src/routes/overtraining');
-        const tssRoutes = require('./src/routes/tss');
         const socialRoutes = require('./src/routes/social');
         const coachRoutes = require('./src/routes/coach');
         const exploreRoutes = require('./src/routes/explore');
         const notificationsRoutes = require('./src/routes/notifications');
         const racePlanningRoutes = require('./src/routes/race_planning');
-        const racePlannerRoutes = require('./src/routes/race_planner');
         const weatherRoutes = require('./src/routes/weather');
         const shareRoutes = require('./src/routes/share');
         const userConstantsRoutes = require('./src/routes/user-constants');
@@ -149,7 +127,7 @@ const database = require('./src/database');
         const cors = require('cors');
         const { configureHelmet, cspReportHandler, authLimiter, syncLimiter, syncStatusLimiter, userBasedLimiter, sensitiveUserLimiter, sanitizeInputs, securityHeaders, validateCorsOrigin } = require('./src/middleware/security');
         const { cacheMiddleware, noCacheMiddleware } = require('./src/middleware/cache');
-        const { compressionMiddleware, performanceMetrics } = require('./src/performance');
+        const { compressionMiddleware, performanceMetrics } = require('./src/middleware/performance');
         
         const app = express();
         const PORT = config.PORT;
@@ -157,33 +135,26 @@ const database = require('./src/database');
         // Trust first proxy (nginx) for accurate client IP detection
         app.set('trust proxy', 1);
         
-        // ============================================================================
-        // MIDDLEWARE
-        // ============================================================================
-        // Security headers (Helmet CSP, HSTS, etc.)
-        app.use(configureHelmet());
-        app.use(securityHeaders);
-        
-        // Response compression (gzip/brotli for responses > 1KB)
-        app.use(compressionMiddleware);
-        
-        // Track request metrics
-        app.use((req, res, next) => {
-            performanceMetrics.requests++;
-            const start = Date.now();
-            res.on('finish', () => {
-                const duration = Date.now() - start;
-                logger.debug(`[PerfMetrics] ${req.method} ${req.path} ${res.statusCode} ${duration}ms`);
-            });
-            next();
-        });
-        
-        // ============================================================================
-        // MIDDLEWARE
-        // ============================================================================
-        // Security headers (Helmet CSP, HSTS, etc.)
-        app.use(configureHelmet());
-        app.use(securityHeaders);
+// ============================================================================
+// MIDDLEWARE
+// ============================================================================
+// Security headers (Helmet CSP, HSTS, etc.)
+app.use(configureHelmet());
+app.use(securityHeaders);
+
+// Response compression (gzip/brotli for responses > 1KB)
+app.use(compressionMiddleware);
+
+// Track request metrics
+app.use((req, res, next) => {
+    performanceMetrics.requests++;
+    const start = Date.now();
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        logger.debug(`[PerfMetrics] ${req.method} ${req.path} ${res.statusCode} ${duration}ms`);
+    });
+    next();
+});
         
         // CORS — utilise validateCorsOrigin (fail-closed en production)
         app.use(cors({ origin: validateCorsOrigin, credentials: true }));
@@ -218,29 +189,10 @@ const database = require('./src/database');
         });
         
         // ============================================================================
-        // METRICS SERVICE
-        // ============================================================================
-        const metricsService = require('./src/services/metrics');
-        app.use(metricsService.middleware());
-        
-        // ============================================================================
         // SWAGGER DOCUMENTATION
         // ============================================================================
-        const { setupSwagger } = require('./src/swagger');
+        const { setupSwagger } = require('./src/config/swagger');
         setupSwagger(app);
-        
-        // ============================================================================
-        // PROMETHEUS METRICS ENDPOINT
-        // ============================================================================
-        app.get('/metrics', async (req, res) => {
-            try {
-                res.set('Content-Type', metricsService.getContentType());
-                res.end(await metricsService.getMetrics());
-            } catch (ex) {
-                logger.error('Prometheus metrics error:', ex.message);
-                res.status(500).end('Metrics unavailable');
-            }
-        });
         
         // ============================================================================
         // HEALTH CHECK
@@ -286,7 +238,6 @@ const database = require('./src/database');
         
         // Auth & API
         app.use('/api/auth', authRouter);
-        app.use('/api/strava', syncRoutes);  // /api/strava/url
         app.use('/api/algo', apiRoutes);
         
         // Feature routes - using user-based rate limiting + cache
@@ -301,10 +252,8 @@ const database = require('./src/database');
         app.use('/api/preferences', verifyToken, sensitiveUserLimiter, cacheMiddleware(600), preferencesRoutes);
         app.use('/api/onboarding', verifyToken, userBasedLimiter, cacheMiddleware(3600), onboardingRoutes);
         app.use('/api/overtraining', verifyToken, userBasedLimiter, cacheMiddleware(300), overtrainingRoutes);
-        app.use('/api/tss', verifyToken, userBasedLimiter, cacheMiddleware(300), tssRoutes);
         app.use('/api/social', verifyToken, userBasedLimiter, cacheMiddleware(60), socialRoutes);
         app.use('/api/coach', verifyToken, sensitiveUserLimiter, cacheMiddleware(300), coachRoutes);
-        app.use('/api/coach/race-planner', verifyToken, sensitiveUserLimiter, noCacheMiddleware, racePlannerRoutes);
         app.use('/api/explore', verifyToken, userBasedLimiter, cacheMiddleware(600), exploreRoutes);
         app.use('/api/notifications', verifyToken, userBasedLimiter, noCacheMiddleware, notificationsRoutes);
         app.use('/api/race-planning', verifyToken, userBasedLimiter, noCacheMiddleware, racePlanningRoutes);

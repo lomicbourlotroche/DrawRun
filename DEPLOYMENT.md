@@ -22,8 +22,7 @@
 
 ```bash
 ssh drawrun@37.69.94.253 -p 20708
-# mot de passe : 0708
-# mot de passe sudo : 0708
+# Utiliser la clé SSH ou demander le mot de passe à l'administrateur
 ```
 
 ---
@@ -348,7 +347,7 @@ pm2 logs drawrun-backend --lines 100
 
 | Erreur | Cause | Statut |
 |--------|-------|--------|
-| `totp.toURI is not a function` | Bug dans `auth2fa.js` — mauvaise API de la lib TOTP | À corriger |
+| ~~`totp.toURI is not a function`~~ | ~~Bug dans `auth2fa.js` — mauvaise API de la lib TOTP~~ | ✅ Corrigé (`toString()` dans `2fa.service.js`) |
 | CORS bloqué sur `https://37.69.94.253:80` | Accès par IP directe au lieu du domaine | Normal (ignoré) |
 | `Create activity error` | Erreur non détaillée dans les logs | À investiguer |
 | Brute force depuis `159.223.110.59` | Tentatives de login bloquées par rate limiter | Rate limiter fonctionne ✅ |

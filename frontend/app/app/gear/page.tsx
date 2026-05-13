@@ -103,7 +103,7 @@ export default function GearPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Mon Matériel</h1>
-            <p className="text-slate-500 mt-1">Suivez l'usure de vos chaussures et équipements pour prévenir les blessures.</p>
+            <p className="text-slate-500 mt-1">Suivez l&apos;usure de vos chaussures et équipements pour prévenir les blessures.</p>
           </div>
           <PrimaryButton 
             variant="primary" 

@@ -2,8 +2,7 @@
 
 /* eslint-disable security/detect-object-injection, security/detect-unsafe-regex */
 
-const { logger } = require('../logger');
-const { ipKeyGenerator } = require('express-rate-limit');
+const { logger } = require('../utils/logger');
 
 /**
  * Security Middleware
@@ -78,7 +77,7 @@ function cspReportHandler(req, res) {
 
         // Store in security log if Winston logger is available
         try {
-            const { securityLog } = require('../logger');
+            const { securityLog } = require('../utils/logger');
             securityLog('csp_violation', {
                 ip,
                 userAgent,
@@ -152,7 +151,7 @@ const otpLimiter = rateLimit({
 const syncLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
     max: 10,
-    keyGenerator: ipKeyGenerator,
+    keyGenerator: (req) => req.ip || req.connection?.remoteAddress || 'unknown',
     message: { error: 'Trop de synchronisations, veuillez réessayer dans 1 heure' },
     standardHeaders: true,
     legacyHeaders: false,
@@ -166,7 +165,7 @@ const syncLimiter = rateLimit({
 const syncStatusLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 1000,
-    keyGenerator: ipKeyGenerator,
+    keyGenerator: (req) => req.ip || req.connection?.remoteAddress || 'unknown',
     message: { error: 'Trop de requêtes, veuillez réessayer dans 15 minutes' },
     standardHeaders: true,
     legacyHeaders: false,
@@ -180,7 +179,7 @@ const syncStatusLimiter = rateLimit({
 const userBasedLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 200,
-    keyGenerator: ipKeyGenerator,
+    keyGenerator: (req) => `${req.ip || 'unknown'}_${req.user?.id || 'anon'}`,
     message: { error: 'Trop de requêtes pour cet utilisateur, veuillez réessayer dans 15 minutes' },
     standardHeaders: true,
     legacyHeaders: false,
@@ -199,7 +198,7 @@ const userBasedLimiter = rateLimit({
 const sensitiveUserLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 50,
-    keyGenerator: ipKeyGenerator,
+    keyGenerator: (req) => `${req.ip || 'unknown'}_${req.user?.id || 'anon'}`,
     message: { error: 'Trop de requêtes pour cette opération, veuillez réessayer plus tard' },
     standardHeaders: true,
     legacyHeaders: false,

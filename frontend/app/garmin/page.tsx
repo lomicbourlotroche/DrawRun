@@ -1,6 +1,6 @@
 'use client';
 
-import Navbar from '@/components/NavBar';
+import Navbar from '@/components/layout/NavBar';
 import Link from 'next/link';
 
 export default function GarminPage() {

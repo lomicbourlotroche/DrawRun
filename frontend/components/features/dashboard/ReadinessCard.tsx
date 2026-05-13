@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CircularProgress } from '@/components/ui';
 import { calculateReadinessColor } from '@/lib/utils';
 import type { Readiness } from '@/types';

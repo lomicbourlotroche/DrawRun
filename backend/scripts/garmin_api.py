@@ -1,17 +1,8 @@
 #!/usr/bin/env python3
 """
-Garmin API Script
-=================
-Interface Python pour l'API Garmin Connect.
-
-Stratégie d'authentification (évite le rate-limit Garmin) :
-  1. Si un tokenstore garth existe et est valide → réutilise les tokens (pas de login réseau)
-  2. Sinon → login avec email/password, sauvegarde les tokens dans le tokenstore
-  3. Les tokens garth sont des OAuth2 tokens valides ~1 an → un seul login suffit
-
-Usage:
-  echo '{"username":"...", "password":"..."}' | python3 garmin_api.py \
-      --creds - --tokenstore /path/to/dir --mode activities
+Garmin API Script - Version Ultra-Complète
+==========================================
+Récupère l'intégralité des données disponibles sur Garmin Connect.
 """
 
 import sys
@@ -20,213 +11,165 @@ import argparse
 import os
 from datetime import datetime, timedelta
 
-# ── garminconnect ──────────────────────────────────────────────────────────
 try:
     from garminconnect import Garmin
 except ImportError:
-    print(json.dumps({"error": "Module garminconnect not installed. Run: pip install garminconnect"}))
+    print(json.dumps({"error": "Module garminconnect non installé. Exécutez : pip install garminconnect"}), file=sys.stderr)
     sys.exit(1)
 
-# ── garth (token persistence) ──────────────────────────────────────────────
 try:
     import garth
     GARTH_AVAILABLE = True
 except ImportError:
     GARTH_AVAILABLE = False
 
+def get_date_range(args):
+    """Calcule la plage de dates et génère une liste de jours individuels."""
+    effective_start = args.start_date or args.start
+    if effective_start:
+        start_dt = datetime.strptime(effective_start, "%Y-%m-%d")
+    else:
+        start_dt = datetime.now() - timedelta(days=args.days)
+    
+    end_dt = datetime.now()
+    
+    # Liste de chaque date formatée entre start et end pour les appels quotidiens
+    delta = end_dt - start_dt
+    days_list = [(start_dt + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(delta.days + 1)]
+    
+    return start_dt.strftime("%Y-%m-%d"), end_dt.strftime("%Y-%m-%d"), days_list
 
 def load_garmin_with_tokens(tokenstore: str, username: str, password: str) -> "Garmin":
-    """
-    Tente de charger les tokens garth depuis le tokenstore.
-    Si les tokens sont valides → retourne un client Garmin sans faire de login réseau.
-    Si les tokens sont absents/expirés → fait un login complet et sauvegarde les tokens.
-    """
     garmin = Garmin(email=username, password=password, is_cn=False)
 
     if GARTH_AVAILABLE and tokenstore:
         os.makedirs(tokenstore, exist_ok=True)
         token_file = os.path.join(tokenstore, "oauth2_token.json")
 
-        # Essayer de charger les tokens existants
         if os.path.exists(token_file):
             try:
                 garmin.garth.load(tokenstore)
-                # Vérifier que les tokens sont encore valides avec un appel léger
-                garmin.display_name  # accès à la propriété qui force le refresh si besoin
-                print(f"[garth] Tokens loaded from {tokenstore}", file=sys.stderr)
+                garmin.display_name  # Test de validité
+                print(f"[garth] Session restaurée depuis {tokenstore}", file=sys.stderr)
                 return garmin
             except Exception as e:
-                print(f"[garth] Tokens invalid ({e}), re-logging in...", file=sys.stderr)
+                print(f"[garth] Session expirée ({e}), reconnexion...", file=sys.stderr)
 
-        # Login complet + sauvegarde des tokens
         garmin.login()
         try:
             garmin.garth.dump(tokenstore)
-            print(f"[garth] Tokens saved to {tokenstore}", file=sys.stderr)
+            print(f"[garth] Nouvelle session sauvegardée", file=sys.stderr)
         except Exception as e:
-            print(f"[garth] Could not save tokens: {e}", file=sys.stderr)
+            print(f"[garth] Erreur sauvegarde tokens : {e}", file=sys.stderr)
     else:
-        # Pas de garth disponible → login classique
         garmin.login()
 
     return garmin
 
+def fetch_full_data(garmin, start_date, end_date, days_list, limit):
+    """Récupère absolument toutes les catégories de données possibles."""
+    all_data = {
+        "metadata": {
+            "extracted_at": datetime.now().isoformat(),
+            "range": {"start": start_date, "end": end_date}
+        },
+        "user_profile": {},
+        "metrics": {},
+        "activities": [],
+        "daily_health": {},
+        "body_composition": {}
+    }
+
+    print(f"[info] Extraction globale lancée ({start_date} -> {end_date})", file=sys.stderr)
+
+    # 1. Profil et Records
+    try:
+        all_data["user_profile"] = garmin.get_user_summary(end_date)
+        all_data["metrics"] = garmin.get_max_metrics()
+    except Exception as e:
+        print(f"[warn] Profil non récupéré: {e}", file=sys.stderr)
+
+    # 2. Activités
+    try:
+        activities = garmin.get_activities_by_date(start_date, end_date)
+        all_data["activities"] = activities[:limit] if limit else activities
+    except Exception as e:
+        print(f"[warn] Activités non récupérées: {e}", file=sys.stderr)
+
+    # 3. Données de santé quotidiennes (itération sur chaque jour)
+    for day in days_list:
+        print(f"[info] Récupération santé : {day}", file=sys.stderr)
+        day_stats = {}
+        endpoints = [
+            ("heart_rate", lambda d: garmin.get_heart_rates(d)),
+            ("sleep",      lambda d: garmin.get_sleep_data(d)),
+            ("steps",      lambda d: garmin.get_steps_data(d)),
+            ("hrv",        lambda d: garmin.get_hrv_data(d)),
+            ("spo2",       lambda d: garmin.get_sp_o2_data(d)),
+            ("stress",     lambda d: garmin.get_stress_data(d)),
+            ("respiration",lambda d: garmin.get_respiration_data(d)),
+            ("body_battery", lambda d: garmin.get_body_battery(d)),
+        ]
+        
+        for key, fn in endpoints:
+            try:
+                day_stats[key] = fn(day)
+            except Exception:
+                day_stats[key] = None
+        
+        all_data["daily_health"][day] = day_stats
+
+    # 4. Composition Corporelle
+    try:
+        all_data["body_composition"] = {
+            "weight": garmin.get_body_weight(start_date, end_date),
+            "composition": garmin.get_body_composition(start_date, end_date)
+        }
+    except Exception:
+        pass
+
+    return all_data
 
 def main():
-    parser = argparse.ArgumentParser(description="Garmin API Script")
-    parser.add_argument("--creds", type=str, help="Read credentials from stdin (use '-')")
-    parser.add_argument("--tokenstore", type=str, default="", help="Directory to persist garth OAuth tokens")
-    parser.add_argument(
-        "--mode", type=str, default="activities",
-        choices=["activities", "details", "health", "body", "metrics", "all", "gpx", "streams"],
-    )
-    parser.add_argument("--days", type=int, default=30)
+    parser = argparse.ArgumentParser(description="Garmin Data Harvester")
+    parser.add_argument("--creds", type=str, required=True, help="'-' pour lire le JSON via stdin")
+    parser.add_argument("--tokenstore", type=str, default="~/.garmin_tokens")
+    parser.add_argument("--mode", type=str, default="all", choices=["activities", "health", "all", "metrics"])
+    parser.add_argument("--days", type=int, default=7, help="Nombre de jours à récupérer")
+    parser.add_argument("--start", type=str, help="Date de début YYYY-MM-DD")
+    parser.add_argument("--start_date", type=str, help="Alias date de début")
     parser.add_argument("--limit", type=int, default=100)
-    parser.add_argument("--start", type=str, help="Start date (YYYY-MM-DD)")
-    parser.add_argument("--start_date", type=str, help="Start date alias (YYYY-MM-DD)")
-    parser.add_argument("--id", type=str, help="Activity ID for details mode")
-    parser.add_argument("--format", type=str, default="json")
 
     args = parser.parse_args()
 
-    # ── Lecture des credentials ────────────────────────────────────────────
+    # Lecture des credentials
     if args.creds == "-":
-        try:
-            creds_data = json.loads(sys.stdin.read())
-            username = creds_data.get("username", "")
-            password = creds_data.get("password", "")
-        except Exception as e:
-            print(json.dumps({"error": f"Failed to parse credentials: {e}"}))
-            sys.exit(1)
+        creds_data = json.loads(sys.stdin.read())
+        username, password = creds_data.get("username"), creds_data.get("password")
     else:
-        print(json.dumps({"error": "Credentials required via stdin (--creds -)"}))
+        print(json.dumps({"error": "Identifiants requis via stdin"}), file=sys.stderr)
         sys.exit(1)
 
-    if not username or not password:
-        print(json.dumps({"error": "Username and password required"}))
-        sys.exit(1)
-
-    # ── Connexion avec persistance des tokens ──────────────────────────────
     try:
-        garmin = load_garmin_with_tokens(args.tokenstore, username, password)
-    except Exception as e:
-        err_msg = str(e)
-        is_rate_limited = "429" in err_msg or "rate limit" in err_msg.lower()
-        is_blocked = "403" in err_msg or "cloudflare" in err_msg.lower()
-        print(json.dumps({
-            "error": err_msg,
-            "rate_limited": is_rate_limited,
-            "blocked": is_blocked,
-            "auth_failed": "401" in err_msg or "invalid" in err_msg.lower(),
-        }))
-        sys.exit(1)
+        garmin = load_garmin_with_tokens(os.path.expanduser(args.tokenstore), username, password)
+        start_date, end_date, days_list = get_date_range(args)
 
-    # ── Exécution selon le mode ────────────────────────────────────────────
-    try:
-        if args.mode == "activities":
-            effective_start = args.start_date or args.start
-            start_date = effective_start or (datetime.now() - timedelta(days=args.days)).strftime("%Y-%m-%d")
-            end_date = datetime.now().strftime("%Y-%m-%d")
-            activities = garmin.get_activities_by_date(start_date, end_date)
-            if args.limit and len(activities) > args.limit:
-                activities = activities[:args.limit]
-            print(json.dumps(activities))
-
-        elif args.mode == "details":
-            if not args.id:
-                print(json.dumps({"error": "Activity ID required for details mode"}))
-                sys.exit(1)
-            detail = garmin.get_activity_details(args.id)
-            print(json.dumps(detail))
-
-        elif args.mode == "gpx":
-            if not args.id:
-                print(json.dumps({"error": "Activity ID required for gpx mode"}))
-                sys.exit(1)
-            try:
-                gpx_data = garmin.download_activity(args.id, dl_fmt=garmin.ActivityDownloadFormat.GPX)
-                # Return as base64 string so JSON transport works
-                import base64
-                print(json.dumps({"gpx": base64.b64encode(gpx_data).decode("utf-8")}))
-            except Exception as e:
-                print(json.dumps({"error": f"GPX download failed: {e}"}))
-                sys.exit(1)
-
-        elif args.mode == "streams":
-            if not args.id:
-                print(json.dumps({"error": "Activity ID required for streams mode"}))
-                sys.exit(1)
-            # get_activity_details already contains the full metric streams
-            detail = garmin.get_activity_details(args.id)
-            # Also try to get the GPS track separately
-            result = {"detail": detail}
-            try:
-                splits = garmin.get_activity_splits(args.id)
-                result["splits"] = splits
-            except Exception:
-                pass
-            try:
-                hr_zones = garmin.get_activity_hr_in_timezones(args.id)
-                result["hr_zones"] = hr_zones
-            except Exception:
-                pass
-            print(json.dumps(result))
-
-        elif args.mode == "health":
-            effective_start = args.start_date or args.start
-            date = effective_start or datetime.now().strftime("%Y-%m-%d")
-            health = {}
-            for key, fn in [
-                ("heart_rate", lambda: garmin.get_heart_rates(date)),
-                ("sleep",      lambda: garmin.get_sleep_data(date)),
-                ("steps",      lambda: garmin.get_steps_data(date)),
-                ("hrv",        lambda: garmin.get_hrv_data(date)),
-                ("spo2",       lambda: garmin.get_sp_o2_data(date)),
-                ("stress",     lambda: garmin.get_stress_data(date)),
-            ]:
-                try:
-                    health[key] = fn()
-                except Exception as e:
-                    print(json.dumps({"warning": f"{key} unavailable: {e}"}), file=sys.stderr)
-            print(json.dumps(health))
-
-        elif args.mode == "body":
-            body = {}
-            try:
-                body["weight"] = garmin.get_body_weight()
-            except Exception:
-                pass
-            try:
-                body["body_fat"] = garmin.get_body_fat()
-            except Exception:
-                pass
-            print(json.dumps(body))
-
+        if args.mode == "all":
+            result = fetch_full_data(garmin, start_date, end_date, days_list, args.limit)
+        elif args.mode == "activities":
+            result = garmin.get_activities_by_date(start_date, end_date)
         elif args.mode == "metrics":
-            try:
-                metrics = garmin.get_max_metrics()
-                print(json.dumps(metrics))
-            except Exception as e:
-                print(json.dumps({"error": str(e)}))
-                sys.exit(1)
+            result = garmin.get_max_metrics()
+        else:
+            # Mode santé simplifié pour une seule date
+            result = fetch_full_data(garmin, start_date, end_date, [start_date], 1)
 
-        elif args.mode == "all":
-            result = {}
-            effective_start = args.start_date or args.start
-            start_date = effective_start or (datetime.now() - timedelta(days=args.days)).strftime("%Y-%m-%d")
-            end_date = datetime.now().strftime("%Y-%m-%d")
-            activities = garmin.get_activities_by_date(start_date, end_date)
-            if args.limit and len(activities) > args.limit:
-                activities = activities[:args.limit]
-            result["activities"] = activities
-            print(json.dumps(result))
-
+        print(json.dumps(result, indent=2))
         sys.exit(0)
 
     except Exception as e:
         print(json.dumps({"error": str(e)}))
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()

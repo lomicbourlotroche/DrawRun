@@ -3,12 +3,12 @@
 /* eslint-disable unused-imports/no-unused-vars */
 
 const express = require('express');
-const { verifyToken } = require('../auth');
-const segments = require('../services/segments.service');
-const routes = require('../services/routes.service');
+const { verifyToken } = require('./auth');
+const segments = require('../services/explore/segments.service');
+const routes = require('../services/explore/routes.service');
 const { dbGetMain, dbAllMain } = require('../database');
-const elevationService = require('../services/elevation.service');
-const { logger } = require('../logger');
+const elevationService = require('../services/explore/elevation.service');
+const { logger } = require('../utils/logger');
 
 const router = express.Router();
 

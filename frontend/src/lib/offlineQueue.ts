@@ -89,7 +89,7 @@ export function removeFromQueue(index: number): void {
 }
 
 export async function processSaveQueue(
-  importFn: (name: string, gpx: string, type: string) => Promise<unknown>
+  importFn: (_name: string, _gpx: string, _type: string) => Promise<unknown>
 ): Promise<{ success: number; failed: number }> {
   const queue = getSaveQueue();
   if (queue.length === 0) return { success: 0, failed: 0 };

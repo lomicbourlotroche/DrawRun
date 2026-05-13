@@ -5,16 +5,16 @@
  * ============================================================
  * Routes API pour le coaching adaptatif
  * 
- * Note: Les fonctions métier sont dans coach_plan.js et services/coach.service.js
+ * Note: Les fonctions métier sont dans coach_plan.js
  */
 
 'use strict';
 
 const express = require('express');
-const { verifyToken } = require('../auth');
+const { verifyToken } = require('./auth');
 const coachPlan = require('../coach_plan');
-const { validateBody, validatePlanBody } = require('../validators');
-const { logger } = require('../logger');
+const { validateBody, validatePlanBody } = require('../utils/validators');
+const { logger } = require('../utils/logger');
 
 const { resolveUserConstants } = require('../services/userConstants.service');
 

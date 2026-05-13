@@ -1,0 +1,397 @@
+/* eslint-disable unused-imports/no-unused-vars */
+/**
+ * DrawRun - Post-Sync Metrics Calculator
+ * ======================================
+ * 
+ * Ce module calcule et stocke automatiquement les métriques après chaque synchronisation:
+ * - TSS (Training Stress Score)
+ * - TRIMP (Training Impulse)
+ * - VDOT (Jack Daniels Score)
+ * - CTL (Chronic Training Load)
+ * - ATL (Acute Training Load)
+ * - TSB (Training Stress Balance)
+ * - ACWR (Acute:Chronic Workload Ratio)
+ * 
+ * Utilise le module SportAnalysis pour les calculs par sport.
+ */
+
+'use strict';
+const { logger } = require('../utils/logger');
+
+const { dbGetUser, dbRunUser, dbAllUser, getUserDb, dbGetMain } = require('../database');
+const { RunningPerformance, TrainingLoad, PMC, Cardiovascular, SportAnalysis, MathUtils, HRV } = require('../algorithms');
+const { resolveUserConstants } = require('./userConstants.service');
+
+async function calculateAndStoreMetrics(userId, userDb) {
+    logger.info(`[MetricsCalculator] Starting calculations for user ${userId}`);
+
+    // Check auto_update flag
+    const mainUser = await dbGetMain('SELECT profile_data FROM users WHERE id = ?', [userId]).catch(() => null);
+    let autoUpdate = true;
+    if (mainUser?.profile_data) {
+        try {
+            const pd = JSON.parse(mainUser.profile_data);
+            autoUpdate = pd.auto_update !== false;
+        } catch (_) { /* Silently ignore */ }
+    }
+
+    try {
+        // 1. Récupérer le profil utilisateur
+        const profile = await getUserProfile(userId, userDb);
+        
+        // 2. Récupérer toutes les activités
+        const activities = await dbAllUser(userDb, `
+            SELECT id, distance, moving_time, elapsed_time, average_speed, max_speed,
+                   average_heartrate, max_heartrate, average_cadence, average_power,
+                   total_elevation_gain, calories,
+                   start_date, type, tss, trimp, intensity_factor
+            FROM activities 
+            WHERE moving_time IS NOT NULL 
+            ORDER BY start_date ASC
+        `);
+        
+        if (activities.length === 0) {
+            logger.info(`[MetricsCalculator] No activities found for user ${userId}`);
+            return { success: true, calculated: 0 };
+        }
+        
+        // 3. Calculer TSS, TRIMP, IF pour chaque activité avec SportAnalysis
+        let metricsCalculated = 0;
+        for (const activity of activities) {
+            // Préparer l'objet activité pour l'analyse
+            const activityData = {
+                type: activity.type,
+                distance: activity.distance,
+                moving_time: activity.moving_time,
+                elapsed_time: activity.elapsed_time,
+                average_speed: activity.average_speed,
+                max_speed: activity.max_speed,
+                average_heartrate: activity.average_heartrate,
+                max_heartrate: activity.max_heartrate,
+                average_cadence: activity.average_cadence,
+                average_watts: activity.average_power,
+                weighted_average_watts: null,
+                max_watts: null,
+                total_elevation_gain: activity.total_elevation_gain,
+                calories: activity.calories,
+                tss: activity.tss,
+                trimp: activity.trimp,
+            };
+            
+            // Profil pour les calculs
+            const profileData = {
+                fcm: profile.fcm,
+                resting_hr: profile.resting_hr,
+                vma: profile.vma,
+                vdot: profile.vdot,
+                ftp: profile.ftp,
+                swim_ftp: profile.swim_ftp,
+                age: profile.age,
+                sex: profile.sex,
+                weight: profile.weight,
+            };
+            
+            // Utiliser SportAnalysispour l'analyse
+            const analysis = SportAnalysis.analyze(activityData, profileData);
+            
+            // Mettre à jour l'activité si on a du TSS ou TRIMP
+            if (analysis.tss !== null || analysis.trimp !== null || analysis.efficiencyFactor !== null) {
+                await dbRunUser(userDb, `
+                    UPDATE activities SET 
+                        tss = COALESCE(?, tss),
+                        trimp = COALESCE(?, trimp),
+                        intensity_factor = COALESCE(?, intensity_factor),
+                        efficiency_factor = COALESCE(?, efficiency_factor)
+                    WHERE id = ?
+                `, [
+                    analysis.tss ?? activity.tss,
+                    analysis.trimp ?? activity.trimp,
+                    analysis.intensityFactor ?? activity.intensity_factor,
+                    analysis.efficiencyFactor ?? null,
+                    activity.id
+                ]);
+                metricsCalculated++;
+            }
+        }
+        
+        // 4. Pour les courses: Calculer VDOT depuis les meilleures perfs
+        const runs = activities.filter(a => 
+            (a.type === 'run' || a.type === 'Run' || a.type === 'trail_run') && 
+            a.distance >= 3000 && a.moving_time >= 900
+        );
+        let bestVDOT = profile.vdot || null;
+        const recentRuns = runs.slice(-20);
+        
+        for (const run of recentRuns) {
+            const timeMinutes = run.moving_time / 60;
+            const vdot = RunningPerformance.calculateVDOT(run.distance, timeMinutes);
+            
+            if (vdot && vdot > 20 && (!bestVDOT || vdot > bestVDOT)) {
+                bestVDOT = vdot;
+            }
+        }
+        
+        // 5. Mettre à jour le profil avec le meilleur VDOT, FCM, VMA (seulement si auto_update)
+        if (autoUpdate) {
+            if (bestVDOT && bestVDOT !== profile.vdot) {
+                await updateUserProfile(userId, userDb, { vdot: bestVDOT });
+                logger.info(`[MetricsCalculator] Updated VDOT to ${bestVDOT}`);
+            }
+
+            if (!profile.fcm || !profile.vma) {
+                const fcmFromActivities = getObservedFCM(activities, Cardiovascular.calculateMaxHR(profile.age || 30));
+                const updates = {};
+                if (!profile.fcm && fcmFromActivities) {
+                    updates.fcm = fcmFromActivities;
+                }
+                if (!profile.vma && bestVDOT) {
+                    updates.vma = Math.round(RunningPerformance.estimateVMA(bestVDOT) * 10) / 10;
+                }
+                if (Object.keys(updates).length > 0) {
+                    await updateUserProfile(userId, userDb, updates);
+                    logger.info(`[MetricsCalculator] Updated profile: ${JSON.stringify(updates)}`);
+                }
+            }
+        }
+        
+        // 6. Calculer PMC (CTL, ATL, TSB)
+        const activitiesWithTSS = await dbAllUser(userDb, `
+            SELECT start_date, tss, trimp
+            FROM activities 
+            WHERE (tss IS NOT NULL OR trimp IS NOT NULL) 
+            AND start_date IS NOT NULL
+            ORDER BY start_date ASC
+            LIMIT 365
+        `);
+        
+        if (activitiesWithTSS.length > 0) {
+            const pmcData = PMC.calculate(activitiesWithTSS.map(a => ({
+                date: (a.start_date || '').split('T')[0],
+                tss: a.tss || a.trimp || 50
+            })));
+            
+            if (pmcData.length > 0) {
+                const latest = pmcData[pmcData.length - 1];
+                
+                // Récupérer les dernières métriques HRV (28 jours) et Sommeil pour la readiness
+                const hrvHistory = await dbAllUser(userDb, `
+                    SELECT metric_value as rmssd, recorded_at as date 
+                    FROM performance_metrics 
+                    WHERE metric_type = 'hrv' 
+                    ORDER BY recorded_at DESC 
+                    LIMIT 28
+                `);
+                
+                const lastSleep = await dbGetUser(userDb, "SELECT metric_value FROM performance_metrics WHERE metric_type = 'sleep' ORDER BY recorded_at DESC LIMIT 1");
+
+                // Calculer la baseline HRV dynamique
+                const hrvBaseline = HRV.calculateDynamicBaseline(hrvHistory.reverse());
+                const currentHrv = hrvHistory.length > 0 ? hrvHistory[hrvHistory.length - 1].rmssd : 0;
+
+                // Estimer la forme (readiness) avec analyse de récupération HRV
+                let readiness = 70;
+                if (hrvBaseline && currentHrv > 0) {
+                    const hrvAnalysis = HRV.analyzeRecovery(currentHrv, hrvBaseline.baseline, lastSleep?.metric_value || 7);
+                    readiness = hrvAnalysis.readiness;
+                    
+                    // Ajuster selon le TSB (Training Stress Balance)
+                    const tsbFactor = MathUtils.clamp(1 + (latest.tsb / 100), 0.7, 1.3);
+                    readiness = Math.round(MathUtils.clamp(readiness * tsbFactor, 10, 100));
+                } else {
+                    const result = PMC.estimateReadiness(
+                        pmcData,
+                        currentHrv,
+                        lastSleep?.metric_value || 7
+                    );
+                    readiness = result.readiness;
+                }
+                
+                // Stocker les métriques PMC
+                const today = new Date().toISOString().split('T')[0];
+                
+                await dbRunUser(userDb, `
+                    INSERT OR REPLACE INTO performance_metrics
+                    (user_id, metric_type, metric_value, recorded_at, source)
+                    VALUES (?, 'readiness', ?, ?, 'calculated')
+                `, [userId, readiness, today]);
+                
+                await dbRunUser(userDb, `
+                    INSERT OR REPLACE INTO performance_metrics
+                    (user_id, metric_type, metric_value, recorded_at, source)
+                    VALUES (?, 'ctl', ?, ?, 'calculated')
+                `, [userId, latest.ctl, today]);
+                
+                await dbRunUser(userDb, `
+                    INSERT OR REPLACE INTO performance_metrics
+                    (user_id, metric_type, metric_value, recorded_at, source)
+                    VALUES (?, 'atl', ?, ?, 'calculated')
+                `, [userId, latest.atl, today]);
+                
+                await dbRunUser(userDb, `
+                    INSERT OR REPLACE INTO performance_metrics
+                    (user_id, metric_type, metric_value, recorded_at, source)
+                    VALUES (?, 'tsb', ?, ?, 'calculated')
+                `, [userId, latest.tsb, today]);
+                
+                // Calculer ACWR (Acute:Chronic Workload Ratio)
+                // Modèle EWMA (Williams et al. 2017) plus précis que le ratio simple
+                const dailyLoads = pmcData.map(d => d.tss);
+                const acwr = PMC.calculateACWR_EWMA(dailyLoads) || 1;
+                
+                // Calculer aussi le ratio simple pour comparaison ou fallback
+                const last28Days = pmcData.slice(-28);
+                const avgLoad28 = last28Days.reduce((sum, d) => sum + d.tss, 0) / Math.max(1, last28Days.length);
+                const avgLoad7 = pmcData.slice(-7).reduce((sum, d) => sum + d.tss, 0) / Math.max(1, Math.min(7, pmcData.length));
+                
+                await dbRunUser(userDb, `
+                    INSERT OR REPLACE INTO performance_metrics
+                    (user_id, metric_type, metric_value, recorded_at, source)
+                    VALUES (?, 'acwr', ?, ?, 'calculated')
+                `, [userId, Math.round(acwr * 100) / 100, today]);
+
+                // Update pmc_history table if it exists
+                try {
+                    await dbRunUser(userDb, `
+                        INSERT OR REPLACE INTO pmc_history
+                        (user_id, date, ctl, atl, tsb, acute_load, chronic_load, acwr)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    `, [userId, today, latest.ctl, latest.atl, latest.tsb, avgLoad7, avgLoad28, acwr]);
+                } catch (_) { /* Silently ignore */ }
+                
+                // Stocker les données PMC complètes
+                await dbRunUser(userDb, `
+                    INSERT OR REPLACE INTO performance_metrics
+                    (user_id, metric_type, metric_value, metric_unit, recorded_at, source)
+                    VALUES (?, 'pmc_data', ?, 'json', ?, 'calculated')
+                `, [userId, JSON.stringify(pmcData.slice(-30)), today]);
+            }
+        }
+        
+        // 7. Calculer les zones de FC si on a les données
+        if (profile.age) {
+            const zones = Cardiovascular.calculateKarvonenZones(
+                profile.age || 30,
+                profile.resting_hr || 60,
+                profile.sex || 'M'
+            );
+            
+            await dbRunUser(userDb, `
+                INSERT OR REPLACE INTO performance_metrics
+                (user_id, metric_type, metric_value, metric_unit, recorded_at, source)
+                VALUES (?, 'hr_zones', ?, 'json', ?, 'calculated')
+            `, [userId, JSON.stringify(zones), new Date().toISOString().split('T')[0]]);
+        }
+        
+        // 8. Calculer le volume hebdomadaire
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        const weeklyStats = await dbAllUser(userDb, `
+            SELECT SUM(distance) as total_distance, SUM(moving_time) as total_time, COUNT(*) as count
+            FROM activities 
+            WHERE start_date >= ? AND type IN ('run', 'Run', 'trail_run', 'Ride', 'ride')
+        `, [weekAgo.toISOString().split('T')[0]]);
+        
+        if (weeklyStats.length > 0) {
+            const week = weeklyStats[0];
+            await dbRunUser(userDb, `
+                INSERT OR REPLACE INTO performance_metrics
+                (user_id, metric_type, metric_value, metric_unit, recorded_at, source)
+                VALUES (?, 'weekly_distance', ?, 'm', ?, 'calculated')
+            `, [userId, week.total_distance || 0, new Date().toISOString().split('T')[0]]);
+            
+            await dbRunUser(userDb, `
+                INSERT OR REPLACE INTO performance_metrics
+                (user_id, metric_type, metric_value, metric_unit, recorded_at, source)
+                VALUES (?, 'weekly_time', ?, 's', ?, 'calculated')
+            `, [userId, week.total_time || 0, new Date().toISOString().split('T')[0]]);
+            
+            await dbRunUser(userDb, `
+                INSERT OR REPLACE INTO performance_metrics
+                (user_id, metric_type, metric_value, metric_unit, recorded_at, source)
+                VALUES (?, 'weekly_activities', ?, 'count', ?, 'calculated')
+            `, [userId, week.count || 0, new Date().toISOString().split('T')[0]]);
+        }
+        
+        logger.info(`[MetricsCalculator] Completed for user ${userId}: metrics calculated=${metricsCalculated}`);
+        
+        return {
+            success: true,
+            calculated: metricsCalculated,
+            vdot: bestVDOT
+        };
+        
+    } catch (error) {
+        logger.error(`[MetricsCalculator] Error for user ${userId}:`, error);
+        return { success: false, error: error.message };
+    }
+}
+
+async function getUserProfile(userId, userDb) {
+    // Raw DB values — NE PAS utiliser resolveUserConstants ici car il rajoute
+    // des estimations par défaut (Tanaka pour FCM), ce qui empêche le calcul
+    // depuis les activités de se déclencher.
+    const userRow = await dbGetMain('SELECT profile_data FROM users WHERE id = ?', [userId]);
+    let profileData = {};
+    try { profileData = userRow?.profile_data ? JSON.parse(userRow.profile_data) : {}; } catch { /* Silently ignore */ }
+
+    const userProfile = await dbGetUser(userDb,
+        'SELECT fcm, vma, vdot, resting_hr, age, sex, weight FROM user_profiles WHERE user_id = ?',
+        [userId]
+    ).catch(() => null);
+
+    return {
+        fcm: userProfile?.fcm || profileData.fcm || profileData.max_heart_rate || null,
+        resting_hr: userProfile?.resting_hr || profileData.restingHR || 60,
+        vma: userProfile?.vma || profileData.vma || null,
+        vdot: userProfile?.vdot || profileData.vdot || null,
+        age: userProfile?.age || profileData.age || 30,
+        sex: userProfile?.sex || profileData.sex || 'M',
+        weight: userProfile?.weight || profileData.weight || 70,
+    };
+}
+
+function getObservedFCM(activities, formulaFCM) {
+    const maxHRs = activities
+        .filter(a => a.max_heartrate && a.max_heartrate > 0)
+        .map(a => a.max_heartrate);
+    if (maxHRs.length > 0) {
+        const observed = Math.max(...maxHRs);
+        if (observed >= formulaFCM * 0.85) return Math.round(observed);
+        if (observed > 0) return Math.round(Math.max(observed, formulaFCM));
+    }
+    return formulaFCM;
+}
+
+async function updateUserProfile(userId, userDb, updates) {
+    const existing = await dbGetUser(userDb, `
+        SELECT id FROM user_profiles WHERE user_id = ?
+    `, [userId]).catch(() => null);
+    
+    if (existing) {
+        const setClause = Object.keys(updates).map(k => `${k} = ?`).join(', ');
+        await dbRunUser(userDb, `
+            UPDATE user_profiles SET ${setClause}, updated_at = CURRENT_TIMESTAMP
+            WHERE user_id = ?
+        `, [...Object.values(updates), userId]);
+    } else {
+        await dbRunUser(userDb, `
+            INSERT INTO user_profiles (user_id, fcm, vma, vdot, age, sex, weight, resting_hr, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `, [
+            userId,
+            updates.fcm || null,
+            updates.vma || null,
+            updates.vdot || null,
+            updates.age || 30,
+            updates.sex || 'M',
+            updates.weight || null,
+            updates.resting_hr || 60
+        ]);
+    }
+}
+
+module.exports = {
+    calculateAndStoreMetrics,
+    getUserProfile,
+    updateUserProfile
+};

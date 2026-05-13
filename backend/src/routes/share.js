@@ -4,8 +4,8 @@
 
 const express = require('express');
 const router = express.Router({ mergeParams: true });
-const { verifyToken } = require('../auth');
-const { logger } = require('../logger');
+const { verifyToken } = require('./auth');
+const { logger } = require('../utils/logger');
 const { getUserDb, dbGetUser, dbRunUser } = require('../database');
 const { createCanvas } = require('canvas');
 const fs = require('fs');
@@ -18,75 +18,6 @@ const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 if (!fs.existsSync(CACHE_DIR)) {
   fs.mkdirSync(CACHE_DIR, { recursive: true });
 }
-
-/**
- * GET /api/activities/:id/share-settings
- * Récupère les paramètres de partage d'une activité
- */
-router.get('/share-settings', verifyToken, async (req, res) => {
-  try {
-    const activityId = parseInt(req.params.id);
-    if (!activityId || isNaN(activityId)) {
-      return res.status(400).json({ error: 'Invalid activity ID' });
-    }
-    const userDb = await getUserDb(req.user.id);
-    const activity = await dbGetUser(userDb,
-      `SELECT share_to_friends, share_to_groups, shared_data_fields FROM activities WHERE id = ?`,
-      [activityId]
-    );
-    if (!activity) {
-      return res.status(404).json({ error: 'Activity not found' });
-    }
-    res.json({
-      share_to_friends: activity.share_to_friends !== 0,
-      share_to_groups: activity.share_to_groups ? JSON.parse(activity.share_to_groups) : null,
-      shared_data_fields: activity.shared_data_fields
-        ? JSON.parse(activity.shared_data_fields)
-        : ['distance', 'time', 'pace', 'elevation', 'map'],
-    });
-  } catch (error) {
-    logger.error('[ShareSettings] GET error', { error: error.message });
-    res.status(500).json({ error: 'Failed to get share settings' });
-  }
-});
-
-/**
- * PUT /api/activities/:id/share-settings
- * Met à jour les paramètres de partage d'une activité
- */
-router.put('/share-settings', verifyToken, async (req, res) => {
-  try {
-    const activityId = parseInt(req.params.id);
-    if (!activityId || isNaN(activityId)) {
-      return res.status(400).json({ error: 'Invalid activity ID' });
-    }
-    const { share_to_friends, share_to_groups, shared_data_fields } = req.body;
-    const userDb = await getUserDb(req.user.id);
-
-    const activity = await dbGetUser(userDb, 'SELECT id FROM activities WHERE id = ?', [activityId]);
-    if (!activity) {
-      return res.status(404).json({ error: 'Activity not found' });
-    }
-
-    await dbRunUser(userDb, `
-      UPDATE activities SET
-        share_to_friends = COALESCE(?, share_to_friends),
-        share_to_groups = COALESCE(?, share_to_groups),
-        shared_data_fields = COALESCE(?, shared_data_fields)
-      WHERE id = ?
-    `, [
-      share_to_friends !== undefined ? (share_to_friends ? 1 : 0) : null,
-      share_to_groups !== undefined ? JSON.stringify(share_to_groups) : null,
-      shared_data_fields !== undefined ? JSON.stringify(shared_data_fields) : null,
-      activityId,
-    ]);
-
-    res.json({ success: true, message: 'Share settings updated' });
-  } catch (error) {
-    logger.error('[ShareSettings] PUT error', { error: error.message });
-    res.status(500).json({ error: 'Failed to update share settings' });
-  }
-});
 
 /**
  * GET /api/activities/:id/share-image

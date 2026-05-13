@@ -8,7 +8,7 @@
 'use strict';
 
 const express = require('express');
-const { verifyToken } = require('../auth');
+const { verifyToken } = require('./auth');
 const { getUserDb, dbGetUser, dbRunUser } = require('../database');
 
 const router = express.Router();

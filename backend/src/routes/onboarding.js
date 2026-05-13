@@ -8,7 +8,7 @@
 'use strict';
 
 const express = require('express');
-const { verifyToken } = require('../auth');
+const { verifyToken } = require('./auth');
 const { getUserDb, dbGetUser, dbGetMain } = require('../database');
 
 const router = express.Router();
@@ -49,7 +49,7 @@ router.get('/status', verifyToken, async (req, res) => {
             }
         });
     } catch (error) {
-        const { logger } = require('../logger');
+        const { logger } = require('../utils/logger');
         logger.error('Onboarding status error', { error: error.message, userId: req.user?.id });
         res.status(500).json({ error: 'Failed to get onboarding status' });
     }

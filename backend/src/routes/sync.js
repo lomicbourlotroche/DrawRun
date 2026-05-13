@@ -13,16 +13,16 @@
  */
 
 'use strict';
-const { logger } = require('../logger');
+const { logger } = require('../utils/logger');
 
 const express = require('express');
 const axios = require('axios');
 const crypto = require('crypto');
-const { verifyToken } = require('../auth');
-const { performSync: performStravaSync } = require('../strava_sync');
-const { performGarminSync } = require('../garmin_sync');
-const { performSuuntoSync } = require('../suunto_sync');
-const { performDecathlonSync } = require('../decathlon_sync');
+const { verifyToken } = require('./auth');
+const { performSync: performStravaSync } = require('../services/sync/strava');
+const { performGarminSync } = require('../services/sync/garmin');
+const { performSuuntoSync } = require('../services/sync/suunto');
+const { performDecathlonSync } = require('../services/sync/decathlon');
 
 const router = express.Router();
 
@@ -160,10 +160,10 @@ router.get('/job/:id', verifyToken, (req, res) => {
 
 router.get('/status', verifyToken, async (req, res) => {
     try {
-        const { getStravaSyncStatus } = require('../strava_sync');
-        const { getGarminSyncStatus } = require('../garmin_sync');
-        const { getSuuntoSyncStatus } = require('../suunto_sync');
-        const { getDecathlonSyncStatus } = require('../decathlon_sync');
+        const { getStravaSyncStatus } = require('../services/sync/strava');
+        const { getGarminSyncStatus } = require('../services/sync/garmin');
+        const { getSuuntoSyncStatus } = require('../services/sync/suunto');
+        const { getDecathlonSyncStatus } = require('../services/sync/decathlon');
 
         const [strava, garmin, suunto, decathlon] = await Promise.all([
             getStravaSyncStatus(req.user.id),
@@ -196,7 +196,7 @@ router.get('/status', verifyToken, async (req, res) => {
 
 router.post('/strava/clear-session', verifyToken, async (req, res) => {
     try {
-        const { clearStravaSession } = require('../strava_sync');
+        const { clearStravaSession } = require('../services/sync/strava');
         const result = await clearStravaSession(req.user.id);
         res.json(result);
     } catch (error) {
@@ -207,7 +207,7 @@ router.post('/strava/clear-session', verifyToken, async (req, res) => {
 
 router.post('/garmin/clear-tokens', verifyToken, async (req, res) => {
     try {
-        const { clearGarminTokens } = require('../garmin_sync');
+        const { clearGarminTokens } = require('../services/sync/garmin');
         const result = await clearGarminTokens(req.user.id);
         res.json(result);
     } catch (error) {
@@ -218,7 +218,7 @@ router.post('/garmin/clear-tokens', verifyToken, async (req, res) => {
 
 router.post('/suunto/clear-token', verifyToken, async (req, res) => {
     try {
-        const { clearSuuntoToken } = require('../suunto_sync');
+        const { clearSuuntoToken } = require('../services/sync/suunto');
         const result = await clearSuuntoToken(req.user.id);
         res.json(result);
     } catch (error) {
@@ -232,7 +232,7 @@ router.get('/decathlon/url', verifyToken, async (req, res) => {
         return res.status(503).json({ error: 'Decathlon integration not configured on this server' });
     }
     try {
-        const { getDecathlonAuthUrl } = require('../decathlon_sync');
+        const { getDecathlonAuthUrl } = require('../services/sync/decathlon');
         const url = await getDecathlonAuthUrl(req.user.id);
         res.json({ url });
     } catch (error) {
@@ -269,11 +269,12 @@ router.get('/decathlon/callback', async (req, res) => {
         try {
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             const tempData = JSON.parse(fs.readFileSync(tempPath, 'utf8'));
-            // Vérifier que le verifier n'est pas trop vieux (10 min max)
-            if (Date.now() - tempData.createdAt > 10 * 60 * 1000) {
-                fs.unlinkSync(tempPath);
-                return res.redirect('https://drawrun.fr/profile?decathlon=error&reason=expired');
-            }
+             // Vérifier que le verifier n'est pas trop vieux (10 min max)
+             if (Date.now() - tempData.createdAt > 10 * 60 * 1000) {
+                 // eslint-disable-next-line security/detect-non-literal-fs-filename
+                 fs.unlinkSync(tempPath);
+                 return res.redirect('https://drawrun.fr/profile?decathlon=error&reason=expired');
+             }
             codeVerifier = tempData.codeVerifier;
             // eslint-disable-next-line security/detect-non-literal-fs-filename
             fs.unlinkSync(tempPath);
@@ -321,7 +322,7 @@ router.get('/decathlon/callback', async (req, res) => {
 
 router.post('/decathlon/clear-token', verifyToken, async (req, res) => {
     try {
-        const { clearDecathlonToken } = require('../decathlon_sync');
+        const { clearDecathlonToken } = require('../services/sync/decathlon');
         const result = await clearDecathlonToken(req.user.id);
         res.json(result);
     } catch (error) {
@@ -332,7 +333,7 @@ router.post('/decathlon/clear-token', verifyToken, async (req, res) => {
 
 router.get('/strava/url', verifyToken, async (req, res) => {
     try {
-        const { getStravaAuthUrl } = require('../strava_sync');
+        const { getStravaAuthUrl } = require('../services/sync/strava');
         const url = await getStravaAuthUrl(req.user.id);
         res.json({ url });
     } catch (error) {

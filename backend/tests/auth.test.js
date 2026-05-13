@@ -22,18 +22,18 @@ jest.mock('../src/database', () => ({
     isInitialized: jest.fn().mockReturnValue(true),
 }));
 
-jest.mock('../src/crypto_utils', () => ({
+jest.mock('../src/utils/crypto', () => ({
     encrypt: jest.fn((v) => `enc:${v}`),
     decrypt: jest.fn((v) => v.replace(/^enc:/, '')),
 }));
 
-jest.mock('../src/logger', () => ({
+jest.mock('../src/utils/logger', () => ({
     auditLog: jest.fn(),
     securityLog: jest.fn(),
     logger: { info: jest.fn(), error: jest.fn(), warn: jest.fn() },
 }));
 
-jest.mock('../src/auth2fa', () => ({
+jest.mock('../src/services/auth/2fa.service', () => ({
     has2FAEnabled: jest.fn().mockResolvedValue(false),
     has2FAPending: jest.fn().mockResolvedValue(false),
     verify2FAToken: jest.fn().mockResolvedValue({ valid: true }),
@@ -43,8 +43,8 @@ jest.mock('../src/auth2fa', () => ({
 }));
 
 // Partially mock jwt_tokens: keep generateAccessToken real, mock the rest.
-jest.mock('../src/jwt_tokens', () => {
-    const actual = jest.requireActual('../src/jwt_tokens');
+jest.mock('../src/utils/jwt', () => {
+    const actual = jest.requireActual('../src/utils/jwt');
     return {
         ...actual,
         generateRefreshToken: jest.fn().mockResolvedValue('mock-refresh-token'),
@@ -62,7 +62,7 @@ jest.mock('../src/jwt_tokens', () => {
 // ============================================================================
 
 describe('JWT Tokens', () => {
-    const { generateAccessToken } = require('../src/jwt_tokens');
+    const { generateAccessToken } = require('../src/utils/jwt');
     const mockUser = { id: 1, email: 'test@example.com' };
 
     test('should generate access token', () => {
@@ -77,7 +77,7 @@ describe('JWT Tokens', () => {
 // ============================================================================
 
 describe('Password Validation', () => {
-    const { isStrongPassword } = require('../src/validators');
+    const { isStrongPassword } = require('../src/utils/validators');
 
     test('should accept strong password', () => {
         expect(isStrongPassword('StrongP@ss123')).toBe(true);
@@ -97,7 +97,7 @@ describe('Password Validation', () => {
 // ============================================================================
 
 describe('Email Validation', () => {
-    const { isValidEmail } = require('../src/validators');
+    const { isValidEmail } = require('../src/utils/validators');
 
     test('should accept valid email', () => {
         expect(isValidEmail('user@example.com')).toBe(true);
@@ -118,8 +118,8 @@ describe('Email Validation', () => {
 
 const request = require('supertest');
 const express = require('express');
-const { router: authRouter } = require('../src/auth');
-const jwtTokens = require('../src/jwt_tokens');
+const { router: authRouter } = require('../src/routes/auth');
+const jwtTokens = require('../src/utils/jwt');
 
 const app = express();
 app.use(express.json());
@@ -182,7 +182,7 @@ describe('POST /api/auth/refresh', () => {
 
 describe('Credential Encryption', () => {
     test('Garmin credentials are encrypted before storage', () => {
-        const { encrypt } = require('../src/crypto_utils');
+        const { encrypt } = require('../src/utils/crypto');
         const password = 'my-garmin-password';
 
         // encrypt is mocked as (v) => 'enc:' + v
@@ -194,7 +194,7 @@ describe('Credential Encryption', () => {
     });
 
     test('Suunto credentials are encrypted before storage', () => {
-        const { encrypt } = require('../src/crypto_utils');
+        const { encrypt } = require('../src/utils/crypto');
         const password = 'my-suunto-password';
 
         const encrypted = encrypt(password);
@@ -205,7 +205,7 @@ describe('Credential Encryption', () => {
 
     test('real encrypt() output matches encrypted format ^[0-9a-f]{32}:[0-9a-f]{32}:.+', () => {
         // Use the REAL encrypt function (bypass mock)
-        const { encrypt: realEncrypt } = jest.requireActual('../src/crypto_utils');
+        const { encrypt: realEncrypt } = jest.requireActual('../src/utils/crypto');
 
         // Set CREDENTIALS_SECRET for the test
         process.env.CREDENTIALS_SECRET = 'test-secret-for-encryption-testing';
@@ -230,7 +230,7 @@ describe('Credential Encryption', () => {
 describe('Property 11: Credentials never stored in plaintext', () => {
     test('Property 11: Garmin/Suunto passwords never stored in plaintext', async () => {
         const { fc } = require('@fast-check/jest');
-        const { encrypt: realEncrypt } = jest.requireActual('../src/crypto_utils');
+        const { encrypt: realEncrypt } = jest.requireActual('../src/utils/crypto');
 
         process.env.CREDENTIALS_SECRET = 'test-secret-for-encryption-testing';
 

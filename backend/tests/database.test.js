@@ -36,7 +36,7 @@ describe('Database Utils', () => {
 });
 
 describe('DB Helpers', () => {
-    const { clamp, maskEmail, sleep } = require('../src/db_helpers');
+    const { clamp, maskEmail, sleep } = require('../src/utils/helpers');
     
     test('should clamp values correctly', () => {
         expect(clamp(5, 0, 10)).toBe(5);
@@ -288,12 +288,13 @@ describe('Property 13: Migrations applied in ascending version order', () => {
     test('migrations applied in ascending lexicographic version order, each version appears exactly once', async () => {
         const { fc } = require('@fast-check/jest');
         const SQL = require('sql.js');
+        const { MIGRATIONS } = require('../src/database');
 
-        const migrationVersions = ['001_add_otp_lockout_columns', '002_add_twofa_pending'];
+        const migrationVersions = MIGRATIONS.map(m => m.version);
 
         await fc.assert(
             fc.asyncProperty(
-                fc.shuffledSubarray(migrationVersions, { minLength: 2 }),
+                fc.shuffledSubarray(migrationVersions, { minLength: Math.min(5, migrationVersions.length) }),
                 async (shuffledVersions) => {
                     const sqlModule = await SQL();
                     const db = new sqlModule.Database();

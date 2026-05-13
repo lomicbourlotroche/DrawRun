@@ -17,11 +17,10 @@ import type {
   LeaderboardEntry, 
   Group 
 } from '@/types';
-import { useNotificationsStore } from '@/stores';
 import { 
   Users, UserPlus, Search, Trophy, MessageCircle, 
   Heart, MapPin, Clock, Flame, TrendingUp, Users2,
-  Loader2, X, Check, Copy, Bell, Activity, ChevronRight, Sparkles
+  Loader2, X, Check, Copy, Activity, ChevronRight, Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -1362,123 +1361,6 @@ function ChallengesTab() {
               )}
             </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================================================
-// NOTIFICATIONS TAB
-// ============================================================================
-
-function NotificationsTab() {
-  const { notifications, unreadCount, markAsRead, markAllAsRead, isLoading, fetchNotifications } = useNotificationsStore();
-
-  useEffect(() => {
-    fetchNotifications().then(() => {
-      const { unreadCount: count } = useNotificationsStore.getState();
-      if (count > 0) {
-        markAllAsRead();
-      }
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'friend_request': return <UserPlus className="w-5 h-5" />;
-      case 'challenge': return <Trophy className="w-5 h-5" />;
-      case 'like': return <Heart className="w-5 h-5" />;
-      case 'message': return <MessageCircle className="w-5 h-5" />;
-      default: return <Bell className="w-5 h-5" />;
-    }
-  };
-
-  const getNotificationColor = (type: string) => {
-    switch (type) {
-      case 'friend_request': return 'bg-blue-500/10 text-blue-500';
-      case 'challenge': return 'bg-yellow-500/10 text-yellow-500';
-      case 'like': return 'bg-red-500/10 text-red-500';
-      case 'message': return 'bg-green-500/10 text-green-500';
-      default: return 'bg-muted text-muted';
-    }
-  };
-
-  const handleMarkAsRead = async (notificationId: number) => {
-    await markAsRead(notificationId);
-  };
-
-  const handleMarkAllAsRead = async () => {
-    await markAllAsRead();
-  };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {[1, 2, 3].map(i => <Skeleton key={i} className="h-20 rounded-2xl" />)}
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-          <Bell className="w-5 h-5 text-primary" />
-          Notifications
-          {unreadCount > 0 && (
-            <GradientBadge variant="danger" size="sm" className="rounded-full">{unreadCount}</GradientBadge>
-          )}
-        </h3>
-        {unreadCount > 0 && (
-          <Button size="sm" variant="ghost" onClick={handleMarkAllAsRead}>
-            Tout marquer comme lu
-          </Button>
-        )}
-      </div>
-
-      {/* Notifications List */}
-      {notifications.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary/20 to-blue-500/20 flex items-center justify-center">
-            <Bell className="w-12 h-12 text-primary/50" />
-          </div>
-          <p className="font-semibold text-lg">Aucune notification</p>
-          <p className="text-sm text-muted mt-2">Vous serez notifié des nouvelles activités</p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {notifications.map((notification) => (
-            <GlassCard 
-              key={notification.id}
-              padding="sm"
-              className={`cursor-pointer ${
-                notification.unread 
-                  ? 'border-primary/20 shadow-sm' 
-                  : ''
-              }`}
-              onClick={() => notification.unread && handleMarkAsRead(notification.id)}
-            >
-              <div className="flex items-start gap-4">
-                <div className={`p-3 rounded-xl ${getNotificationColor(notification.type)}`}>
-                  {getNotificationIcon(notification.type)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm ${notification.unread ? 'font-semibold' : 'font-medium'}`}>
-                    {notification.message}
-                  </p>
-                  <p className="text-xs text-muted mt-1">
-                    {new Date(notification.created_at || Date.now()).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                </div>
-                {notification.unread && (
-                  <div className="w-2.5 h-2.5 bg-primary rounded-full flex-shrink-0 mt-2" />
-                )}
-              </div>
-            </GlassCard>
-          ))}
         </div>
       )}
     </div>

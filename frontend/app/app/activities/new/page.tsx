@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import ActivityMap from '@/components/ui/ActivityMap';
-import { Upload, FileText, X, MapPin } from 'lucide-react';
+import { Upload, FileText, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ACTIVITY_TYPES = [

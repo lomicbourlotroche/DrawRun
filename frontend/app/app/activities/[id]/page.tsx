@@ -8,7 +8,7 @@ import ActivityMap from '@/components/ui/ActivityMap';
 import { api } from '@/lib/api';
 import type { ActivityDetail as ActivityDetailType, ActivityStreams } from '@/types';
 import type { SplitData, SplitSummary } from '@/types';
-import { ArrowLeft, Heart, Timer, Gauge, Mountain, Activity as ActivityIcon, Zap, Wind, MapPin, Clock, Pencil, Check, X, Dumbbell, Cpu } from 'lucide-react';
+import { ArrowLeft, Heart, Timer, Gauge, Mountain, Activity as ActivityIcon, Zap, Wind, MapPin, Clock, Pencil, Check, X, Cpu } from 'lucide-react';
 import { toast } from 'sonner';
 import { BiomechanicsCard } from '@/components/features/activities/BiomechanicsCard';
 import { ShareSettingsPanel } from '@/components/features/activities';
@@ -429,7 +429,7 @@ export default function ActivityDetailPage() {
       )}
 
       {/* Advanced Metrics (elev_high/low, running_index, HRV, flags) */}
-      {(activity.elev_high != null || activity.elev_low != null || activity.running_index != null || activity.hrv_rmssd != null || activity.is_race || activity.is_commute || activity.device_name) && (
+      {(activity.elev_high !== null || activity.elev_low !== null || activity.running_index !== null || activity.hrv_rmssd !== null || activity.is_race || activity.is_commute || activity.device_name) && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
@@ -439,19 +439,19 @@ export default function ActivityDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {activity.elev_low != null && activity.elev_high != null && (
+              {activity.elev_low !== null && activity.elev_high !== null && (
                 <div className="text-center p-3 rounded-lg bg-background border border-border">
                   <p className="text-lg font-bold text-foreground">{Math.round(toNum(activity.elev_low))}m – {Math.round(toNum(activity.elev_high))}m</p>
                   <p className="text-xs text-muted">Altitude min – max</p>
                 </div>
               )}
-              {activity.running_index != null && (
+              {activity.running_index !== null && (
                 <div className="text-center p-3 rounded-lg bg-background border border-border">
                   <p className="text-lg font-bold text-cyan-400">{toNum(activity.running_index).toFixed(1)}</p>
                   <p className="text-xs text-muted">Running Index</p>
                 </div>
               )}
-              {activity.hrv_rmssd != null && (
+              {activity.hrv_rmssd !== null && (
                 <div className="text-center p-3 rounded-lg bg-background border border-border">
                   <p className="text-lg font-bold text-teal-400">{toNum(activity.hrv_rmssd).toFixed(1)} ms</p>
                   <p className="text-xs text-muted">HRV (RMSSD)</p>

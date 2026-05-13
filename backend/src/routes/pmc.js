@@ -8,9 +8,10 @@
 'use strict';
 
 const express = require('express');
-const { verifyToken } = require('../auth');
-const { getUserDb, dbGetUser, dbAllUser, dbGetMain } = require('../database');
+const { verifyToken } = require('./auth');
+const { getUserDb, dbGetUser, dbAllUser } = require('../database');
 const { Recommendations } = require('../algorithms');
+const { resolveUserConstants } = require('../services/userConstants.service');
 
 const router = express.Router();
 
@@ -29,13 +30,12 @@ router.get('/', verifyToken, async (req, res) => {
     }
 });
 
-// GET /api/recommendations
+// GET /api/pmc/recommendations (also mounted at /api/recommendations/recommendations for legacy compat)
 router.get('/recommendations', verifyToken, async (req, res) => {
     try {
-        const userDb = await getUserDb(req.user.id);
-        const profile = await dbGetMain('SELECT * FROM users WHERE id = ?', [req.user.id]);
+        const constants = await resolveUserConstants(req.user.id);
         
-        if (!profile || !profile.fcm || !profile.age) {
+        if (!constants.fcm || !constants.age) {
             return res.json({
                 type: 'Endurance',
                 intensity: 'moderate',
@@ -44,12 +44,12 @@ router.get('/recommendations', verifyToken, async (req, res) => {
             });
         }
         
-        // Obtenir les métriques
+        const userDb = await getUserDb(req.user.id);
         const pmc = await dbGetUser(userDb, `SELECT ctl, atl, tsb FROM pmc_history ORDER BY date DESC LIMIT 1`);
         const weekly = await dbGetUser(userDb, `SELECT value FROM performance_metrics WHERE metric_type = 'weekly_distance' ORDER BY date DESC LIMIT 1`);
         
         const recommendation = Recommendations.generate(
-            { fcm: profile.fcm, vma: profile.vma, age: profile.age, sex: profile.sex },
+            { fcm: constants.fcm, vma: constants.vma, age: constants.age, sex: constants.sex },
             { weeklyLoad: weekly?.value || 0, chronicLoad: pmc?.ctl || 0, acwr: pmc?.atl ? (pmc.atl / pmc.ctl).toFixed(2) : 1 },
             {}
         );

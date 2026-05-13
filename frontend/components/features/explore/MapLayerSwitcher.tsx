@@ -4,7 +4,7 @@ import { Map, Mountain, Satellite } from 'lucide-react';
 
 interface MapLayerSwitcherProps {
   activeLayer: string;
-  onLayerChange: (layer: string) => void;
+  onLayerChange: (_layer: string) => void;
 }
 
 const LAYERS = [

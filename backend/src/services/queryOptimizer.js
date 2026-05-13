@@ -14,7 +14,7 @@
 'use strict';
 
 const { dbGetMain, dbAllMain } = require('../database');
-const { logger } = require('../logger');
+const { logger } = require('../utils/logger');
 
 /**
  * Batch loader pour éviter les requêtes N+1

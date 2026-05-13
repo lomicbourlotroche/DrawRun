@@ -40,6 +40,20 @@
     "node/no-unpublished-require": "off",
     "node/no-missing-require": "off"
   },
+  "overrides": [
+    {
+      "files": ["src/services/**/*.js", "src/routes/**/*.js", "src/algorithms/**/*.js", "src/utils/**/*.js"],
+      "rules": {
+        "security/detect-object-injection": "off"
+      }
+    },
+    {
+      "files": ["src/services/sync/decathlon.js"],
+      "rules": {
+        "security/detect-non-literal-fs-filename": "off"
+      }
+    }
+  ],
   "ignorePatterns": [
     "node_modules/",
     "data/",

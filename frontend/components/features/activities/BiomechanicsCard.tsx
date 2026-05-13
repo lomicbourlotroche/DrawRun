@@ -1,7 +1,6 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
-import { Activity, Wind, TrendingUp, Info, Zap } from 'lucide-react';
-import { GlassCard } from '@/components/ui/GlassCard';
+import { Activity, Info, Zap } from 'lucide-react';
 
 interface BiomechanicsMetrics {
   verticalOscillation: number;

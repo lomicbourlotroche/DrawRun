@@ -9,16 +9,18 @@ const GpxUtils = {
      * @param {string} xmlString 
      * @returns {Array<{lat, lon, ele, dist}>}
      */
-    parse(xmlString) {
-        const getTag = (str, tag) => {
-            const m = str.match(new RegExp(`<${tag}[^>]*>([^<]*)</${tag}>`, 'i'));
-            return m ? m[1].trim() : null;
-        };
+     parse(xmlString) {
+         const getTag = (str, tag) => {
+             // eslint-disable-next-line security/detect-non-literal-regexp
+             const m = str.match(new RegExp(`<${tag}[^>]*>([^<]*)</${tag}>`, 'i'));
+             return m ? m[1].trim() : null;
+         };
 
-        const getAttr = (str, attr) => {
-            const m = str.match(new RegExp(`${attr}="([^"]+)"`));
-            return m ? m[1] : null;
-        };
+         const getAttr = (str, attr) => {
+             // eslint-disable-next-line security/detect-non-literal-regexp
+             const m = str.match(new RegExp(`${attr}="([^"]+)"`));
+             return m ? m[1] : null;
+         };
 
         const trkpts = [];
         const trkptRe = /<trkpt([^>]*)>([\s\S]*?)<\/trkpt>/gi;
@@ -38,17 +40,19 @@ const GpxUtils = {
 
         if (trkpts.length < 2) return null;
 
-        // Calculate cumulative distance using Haversine
-        let totalDist = 0;
-        trkpts[0].dist = 0;
+         // Calculate cumulative distance using Haversine
+         let totalDist = 0;
+         trkpts[0].dist = 0;
 
-        for (let i = 1; i < trkpts.length; i++) {
-            const p1 = trkpts[i - 1];
-            const p2 = trkpts[i];
-            const d = this.calculateDistance(p1.lat, p1.lon, p2.lat, p2.lon);
-            totalDist += d;
-            p2.dist = Math.round(totalDist * 10) / 10;
-        }
+         /* eslint-disable security/detect-object-injection */
+         for (let i = 1; i < trkpts.length; i++) {
+             const p1 = trkpts[i - 1];
+             const p2 = trkpts[i];
+             const d = this.calculateDistance(p1.lat, p1.lon, p2.lat, p2.lon);
+             totalDist += d;
+             p2.dist = Math.round(totalDist * 10) / 10;
+         }
+         /* eslint-enable security/detect-object-injection */
 
         return trkpts;
     },

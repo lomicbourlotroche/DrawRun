@@ -10,7 +10,7 @@
  * - Cache management
  */
 
-import React, { lazy, Suspense } from 'react';
+import React, { Suspense } from 'react';
 
 // ============================================================================
 // LAZY LOADING COMPONENTS
@@ -28,7 +28,7 @@ interface LazyWrapperProps {
   fallback?: React.ReactNode;
 }
 
-export function LazyWrapper({ children, fallback }: LazyWrapperProps): JSX.Element {
+export function LazyWrapper({ children, fallback }: LazyWrapperProps): React.ReactElement {
   const defaultFallback = React.createElement('div', {
     className: 'animate-pulse bg-gray-200 h-32 rounded'
   });
@@ -248,15 +248,15 @@ export const performanceCache = new PerformanceCache();
  * @param delay - Délai en millisecondes
  * @returns {Function} Fonction debouncée
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (..._args: never[]) => unknown>(
   func: T,
   delay: number
-): (...args: Parameters<T>) => void {
-  let timeoutId: NodeJS.Timeout;
+): (..._args: Parameters<T>) => void {
+  let timeoutId: ReturnType<typeof setTimeout>;
   
-  return (...args: Parameters<T>) => {
+  return (..._args: Parameters<T>) => {
     clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func(...args), delay);
+    timeoutId = setTimeout(() => func(..._args), delay);
   };
 }
 
@@ -266,17 +266,17 @@ export function debounce<T extends (...args: any[]) => any>(
  * @param delay - Délai en millisecondes
  * @returns {Function} Fonction throttlée
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (..._args: never[]) => unknown>(
   func: T,
   delay: number
-): (...args: Parameters<T>) => void {
+): (..._args: Parameters<T>) => void {
   let lastCall = 0;
   
-  return (...args: Parameters<T>) => {
+  return (..._args: Parameters<T>) => {
     const now = Date.now();
     if (now - lastCall >= delay) {
       lastCall = now;
-      func(...args);
+      func(..._args);
     }
   };
 }

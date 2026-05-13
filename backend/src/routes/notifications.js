@@ -2,9 +2,9 @@
 
 const express = require('express');
 const router = express.Router();
-const { verifyToken } = require('../auth');
-const { sendPushNotification, subscribeUser, unsubscribeUser, getVapidPublicKey } = require('../services/push.service');
-const { logger } = require('../logger');
+const { verifyToken } = require('./auth');
+const { sendPushNotification, subscribeUser, unsubscribeUser, getVapidPublicKey } = require('../services/notifications/push.service');
+const { logger } = require('../utils/logger');
 
 /**
  * GET /api/notifications/vapid-key

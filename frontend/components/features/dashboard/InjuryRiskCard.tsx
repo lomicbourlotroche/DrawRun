@@ -11,7 +11,7 @@ interface InjuryRiskCardProps {
 
 export const InjuryRiskCard: React.FC<InjuryRiskCardProps> = ({ acwr, trend }) => {
   const getStatus = (value: number) => {
-    if (value < 0.8) return {
+    if (value < 0.8) {return {
       label: 'Sous-entraînement',
       color: 'text-blue-400',
       bgColor: 'bg-blue-400/10',
@@ -19,8 +19,8 @@ export const InjuryRiskCard: React.FC<InjuryRiskCardProps> = ({ acwr, trend }) =
       icon: <TrendingDown className="w-5 h-5" />,
       message: 'Votre charge est faible. Augmentez progressivement pour progresser.',
       risk: 'Faible'
-    };
-    if (value <= 1.3) return {
+    };}
+    if (value <= 1.3) {return {
       label: 'Zone Optimale',
       color: 'text-emerald-400',
       bgColor: 'bg-emerald-400/10',
@@ -28,8 +28,8 @@ export const InjuryRiskCard: React.FC<InjuryRiskCardProps> = ({ acwr, trend }) =
       icon: <CheckCircle className="w-5 h-5" />,
       message: 'Excellent équilibre ! Vous progressez sans risque excessif.',
       risk: 'Minimal'
-    };
-    if (value <= 1.5) return {
+    };}
+    if (value <= 1.5) {return {
       label: 'Surcharge Modérée',
       color: 'text-amber-400',
       bgColor: 'bg-amber-400/10',
@@ -37,7 +37,7 @@ export const InjuryRiskCard: React.FC<InjuryRiskCardProps> = ({ acwr, trend }) =
       icon: <AlertTriangle className="w-5 h-5" />,
       message: 'Attention, votre charge augmente vite. Surveillez votre fatigue.',
       risk: 'Modéré'
-    };
+    };}
     return {
       label: 'DANGER !',
       color: 'text-red-500',
@@ -87,7 +87,7 @@ export const InjuryRiskCard: React.FC<InjuryRiskCardProps> = ({ acwr, trend }) =
         </div>
         
         <p className="text-xs text-gray-300 leading-relaxed italic">
-          "{status.message}"
+          &ldquo;{status.message}&rdquo;
         </p>
 
         <div className="flex justify-between items-center pt-2 border-t border-white/5">

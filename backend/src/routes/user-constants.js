@@ -13,10 +13,10 @@
 'use strict';
 
 const express = require('express');
-const { verifyToken } = require('../auth');
+const { verifyToken } = require('./auth');
 const { Cardiovascular, RunningPerformance } = require('../algorithms/index');
 const { resolveUserConstants } = require('../services/userConstants.service');
-const { logger } = require('../logger');
+const { logger } = require('../utils/logger');
 
 const router = express.Router();
 

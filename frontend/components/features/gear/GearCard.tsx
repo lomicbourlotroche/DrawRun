@@ -3,7 +3,6 @@
 import React from 'react';
 import { Card } from '@/components/ui/Card';
 import { Footprints, Bike, Settings, Trash2, AlertCircle } from 'lucide-react';
-import { PrimaryButton } from '@/components/ui';
 
 interface Gear {
   id: number;
@@ -18,8 +17,8 @@ interface Gear {
 
 interface GearCardProps {
   gear: Gear;
-  onEdit: (gear: Gear) => void;
-  onDelete: (id: number) => void;
+  onEdit: (_gear: Gear) => void;
+  onDelete: (_id: number) => void;
 }
 
 export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) => {

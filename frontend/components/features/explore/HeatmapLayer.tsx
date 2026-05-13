@@ -46,7 +46,7 @@ export default function HeatmapLayer({
   useEffect(() => {
     if (!map || data.length === 0) return;
 
-    import('leaflet').then((L) => {
+    import('leaflet').then(() => {
       if (layerRef.current) {
         map.removeLayer(layerRef.current);
         layerRef.current = null;

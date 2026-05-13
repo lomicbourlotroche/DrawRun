@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import Image from 'next/image';
-import { LanguageToggle } from '@/components/providers/LanguageToggle';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
 
 const navLinks = [
   { label: 'Race Planning', href: '#race-planning' },

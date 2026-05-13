@@ -5,7 +5,7 @@
  * Tests pour le chiffrement/déchiffrement
  */
 
-const { encrypt, decrypt } = require('../src/crypto_utils');
+const { encrypt, decrypt } = require('../src/utils/crypto');
 const { test: fcTest, fc } = require('@fast-check/jest');
 
 describe('Encryption/Decryption', () => {

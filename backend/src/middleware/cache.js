@@ -3,8 +3,8 @@
 /* eslint-disable unused-imports/no-unused-vars */
 
 const crypto = require('crypto');
-const { logger } = require('../logger');
-const { performanceMetrics } = require('../performance');
+const { logger } = require('../utils/logger');
+const { performanceMetrics } = require('./performance');
 
 /**
  * Génère un ETag à partir des données

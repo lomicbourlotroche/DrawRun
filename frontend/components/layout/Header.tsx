@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuthStore, useSyncStore, useNotificationsStore } from '@/stores';
-import { ThemeToggle } from '@/components/providers/ThemeToggle';
-import { LanguageToggle } from '@/components/providers/LanguageToggle';
-import { InstallPrompt } from '@/components/providers/InstallPrompt';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
+import { InstallPrompt } from '@/components/ui/InstallPrompt';
 import { RefreshCw, Settings, LogOut, User, ChevronDown, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 

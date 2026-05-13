@@ -8,10 +8,10 @@
  */
 
 'use strict';
-const { logger } = require('../logger');
+const { logger } = require('../utils/logger');
 
 const redisClient = require('../config/redis');
-const { LRUCache } = require('../performance');
+const { LRUCache } = require('../middleware/performance');
 
 class CacheService {
     constructor() {

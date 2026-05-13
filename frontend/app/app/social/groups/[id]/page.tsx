@@ -1,16 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Badge, Avatar, Skeleton } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Avatar, Skeleton } from '@/components/ui';
 import type { GroupDetail, GroupMember, Activity } from '@/types';
 import type { CreateChallengeParams } from '@/lib/api';
 import {
   Users, Settings, Activity as ActivityIcon, Trophy,
-  ChevronLeft, Copy, Trash2, Edit2, UserX, Crown, Shield,
-  Plus, Flame, Save, Eye, Check, Sparkles, Loader2, X
+  ChevronLeft, Copy, Trash2, Edit2, UserX, Crown, Shield, Flame, Save, Eye, Check, Sparkles, Loader2, X
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -175,13 +173,15 @@ export default function GroupDetailPage() {
     { id: 'settings',    label: 'Paramètres',                      icon: Settings },
   ] as const;
 
-  if (isLoading) return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      <Skeleton className="h-48 rounded-3xl" />
-      <Skeleton className="h-12 rounded-2xl" />
-      <Skeleton className="h-64 rounded-2xl" />
-    </div>
-  );
+  if (isLoading) {
+    return (
+      <div className="space-y-6 max-w-4xl mx-auto">
+        <Skeleton className="h-48 rounded-3xl" />
+        <Skeleton className="h-12 rounded-2xl" />
+        <Skeleton className="h-64 rounded-2xl" />
+      </div>
+    );
+  }
 
   if (!group) return null;
 

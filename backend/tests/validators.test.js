@@ -10,7 +10,7 @@ const {
     sanitizeString,
     isValidEmail,
     isStrongPassword
-} = require('../src/validators');
+} = require('../src/utils/validators');
 
 describe('Pagination Validation', () => {
     test('should validate pagination defaults', () => {

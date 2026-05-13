@@ -50,11 +50,11 @@ interface ExplorePanelProps {
   routesLoading: boolean;
   favorites: RouteItem[];
   favoritesLoading: boolean;
-  onSegmentClick: (segment: Segment) => void;
-  onRouteClick: (route: RouteItem) => void;
-  onFavoriteClick: (route: RouteItem) => void;
+  onSegmentClick: (_segment: Segment) => void;
+  onRouteClick: (_route: RouteItem) => void;
+  onFavoriteClick: (_route: RouteItem) => void;
   activeFilter: { type: string; difficulty: string };
-  onFilterChange: (filter: { type: string; difficulty: string }) => void;
+  onFilterChange: (_filter: { type: string; difficulty: string }) => void;
   onOpenRoutePlanner: () => void;
   isOpen: boolean;
   onToggle: () => void;

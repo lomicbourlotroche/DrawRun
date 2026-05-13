@@ -1,6 +1,6 @@
 'use strict';
 
-const { logger } = require('../logger');
+const { logger: _logger } = require('../utils/logger');
 const { getUserDb, dbGetUser, dbAllUser, dbGetMain, dbRunUser } = require('../database');
 const { Cardiovascular, RunningPerformance } = require('../algorithms');
 
@@ -49,7 +49,7 @@ async function getAutoUpdate(userId) {
         try {
             const p = JSON.parse(row.profile_data);
             return p.auto_update !== false;
-        } catch (_) {}
+        } catch (_) { /* Silently ignore */ }
     }
     return true;
 }
@@ -87,7 +87,7 @@ async function getManualConstants(userId, userDb) {
                 age: p.age || null,
                 sex: p.sex || 'M',
             };
-        } catch (_) {}
+        } catch (_) { /* Silently ignore */ }
     }
 
     return { fcm: null, vma: null, vdot: null, weight: null, height: null, restingHR: null, age: null, sex: 'M' };
@@ -203,7 +203,7 @@ function resolveVO2max(manual, vma, vdot) {
     return { value: null, source: RESOLUTION_SOURCES.ESTIMATED };
 }
 
-function resolveRestingHR(manual, fcm) {
+function resolveRestingHR(manual, _fcm) {
     if (manual.restingHR) {
         return { value: manual.restingHR, source: RESOLUTION_SOURCES.MANUAL };
     }

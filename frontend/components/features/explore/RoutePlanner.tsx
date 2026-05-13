@@ -14,10 +14,10 @@ interface Waypoint {
 
 interface RoutePlannerProps {
   waypoints: Waypoint[];
-  onWaypointsChange: (waypoints: Waypoint[]) => void;
+  onWaypointsChange: (_waypoints: Waypoint[]) => void;
   onClose: () => void;
   isLoop?: boolean;
-  onLoopChange?: (loop: boolean) => void;
+  onLoopChange?: (_loop: boolean) => void;
 }
 
 function haversineDistance(a: Waypoint, b: Waypoint): number {

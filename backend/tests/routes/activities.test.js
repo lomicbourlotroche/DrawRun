@@ -13,16 +13,18 @@ jest.mock('../../src/database', () => ({
   dbGetUser: jest.fn(),
   dbAllUser: jest.fn(),
   dbRunUser: jest.fn(),
+  dbGetMain: jest.fn(),
+  dbAllMain: jest.fn(),
 }));
 
-jest.mock('../../src/auth', () => ({
+jest.mock('../../src/routes/auth', () => ({
   verifyToken: (req, res, next) => {
     req.user = { id: 1, email: 'test@example.com' };
     next();
   },
 }));
 
-jest.mock('../../src/metrics_calculator', () => ({
+jest.mock('../../src/services/metricsCalculator.service', () => ({
   calculateAndStoreMetrics: jest.fn(),
 }));
 

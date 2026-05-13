@@ -1,107 +1,21 @@
 'use strict';
 
-/* eslint-disable unused-imports/no-unused-vars, no-empty, security/detect-object-injection, no-useless-escape */
-
 const express = require('express');
 const router = express.Router();
-const { verifyToken } = require('../auth');
-const { logger } = require('../logger');
+const { verifyToken } = require('./auth');
+const { logger } = require('../utils/logger');
 const { getUserDb, dbGetMain } = require('../database');
 const GpxUtils = require('../utils/gpx_utils');
+const { RaceStrategy, RunningPerformance, PMC, Taper, Overtraining, MathUtils } = require('../algorithms/index');
 const {
-    RunningPerformance,
-    Cardiovascular,
-    PMC,
-    Taper,
-    Overtraining,
-    TrainingLoad,
-    MathUtils,
-} = require('../algorithms/index');
+    analyzeGpxProfile, getPacingStrategy, generateScientificSplits,
+    getRaceHRPhase, getSplitNutrition, calculateNutritionStrategy,
+} = require('../services/race-planning/helpers.service');
 
-/**
- * Analyse un profil GPX pour détecter automatiquement :
- * - Le dénivelé total positif/négatif
- * - Le type de terrain (flat/rolling/mountainous)
- * - L'altitude moyenne
- * - Les segments par km avec pente
- */
-function analyzeGpxProfile(points) {
-    if (!points || points.length < 2) return null;
-
-    let elevGain = 0;
-    let elevLoss = 0;
-    let minEle = points[0].ele;
-    let maxEle = points[0].ele;
-    const totalDist = points[points.length - 1].dist; // meters
-
-    for (let i = 1; i < points.length; i++) {
-        const dEle = points[i].ele - points[i - 1].ele;
-        if (dEle > 0) elevGain += dEle;
-        else elevLoss += Math.abs(dEle);
-        if (points[i].ele < minEle) minEle = points[i].ele;
-        if (points[i].ele > maxEle) maxEle = points[i].ele;
-    }
-
-    const distKm = totalDist / 1000;
-    const gainPerKm = distKm > 0 ? elevGain / distKm : 0;
-
-    // Classification automatique du terrain
-    let terrainType;
-    if (gainPerKm < 10) {
-        terrainType = 'flat';
-    } else if (gainPerKm < 30) {
-        terrainType = 'rolling';
-    } else {
-        terrainType = 'mountainous';
-    }
-
-    // Segments par km avec pente
-    const kmSegments = [];
-    let segStart = 0;
-    let segStartDist = 0;
-    let segElevStart = points[0].ele;
-    let kmNum = 1;
-
-    for (let i = 1; i < points.length; i++) {
-        const distFromSegStart = points[i].dist - segStartDist;
-        if (distFromSegStart >= 1000 || i === points.length - 1) {
-            const segDist = points[i].dist - segStartDist;
-            const segElevChange = points[i].ele - segElevStart;
-            const grade = segDist > 0 ? (segElevChange / segDist) * 100 : 0;
-            kmSegments.push({
-                km: kmNum++,
-                distance: Math.round(segDist),
-                elevChange: Math.round(segElevChange),
-                grade: Math.round(grade * 10) / 10,
-                avgEle: Math.round((points[i].ele + segElevStart) / 2),
-            });
-            segStartDist = points[i].dist;
-            segElevStart = points[i].ele;
-        }
-    }
-
-    return {
-        elevGain: Math.round(elevGain),
-        elevLoss: Math.round(elevLoss),
-        elevMin: Math.round(minEle),
-        elevMax: Math.round(maxEle),
-        gainPerKm: Math.round(gainPerKm * 10) / 10,
-        terrainType,
-        kmSegments,
-        totalDistM: Math.round(totalDist),
-    };
-}
-
-/**
- * POST /api/race-planning/calculate
- * Calculate race plan with splits, nutrition strategy, and pacing
- * Supports both simple mode (distance + profile) and GPX mode (gpxData)
- */
 router.post('/calculate', verifyToken, async (req, res) => {
     try {
         const userId = req.user.id;
-        const {
-            distance: distanceInput,
+        const { distance: distanceInput,
             targetTime,
             targetPace,
             elevationProfile: elevationProfileInput = 'flat',
@@ -160,7 +74,7 @@ router.post('/calculate', verifyToken, async (req, res) => {
 
         let fcm = 180;
         let userVdot = null;
-        let age = 30;
+        let _age = 30;
         let weight = 70;
         let restingHR = 60;
 
@@ -175,11 +89,10 @@ router.post('/calculate', verifyToken, async (req, res) => {
                 try {
                     const data = JSON.parse(profile.profile_data);
                     fcm = data.fcm || fcm;
-                    age = data.age || age;
                     userVdot = data.vdot || null;
                     weight = data.weight || weight;
                     restingHR = data.restingHR || restingHR;
-                } catch (_) { }
+                } catch (_) { /* ignore parse error */ }
             }
         } catch (error) {
             logger.warn('[RacePlanning] Failed to fetch user profile', { error: error.message });
@@ -195,11 +108,12 @@ router.post('/calculate', verifyToken, async (req, res) => {
             // Prédiction automatique depuis VDOT
             try {
                 const preds = RunningPerformance.predictRaceTimes(userVdot);
-                let raceKey = 'marathon';
-                if (distance <= 5) raceKey = '5k';
-                else if (distance <= 10) raceKey = '10k';
-                else if (distance <= 21.0975) raceKey = 'half';
-                const targetHours = preds[raceKey];
+                 let raceKey = 'marathon';
+                 if (distance <= 5) raceKey = '5k';
+                 else if (distance <= 10) raceKey = '10k';
+                 else if (distance <= 21.0975) raceKey = 'half';
+                 // eslint-disable-next-line security/detect-object-injection
+                 const targetHours = preds[raceKey];
                 const targetDist = raceKey === 'marathon' ? 42.195 : raceKey === 'half' ? 21.0975 : raceKey === '10k' ? 10 : 5;
                 if (targetHours && targetHours > 0) {
                     targetPaceSec = (targetHours * 3600) / targetDist;
@@ -232,12 +146,13 @@ router.post('/calculate', verifyToken, async (req, res) => {
         const envImpact = envCorrection.impact;
 
         // Elevation factors
-        const elevationFactors = {
-            flat: { up: 1.0, down: 1.0, gainPerKm: 0 },
-            rolling: { up: 1.05, down: 0.97, gainPerKm: 15 },
-            mountainous: { up: 1.12, down: 0.94, gainPerKm: 40 },
-        };
-        const elev = elevationFactors[elevationProfile];
+         const elevationFactors = {
+             flat: { up: 1.0, down: 1.0, gainPerKm: 0 },
+             rolling: { up: 1.05, down: 0.97, gainPerKm: 15 },
+             mountainous: { up: 1.12, down: 0.94, gainPerKm: 40 },
+         };
+         // eslint-disable-next-line security/detect-object-injection
+         const elev = elevationFactors[elevationProfile];
 
         // Pacing strategy based on distance + terrain (scientifically optimized)
         const pacingStrategy = getPacingStrategy(distance, gpxProfile ? gpxProfile.kmSegments : null);
@@ -297,18 +212,20 @@ router.post('/calculate', verifyToken, async (req, res) => {
                 ORDER BY start_date
             `);
 
-            if (activities[0]?.values?.length > 0) {
-                const dailyTSS = {};
-                for (const row of activities[0].values) {
-                    const date = row[1]?.split('T')[0] || row[1];
-                    dailyTSS[date] = (dailyTSS[date] || 0) + (row[0] || 0);
-                }
+             if (activities[0]?.values?.length > 0) {
+                 const dailyTSS = {};
+                 /* eslint-disable security/detect-object-injection */
+                 for (const row of activities[0].values) {
+                     const date = row[1]?.split('T')[0] || row[1];
+                     dailyTSS[date] = (dailyTSS[date] || 0) + (row[0] || 0);
+                 }
 
-                const pmcData = [];
-                const dates = Object.keys(dailyTSS).sort();
-                for (const date of dates) {
-                    pmcData.push({ date, tss: dailyTSS[date] });
-                }
+                 const pmcData = [];
+                 const dates = Object.keys(dailyTSS).sort();
+                 for (const date of dates) {
+                     pmcData.push({ date, tss: dailyTSS[date] });
+                 }
+                 /* eslint-enable security/detect-object-injection */
 
                 if (pmcData.length > 0) {
                     const pmcResult = PMC.calculate(pmcData);
@@ -432,9 +349,9 @@ router.post('/calculate', verifyToken, async (req, res) => {
  * Get optimal pacing strategy based on race distance and terrain
  * Amélioré avec phases granulaires et gestion du "mur" du marathon
  */
-function getPacingStrategy(distance, gpxKmSegments = null) {
+function _getPacingStrategyV2(distance, gpxKmSegments = null) {
     const hasClimbs = gpxKmSegments && gpxKmSegments.some(s => s.grade > 3);
-    const hasDescents = gpxKmSegments && gpxKmSegments.some(s => s.grade < -3);
+    const _hasDescents = gpxKmSegments && gpxKmSegments.some(s => s.grade < -3);
 
     if (distance <= 5) {
         return {
@@ -518,18 +435,18 @@ function getPacingStrategy(distance, gpxKmSegments = null) {
  * Generate splits with scientific pacing, cardiac drift, and elevation
  * v2.0 — Minetti polynomial, non-linear cardiac drift, multi-phase pacing
  */
-function generateScientificSplits({ distance, basePace, elevationProfile, pacingStrategy, fcm, restingHR, totalRaceTime, weight, strategyBias = 0, gpxKmSegments = null, temperature = 15 }) {
+function _generateScientificSplitsV2({ distance, basePace, elevationProfile, pacingStrategy, fcm, restingHR, totalRaceTime, weight, strategyBias = 0, gpxKmSegments = null, temperature = 15 }) {
     const splits = [];
     const numSplits = Math.ceil(distance);
     const totalMinutes = totalRaceTime / 60;
-    const totalHours = totalMinutes / 60;
+    const _totalHours = totalMinutes / 60;
 
     // strategyBias: -1 = aggressive negative split (start slow), 0 = even, +1 = positive split (start fast)
-    const biasStartFactor = pacingStrategy.startFactor + strategyBias * 0.04;
+    const _biasStartFactor = pacingStrategy.startFactor + strategyBias * 0.04;
     const biasEndFactor   = pacingStrategy.endFactor   - strategyBias * 0.04;
 
     // Prédiction de la FC au repos pour le modèle de dérive
-    const hrr = fcm - restingHR; // Heart Rate Reserve
+    const _hrr = fcm - restingHR; // Heart Rate Reserve
     const fitnessLevel = MathUtils.clamp((180 - fcm) / 30, 0.5, 1.5); // Plus fcm bas = plus entraîné
 
     for (let km = 1; km <= numSplits; km++) {
@@ -627,7 +544,7 @@ function generateScientificSplits({ distance, basePace, elevationProfile, pacing
 /**
  * Get HR phase for race segment
  */
-function getRaceHRPhase(progress, distance) {
+function _getRaceHRPhaseV2(progress, distance) {
     if (distance <= 5) {
         if (progress < 0.1) return { name: 'Zone 3 (Mise en route)', minPct: 0.75, maxPct: 0.82 };
         if (progress < 0.8) return { name: 'Zone 4 (Seuil)', minPct: 0.85, maxPct: 0.92 };
@@ -650,18 +567,19 @@ function getRaceHRPhase(progress, distance) {
  * Get nutrition for a specific split
  * v2.0 — GPX-aware timing, better periodization
  */
-function getSplitNutrition(km, cumulativeTime, totalRaceTime, distance, weight, gpxKmSegments = null, kmIndex = 1) {
+function _getSplitNutritionV2(km, cumulativeTime, totalRaceTime, distance, weight, gpxKmSegments = null, kmIndex = 1) {
     const nutrition = [];
-    const hours = cumulativeTime / 3600;
+    const _hours = cumulativeTime / 3600;
     const minutes = cumulativeTime / 60;
 
     if (totalRaceTime < 3600) return nutrition;
 
-    // === Nutrition calquée sur le terrain (GPX) ===
-    // Ravitaillement après les montées difficiles
-    if (gpxKmSegments && gpxKmSegments[kmIndex - 1]) {
-        const seg = gpxKmSegments[kmIndex - 1];
-        const nextSeg = gpxKmSegments[kmIndex];
+     // === Nutrition calquée sur le terrain (GPX) ===
+     // Ravitaillement après les montées difficiles
+     if (gpxKmSegments && gpxKmSegments[kmIndex - 1]) {
+         const seg = gpxKmSegments[kmIndex - 1];
+         // eslint-disable-next-line security/detect-object-injection
+         const nextSeg = gpxKmSegments[kmIndex];
         // Après une montée raide (>4%), ou avant une descente — bon moment pour boire
         if (seg.grade > 4 && (!nextSeg || nextSeg.grade < seg.grade - 2)) {
             nutrition.push({ type: 'water', label: 'Eau (après montée)', quantity: '200-250ml' });
@@ -699,7 +617,7 @@ function getSplitNutrition(km, cumulativeTime, totalRaceTime, distance, weight, 
  * Calculate scientific nutrition strategy (Jeukendrup model v2.0)
  * Amélioré avec recommandations par phase, timing personnalisé selon durée/terrain
  */
-function calculateNutritionStrategy({ distance, totalRaceTime, weight, temperature, elevationProfile }) {
+function _calculateNutritionStrategyV2({ distance: _distance, totalRaceTime, weight, temperature, elevationProfile: _elevationProfile }) {
     const hours = totalRaceTime / 3600;
     const isLongRace = totalRaceTime > 3600;
     const isUltra = totalRaceTime > 14400;
@@ -896,6 +814,49 @@ router.delete('/:id', verifyToken, async (req, res) => {
     } catch (error) {
         logger.error('[RacePlanning] Delete error', { error: error.message });
         res.status(500).json({ error: 'Failed to delete race plan' });
+    }
+});
+
+/**
+ * POST /api/race-planning/race-strategy
+ * Genère un plan d'allure basé sur un profil GPX et des conditions
+ * (Anciennement dans race_planner.js — fusionné ici)
+ */
+router.post('/race-strategy', verifyToken, async (req, res) => {
+    try {
+        let { points, gpxData, params } = req.body;
+
+        if (!points && gpxData) {
+            points = GpxUtils.parse(gpxData);
+        }
+
+        if (!points || !Array.isArray(points) || points.length < 2) {
+            return res.status(400).json({ error: 'Données de parcours (points ou gpxData) manquantes ou invalides' });
+        }
+
+        const user = await dbGetMain('SELECT profile_data FROM users WHERE id = ?', [req.user.id]);
+        let vdot = 40, weight = 70;
+
+        if (user?.profile_data) {
+            try {
+                const p = JSON.parse(user.profile_data);
+                vdot = p.vdot || p.vma_vdot || 40;
+                weight = p.weight || 70;
+            } catch (e) {
+                logger.warn('Failed to parse user profile for race strategy', { error: e.message });
+            }
+        }
+
+        const strategy = RaceStrategy.generatePlan(points, { vdot, weight }, params || {});
+
+        if (!strategy) {
+            return res.status(500).json({ error: 'Impossible de générer la stratégie' });
+        }
+
+        res.json(strategy);
+    } catch (error) {
+        logger.error('Race strategy generation error', { error: error.message, stack: error.stack });
+        res.status(500).json({ error: 'Erreur lors de la génération de la stratégie de course' });
     }
 });
 

@@ -4,7 +4,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
-import { API_BASE_URL } from '@/lib/constants';
 import {
   ArrowLeft, Calculator, Trophy, Target, Zap, TrendingUp, Activity, ChevronRight
 } from 'lucide-react';
