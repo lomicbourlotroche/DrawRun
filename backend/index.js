@@ -81,7 +81,7 @@ const database = require('./src/database');
         await database.initMainDb();
         
         logger.info('Loading modules...');
-        const { router: authRouter, verifyToken } = require('./src/auth');
+        const { router: authRouter, verifyToken } = require('./src/routes/auth');
         const apiRoutes = require('./src/api_routes');
         
         // ============================================================================
