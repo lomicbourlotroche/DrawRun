@@ -35,8 +35,8 @@ export const coachApi = {
   /**
    * Récupère le plan actif de l'utilisateur
    */
-  getActivePlan(): Promise<{ plan?: TrainingPlan; sessions?: any[]; planId?: number } | null> {
-    return client.request('/api/coach/plan').catch(() => null) as Promise<{ plan?: TrainingPlan; sessions?: any[]; planId?: number } | null>;
+  getActivePlan(): Promise<{ plan?: any; sessions?: any[]; planId?: number; fullPlan?: PlanDetail | null } | null> {
+    return client.request('/api/coach/plan').catch(() => null) as Promise<{ plan?: any; sessions?: any[]; planId?: number; fullPlan?: PlanDetail | null } | null>;
   },
 
   /**
@@ -213,6 +213,43 @@ export const coachApi = {
   },
 
   /**
+   * Récupère les sessions à venir
+   */
+  getUpcomingSessions(days?: number): Promise<any[]> {
+    const query = days ? `?days=${days}` : '';
+    return client.request(`/api/coach/sessions/upcoming${query}`);
+  },
+
+  /**
+   * Récupère le résumé hebdomadaire du plan
+   */
+  getWeeklyPlanSummary(weekNumber: number): Promise<{
+    weekNumber: number;
+    sessionCount: number;
+    totalTSS: number;
+    totalDistance: number;
+    totalTimeHours: number;
+    intensityDistribution: { low: number; moderate: number; high: number };
+    sessions: Array<{ id: number; day: number; type: string; title: string; intensity: string; completed: boolean }>;
+  }> {
+    return client.request(`/api/coach/plan/weekly-summary?week=${weekNumber}`);
+  },
+
+  /**
+   * Adapte le plan en fonction du feedback
+   */
+  adaptPlanBasedOnFeedback(params: {
+    sessionId: number;
+    planId: number;
+    feedback: Record<string, unknown>;
+  }): Promise<{ success: boolean; adaptation: { adjustedSessions: number; reason: string } }> {
+    return client.request('/api/coach/adapt-plan', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  },
+
+  /**
    * Génère une stratégie d'allure dynamique depuis un GPX
    */
   calculateRaceStrategy(params: { 
@@ -220,7 +257,7 @@ export const coachApi = {
     gpxData?: string;
     params: { temp?: number; humidity?: number; goalTime?: number } 
   }): Promise<any> {
-    return client.request('/api/coach/race-planner/race-strategy', {
+    return client.request('/api/race-planning/race-strategy', {
       method: 'POST',
       body: JSON.stringify(params),
     });

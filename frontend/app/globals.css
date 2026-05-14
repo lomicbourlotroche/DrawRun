@@ -106,59 +106,12 @@
   --radius-full: 9999px;
 }
 
-.dark {
-  /* ================================================================
-   * DARK THEME — DrawRun Night Mode
-   * Design: Deep space noir avec accents néon bleu/violet
-   * ================================================================ */
-
-  /* Backgrounds — couches de profondeur */
-  --background:    #080C14;   /* fond principal — noir profond bleuté */
-  --bg:            #080C14;
-  --bg-secondary:  #0D1117;   /* fond secondaire — légèrement plus clair */
-  --surface:       #111827;   /* cartes / surfaces — gris ardoise foncé */
-  --surface-elevated: #1A2235; /* surfaces surélevées — modals, dropdowns */
-
-  /* Borders */
-  --border:        #1E2D45;   /* bordures subtiles */
-  --border-strong: #2A3F5F;   /* bordures accentuées */
-
-  /* Text */
-  --foreground:    #E8EDF5;   /* texte principal — blanc légèrement bleuté */
-  --text-primary:  #E8EDF5;
-  --text-secondary: #8B9BB4;  /* texte secondaire */
-  --muted:         #4A5568;   /* texte désactivé */
-  --text-muted:    #4A5568;
-
-  /* Brand colors — plus lumineux en dark */
-  --primary:       #3B82F6;   /* bleu vif */
-  --primary-500:   #3B82F6;
-  --primary-600:   #2563EB;
-  --primary-400:   #60A5FA;
-
-  /* Status */
-  --success:       #10B981;   /* vert émeraude */
-  --danger:        #F87171;   /* rouge doux */
-  --warning:       #FBBF24;   /* ambre */
-  --info:          #38BDF8;   /* cyan */
-
-  /* Shadows — plus prononcées en dark */
-  --shadow-card:   0 4px 24px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3);
-  --shadow-card-hover: 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(59, 130, 246, 0.15);
-  --shadow-elevated: 0 16px 48px rgba(0, 0, 0, 0.7), 0 4px 16px rgba(0, 0, 0, 0.4);
-
-  /* Glow effects — néon en dark */
-  --shadow-glow-primary: 0 0 20px rgba(59, 130, 246, 0.5), 0 0 60px rgba(59, 130, 246, 0.2);
-  --shadow-glow-success: 0 0 20px rgba(16, 185, 129, 0.5), 0 0 60px rgba(16, 185, 129, 0.2);
-  --shadow-glow-warning: 0 0 20px rgba(251, 191, 36, 0.5), 0 0 60px rgba(251, 191, 36, 0.2);
-  --shadow-glow-danger:  0 0 20px rgba(248, 113, 113, 0.5), 0 0 60px rgba(248, 113, 113, 0.2);
-  --shadow-button-primary: 0 4px 20px rgba(59, 130, 246, 0.4);
-  --shadow-button-primary-hover: 0 8px 30px rgba(59, 130, 246, 0.6);
-
-  /* Gradients dark */
-  --gradient-primary: linear-gradient(135deg, #1D4ED8 0%, #7C3AED 100%);
-  --gradient-surface: linear-gradient(135deg, #111827 0%, #1A2235 100%);
+@layer utilities {
+  .drop-shadow-glow {
+    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.4));
+  }
 }
+
 
 body {
   background-color: var(--background);

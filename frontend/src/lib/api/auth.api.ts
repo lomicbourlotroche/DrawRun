@@ -24,14 +24,8 @@ export interface LoginResponse {
   refreshToken?: string;
   userId: number;
   user: User;
-  /** Whether the user has Strava credentials stored (from login response) */
-  has_strava?: boolean;
   /** Whether the user has Garmin credentials stored (from login response) */
   has_garmin?: boolean;
-  /** Whether the user has Suunto credentials stored (from login response) */
-  has_suunto?: boolean;
-  /** Whether the user has Decathlon credentials stored (from login response) */
-  has_decathlon?: boolean;
   twofa_enabled?: boolean;
 }
 
@@ -151,14 +145,11 @@ export const authApi = {
   },
 
   /**
-   * Déconnexion d'un service (Strava, Garmin, etc.)
+   * Déconnexion d'un service (Garmin)
    */
   disconnectService(service: string): Promise<{ success: boolean }> {
     const endpoints: Record<string, string> = {
-      strava: '/api/sync/strava/clear-session',
-      garmin: '/api/sync/garmin/clear-tokens',
-      suunto: '/api/sync/suunto/clear-token',
-      decathlon: '/api/sync/decathlon/clear-token',
+      garmin: '/api/auth/disconnect/garmin',
     };
     const endpoint = endpoints[service.toLowerCase()];
     if (!endpoint) throw new Error(`Unknown service: ${service}`);
@@ -166,30 +157,10 @@ export const authApi = {
   },
 
   /**
-   * Connexion Strava avec credentials
-   */
-  connectStrava(email: string, password: string): Promise<{ success: boolean; message?: string }> {
-    return client.request('/api/auth/credentials/strava', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
-  },
-
-  /**
    * Connexion Garmin avec credentials
    */
   connectGarmin(email: string, password: string): Promise<{ success: boolean; message?: string }> {
     return client.request('/api/auth/credentials/garmin', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
-  },
-
-  /**
-   * Connexion Suunto avec credentials
-   */
-  connectSuunto(email: string, password: string): Promise<{ success: boolean; message?: string }> {
-    return client.request('/api/auth/credentials/suunto', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });

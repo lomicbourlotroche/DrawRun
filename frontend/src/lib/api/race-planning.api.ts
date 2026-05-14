@@ -14,11 +14,50 @@ import type { RacePlanningRequest, RacePlanningResponse } from '@/types';
 
 /**
  * Calculate race plan with splits, HR zones and nutrition strategy
- * @param params Race planning parameters
- * @returns Race plan with splits and predictions
  */
 async function calculateRacePlan(params: RacePlanningRequest): Promise<RacePlanningResponse> {
   return client.post<RacePlanningResponse>('/api/race-planning/calculate', params as unknown as Record<string, unknown>);
+}
+
+/**
+ * Save a race plan to the user's database
+ */
+async function saveRacePlan(data: {
+  name?: string;
+  distance: number;
+  targetPace: number;
+  totalTime?: number;
+  elevationProfile?: string;
+  fatigue?: number;
+  splits: unknown[];
+  nutritionStrategy?: unknown;
+}): Promise<{ success: boolean; message: string }> {
+  return client.post('/api/race-planning/save', data as unknown as Record<string, unknown>);
+}
+
+/**
+ * List all saved race plans
+ */
+async function listRacePlans(): Promise<Array<Record<string, unknown>>> {
+  return client.get('/api/race-planning/list');
+}
+
+/**
+ * Delete a saved race plan by id
+ */
+async function deleteRacePlan(id: number): Promise<{ success: boolean; message: string }> {
+  return client.request(`/api/race-planning/${id}`, { method: 'DELETE' });
+}
+
+/**
+ * Generate a pacing strategy from GPX points
+ */
+async function calculateRaceStrategy(params: {
+  points?: Array<{ dist: number; elev: number }>;
+  gpxData?: string;
+  params: { temp?: number; humidity?: number; goalTime?: number };
+}): Promise<Record<string, unknown>> {
+  return client.post('/api/race-planning/race-strategy', params as unknown as Record<string, unknown>);
 }
 
 /**
@@ -92,6 +131,10 @@ function formatPace(pace: number): string {
 
 export const racePlanningApi = {
   calculateRacePlan,
+  saveRacePlan,
+  listRacePlans,
+  deleteRacePlan,
+  calculateRaceStrategy,
   exportToCsv,
   downloadCsv,
   formatTime,

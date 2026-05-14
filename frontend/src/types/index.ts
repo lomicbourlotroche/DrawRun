@@ -33,10 +33,7 @@ export interface User {
   vdot?: number | null;
   ftp?: number | null;
   weight?: number | null;
-  has_strava?: number | boolean;
   has_garmin?: number | boolean;
-  has_suunto?: number | boolean;
-  has_decathlon?: number | boolean;
   twofa_enabled?: number | boolean;
   createdAt?: string;
   dateOfBirth?: string;
@@ -334,6 +331,279 @@ export interface CustomWorkout {
   createdAt: string;
 }
 
+// ============================================================
+// Sport-Specific Activity Analysis Types
+// ============================================================
+
+export interface HRZoneAnalysis {
+  current: number;
+  name: string;
+  percent: number;
+  avgHrPercent: number;
+  maxHrPercent: number | null;
+  hrReserve: number | null;
+  fcm: number;
+  restingHR: number;
+}
+
+export interface HRZoneDistribution {
+  zone1Percent: number;
+  zone2Percent: number;
+  zone3Percent: number;
+  zone4Percent: number;
+  zone5Percent: number;
+}
+
+export interface PaceData {
+  secPerKm: number;
+  formatted: string;
+  speedKmh: number;
+}
+
+export interface GapData {
+  secPerKm: number;
+  formatted: string;
+}
+
+export interface BiomechanicsMetrics {
+  verticalOscillation: number;
+  groundContactTime: number;
+  stiffness: number;
+  verticalRatio: number;
+  stepLength: number;
+  cadence: number;
+  advice: Array<{ type: string; message: string; detail: string; priority: 'high' | 'moderate' | 'low' }>;
+}
+
+export interface TrainingPaces {
+  E: { label: string; min: string; max: string; description: string };
+  M: { label: string; pace: string; description: string };
+  T: { label: string; pace: string; description: string };
+  I: { label: string; pace: string; description: string };
+  R: { label: string; pace: string; description: string };
+}
+
+export interface PerformanceLevel {
+  level: string;
+  color: string;
+  percent: number;
+  iaaPoints?: number;
+}
+
+export interface RacePredictions {
+  '5k': number | null;
+  '10k': number | null;
+  half: { time: string } | null;
+  marathon: { time: string } | null;
+}
+
+export interface PowerCurvePoint {
+  duration: number;
+  durationFormatted: string;
+  power: number;
+}
+
+export interface SwimPace100m {
+  seconds: number;
+  formatted: string;
+}
+
+export interface CSSData {
+  speedMs: number;
+  pacePer100m: string;
+  speedKmh: number;
+}
+
+export interface NutritionStrategy {
+  hydration: { totalMl: number; perHourMl: number };
+  carbs: { totalG: number; perHourG: number };
+  sodium: { totalMg: number };
+  recommendations: string[];
+}
+
+// ─── Sport-specific analysis responses ──────────────────────
+
+export interface RunAnalysis {
+  sportType: 'run';
+  sportLabel: string;
+  icon: string;
+  analysisType: 'detailed';
+  tss: number | null;
+  trimp: number | null;
+  intensityFactor: number | null;
+  duration: number;
+  durationFormatted: string;
+  calories: number | null;
+
+  hrZones: HRZoneAnalysis | null;
+  hrDistribution: HRZoneDistribution | null;
+
+  pace: PaceData | null;
+  vdot: number | null;
+  gap: GapData | null;
+  efficiencyFactor: number | null;
+  runningEconomy: number | null;
+
+  biomechanics: BiomechanicsMetrics | null;
+  trainingPaces: TrainingPaces | null;
+  performanceLevel: PerformanceLevel | null;
+  racePredictions: RacePredictions | null;
+
+  estimatedGrade: number;
+  nutrition: NutritionStrategy | null;
+
+  // Backward compat
+  avgHrPercent: number | null;
+  profileFcm: number;
+  estimatedVdot: number | null;
+  paceFormatted: string | null;
+  intensity_factor: number | null;
+  efficiency_factor: number | null;
+  gapFormatted: string | null;
+}
+
+export interface PowerZone {
+  zone: number;
+  name: string;
+  percent: number;
+}
+
+export interface PowerEffort {
+  duration: number;
+  value: number;
+}
+
+export interface RideAnalysis {
+  sportType: 'ride';
+  sportLabel: string;
+  icon: string;
+  analysisType: 'detailed';
+  tss: number | null;
+  trimp: number | null;
+  intensityFactor: number | null;
+  duration: number;
+  durationFormatted: string;
+  calories: number | null;
+
+  hrZones: HRZoneAnalysis | null;
+  hrDistribution: HRZoneDistribution | null;
+
+  speedKmh: number | null;
+  pace: PaceData | null;
+
+  normalizedPower: number | null;
+  variabilityIndex: number | null;
+  estimatedCP: number | null;
+  estimatedWPrime: number | null;
+  powerCurve: PowerCurvePoint[] | null;
+  avgPower: number;
+  maxPower: number | null;
+
+  // Enhanced cycling metrics
+  powerZoneDistribution: PowerZone[] | null;
+  powerEfforts: PowerEffort[] | null;
+  totalWorkKj: number | null;
+  powerToWeight: number | null;
+  tssPerHour: number | null;
+
+  estimatedGrade: number;
+  nutrition: NutritionStrategy | null;
+
+  // Backward compat
+  avgHrPercent: number | null;
+  profileFcm: number;
+  intensity_factor: number | null;
+  paceFormatted: string | null;
+}
+
+export interface SwimAnalysis {
+  sportType: 'swim';
+  sportLabel: string;
+  icon: string;
+  analysisType: 'detailed';
+  tss: number | null;
+  trimp: number | null;
+  intensityFactor: number | null;
+  duration: number;
+  durationFormatted: string;
+  calories: number | null;
+
+  hrZones: HRZoneAnalysis | null;
+  hrDistribution: HRZoneDistribution | null;
+
+  pacePer100m: SwimPace100m | null;
+  swolf: number | null;
+  strokeRate: number | null;
+  dps: number | null;
+  estimatedCSS: CSSData | null;
+
+  estimatedGrade: number;
+  nutrition: NutritionStrategy | null;
+
+  // Backward compat
+  avgHrPercent: number | null;
+  profileFcm: number;
+  intensity_factor: number | null;
+  paceFormatted: string | null;
+}
+
+export interface TrailRunAnalysis extends Omit<RunAnalysis, 'sportType'> {
+  sportType: 'trail';
+  vam: number | null;
+  technicalScore: string | null;
+  elevationGain: number;
+}
+
+export interface SimpleAnalysis {
+  sportType: 'walk' | 'hiit' | 'strength' | 'yoga' | 'general';
+  sportLabel: string;
+  icon: string;
+  analysisType: 'simple';
+  tss: number | null;
+  trimp: number | null;
+  intensityFactor: number | null;
+  duration: number;
+  durationFormatted: string;
+  calories: number | null;
+  hrZones: HRZoneAnalysis | null;
+  pace: PaceData | null;
+  estimatedGrade: number;
+  nutrition: NutritionStrategy | null;
+
+  // Backward compat
+  avgHrPercent: number | null;
+  profileFcm: number;
+  intensity_factor: number | null;
+  paceFormatted: string | null;
+}
+
+export type ActivityAnalysisResponse =
+  | RunAnalysis
+  | RideAnalysis
+  | SwimAnalysis
+  | TrailRunAnalysis
+  | SimpleAnalysis;
+
+export function isDetailedAnalysis(a: ActivityAnalysisResponse): a is RunAnalysis | RideAnalysis | SwimAnalysis | TrailRunAnalysis {
+  return a.analysisType === 'detailed';
+}
+
+export function isRunAnalysis(a: ActivityAnalysisResponse): a is RunAnalysis {
+  return a.sportType === 'run';
+}
+
+export function isRideAnalysis(a: ActivityAnalysisResponse): a is RideAnalysis {
+  return a.sportType === 'ride';
+}
+
+export function isSwimAnalysis(a: ActivityAnalysisResponse): a is SwimAnalysis {
+  return a.sportType === 'swim';
+}
+
+export function isTrailRunAnalysis(a: ActivityAnalysisResponse): a is TrailRunAnalysis {
+  return a.sportType === 'trail';
+}
+
 export interface AthleteStats {
   runCount: number;
   runDistance: number;
@@ -369,7 +639,28 @@ export interface PerformanceMetrics {
 // ============================================================
 
 export interface CoachProfile {
-  [key: string]: unknown;
+  user: {
+    id: number;
+    email: string;
+    name: string;
+  };
+  profile: {
+    vdot?: number;
+    vma?: number;
+    fcm?: number;
+    resting_hr?: number;
+    age?: number;
+    sex?: string;
+    weight?: number;
+    weeklyKm?: number | null;
+    pace?: string | null;
+  };
+  activePlan: {
+    plan: Record<string, unknown>;
+    sessions: Record<string, unknown>[];
+    planId: number;
+  } | null;
+  hasActivePlan: boolean;
 }
 
 export interface AdaptivePlanResult {
@@ -464,9 +755,19 @@ export interface MatchActivityResult {
   estimatedRpe?: number;
 }
 
+export interface PendingSession {
+  id: number;
+  planId: number;
+  weekNumber: number;
+  dayNumber: number;
+  title: string;
+  type: string;
+  scheduledDate: string | null;
+}
+
 export interface PendingSessions {
   plan: { id: number; name: string; target_distance: number; weeks: number } | null;
-  sessions: TrainingSession[];
+  sessions: PendingSession[];
   recentActivities: Activity[];
 }
 

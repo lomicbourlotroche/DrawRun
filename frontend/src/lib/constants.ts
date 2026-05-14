@@ -32,6 +32,13 @@ export const API_ENDPOINTS = {
     get: '/api/athlete',
     activities: '/api/athlete/activities',
   },
+  racePlanning: {
+    calculate: '/api/race-planning/calculate',
+    save: '/api/race-planning/save',
+    list: '/api/race-planning/list',
+    delete: (id: number) => `/api/race-planning/${id}`,
+    strategy: '/api/race-planning/race-strategy',
+  },
 } as const;
 
 export const SPORTS = {

@@ -164,7 +164,7 @@ export function RouteList({ routes, onRouteClick, isLoading, showFavoriteButton 
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0"
+                    className="min-w-[44px] min-h-[44px] p-0"
                     onClick={(e) => handleFavoriteToggle(e, route)}
                   >
                     <Heart

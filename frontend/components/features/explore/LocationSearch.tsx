@@ -69,7 +69,7 @@ export default function LocationSearch({
           onChange={(e) => handleInputChange(e.target.value)}
           onFocus={() => results.length > 0 && setShowResults(true)}
           placeholder={placeholder}
-          className="w-full pl-9 pr-9 py-2 rounded-lg bg-white/90 backdrop-blur-sm border border-border
+          className="w-full pl-9 pr-9 py-2.5 rounded-lg bg-white/90 backdrop-blur-sm border border-border
                      text-sm shadow-md focus:outline-none focus:ring-2 focus:ring-primary/50"
         />
         {isSearching && (

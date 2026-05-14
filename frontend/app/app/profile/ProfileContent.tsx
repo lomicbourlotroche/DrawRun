@@ -32,7 +32,7 @@ import { toast } from 'sonner';
     onDisconnect, 
     isDisconnecting, 
   }: {
-    service: 'strava' | 'garmin' | 'suunto' | 'decathlon';
+    service: 'garmin';
     isConnected: boolean; 
     lastSync: string | null; 
     onConnect: () => void; 
@@ -40,10 +40,7 @@ import { toast } from 'sonner';
     isDisconnecting: boolean; 
   }) {
   const config = {
-    strava: { name: 'Strava', color: 'orange' },
     garmin: { name: 'Garmin', color: 'blue' },
-    suunto: { name: 'Suunto', color: 'green' },
-    decathlon: { name: 'Decathlon', color: 'red' },
   };
 
   const c = config[service];
@@ -91,7 +88,7 @@ function CredentialModal({
 }: { 
   isOpen: boolean; 
   onClose: () => void; 
-  service: 'strava' | 'garmin' | 'suunto'; 
+  service: 'garmin'; 
   onConnect: (email: string, password: string) => Promise<void>;
 }) {
   const [email, setEmail] = useState('');
@@ -114,9 +111,7 @@ function CredentialModal({
   };
 
   const titles = {
-    strava: 'Connecter Strava',
     garmin: 'Connecter Garmin',
-    suunto: 'Connecter Suunto',
   };
 
   return (
@@ -437,53 +432,26 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
 function SyncTab() {
   const { status: syncStatus, sync, isSyncing, fetchStatus } = useSyncStore();
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
-  const [modalService, setModalService] = useState<'strava' | 'garmin' | 'suunto' | null>(null);
+  const [showGarminModal, setShowGarminModal] = useState(false);
 
-  // Check if services are connected (have credentials stored)
-  const { has_strava, has_garmin, has_suunto } = useAuthStore();
-  const stravaConnected = has_strava || !!syncStatus?.strava?.configured || !!syncStatus?.strava_last_sync;
+  const { has_garmin } = useAuthStore();
   const garminConnected = has_garmin || !!syncStatus?.garmin?.configured || !!syncStatus?.garmin_last_sync;
-  const suuntoConnected = has_suunto || !!syncStatus?.suunto?.configured || !!syncStatus?.suunto_last_sync;
-  const decathlonConnected = !!syncStatus?.decathlon?.configured || !!syncStatus?.decathlon_last_sync;
 
-  // Gérer le retour du callback OAuth Decathlon (?decathlon=connected)
-  const searchParams = useSearchParams();
-  useEffect(() => {
-    const decathlonStatus = searchParams.get('decathlon');
-    if (decathlonStatus === 'connected') {
-      toast.success('Decathlon connecté avec succès !');
-      fetchStatus();
-    } else if (decathlonStatus === 'error') {
-      const reason = searchParams.get('reason');
-      toast.error(`Erreur connexion Decathlon${reason ? ` (${reason})` : ''}`);
-    }
-  }, [searchParams, fetchStatus]);
-
-  const handleConnect = async (service: 'strava' | 'garmin' | 'suunto' | 'decathlon', email: string, password: string) => {
+  const handleConnect = async (email: string, password: string) => {
     try {
-      if (service === 'strava') await api.connectStrava(email, password);
-      else if (service === 'garmin') await api.connectGarmin(email, password);
-      else if (service === 'suunto') await api.connectSuunto(email, password);
-      else if (service === 'decathlon') {
-        const { url } = await api.getDecathlonUrl();
-        window.location.href = url;
-        return;
-      }
-      toast.success(`${service} connecté`);
+      await api.connectGarmin(email, password);
+      toast.success('Garmin connecté');
       fetchStatus();
-    } catch { toast.error(`Erreur connexion ${service}`); }
+    } catch { toast.error('Erreur connexion Garmin'); }
   };
 
-  const handleDisconnect = async (service: 'strava' | 'garmin' | 'suunto' | 'decathlon') => {
-    setDisconnecting(service);
+  const handleDisconnect = async () => {
+    setDisconnecting('garmin');
     try {
-      if (service === 'strava') await api.disconnectStrava();
-      else if (service === 'garmin') await api.disconnectGarmin();
-      else if (service === 'suunto') await api.disconnectSuunto();
-      else if (service === 'decathlon') await api.disconnectDecathlon();
-      toast.success(`${service} déconnecté`);
+      await api.disconnectGarmin();
+      toast.success('Garmin déconnecté');
       fetchStatus();
-    } catch { toast.error(`Erreur déconnexion ${service}`); }
+    } catch { toast.error('Erreur déconnexion Garmin'); }
     finally { setDisconnecting(null); }
   };
 
@@ -492,20 +460,18 @@ function SyncTab() {
     toast.success(result.success ? 'Synchronisé !' : 'Erreur');
   };
 
-  const lastSync = (() => {
-    const dates = [syncStatus?.strava_last_sync, syncStatus?.garmin_last_sync, syncStatus?.suunto_last_sync].filter(Boolean);
-    return dates.length > 0 ? new Date(dates.sort().pop()!).toLocaleString('fr-FR') : 'Jamais';
-  })();
+  const lastSync = syncStatus?.garmin_last_sync
+    ? new Date(syncStatus.garmin_last_sync).toLocaleString('fr-FR')
+    : 'Jamais';
 
-  const isAnySyncing = syncStatus?.strava_status === 'syncing' || syncStatus?.garmin_status === 'syncing';
+  const isSyncingGarmin = syncStatus?.garmin_status === 'syncing';
 
   return (
     <div className="space-y-6">
-      {/* Sync Status */}
       <GlassCard>
         <GlassCardHeader>
           <GlassCardTitle className="flex items-center gap-2">
-            <RefreshCw className={`w-5 h-5 ${isAnySyncing ? 'animate-spin text-primary' : 'text-muted'}`} />
+            <RefreshCw className={`w-5 h-5 ${isSyncingGarmin ? 'animate-spin text-primary' : 'text-muted'}`} />
             Synchronisation
           </GlassCardTitle>
         </GlassCardHeader>
@@ -515,23 +481,18 @@ function SyncTab() {
               <p className="font-medium">Dernière sync</p>
               <p className="text-sm text-muted">{lastSync}</p>
             </div>
-            <Button onClick={handleSync} isLoading={isSyncing} disabled={!stravaConnected && !garminConnected && !suuntoConnected}>
+            <Button onClick={handleSync} isLoading={isSyncing} disabled={!garminConnected}>
               <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
             </Button>
           </div>
 
           <div className="space-y-3">
-            <ServiceCard service="strava" isConnected={stravaConnected} lastSync={syncStatus?.strava_last_sync || null} onConnect={() => setModalService('strava')} onDisconnect={() => handleDisconnect('strava')} isDisconnecting={disconnecting === 'strava'} />
-            <ServiceCard service="garmin" isConnected={garminConnected} lastSync={syncStatus?.garmin_last_sync || null} onConnect={() => setModalService('garmin')} onDisconnect={() => handleDisconnect('garmin')} isDisconnecting={disconnecting === 'garmin'} />
-            <ServiceCard service="suunto" isConnected={suuntoConnected} lastSync={syncStatus?.suunto_last_sync || null} onConnect={() => setModalService('suunto')} onDisconnect={() => handleDisconnect('suunto')} isDisconnecting={disconnecting === 'suunto'} />
-            <ServiceCard service="decathlon" isConnected={decathlonConnected} lastSync={syncStatus?.decathlon_last_sync || null} onConnect={() => handleConnect('decathlon', '', '')} onDisconnect={() => handleDisconnect('decathlon')} isDisconnecting={disconnecting === 'decathlon'} />
+            <ServiceCard service="garmin" isConnected={garminConnected} lastSync={syncStatus?.garmin_last_sync || null} onConnect={() => setShowGarminModal(true)} onDisconnect={handleDisconnect} isDisconnecting={disconnecting === 'garmin'} />
           </div>
         </GlassCardContent>
       </GlassCard>
 
-      <CredentialModal isOpen={modalService === 'strava'} onClose={() => setModalService(null)} service="strava" onConnect={(e, p) => handleConnect('strava', e, p)} />
-      <CredentialModal isOpen={modalService === 'garmin'} onClose={() => setModalService(null)} service="garmin" onConnect={(e, p) => handleConnect('garmin', e, p)} />
-      <CredentialModal isOpen={modalService === 'suunto'} onClose={() => setModalService(null)} service="suunto" onConnect={(e, p) => handleConnect('suunto', e, p)} />
+      <CredentialModal isOpen={showGarminModal} onClose={() => setShowGarminModal(false)} service="garmin" onConnect={handleConnect} />
     </div>
   );
 }

@@ -875,6 +875,7 @@ function ChallengesTab() {
 // MAIN COMPONENT
 // ============================================================================
 
+/** @deprecated Use SocialContent from app/app/social/SocialContent.tsx instead. This component is kept for reference only. */
 export default function SocialHub() {
   const [activeTab, setActiveTab] = useState<'feed' | 'friends' | 'groups' | 'rankings' | 'challenges' | 'messages' | 'notifications' | 'clubs'>('feed');
 

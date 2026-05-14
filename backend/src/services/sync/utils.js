@@ -302,20 +302,14 @@ async function processActivityList(userDb, source, activityList, detailFetcher =
 }
 
 /**
- * Merge detail data into an activity object, handling source-specific field names.
+ * Merge detail data into an activity object.
  * @param {object} activity - Activity to enrich (mutated in place)
  * @param {object} details - Raw detail response from the source API
- * @param {string} source - 'garmin' | 'strava' | 'suunto' | 'decathlon'
+ * @param {string} source - Source name (only 'garmin' supported)
  */
 function mergeDetails(activity, details, source) {
     if (source === 'garmin') {
         mergeGarminDetails(activity, details);
-    } else if (source === 'strava') {
-        mergeStravaDetails(activity, details);
-    } else if (source === 'suunto') {
-        mergeSuuntoDetails(activity, details);
-    } else if (source === 'decathlon') {
-        mergeDecathlonDetails(activity, details);
     }
 }
 
@@ -410,92 +404,6 @@ function extractGarminStreams(d) {
     }
 
     return Object.keys(streams).length > 0 ? streams : null;
-}
-
-function mergeStravaDetails(act, d) {
-    if (d.average_heartrate)    act.average_heartrate = d.average_heartrate;
-    if (d.max_heartrate)        act.max_heartrate = d.max_heartrate;
-    if (d.average_speed)        act.average_speed = d.average_speed;
-    if (d.max_speed)            act.max_speed = d.max_speed;
-    if (d.calories)             act.calories = d.calories;
-    if (d.average_cadence)      act.average_cadence = d.average_cadence;
-    if (d.average_watts)        act.average_power = d.average_watts;
-    if (d.weighted_average_watts) act.normalized_power = d.weighted_average_watts;
-    if (d.elev_high)            act.elev_high = d.elev_high;
-    if (d.elev_low)             act.elev_low = d.elev_low;
-    if (d.total_elevation_gain) act.total_elevation_gain = d.total_elevation_gain;
-    if (d.device_name)          act.device_name = d.device_name;
-    if (d.description)          act.description = d.description;
-    if (d.gear_id)              act.gear_id = d.gear_id;
-    if (d.commute)              act.is_commute = d.commute ? 1 : 0;
-    if (d.workout_type === 1)   act.is_race = 1;
-    if (d.upload_id)            act.upload_id = String(d.upload_id);
-    if (d.external_id)          act.external_id = d.external_id;
-    if (d.timezone)             act.timezone = d.timezone;
-
-    // GPS polyline
-    if (d.map?.polyline)         act.map_polyline = d.map.polyline;
-    if (d.map?.summary_polyline) act.map_summary_polyline = d.map.summary_polyline;
-
-    // Streams (GPS, HR, cadence, power, altitude) — passed as _streams from the caller
-    if (d._streams) act._streams = d._streams;
-
-    // Splits
-    if (Array.isArray(d.splits_metric) && d.splits_metric.length > 0) {
-        act._splits = d.splits_metric.map((s, i) => ({
-            split_number: s.split || i + 1,
-            distance: s.distance || 0,
-            elapsed_time: s.elapsed_time || 0,
-            moving_time: s.moving_time || 0,
-            average_speed: s.average_speed || null,
-            average_heartrate: s.average_heartrate || null,
-            max_heartrate: s.max_heartrate || null,
-            elevation_difference: s.elevation_difference || null,
-            pace_zone: s.pace_zone ? String(s.pace_zone) : null,
-        }));
-    }
-}
-
-function mergeSuuntoDetails(act, d) {
-    // Suunto samples response
-    if (!d) return;
-    const samples = Array.isArray(d) ? d : (d.samples || d.data || []);
-
-    if (samples.length === 0) return;
-
-    // Extract streams from samples
-    const streams = {};
-    const lats = [], lngs = [], hrs = [], alts = [], speeds = [], cadences = [], times = [];
-
-    for (const sample of samples) {
-        if (sample.latitude !== undefined && sample.longitude !== undefined) {
-            lats.push(sample.latitude);
-            lngs.push(sample.longitude);
-        }
-        if (sample.hr !== undefined)       hrs.push(sample.hr);
-        if (sample.altitude !== undefined) alts.push(sample.altitude);
-        if (sample.speed !== undefined)    speeds.push(sample.speed);
-        if (sample.cadence !== undefined)  cadences.push(sample.cadence);
-        if (sample.time !== undefined)     times.push(sample.time);
-    }
-
-    if (lats.length > 0) streams.latlng = lats.map((lat, i) => [lat, lngs[i]]);
-    if (hrs.length > 0)      streams.heartrate = hrs;
-    if (alts.length > 0)     streams.altitude = alts;
-    if (speeds.length > 0)   streams.velocity_smooth = speeds;
-    if (cadences.length > 0) streams.cadence = cadences;
-    if (times.length > 0)    streams.time = times;
-
-    if (Object.keys(streams).length > 0) act._streams = streams;
-
-    // Build GPS polyline from lat/lng points
-    if (lats.length > 0) {
-        act.map_polyline = JSON.stringify(lats.map((lat, i) => [lat, lngs[i]]));
-    }
-}
-
-function mergeDecathlonDetails(_act, _d) {
-    // Decathlon detail response — placeholder for future enhancement
 }
 
 module.exports = {

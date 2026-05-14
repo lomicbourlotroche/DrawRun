@@ -35,17 +35,14 @@ interface AuthState {
   token: string | null;
   isLoading: boolean;
   error: string | null;
-  has_strava: boolean;
   has_garmin: boolean;
-  has_suunto: boolean;
-  has_decathlon: boolean;
   
   login: (email: string, password: string, totpCode?: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => void;
   clearError: () => void;
   updateUser: (data: Partial<User>) => void;
-  setSyncStatus: (status: { has_strava: boolean; has_garmin: boolean; has_suunto: boolean; has_decathlon: boolean }) => void;
+  setSyncStatus: (status: { has_garmin: boolean }) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -56,10 +53,7 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isLoading: false,
       error: null,
-      has_strava: false,
       has_garmin: false,
-      has_suunto: false,
-      has_decathlon: false,
 
       login: async (email: string, password: string, totpCode?: string) => {
         set({ isLoading: true, error: null });
@@ -76,29 +70,15 @@ export const useAuthStore = create<AuthState>()(
             api.setRefreshToken(response.refreshToken);
           }
 
-          const hasStrava =
-            response.has_strava !== undefined ? !!response.has_strava : !!response.user?.has_strava;
           const hasGarmin =
             response.has_garmin !== undefined ? !!response.has_garmin : !!response.user?.has_garmin;
-          const hasSuunto =
-            response.has_suunto !== undefined ? !!response.has_suunto : !!response.user?.has_suunto;
-          const hasDecathlon =
-            response.has_decathlon !== undefined ? !!response.has_decathlon : !!response.user?.has_decathlon;
 
-          let syncStatus = {
-            has_strava: hasStrava,
-            has_garmin: hasGarmin,
-            has_suunto: hasSuunto,
-            has_decathlon: hasDecathlon,
-          };
+          let syncStatus = { has_garmin: hasGarmin };
 
           try {
             const status = await api.getSyncStatus();
             syncStatus = {
-              has_strava: hasStrava || !!status.strava_last_sync,
               has_garmin: hasGarmin || !!status.garmin_last_sync,
-              has_suunto: hasSuunto || !!status.suunto_last_sync,
-              has_decathlon: hasDecathlon || !!status.decathlon_last_sync,
             };
           } catch (syncError) {
             logger.warn('Could not fetch sync status after login', {
@@ -108,10 +88,7 @@ export const useAuthStore = create<AuthState>()(
 
           const userWithSyncFlags = {
             ...response.user,
-            has_strava: syncStatus.has_strava,
             has_garmin: syncStatus.has_garmin,
-            has_suunto: syncStatus.has_suunto,
-            has_decathlon: syncStatus.has_decathlon,
           };
 
           set({
@@ -157,9 +134,7 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: false,
           user: null,
           token: null,
-          has_strava: false,
           has_garmin: false,
-          has_suunto: false,
         });
       },
 
@@ -172,7 +147,7 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      setSyncStatus: (status: { has_strava: boolean; has_garmin: boolean; has_suunto: boolean }) => {
+      setSyncStatus: (status: { has_garmin: boolean }) => {
         set(status);
       },
     }),
@@ -183,10 +158,7 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
         user: state.user,
         token: state.token,
-        has_strava: state.has_strava,
         has_garmin: state.has_garmin,
-        has_suunto: state.has_suunto,
-        has_decathlon: state.has_decathlon,
       }),
       onRehydrateStorage: () => (state) => {
         if (state?.token) {
@@ -362,11 +334,8 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       set({ status });
       
       const lastGarmin = status.garmin_last_sync ? new Date(status.garmin_last_sync).getTime() : 0;
-      const lastStrava = status.strava_last_sync ? new Date(status.strava_last_sync).getTime() : 0;
-      const lastSuunto = status.suunto_last_sync ? new Date(status.suunto_last_sync).getTime() : 0;
-      const lastSync = Math.max(lastGarmin, lastStrava, lastSuunto);
       const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
-      set({ needsSync: lastSync < oneDayAgo || status.garmin_status === 'error' || status.strava_status === 'error' || status.suunto_status === 'error' });
+      set({ needsSync: lastGarmin < oneDayAgo || status.garmin_status === 'error' });
     } catch (error) {
       // Silently fail - user may not be authenticated
     }
@@ -380,8 +349,6 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     set({ isSyncing: true, lastError: null });
     try {
       const result = await api.sync(
-        undefined,
-        // onProgress — met à jour l'état pendant le polling
         () => { set({ isSyncing: true }); }
       );
       
@@ -389,18 +356,6 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       let hasError = false;
       let syncedCount = 0;
       
-      if (result.strava) {
-        const stravaCount = result.strava.imported ?? result.strava.updated ?? 0;
-        if (stravaCount > 0) {
-          message += ` • Strava: ${stravaCount} activités`;
-          syncedCount += stravaCount;
-        }
-        if (result.strava.error) {
-          hasError = true;
-          message = `Erreur Strava: ${result.strava.error}`;
-          set({ lastError: result.strava.error });
-        }
-      }
       if (result.garmin) {
         const garminCount = result.garmin.imported ?? result.garmin.updated ?? 0;
         if (garminCount > 0) {
@@ -413,22 +368,9 @@ export const useSyncStore = create<SyncState>((set, get) => ({
           set({ lastError: result.garmin.error });
         }
       }
-      if (result.suunto) {
-        const suuntoCount = result.suunto.imported ?? result.suunto.updated ?? 0;
-        if (suuntoCount > 0) {
-          message += ` • Suunto: ${suuntoCount} activités`;
-          syncedCount += suuntoCount;
-        }
-        if (result.suunto.error) {
-          hasError = true;
-          message = `Erreur Suunto: ${result.suunto.error}`;
-          set({ lastError: result.suunto.error });
-        }
-      }
       
-      // If no providers connected, show a message
-      if (!result.strava && !result.garmin && !result.suunto) {
-        message = 'Aucun service connecté. Connectez Garmin, Strava ou Suunto pour synchroniser.';
+      if (!result.garmin) {
+        message = 'Aucun service connecté. Connectez Garmin pour synchroniser.';
       }
       
       await get().fetchStatus();

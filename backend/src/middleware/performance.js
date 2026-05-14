@@ -119,6 +119,53 @@ const cached = (cacheName, ttl) => (target, propertyName, descriptor) => {
     return descriptor;
 };
 
+// Standalone function cache wrapper (for plain async functions, not classes)
+const withCache = (fn, cacheName, ttl) => {
+    const wrapped = async (...args) => {
+        const cache = caches[cacheName];
+        if (!cache) return fn(...args);
+
+        const key = cacheKey(fn.name || 'anonymous', ...args);
+        const cached = cache.get(key);
+
+        if (cached !== null) {
+            return cached;
+        }
+
+        const result = await fn(...args);
+        cache.set(key, result, ttl);
+        return result;
+    };
+    Object.defineProperty(wrapped, 'name', { value: fn.name });
+    return wrapped;
+};
+
+// Express middleware — cache JSON responses
+const cacheRoute = (cacheName, ttl) => {
+    return (req, res, next) => {
+        const cache = caches[cacheName];
+        if (!cache) return next();
+
+        const userId = req.user?.id || 'anonymous';
+        const key = cacheKey(`${req.method}:${req.originalUrl}`, userId);
+        const cached = cache.get(key);
+
+        if (cached !== null) {
+            return res.json(cached);
+        }
+
+        // Intercept res.json to cache before sending
+        const originalJson = res.json.bind(res);
+        res.json = (body) => {
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+                cache.set(key, body, ttl);
+            }
+            return originalJson(body);
+        };
+        next();
+    };
+};
+
 // Cache invalidation helpers
 const invalidateCache = (cacheName, pattern = null) => {
     if (!caches[cacheName]) return;
@@ -192,6 +239,8 @@ module.exports = {
     caches,
     cacheKey,
     cached,
+    withCache,
+    cacheRoute,
     invalidateCache,
     invalidateUserCache,
     compressionMiddleware,

@@ -5,4 +5,5 @@ export { default as MissedSessionDialog } from './MissedSessionDialog';
 export { default as ProgressChart } from './ProgressChart';
 export { default as SessionFeedback } from './SessionFeedback';
 export { default as TestScheduler } from './TestScheduler';
+export { TaperingChart } from './TaperingChart';
 export { TrainingPlanCard } from './TrainingPlanCard';

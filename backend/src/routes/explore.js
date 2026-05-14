@@ -161,6 +161,33 @@ router.get('/segments/:id/efforts/me', verifyToken, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /explore/segments/{id}:
+ *   delete:
+ *     summary: Delete a segment
+ *     tags: [Explore]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.delete('/segments/:id', verifyToken, async (req, res) => {
+    try {
+        const result = await segments.deleteSegment(req.user.id, parseInt(req.params.id));
+        if (result.success) {
+            res.json(result);
+        } else if (result.error === 'Segment not found') {
+            res.status(404).json({ error: result.error });
+        } else if (result.error === 'Not authorized') {
+            res.status(403).json({ error: result.error });
+        } else {
+            res.status(400).json(result);
+        }
+    } catch (error) {
+        logger.error('Delete segment error:', error);
+        res.status(500).json({ error: 'Failed to delete segment' });
+    }
+});
+
 // ============================================================================
 // ROUTES
 // ============================================================================
@@ -339,6 +366,71 @@ router.get('/routes/favorites', verifyToken, async (req, res) => {
     } catch (error) {
         logger.error('Get favorites error:', error);
         res.status(500).json({ error: 'Failed to get favorites' });
+    }
+});
+
+/**
+ * @swagger
+ * /explore/routes/{id}:
+ *   delete:
+ *     summary: Delete a route
+ *     tags: [Explore]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.delete('/routes/:id', verifyToken, async (req, res) => {
+    try {
+        const result = await routes.deleteRoute(req.user.id, parseInt(req.params.id));
+        if (result.success) {
+            res.json(result);
+        } else if (result.error === 'Route not found') {
+            res.status(404).json({ error: result.error });
+        } else if (result.error === 'Not authorized') {
+            res.status(403).json({ error: result.error });
+        } else {
+            res.status(400).json(result);
+        }
+    } catch (error) {
+        logger.error('Delete route error:', error);
+        res.status(500).json({ error: 'Failed to delete route' });
+    }
+});
+
+/**
+ * @swagger
+ * /explore/routes/{id}/rate:
+ *   post:
+ *     summary: Rate a route (1-5 stars)
+ *     tags: [Explore]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.post('/routes/:id/rate', verifyToken, async (req, res) => {
+    try {
+        const { rating } = req.body;
+        
+        if (typeof rating !== 'number' || rating < 1 || rating > 5) {
+            return res.status(400).json({ error: 'Rating must be a number between 1 and 5' });
+        }
+        
+        const routeId = parseInt(req.params.id);
+        const route = await routes.getRoute(routeId, req.user.id);
+        
+        if (!route) {
+            return res.status(404).json({ error: 'Route not found' });
+        }
+        
+        const result = await routes.rateRoute(req.user.id, routeId, Math.round(rating));
+        
+        if (result.success) {
+            const updatedRoute = await routes.getRoute(routeId, req.user.id);
+            res.json({ success: true, avg_rating: updatedRoute?.avg_rating, rating_count: updatedRoute?.rating_count });
+        } else {
+            res.status(400).json(result);
+        }
+    } catch (error) {
+        logger.error('Rate route error:', error);
+        res.status(500).json({ error: 'Failed to rate route' });
     }
 });
 

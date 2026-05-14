@@ -3,6 +3,7 @@
 
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useRef, useState } from 'react';
+import { decodePolyline } from '@/lib/utils';
 
 interface ExploreMapProps {
   onMapReady?: (map: any) => void;
@@ -36,44 +37,6 @@ interface ExploreMapProps {
   onWaypointDrag?: (index: number, latlng: { lat: number; lng: number }) => void;
   currentRoutePolyline?: string;
   isLoop?: boolean;
-}
-
-function decodePolyline(encoded: string): [number, number][] {
-  const points: [number, number][] = [];
-  let index = 0;
-  let lat = 0;
-  let lng = 0;
-
-  while (index < encoded.length) {
-    let shift = 0;
-    let result = 0;
-    let byte: number;
-
-    do {
-      byte = encoded.charCodeAt(index++) - 63;
-      result |= (byte & 0x1f) << shift;
-      shift += 5;
-    } while (byte >= 0x20);
-
-    const deltaLat = result & 1 ? ~(result >> 1) : result >> 1;
-    lat += deltaLat;
-
-    shift = 0;
-    result = 0;
-
-    do {
-      byte = encoded.charCodeAt(index++) - 63;
-      result |= (byte & 0x1f) << shift;
-      shift += 5;
-    } while (byte >= 0x20);
-
-    const deltaLng = result & 1 ? ~(result >> 1) : result >> 1;
-    lng += deltaLng;
-
-    points.push([lat / 1e5, lng / 1e5]);
-  }
-
-  return points;
 }
 
 const TILE_CONFIGS: Record<string, { url: string; attribution: string }> = {
@@ -119,6 +82,7 @@ export default function ExploreMap({
   const userMarkerRef = useRef<any>(null);
   const waypointMarkersRef = useRef<any[]>([]);
   const creationPolylineRef = useRef<any>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [mapReady, setMapReady] = useState(false);
 
   // Initialize map
@@ -160,6 +124,16 @@ export default function ExploreMap({
             onMapClick({ lat: ll.lat, lng: ll.lng });
           }
         });
+      }
+
+      // Invalidate map size on container resize (orientation change etc.)
+      const resizeObserver = new ResizeObserver(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      });
+      if (mapRef.current) {
+        resizeObserver.observe(mapRef.current);
       }
 
       setMapReady(true);
@@ -271,20 +245,21 @@ export default function ExploreMap({
           polyline.on('click', segment.onClick);
         }
 
+        const markerSize = window.innerWidth < 640 ? 14 : 10;
         const startIcon = L.divIcon({
           className: 'segment-marker-start',
-          html: `<div style="width:10px;height:10px;background:#22c55e;border:2px solid white;border-radius:50%;"></div>`,
-          iconSize: [10, 10],
-          iconAnchor: [5, 5],
+          html: `<div style="width:${markerSize}px;height:${markerSize}px;background:#22c55e;border:2px solid white;border-radius:50%;"></div>`,
+          iconSize: [markerSize, markerSize],
+          iconAnchor: [markerSize / 2, markerSize / 2],
         });
 
         L.marker([segment.startLat, segment.startLng], { icon: startIcon }).addTo(map);
 
         const endIcon = L.divIcon({
           className: 'segment-marker-end',
-          html: `<div style="width:10px;height:10px;background:#ef4444;border:2px solid white;border-radius:50%;"></div>`,
-          iconSize: [10, 10],
-          iconAnchor: [5, 5],
+          html: `<div style="width:${markerSize}px;height:${markerSize}px;background:#ef4444;border:2px solid white;border-radius:50%;"></div>`,
+          iconSize: [markerSize, markerSize],
+          iconAnchor: [markerSize / 2, markerSize / 2],
         });
 
         L.marker([segment.endLat, segment.endLng], { icon: endIcon }).addTo(map);

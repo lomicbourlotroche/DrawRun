@@ -52,6 +52,9 @@ export interface UserZones {
   hrPercentZones: Array<{ zone: number; name: string; minHR: number; maxHR: number; description: string }>;
   speedZones: SpeedZone[] | null;
   trainingPaces: TrainingPace[] | null;
+  fcm: number;
+  vma: number;
+  vdot: number;
 }
 
 export interface UserConstantsResponse {

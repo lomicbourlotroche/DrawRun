@@ -11,11 +11,12 @@ const express = require('express');
 const { verifyToken } = require('./auth');
 const { getUserDb, dbGetUser } = require('../database');
 const metrics = require('../services/metricsCalculator.service');
+const { cacheRoute, invalidateUserCache } = require('../middleware/performance');
 
 const router = express.Router();
 
-// GET /api/metrics
-router.get('/', verifyToken, async (req, res) => {
+// GET /api/metrics — cached for 10 minutes
+router.get('/', verifyToken, cacheRoute('metrics', 10 * 60 * 1000), async (req, res) => {
     try {
         const userDb = await getUserDb(req.user.id);
         
@@ -34,11 +35,12 @@ router.get('/', verifyToken, async (req, res) => {
     }
 });
 
-// POST /api/metrics/recalculate
+// POST /api/metrics/recalculate — invalidates user caches
 router.post('/recalculate', verifyToken, async (req, res) => {
     try {
         const userDb = await getUserDb(req.user.id);
         const result = await metrics.calculateAndStoreMetrics(req.user.id, userDb);
+        invalidateUserCache(req.user.id);
         res.json(result);
     } catch (error) {
         res.status(500).json({ error: 'Failed to recalculate metrics' });
@@ -58,6 +60,7 @@ router.post('/hrv', verifyToken, async (req, res) => {
         `, [req.user.id, value, date]);
         
         await metrics.calculateAndStoreMetrics(req.user.id, userDb);
+        invalidateUserCache(req.user.id);
         res.json({ success: true, message: 'HRV enregistré' });
     } catch (error) {
         res.status(500).json({ error: 'Failed to store HRV' });
@@ -77,6 +80,7 @@ router.post('/sleep', verifyToken, async (req, res) => {
         `, [req.user.id, value, date]);
         
         await metrics.calculateAndStoreMetrics(req.user.id, userDb);
+        invalidateUserCache(req.user.id);
         res.json({ success: true, message: 'Sommeil enregistré' });
     } catch (error) {
         res.status(500).json({ error: 'Failed to store sleep' });

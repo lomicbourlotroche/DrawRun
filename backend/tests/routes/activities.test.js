@@ -28,14 +28,23 @@ jest.mock('../../src/services/metricsCalculator.service', () => ({
   calculateAndStoreMetrics: jest.fn(),
 }));
 
+jest.mock('../../src/services/activities/gpx.service', () => ({
+  parseGpx: jest.fn(),
+}));
+
+jest.mock('../../src/services/explore/heatmap.service', () => ({
+  updateHeatmap: jest.fn().mockResolvedValue(),
+}));
+
 const { getUserDb, dbGetUser, dbAllUser, dbRunUser } = require('../../src/database');
+const { parseGpx } = require('../../src/services/activities/gpx.service');
 
 describe('Activities Routes', () => {
   let app;
 
   beforeEach(() => {
     app = express();
-    app.use(express.json());
+    app.use(express.json({ limit: '10mb' }));
     app.use('/api/activities', activitiesRouter);
     jest.clearAllMocks();
   });
@@ -131,6 +140,94 @@ describe('Activities Routes', () => {
 
       expect(response.status).toBe(500);
       expect(response.body.error).toBe('Failed to fetch activities');
+    });
+  });
+
+  describe('POST /api/activities/import/gpx', () => {
+    it('should import a valid GPX file', async () => {
+      getUserDb.mockResolvedValue({});
+      dbRunUser.mockResolvedValue({ lastID: 456 });
+      parseGpx.mockReturnValue({
+        distance: 5000,
+        duration: 1800,
+        elevGain: 50,
+        elevLoss: 10,
+        elevMin: 100,
+        elevMax: 150,
+        avgHR: 145,
+        maxHR: 170,
+        avgSpeed: 2.78,
+        startDate: '2024-01-01T10:00:00Z',
+        mapPolyline: '[[48.85,2.29],[48.86,2.30]]',
+        streams: {
+          latlng: [[48.85,2.29],[48.86,2.30]],
+          distance: [0, 5000],
+          time: [0, 1800],
+          altitude: [100, 150],
+          heartrate: [145, 170],
+          cadence: [],
+        },
+      });
+
+      const response = await request(app)
+        .post('/api/activities/import/gpx')
+        .set('Authorization', 'Bearer test-token')
+        .send({
+          name: 'Morning Run GPX',
+          gpxData: '<?xml version="1.0"?><gpx><trk><trkseg><trkpt lat="48.85" lon="2.29"><time>2024-01-01T10:00:00Z</time></trkpt><trkpt lat="48.86" lon="2.30"><time>2024-01-01T10:30:00Z</time></trkpt></trkseg></trk></gpx>',
+          type: 'run',
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.id).toBe(456);
+      expect(response.body.distance).toBe(5000);
+      expect(response.body.duration).toBe(1800);
+      expect(response.body.trackpoints).toBe(2);
+
+      expect(parseGpx).toHaveBeenCalledWith(expect.stringContaining('<gpx>'));
+      expect(dbRunUser).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.stringContaining('INSERT INTO activities'),
+        expect.arrayContaining(['Morning Run GPX', 'run'])
+      );
+      // Verify elapsed_time is now included in GPX import
+      const sql = dbRunUser.mock.calls[0][1];
+      expect(sql).toContain('elapsed_time');
+    });
+
+    it('should reject empty GPX data', async () => {
+      const response = await request(app)
+        .post('/api/activities/import/gpx')
+        .set('Authorization', 'Bearer test-token')
+        .send({ name: 'Test', type: 'run' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe('gpxData is required');
+    });
+
+    it('should reject oversized GPX data', async () => {
+      const largeGpx = 'X'.repeat(6 * 1024 * 1024); // 6MB > 5MB limit
+      const response = await request(app)
+        .post('/api/activities/import/gpx')
+        .set('Authorization', 'Bearer test-token')
+        .send({ name: 'Test', gpxData: largeGpx, type: 'run' });
+
+      expect(response.status).toBe(413);
+    });
+
+    it('should reject invalid activity type', async () => {
+      const response = await request(app)
+        .post('/api/activities/import/gpx')
+        .set('Authorization', 'Bearer test-token')
+        .send({
+          name: 'Test',
+          gpxData: '<gpx></gpx>',
+          type: 'invalid_sport',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toContain('Invalid activity type');
     });
   });
 

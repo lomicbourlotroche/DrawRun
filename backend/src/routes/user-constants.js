@@ -57,6 +57,9 @@ router.get('/', verifyToken, async (req, res) => {
                 hrPercentZones,
                 speedZones,
                 trainingPaces,
+                fcm: constants.fcm,
+                vma: constants.vma || 0,
+                vdot: constants.vdot || 0,
             },
             sources: {
                 fcm: constants.fcmSource,

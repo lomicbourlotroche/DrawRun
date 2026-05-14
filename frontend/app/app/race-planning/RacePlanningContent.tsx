@@ -2,14 +2,14 @@
 'use client';
 
 import React, { useState, useRef, useCallback } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Badge } from '@/components/ui';
-import { api } from '@/lib/api';
-import { client } from '@/lib/api/client';
-import { racePlanningApi } from '@/lib/api/race-planning.api';
-import type { RacePlanningResponse, RacePlanningRequest, GpxProfile } from '@/types';
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Badge, Modal } from '@/components/ui';
+import { api, racePlanningApi } from '@/lib/api';
+import type { RacePlanningResponse, RacePlanningRequest, GpxProfile, Split, NutritionStrategy } from '@/types';
 import {
   Trophy, Download, AlertTriangle, MapPin, Heart, Zap, Droplets, Save, Upload,
-  Printer, Mountain, TrendingUp, TrendingDown, Minus, Info
+  Printer, Mountain, TrendingUp, TrendingDown, Minus, Info,
+  FolderOpen, Trash2, Calendar, Clock,
+  ChevronDown, ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -102,12 +102,18 @@ export function RacePlanningContent() {
   const [gpxDistKm, setGpxDistKm] = useState(0);
   const [strategyBias, setStrategyBias] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<RacePlanningResponse | any | null>(null);
+  const [result, setResult] = useState<RacePlanningResponse | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [temperature, setTemperature] = useState(15);
   const [humidity, setHumidity] = useState(50);
+  const [altitude, setAltitude] = useState(0);
+  const [windSpeed, setWindSpeed] = useState(0);
+
+  const [savedPlans, setSavedPlans] = useState<Array<Record<string, unknown>>>([]);
+  const [showPlansModal, setShowPlansModal] = useState(false);
+  const [isLoadingPlans, setIsLoadingPlans] = useState(false);
 
   const handleCalculate = async () => {
     setIsLoading(true);
@@ -140,17 +146,18 @@ export function RacePlanningContent() {
         delete params.fatigue;
       }
 
-      // Envoyer les conditions météo avancées
+      // Envoyer les conditions météo
       if (showAdvanced) {
         params.temperature = temperature;
         params.humidity = humidity;
+        params.altitude = altitude;
+        params.windSpeed = windSpeed;
       }
 
       const response = await api.calculateRacePlan(params);
       setResult(response);
       toast.success('Plan de course calculé !');
-    } catch (error) {
-      console.error('Race planning error:', error);
+    } catch {
       toast.error('Erreur lors du calcul du plan');
     } finally {
       setIsLoading(false);
@@ -195,31 +202,78 @@ export function RacePlanningContent() {
   const handlePrint = () => window.print();
 
   const handleExportCsv = () => {
-    if (!result) return;
-    const filename = `race-plan-${(result.summary?.distance || form.distance).toFixed(1)}km-${new Date().toISOString().split('T')[0]}.csv`;
-    racePlanningApi.downloadCsv(result.splits, filename);
+    const r = result;
+    if (!r) return;
+    const distKm = r.summary.distance ?? form.distance ?? 0;
+    const filename = `race-plan-${distKm.toFixed(1)}km-${new Date().toISOString().split('T')[0]}.csv`;
+    racePlanningApi.downloadCsv(r.splits, filename);
     toast.success('Plan exporté en CSV');
   };
 
   const handleSavePlan = async () => {
-    if (!result) return;
+    const r = result;
+    if (!r) return;
+    const dist = r.summary.distance ?? form.distance ?? 0;
     try {
-      await client.request('/api/race-planning/save', {
-        method: 'POST',
-        body: JSON.stringify({
-          name: `${(result.summary?.distance || form.distance).toFixed(1)}km - ${new Date().toLocaleDateString('fr-FR')}`,
-          distance: result.summary?.distance || form.distance,
-          targetPace: result.summary?.targetPace,
-          totalTime: result.summary?.totalTime,
-          elevationProfile: result.summary?.elevationProfile || form.elevationProfile,
-          fatigue: form.fatigue,
-          splits: result.splits,
-          nutritionStrategy: result.nutritionStrategy,
-        }),
+      await racePlanningApi.saveRacePlan({
+        name: `${dist.toFixed(1)}km - ${new Date().toLocaleDateString('fr-FR')}`,
+        distance: dist,
+        targetPace: r.summary.targetPace,
+        totalTime: r.summary.totalTime,
+        elevationProfile: r.summary.elevationProfile ?? form.elevationProfile,
+        fatigue: form.fatigue,
+        splits: r.splits,
+        nutritionStrategy: r.nutritionStrategy,
       });
       toast.success('Plan de course enregistré !');
     } catch {
       toast.error('Erreur lors de l\'enregistrement');
+    }
+  };
+
+  const handleOpenPlans = async () => {
+    setIsLoadingPlans(true);
+    setShowPlansModal(true);
+    try {
+      const plans = await racePlanningApi.listRacePlans();
+      setSavedPlans(plans);
+    } catch {
+      toast.error('Erreur lors du chargement des plans');
+    } finally {
+      setIsLoadingPlans(false);
+    }
+  };
+
+  const handleLoadPlan = (plan: Record<string, unknown>) => {
+    setForm({
+      distance: (plan.distance as number) || form.distance,
+      elevationProfile: (plan.elevationProfile as 'flat' | 'rolling' | 'mountainous') || form.elevationProfile,
+      fatigue: (plan.fatigue as number) ?? form.fatigue,
+    });
+    setResult({
+      summary: {
+        distance: plan.distance as number,
+        targetPace: plan.targetPace as number,
+        totalTime: plan.totalTime as number,
+        elevationProfile: plan.elevationProfile as string,
+        fcm: 0,
+      },
+      splits: plan.splits as Split[],
+      nutritionStrategy: plan.nutritionStrategy as NutritionStrategy,
+      racePrediction: null,
+      warnings: [],
+    } as RacePlanningResponse);
+    setShowPlansModal(false);
+    toast.success('Plan chargé');
+  };
+
+  const handleDeletePlan = async (id: number) => {
+    try {
+      await racePlanningApi.deleteRacePlan(id);
+      setSavedPlans(prev => prev.filter(p => p.id !== id));
+      toast.success('Plan supprimé');
+    } catch {
+      toast.error('Erreur lors de la suppression');
     }
   };
 
@@ -253,7 +307,7 @@ export function RacePlanningContent() {
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Trophy className="w-6 h-6 text-primary" />
-            Race Planning 2.0
+            Planification de Course
           </h1>
           <p className="text-muted mt-1">
             Planifiez votre stratégie de course avec des splits détaillés et une stratégie de nutrition
@@ -288,7 +342,7 @@ export function RacePlanningContent() {
             <>
               <div>
                 <label className="text-sm font-medium mb-2 block">Distance</label>
-                <div className="flex gap-2 mb-3">
+                <div className="flex flex-wrap gap-2 mb-3">
                   {DISTANCE_PRESETS.map((preset) => (
                     <Button
                       key={preset.label}
@@ -312,7 +366,7 @@ export function RacePlanningContent() {
               {/* Elevation Profile */}
               <div>
                 <label className="text-sm font-medium mb-2 block">Profil du terrain</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {ELEVATION_PROFILES.map((profile) => (
                     <button
                       key={profile.id}
@@ -437,34 +491,48 @@ export function RacePlanningContent() {
                 )}
               </div>
 
-              {/* Options avancées (météo) */}
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setShowAdvanced(!showAdvanced)}
-                  className="text-xs text-primary font-medium hover:underline flex items-center gap-1"
-                >
-                  {showAdvanced ? '▼' : '▶'} Options avancées (météo)
-                </button>
-                {showAdvanced && (
-                  <div className="grid grid-cols-2 gap-3 mt-2">
-                    <Input
-                      type="number"
-                      value={temperature}
-                      onChange={(e) => setTemperature(parseFloat(e.target.value) || 15)}
-                      label="Température (°C)"
-                    />
-                    <Input
-                      type="number"
-                      value={humidity}
-                      onChange={(e) => setHumidity(parseFloat(e.target.value) || 50)}
-                      label="Humidité (%)"
-                    />
-                  </div>
-                )}
-              </div>
             </>
           )}
+
+          {/* Options avancées (météo) — commun aux deux modes */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="text-sm text-primary font-medium hover:underline flex items-center gap-1"
+            >
+              {showAdvanced ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              Conditions météo
+            </button>
+            {showAdvanced && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+                <Input
+                  type="number"
+                  value={temperature}
+                  onChange={(e) => setTemperature(parseFloat(e.target.value) || 15)}
+                  label="Température (°C)"
+                />
+                <Input
+                  type="number"
+                  value={humidity}
+                  onChange={(e) => setHumidity(parseFloat(e.target.value) || 50)}
+                  label="Humidité (%)"
+                />
+                <Input
+                  type="number"
+                  value={altitude}
+                  onChange={(e) => setAltitude(parseFloat(e.target.value) || 0)}
+                  label="Altitude (m)"
+                />
+                <Input
+                  type="number"
+                  value={windSpeed}
+                  onChange={(e) => setWindSpeed(parseFloat(e.target.value) || 0)}
+                  label="Vent (km/h)"
+                />
+              </div>
+            )}
+          </div>
 
           {/* Strategy Bias Slider (always shown) */}
           <StrategySlider value={strategyBias} onChange={setStrategyBias} />
@@ -474,6 +542,38 @@ export function RacePlanningContent() {
           </Button>
         </CardContent>
       </Card>
+
+      {/* Loading Skeleton */}
+      {isLoading && !result && (
+        <div className="space-y-6 animate-pulse">
+          <Card>
+            <CardHeader><CardTitle>Calcul en cours...</CardTitle></CardHeader>
+            <CardContent>
+              <div className="h-56 sm:h-72 lg:h-80 bg-muted rounded-lg" />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle>Résumé</CardTitle></CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-20 bg-muted rounded-lg" />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle>Splits</CardTitle></CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="h-8 bg-muted rounded" />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Results */}
       {result && (
@@ -494,7 +594,7 @@ export function RacePlanningContent() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-72 w-full">
+                <div className="h-56 sm:h-72 lg:h-80 w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
@@ -544,9 +644,12 @@ export function RacePlanningContent() {
           {/* Summary */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center justify-between">
+              <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <span>Résumé</span>
-                <div className="flex gap-2 no-print">
+                <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 no-print">
+                  <Button variant="secondary" size="sm" onClick={handleOpenPlans} leftIcon={<FolderOpen className="w-4 h-4" />}>
+                    Mes plans
+                  </Button>
                   <Button variant="secondary" size="sm" onClick={handleSavePlan} leftIcon={<Save className="w-4 h-4" />}>
                     Enregistrer
                   </Button>
@@ -695,7 +798,7 @@ export function RacePlanningContent() {
                 <CardTitle>Recommandation de taper</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                   <div className="p-3 rounded-lg bg-info/10 border border-info/30 text-center">
                     <p className="text-xs text-muted">Durée</p>
                     <p className="text-lg font-semibold">{result.taperRecommendation.duration} jours</p>
@@ -752,8 +855,8 @@ export function RacePlanningContent() {
                       <th className="text-left py-2 px-2">Allure</th>
                       <th className="text-left py-2 px-2">Zone FC</th>
                       <th className="text-left py-2 px-2">FC</th>
-                      <th className="text-left py-2 px-2 text-muted" title="Cardiac drift">Dérive</th>
-                      <th className="text-left py-2 px-2">Pente</th>
+                      <th className="hidden md:table-cell text-left py-2 px-2 text-muted" title="Cardiac drift">Dérive</th>
+                      <th className="hidden md:table-cell text-left py-2 px-2">Pente</th>
                       <th className="text-left py-2 px-2">Ravitaillement</th>
                     </tr>
                   </thead>
@@ -771,10 +874,10 @@ export function RacePlanningContent() {
                           </Badge>
                         </td>
                         <td className="py-2 px-2 text-muted">{split.hrRange}</td>
-                        <td className="py-2 px-2 text-muted text-xs">
+                        <td className="hidden md:table-cell py-2 px-2 text-muted text-xs">
                           {split.cardiacDrift != null ? `+${split.cardiacDrift} bpm` : '-'}
                         </td>
-                        <td className="py-2 px-2">
+                        <td className="hidden md:table-cell py-2 px-2">
                           {split.grade != null ? (
                             <span className={cn('text-xs font-bold px-1.5 py-0.5 rounded-full', split.grade > 2 ? 'bg-red-100 text-red-700' : split.grade < -2 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600')}>
                               {split.grade > 0 ? '+' : ''}{split.grade}%
@@ -878,6 +981,58 @@ export function RacePlanningContent() {
           </Card>
         </div>
       )}
+
+      {/* Saved Plans Modal */}
+      <Modal isOpen={showPlansModal} onClose={() => setShowPlansModal(false)} title="Mes plans de course" size="lg">
+        {isLoadingPlans ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <span className="ml-3 text-sm text-muted">Chargement...</span>
+          </div>
+        ) : savedPlans.length === 0 ? (
+          <div className="text-center py-12">
+            <FolderOpen className="w-12 h-12 mx-auto text-muted mb-3" />
+            <p className="text-muted">Aucun plan sauvegardé</p>
+            <p className="text-xs text-muted mt-1">Calculez un plan, puis cliquez sur "Enregistrer"</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {savedPlans.map((plan) => (
+              <div key={plan.id as number} className="p-4 rounded-lg border border-border hover:border-primary/50 transition-colors">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{plan.name as string}</p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 text-xs text-muted">
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {typeof plan.distance === 'number' ? `${plan.distance.toFixed(2)} km` : '-'}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {typeof plan.totalTime === 'number' ? formatDuration(plan.totalTime) : '-'}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {plan.created_at
+                          ? new Date(plan.created_at as string).toLocaleDateString('fr-FR')
+                          : '-'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 flex-shrink-0">
+                    <Button variant="primary" size="sm" onClick={() => handleLoadPlan(plan)}>
+                      Charger
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDeletePlan(plan.id as number)}>
+                      <Trash2 className="w-4 h-4 text-error" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

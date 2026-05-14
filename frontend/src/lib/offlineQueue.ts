@@ -97,7 +97,8 @@ export async function processSaveQueue(
   let success = 0;
   let failed = 0;
 
-  for (let i = queue.length - 1; i >= 0; i--) {
+  let i = 0;
+  while (i < queue.length) {
     const item = queue[i];
     try {
       await importFn(item.name, item.gpxData, item.type);
@@ -107,6 +108,8 @@ export async function processSaveQueue(
       item.retries++;
       if (item.retries >= 3) {
         removeFromQueue(i);
+      } else {
+        i++;
       }
       failed++;
     }

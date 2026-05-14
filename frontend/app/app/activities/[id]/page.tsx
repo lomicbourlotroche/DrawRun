@@ -6,12 +6,12 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Skeleton } fro
 import { StreamChart } from '@/components/ui/Charts';
 import ActivityMap from '@/components/ui/ActivityMap';
 import { api } from '@/lib/api';
-import type { ActivityDetail as ActivityDetailType, ActivityStreams } from '@/types';
+import type { ActivityDetail as ActivityDetailType, ActivityStreams, ActivityAnalysisResponse } from '@/types';
 import type { SplitData, SplitSummary } from '@/types';
 import { ArrowLeft, Heart, Timer, Gauge, Mountain, Activity as ActivityIcon, Zap, Wind, MapPin, Clock, Pencil, Check, X, Cpu } from 'lucide-react';
 import { toast } from 'sonner';
-import { BiomechanicsCard } from '@/components/features/activities/BiomechanicsCard';
 import { ShareSettingsPanel } from '@/components/features/activities';
+import { RunAnalysisCards, RideAnalysisCards, SwimAnalysisCards, SimpleAnalysisCards, TrailRunAnalysisCards } from '@/components/features/activities/analysis';
 
 function fmt(s: number) {
   const h = Math.floor(s / 3600);
@@ -45,7 +45,7 @@ export default function ActivityDetailPage() {
   const router = useRouter();
   const [activity, setActivity] = useState<ActivityDetailType | null>(null);
   const [streams, setStreams] = useState<ActivityStreams | null>(null);
-  const [analysis, setAnalysis] = useState<Record<string, number | null> | null>(null);
+  const [analysis, setAnalysis] = useState<ActivityAnalysisResponse | null>(null);
   const [splits, setSplits] = useState<{ splits: SplitData[]; summary: SplitSummary } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [editingNotes, setEditingNotes] = useState(false);
@@ -286,146 +286,19 @@ export default function ActivityDetailPage() {
         </Card>
       )}
 
-      {/* Advanced Analysis from API */}
+      {/* Advanced Analysis — sport-specific */}
       {analysis && (
-        <>
-          {/* HR Analysis */}
-          {(analysis.avgHrPercent || analysis.hrReserve) && (
-            <Card>
-              <CardHeader><CardTitle className="text-base flex items-center gap-2"><Heart className="w-4 h-4 text-red-400" />Analyse FC</CardTitle></CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {analysis.avgHrPercent && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-lg font-bold text-foreground">{String(Number(analysis.avgHrPercent))}%</p><p className="text-xs text-muted">FC moy. %FCM</p></div>}
-                  {analysis.maxHrPercent && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-lg font-bold text-foreground">{String(Number(analysis.maxHrPercent))}%</p><p className="text-xs text-muted">FC max %FCM</p></div>}
-                  {analysis.hrReserve && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-lg font-bold text-foreground">{String(Number(analysis.hrReserve))}%</p><p className="text-xs text-muted">HR Reserve</p></div>}
-                  {analysis.trimp && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-lg font-bold text-orange-400">{Math.round(Number(analysis.trimp))}</p><p className="text-xs text-muted">TRIMP</p></div>}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Training Zones Distribution */}
-          {(analysis.zone1Percent || analysis.zone2Percent) && (
-            <Card>
-              <CardHeader><CardTitle className="text-base">Distribution des zones d&apos;entraînement</CardTitle></CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-5 gap-2">
-                  <div className="text-center p-2 rounded-lg bg-gray-500/10"><p className="text-sm font-bold text-gray-400">{String(Number(analysis.zone1Percent) || 0)}%</p><p className="text-xs text-muted">Z1</p></div>
-                  <div className="text-center p-2 rounded-lg bg-green-500/10"><p className="text-sm font-bold text-green-400">{String(Number(analysis.zone2Percent) || 0)}%</p><p className="text-xs text-muted">Z2</p></div>
-                  <div className="text-center p-2 rounded-lg bg-blue-500/10"><p className="text-sm font-bold text-blue-400">{String(Number(analysis.zone3Percent) || 0)}%</p><p className="text-xs text-muted">Z3</p></div>
-                  <div className="text-center p-2 rounded-lg bg-orange-500/10"><p className="text-sm font-bold text-orange-400">{String(Number(analysis.zone4Percent) || 0)}%</p><p className="text-xs text-muted">Z4</p></div>
-                  <div className="text-center p-2 rounded-lg bg-red-500/10"><p className="text-sm font-bold text-red-400">{String(Number(analysis.zone5Percent) || 0)}%</p><p className="text-xs text-muted">Z5</p></div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Elevation Analysis */}
-          {(analysis.elevMin || analysis.elevMax) && (
-            <Card>
-              <CardHeader><CardTitle className="text-base flex items-center gap-2"><Mountain className="w-4 h-4 text-green-400" />Analyse dénivelé</CardTitle></CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {analysis.elevMin && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-lg font-bold text-foreground">{Math.round(Number(analysis.elevMin))}m</p><p className="text-xs text-muted">Altitude min</p></div>}
-                  {analysis.elevMax && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-lg font-bold text-foreground">{Math.round(Number(analysis.elevMax))}m</p><p className="text-xs text-muted">Altitude max</p></div>}
-                  {analysis.estimatedGrade && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-lg font-bold text-foreground">{Number(analysis.estimatedGrade).toFixed(1)}%</p><p className="text-xs text-muted">Pente moy.</p></div>}
-                  {analysis.gradeAdjustedPaceFormatted && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-lg font-bold text-green-400">{String(analysis.gradeAdjustedPaceFormatted)}</p><p className="text-xs text-muted">Allure ajustée</p></div>}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* VDOT & Predictions */}
-          {(analysis.estimatedVdot || analysis.paceFormatted) && (
-            <Card>
-              <CardHeader><CardTitle className="text-base flex items-center gap-2"><Gauge className="w-4 h-4 text-primary" />Performances</CardTitle></CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {analysis.estimatedVdot && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-lg font-bold text-green-400">{toNum(analysis.estimatedVdot).toFixed(1)}</p><p className="text-xs text-muted">VDOT estimé</p></div>}
-                  {analysis.paceFormatted && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-lg font-bold text-foreground">{toStr(analysis.paceFormatted)}</p><p className="text-xs text-muted">Allure</p></div>}
-                  {analysis.intensity_factor && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-lg font-bold text-blue-400">{toNum(analysis.intensity_factor).toFixed(2)}</p><p className="text-xs text-muted">IF</p></div>}
-                  {(analysis.efficiency_factor || activity.efficiency_factor) && (
-                     <div className="text-center p-3 rounded-lg bg-background border border-border">
-                       <p className="text-lg font-bold text-amber-500">{toNum(analysis.efficiency_factor || activity.efficiency_factor).toFixed(2)}</p>
-                       <p className="text-xs text-muted">EF (Aérobie)</p>
-                     </div>
-                   )}
-                  {analysis.tss && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-lg font-bold text-purple-400">{Math.round(toNum(analysis.tss))}</p><p className="text-xs text-muted">TSS</p></div>}
-                </div>
-                
-                {/* Race Predictions */}
-                {(analysis.predicted5k || analysis.predicted10k || analysis.predictedMarathon) && (
-                  <div className="mt-4 pt-4 border-t border-border">
-                    <p className="text-sm font-medium text-foreground mb-2">Prédictions de course</p>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {analysis.predicted5k && <div className="text-center p-2 rounded-lg bg-background"><p className="text-sm font-bold text-foreground">{Math.floor(toNum(analysis.predicted5k) / 60)}:{String(Math.round(toNum(analysis.predicted5k) % 60)).padStart(2, '0')}</p><p className="text-xs text-muted">5km</p></div>}
-                      {analysis.predicted10k && <div className="text-center p-2 rounded-lg bg-background"><p className="text-sm font-bold text-foreground">{Math.floor(toNum(analysis.predicted10k) / 60)}:{String(Math.round(toNum(analysis.predicted10k) % 60)).padStart(2, '0')}</p><p className="text-xs text-muted">10km</p></div>}
-                      {analysis.predictedHalfMarathon && typeof analysis.predictedHalfMarathon === 'object' && <div className="text-center p-2 rounded-lg bg-background"><p className="text-sm font-bold text-foreground">{(analysis.predictedHalfMarathon as {time: string}).time}</p><p className="text-xs text-muted">Semi</p></div>}
-                      {analysis.predictedMarathon && typeof analysis.predictedMarathon === 'object' && <div className="text-center p-2 rounded-lg bg-background"><p className="text-sm font-bold text-foreground">{(analysis.predictedMarathon as {time: string}).time}</p><p className="text-xs text-muted">Marathon</p></div>}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Biomechanics Analysis */}
-          {analysis.biomechanics && (
-            <BiomechanicsCard metrics={analysis.biomechanics as any} />
-          )}
-
-          {/* Nutrition Strategy */}
-          {analysis.nutrition && (
-            <Card className="border-amber-500/20 bg-amber-500/5">
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2 text-amber-600">
-                  <Wind className="w-4 h-4" />
-                  Stratégie de Ravitaillement
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted uppercase font-semibold">Hydratation</p>
-                    <div className="flex items-baseline gap-1">
-                      <p className="text-2xl font-bold text-foreground">{(analysis.nutrition as any).hydration.totalMl}</p>
-                      <p className="text-sm text-muted">ml total</p>
-                    </div>
-                    <p className="text-xs text-muted">Cible: {(analysis.nutrition as any).hydration.perHourMl} ml/h</p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted uppercase font-semibold">Glucides (CHO)</p>
-                    <div className="flex items-baseline gap-1">
-                      <p className="text-2xl font-bold text-foreground">{(analysis.nutrition as any).carbs.totalG}</p>
-                      <p className="text-sm text-muted">g total</p>
-                    </div>
-                    <p className="text-xs text-muted">Cible: {(analysis.nutrition as any).carbs.perHourG} g/h</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted uppercase font-semibold">Sodium</p>
-                    <div className="flex items-baseline gap-1">
-                      <p className="text-2xl font-bold text-foreground">{(analysis.nutrition as any).sodium.totalMg}</p>
-                      <p className="text-sm text-muted">mg</p>
-                    </div>
-                  </div>
-                </div>
-
-                {Array.isArray((analysis.nutrition as any).recommendations) && (
-                  <div className="mt-4 space-y-1">
-                    {(analysis.nutrition as any).recommendations.map((rec: string, i: number) => (
-                      <div key={i} className="flex gap-2 text-xs text-amber-700/80">
-                        <span className="shrink-0">•</span>
-                        <p>{rec}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-        </>
+        analysis.sportType === 'run' ? (
+          <RunAnalysisCards analysis={analysis as any} />
+        ) : analysis.sportType === 'ride' ? (
+          <RideAnalysisCards analysis={analysis as any} />
+        ) : analysis.sportType === 'swim' ? (
+          <SwimAnalysisCards analysis={analysis as any} />
+        ) : analysis.sportType === 'trail' ? (
+          <TrailRunAnalysisCards analysis={analysis as any} />
+        ) : (
+          <SimpleAnalysisCards analysis={analysis as any} />
+        )
       )}
 
       {/* Advanced Metrics (elev_high/low, running_index, HRV, flags) */}

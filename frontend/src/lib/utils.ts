@@ -95,3 +95,78 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
     timeout = setTimeout(() => func(...args), wait);
   };
 }
+
+export function decodePolyline(encoded: string): [number, number][] {
+  const points: [number, number][] = [];
+  let index = 0;
+  let lat = 0;
+  let lng = 0;
+
+  while (index < encoded.length) {
+    let shift = 0;
+    let result = 0;
+    let byte: number;
+
+    do {
+      byte = encoded.charCodeAt(index++) - 63;
+      result |= (byte & 0x1f) << shift;
+      shift += 5;
+    } while (byte >= 0x20);
+
+    const deltaLat = result & 1 ? ~(result >> 1) : result >> 1;
+    lat += deltaLat;
+
+    shift = 0;
+    result = 0;
+
+    do {
+      byte = encoded.charCodeAt(index++) - 63;
+      result |= (byte & 0x1f) << shift;
+      shift += 5;
+    } while (byte >= 0x20);
+
+    const deltaLng = result & 1 ? ~(result >> 1) : result >> 1;
+    lng += deltaLng;
+
+    points.push([lat / 1e5, lng / 1e5]);
+  }
+
+  return points;
+}
+
+export function encodePolyline(
+  points: ([number, number] | { lat: number; lng: number })[]
+): string {
+  if (!points || points.length === 0) return '';
+
+  let result = '';
+  let lat = 0;
+  let lng = 0;
+
+  const encodeValue = (v: number): string => {
+    v = v < 0 ? ~(v << 1) : v << 1;
+    let str = '';
+    while (v >= 0x20) {
+      str += String.fromCharCode((0x20 | (v & 0x1f)) + 63);
+      v >>= 5;
+    }
+    str += String.fromCharCode(v + 63);
+    return str;
+  };
+
+  for (const point of points) {
+    const pLat = Array.isArray(point) ? point[0] : point.lat;
+    const pLng = Array.isArray(point) ? point[1] : point.lng;
+
+    const dLat = Math.round((pLat - lat) * 1e5);
+    const dLng = Math.round((pLng - lng) * 1e5);
+
+    lat += dLat / 1e5;
+    lng += dLng / 1e5;
+
+    result += encodeValue(dLat);
+    result += encodeValue(dLng);
+  }
+
+  return result;
+}

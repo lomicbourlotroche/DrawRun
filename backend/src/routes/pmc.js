@@ -12,11 +12,12 @@ const { verifyToken } = require('./auth');
 const { getUserDb, dbGetUser, dbAllUser } = require('../database');
 const { Recommendations } = require('../algorithms');
 const { resolveUserConstants } = require('../services/userConstants.service');
+const { cacheRoute } = require('../middleware/performance');
 
 const router = express.Router();
 
-// GET /api/pmc
-router.get('/', verifyToken, async (req, res) => {
+// GET /api/pmc — cached for 15 minutes
+router.get('/', verifyToken, cacheRoute('pmc', 15 * 60 * 1000), async (req, res) => {
     try {
         const userDb = await getUserDb(req.user.id);
         const pmcData = await dbAllUser(userDb, `
@@ -24,7 +25,7 @@ router.get('/', verifyToken, async (req, res) => {
             ORDER BY date DESC LIMIT 90
         `);
         
-        res.json(pmcData.reverse());
+        res.json([...pmcData].reverse());
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch PMC' });
     }

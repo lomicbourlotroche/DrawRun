@@ -6,11 +6,12 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuthStore, useActivitiesStore, useSyncStore } from '@/stores';
 import { api } from '@/lib/api';
 import { ActivityList, MobileActivityRecorder } from '@/components/features/activities';
 import { Button, Modal, Input, Select } from '@/components/ui';
-import { RefreshCw, Plus, FileUp, Play } from 'lucide-react';
+import { RefreshCw, Plus, FileUp, Play, Smartphone } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { toast } from 'sonner';
@@ -20,6 +21,7 @@ export default function ActivitiesContent() {
   const { isAuthenticated } = useAuthStore();
   const { filteredActivities, isLoading, setActivities, setLoading } = useActivitiesStore();
   const { sync, isSyncing } = useSyncStore();
+  const [isMobile, setIsMobile] = useState(false);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showRecordModal, setShowRecordModal] = useState(false);
@@ -59,6 +61,13 @@ export default function ActivitiesContent() {
       loadActivities();
     }
   }, [loadActivities]);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 1024);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   const handleSync = async () => {
     const result = await sync();
@@ -128,9 +137,11 @@ export default function ActivitiesContent() {
         <div className="flex gap-2">
           {isAuthenticated && (
             <>
-              <Button onClick={() => setShowRecordModal(true)} variant="primary" leftIcon={<Play className="w-4 h-4" />}>
-                Enregistrer
-              </Button>
+              {isMobile && (
+                <Button onClick={() => setShowRecordModal(true)} variant="primary" leftIcon={<Play className="w-4 h-4" />}>
+                  Enregistrer
+                </Button>
+              )}
               <Button onClick={() => setShowAddModal(true)} variant="secondary" leftIcon={<Plus className="w-4 h-4" />}>
                 Ajouter
               </Button>

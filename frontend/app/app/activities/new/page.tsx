@@ -52,6 +52,7 @@ export default function NewActivityPage() {
     total_elevation_gain: '',
     notes: '',
   });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // ── GPX parsing (client-side preview) ──────────────────────────────────────
   const parseGpxPreview = useCallback((xml: string, fileName: string) => {
@@ -118,12 +119,34 @@ export default function NewActivityPage() {
     reader.readAsText(file);
   }, [parseGpxPreview]);
 
+  // Auto-compute average_speed from distance and moving_time
+  const computedAvgSpeed = (() => {
+    const dist = parseFloat(form.distance);
+    const time = parseInt(form.moving_time);
+    if (!isNaN(dist) && !isNaN(time) && time > 0) {
+      return ((dist * 1000) / (time * 60)).toFixed(1);
+    }
+    return '';
+  })();
+
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+    if (!form.name.trim()) errors.name = 'Le nom est requis';
+    if (!gpxMode) {
+      if (!form.start_date) errors.start_date = 'La date est requise';
+    }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   // ── Submit ──────────────────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim()) { setError('Le nom est requis'); return; }
+    if (!validateForm()) return;
     setIsLoading(true);
     setError('');
+
+    const speedValue = form.average_speed || computedAvgSpeed;
 
     try {
       if (gpxMode && gpxPreview) {
@@ -139,7 +162,7 @@ export default function NewActivityPage() {
           start_date: form.start_date,
           distance: form.distance ? parseFloat(form.distance) * 1000 : undefined, // km → m
           moving_time: form.moving_time ? parseInt(form.moving_time) * 60 : undefined,
-          average_speed: form.average_speed ? parseFloat(form.average_speed) / 3.6 : undefined, // km/h → m/s
+          average_speed: speedValue ? parseFloat(speedValue) / 3.6 : undefined, // km/h → m/s
           average_heartrate: form.average_heartrate ? parseInt(form.average_heartrate) : undefined,
           max_heartrate: form.max_heartrate ? parseInt(form.max_heartrate) : undefined,
           calories: form.calories ? parseInt(form.calories) : undefined,
@@ -213,9 +236,9 @@ export default function NewActivityPage() {
                 </button>
               </div>
               <div className="grid grid-cols-3 gap-2 text-xs text-center">
-                <div className="bg-white rounded-lg p-2"><p className="font-bold text-lg">{gpxPreview.distanceKm}</p><p className="text-muted">km</p></div>
-                <div className="bg-white rounded-lg p-2"><p className="font-bold text-lg">{gpxPreview.durationMin}</p><p className="text-muted">min</p></div>
-                <div className="bg-white rounded-lg p-2"><p className="font-bold text-lg text-green-600">+{gpxPreview.elevGain}m</p><p className="text-muted">D+</p></div>
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-2"><p className="font-bold text-lg">{gpxPreview.distanceKm}</p><p className="text-muted">km</p></div>
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-2"><p className="font-bold text-lg">{gpxPreview.durationMin}</p><p className="text-muted">min</p></div>
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-2"><p className="font-bold text-lg text-green-600 dark:text-green-400">+{gpxPreview.elevGain}m</p><p className="text-muted">D+</p></div>
               </div>
               {/* Map preview */}
               {gpxPreview.latlng.length > 0 && (
@@ -233,10 +256,12 @@ export default function NewActivityPage() {
           <label className="block text-sm font-medium mb-1">Nom de l&apos;activité *</label>
           <Input
             value={form.name}
-            onChange={e => setForm({ ...form, name: e.target.value })}
+            onChange={e => { setForm({ ...form, name: e.target.value }); setFieldErrors(f => ({ ...f, name: '' })); }}
             placeholder="Morning Run"
             required
+            className={fieldErrors.name ? 'border-red-500' : ''}
           />
+          {fieldErrors.name && <p className="text-xs text-red-500 mt-1">{fieldErrors.name}</p>}
         </div>
 
         <div>
@@ -247,7 +272,8 @@ export default function NewActivityPage() {
         {!gpxMode && (
           <div>
             <label className="block text-sm font-medium mb-1">Date et heure</label>
-            <Input type="datetime-local" value={form.start_date} onChange={e => setForm({ ...form, start_date: e.target.value })} required />
+            <Input type="datetime-local" value={form.start_date} onChange={e => { setForm({ ...form, start_date: e.target.value }); setFieldErrors(f => ({ ...f, start_date: '' })); }} required className={fieldErrors.start_date ? 'border-red-500' : ''} />
+            {fieldErrors.start_date && <p className="text-xs text-red-500 mt-1">{fieldErrors.start_date}</p>}
           </div>
         )}
 
@@ -268,6 +294,9 @@ export default function NewActivityPage() {
               <div>
                 <label className="block text-sm font-medium mb-1">Vitesse moyenne (km/h)</label>
                 <Input type="number" step="0.1" value={form.average_speed} onChange={e => setForm({ ...form, average_speed: e.target.value })} placeholder="10.0" />
+                {computedAvgSpeed && !form.average_speed && (
+                  <p className="text-xs text-blue-500 mt-1">Auto-calculée: {computedAvgSpeed} km/h</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Dénivelé (m)</label>

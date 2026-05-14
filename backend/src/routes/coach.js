@@ -187,7 +187,11 @@ router.post('/generate-plan', verifyToken, async (req, res) => {
 router.get('/plan', verifyToken, async (req, res) => {
     try {
         const plan = await coachPlan.getActivePlan(req.user.id);
-        res.json(plan);
+        let fullPlan = null;
+        if (plan && plan.planId) {
+            fullPlan = await coachPlan.getPlanById(req.user.id, plan.planId);
+        }
+        res.json({ ...plan, fullPlan });
     } catch (error) {
         res.status(500).json({ error: 'Failed to get plan' });
     }
@@ -357,6 +361,58 @@ router.get('/pending-sessions', verifyToken, async (req, res) => {
     } catch (error) {
         logger.error('Get pending sessions error', { error: error.message, stack: error.stack });
         res.status(500).json({ error: 'Failed to get pending sessions' });
+    }
+});
+
+// ============================================================================
+// UPCOMING SESSIONS
+// ============================================================================
+
+router.get('/sessions/upcoming', verifyToken, async (req, res) => {
+    try {
+        const daysAhead = parseInt(req.query.days) || 7;
+        const result = await coachPlan.getUpcomingSessions(req.user.id, daysAhead);
+        res.json(result);
+    } catch (error) {
+        logger.error('Get upcoming sessions error', { error: error.message, stack: error.stack });
+        res.status(500).json({ error: 'Failed to get upcoming sessions' });
+    }
+});
+
+// ============================================================================
+// WEEKLY PLAN SUMMARY
+// ============================================================================
+
+router.get('/plan/weekly-summary', verifyToken, async (req, res) => {
+    try {
+        const weekNumber = parseInt(req.query.week);
+        if (!weekNumber || isNaN(weekNumber)) {
+            return res.status(400).json({ error: 'Invalid or missing week query parameter' });
+        }
+        const result = await coachPlan.getWeeklyPlanSummary(req.user.id, weekNumber);
+        if (!result) return res.status(404).json({ error: 'No data for this week' });
+        res.json(result);
+    } catch (error) {
+        logger.error('Get weekly plan summary error', { error: error.message, stack: error.stack });
+        res.status(500).json({ error: 'Failed to get weekly plan summary' });
+    }
+});
+
+// ============================================================================
+// ADAPT PLAN BASED ON FEEDBACK
+// ============================================================================
+
+router.post('/adapt-plan', verifyToken, async (req, res) => {
+    try {
+        const { sessionId, planId, feedback } = req.body;
+        if (!sessionId || !planId || !feedback) {
+            return res.status(400).json({ error: 'sessionId, planId, and feedback are required' });
+        }
+        const result = await coachPlan.adaptPlanBasedOnFeedback(req.user.id, planId, sessionId, feedback);
+        res.json(result);
+    } catch (error) {
+        logger.error('Adapt plan error', { error: error.message, stack: error.stack });
+        res.status(500).json({ error: 'Failed to adapt plan' });
     }
 });
 

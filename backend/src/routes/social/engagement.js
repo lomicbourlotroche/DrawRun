@@ -40,6 +40,30 @@ router.delete('/activities/:activityId/like', verifyToken, async (req, res) => {
     }
 });
 
+router.get('/activities/:activityId/likes', verifyToken, async (req, res) => {
+    try {
+        const activityId = parseInt(req.params.activityId);
+        if (!activityId || activityId <= 0) {
+            return res.status(400).json({ error: 'Invalid activity ID' });
+        }
+        try {
+            const likes = await dbAll(`
+                SELECT u.id, u.email, json_extract(u.profile_data, '$.name') as name
+                FROM activity_likes al
+                LEFT JOIN users u ON al.from_user_id = u.id
+                WHERE al.activity_id = ?
+                ORDER BY al.created_at DESC
+            `, [activityId]);
+            res.json(likes);
+        } catch (_) {
+            res.json([]);
+        }
+    } catch (error) {
+        logger.error('Get activity likes error:', { error: error.message });
+        res.status(500).json({ error: 'Failed to get likes' });
+    }
+});
+
 router.get('/liked-activities', verifyToken, async (req, res) => {
     try {
         const activities = await social.getUserLikedActivities(req.user.id);

@@ -24,7 +24,7 @@ export default function MapLayerSwitcher({ activeLayer, onLayerChange }: MapLaye
             key={layer.id}
             onClick={() => onLayerChange(layer.id)}
             title={layer.label}
-            className={`flex items-center justify-center w-9 h-9 rounded-md transition-all ${
+            className={`flex items-center justify-center min-w-[44px] min-h-[44px] rounded-md transition-all ${
               isActive
                 ? 'bg-primary text-white shadow-sm'
                 : 'text-muted-foreground hover:bg-primary/10 hover:text-primary'

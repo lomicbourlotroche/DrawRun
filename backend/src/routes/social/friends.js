@@ -89,4 +89,36 @@ router.delete('/friends/:id', verifyToken, async (req, res) => {
     }
 });
 
+// ============================================================
+// Partner Suggestions (Phase 2)
+// ============================================================
+
+router.post('/partners/suggest', verifyToken, async (req, res) => {
+    try {
+        try {
+            const result = await social.generatePartnerSuggestions(req.user.id);
+            res.json(result);
+        } catch (_) {
+            res.json({ success: true, suggestions: [] });
+        }
+    } catch (error) {
+        logger.error('Generate partner suggestions error:', { error: error.message });
+        res.status(500).json({ error: 'Failed to generate suggestions' });
+    }
+});
+
+router.get('/partners', verifyToken, async (req, res) => {
+    try {
+        try {
+            const suggestions = await social.getPartnerSuggestions(req.user.id);
+            res.json(suggestions);
+        } catch (_) {
+            res.json([]);
+        }
+    } catch (error) {
+        logger.error('Get partner suggestions error:', { error: error.message });
+        res.status(500).json({ error: 'Failed to get suggestions' });
+    }
+});
+
 module.exports = router;

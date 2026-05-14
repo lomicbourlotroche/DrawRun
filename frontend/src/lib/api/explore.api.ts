@@ -124,6 +124,13 @@ export const exploreApi = {
     return client.request(`/api/explore/segments/${segmentId}/efforts/me`);
   },
 
+  deleteSegment(segmentId: number): Promise<{ 
+    success: boolean; 
+    error?: string 
+  }> {
+    return client.request(`/api/explore/segments/${segmentId}`, { method: 'DELETE' });
+  },
+
   // ============================================================================
   // Routes
   // ============================================================================
@@ -197,6 +204,25 @@ export const exploreApi = {
     routes: Array<unknown>;
   }> {
     return client.request('/api/explore/routes/favorites');
+  },
+
+  deleteRoute(routeId: number): Promise<{ 
+    success: boolean; 
+    error?: string 
+  }> {
+    return client.request(`/api/explore/routes/${routeId}`, { method: 'DELETE' });
+  },
+
+  rateRoute(routeId: number, rating: number): Promise<{ 
+    success: boolean; 
+    avg_rating?: number;
+    rating_count?: number;
+    error?: string 
+  }> {
+    return client.request(`/api/explore/routes/${routeId}/rate`, {
+      method: 'POST',
+      body: JSON.stringify({ rating }),
+    });
   },
 
   // ============================================================================

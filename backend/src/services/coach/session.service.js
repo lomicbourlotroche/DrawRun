@@ -1,32 +1,8 @@
 'use strict';
 
 const { getUserDb, dbGetUser, dbRunUser, dbAllUser } = require('../../database');
-const { estimateVDOTFromVMA, calculatePaces } = require('./plan.service');
+const { estimateVDOTFromVMA, calculatePaces, getActivePlan } = require('./plan.service');
 const { PMC } = require('../../algorithms');
-
-async function getActivePlan(userId) {
-    const userDb = await getUserDb(userId);
-
-    const plan = await dbGetUser(userDb, `
-        SELECT * FROM training_plans 
-        WHERE user_id = ? AND is_active = 1 
-        ORDER BY created_at DESC LIMIT 1
-    `, [userId]);
-    
-    if (!plan) return null;
-    
-    const sessions = await dbAllUser(userDb, `
-        SELECT * FROM training_sessions 
-        WHERE plan_id = ? AND completed = 0
-        ORDER BY week_number, session_number
-    `, [plan.id]);
-    
-    return {
-        plan,
-        sessions,
-        planId: plan.id
-    };
-}
 
 async function getPlanSessions(userId, planId, includeCompleted = false) {
     const userDb = await getUserDb(userId);
@@ -342,7 +318,6 @@ async function adaptPlanBasedOnFeedback(userId, planId, sessionId, feedback) {
 }
 
 module.exports = {
-    getActivePlan,
     getPlanSessions,
     markSessionCompleted,
     getTodaySessions,

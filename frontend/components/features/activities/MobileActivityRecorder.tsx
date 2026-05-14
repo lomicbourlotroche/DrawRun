@@ -1,4 +1,4 @@
-/* eslint-disable no-undef, react-hooks/exhaustive-deps, unused-imports/no-unused-vars */
+/* eslint-disable no-undef, react-hooks/exhaustive-deps */
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -64,7 +64,6 @@ function TimerFlip({ seconds }: { seconds: number }) {
           key={`${i}-${char}`}
           initial={{ rotateX: -90, opacity: 0 }}
           animate={{ rotateX: 0, opacity: 1 }}
-          exit={{ rotateX: 90, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 20, delay: i * 0.03 }}
           className="inline-block w-[0.6em] text-center font-mono"
         >
@@ -75,15 +74,15 @@ function TimerFlip({ seconds }: { seconds: number }) {
   );
 }
 
-function RollingNumber({ value, suffix = '' }: { value: number; suffix?: string }) {
+function RollingNumber({ value, suffix = '', decimals = 2 }: { value: number; suffix?: string; decimals?: number }) {
   return (
     <motion.span
-      key={Math.round(value * 100)}
-      initial={{ y: 10, opacity: 0 }}
+      key={Math.round(value * (decimals === 0 ? 1 : 10 ** decimals))}
+      initial={{ y: 8, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+      transition={{ type: 'spring', stiffness: 150, damping: 15 }}
     >
-      {value.toFixed(2)}{suffix}
+      {value.toFixed(decimals)}{suffix}
     </motion.span>
   );
 }
@@ -335,7 +334,16 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     getBatteryLevel();
     checkForCheckpoint();
     processPendingSaves();
-    return () => { cleanup(); };
+    const handleVisibility = () => {
+      if (document.hidden && stateRef.current === 'recording') {
+        saveCurrentCheckpoint();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      cleanup();
+    };
   }, []);
 
   useEffect(() => {
@@ -590,7 +598,12 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     saveCheckpoint(cp);
   };
 
+  const vibrate = (pattern: number | number[]) => {
+    try { navigator.vibrate(pattern); } catch { /* silent */ }
+  };
+
   const startRecording = async () => {
+    vibrate(50);
     try {
       const permission = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
       setPermissionStatus(permission.state);
@@ -770,6 +783,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
 
   const pauseRecording = () => {
     if (stateRef.current === 'recording') {
+      vibrate(30);
       setStateAndRef('paused');
       startTimeRef.current = Date.now() - (stats.duration * 1000);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
@@ -778,6 +792,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
 
   const resumeRecording = () => {
     if (stateRef.current === 'paused') {
+      vibrate(30);
       if (isAutoPausedRef.current) {
         isAutoPausedRef.current = false;
         setIsAutoPaused(false);
@@ -789,6 +804,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   };
 
   const stopRecording = () => {
+    vibrate([50, 80, 50]);
     elapsedTimeRef.current = (Date.now() - originalStartTimeRef.current) / 1000;
     setStateAndRef('finished');
     if (watchIdRef.current !== null) {
@@ -803,6 +819,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
 
   const markLap = () => {
     if (stateRef.current !== 'recording') return;
+    vibrate(100);
     const lapNum = laps.length + 1;
     const lapDistance = stats.distance - lastLapEnd;
     setLaps(prev => [...prev, {
@@ -817,6 +834,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   };
 
   const takePhoto = async () => {
+    vibrate(40);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
       const video = document.createElement('video');
@@ -842,9 +860,21 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     toast.info(`Intervalles: ${config.work}s effort / ${config.rest}s récupération, ${config.repeats} séries`);
   };
 
+  const uploadPhotos = async (activityId: number) => {
+    for (const photo of photos) {
+      try {
+        await api.addActivityPhoto(activityId, { url: photo });
+      } catch {
+        toast.error('Erreur lors de l\'upload d\'une photo');
+      }
+    }
+  };
+
   const saveActivity = async () => {
     try {
       const name = activityName || `${sport.nameFr} - ${new Date().toLocaleDateString('fr-FR')}`;
+
+      let activityId: number | null = null;
 
       if (points.length > 2) {
         const startTime = new Date(points[0].timestamp).toISOString();
@@ -859,14 +889,26 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
               (p.gps.altitude !== null ? `<ele>${p.gps.altitude.toFixed(1)}</ele>` : '') +
               `<time>${new Date(p.timestamp).toISOString()}</time>${hrTag}</trkpt>`;
           }),
-          ...laps.map(lap =>
-            `<wpt lat="${points[Math.min(points.length - 1, Math.floor(lap.distance / (stats.distance / points.length)))].gps.latitude.toFixed(6)}" lon="${points[Math.min(points.length - 1, Math.floor(lap.distance / (stats.distance / points.length)))].gps.longitude.toFixed(6)}"><name>Tour ${lap.number}</name></wpt>`
-          ),
+          ...(() => {
+            let cumulativeDist = 0;
+            return laps.map(lap => {
+              cumulativeDist += lap.distance;
+              const targetDist = cumulativeDist;
+              let ptIdx = 0;
+              for (let i = 1; i < points.length; i++) {
+                const d = haversine(points[0].gps, points[i].gps);
+                if (d >= targetDist) { ptIdx = i; break; }
+              }
+              const pt = points[Math.min(ptIdx, points.length - 1)].gps;
+              return `<wpt lat="${pt.latitude.toFixed(6)}" lon="${pt.longitude.toFixed(6)}"><name>Tour ${lap.number}</name></wpt>`;
+            });
+          })(),
           '</trkseg></trk></gpx>',
         ].join('\n');
 
         try {
-          await api.importGpx(name, gpxLines, activityType);
+          const result = await api.importGpx(name, gpxLines, activityType);
+          activityId = result.id;
         } catch {
           enqueueSave({ gpxData: gpxLines, name, type: activityType, timestamp: Date.now(), retries: 0 });
           toast.success('Activité mise en file d\'attente (hors-ligne)');
@@ -875,7 +917,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           return;
         }
       } else {
-        await (api as any).createActivity({
+        const result = await api.createActivity({
           name,
           type: activityType,
           start_date: new Date().toISOString(),
@@ -886,9 +928,15 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           average_heartrate: stats.avgHR ?? undefined,
           max_heartrate: stats.maxHR ?? undefined,
           average_speed: stats.duration > 0 ? Math.round((stats.distance / stats.duration) * 100) / 100 : 0,
-        });
+        } as any);
+        activityId = (result as any)?.id ?? null;
       }
 
+      if (activityId && photos.length > 0) {
+        await uploadPhotos(activityId);
+      }
+
+      vibrate([80, 50, 80]);
       toast.success('Activité sauvegardée !');
       resetState();
       onSave?.();
@@ -1239,7 +1287,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             {stats.gap && (
               <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 text-center">
                 <Gauge className="w-4 h-4 mx-auto mb-1 text-indigo-500" />
-                <div className="font-semibold text-slate-900 dark:text-white">{formatPace(60 / (stats.gap / 60))}</div>
+                <div className="font-semibold text-slate-900 dark:text-white">{formatDuration(stats.gap)}</div>
                 <div className="text-xs text-slate-500">GAP</div>
               </div>
             )}
@@ -1296,7 +1344,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
 
         <div className="px-4 pb-8 pt-4 border-t border-slate-100 dark:border-slate-800 flex gap-3">
           <Button onClick={() => setStateAndRef('finished')} variant="secondary" className="flex-1 h-14">
-            <X className="w-5 h-5 mr-2" />Modifier
+            <X className="w-5 h-5 mr-2" />Retour
           </Button>
           <Button onClick={saveActivity} className="flex-1 h-14 bg-gradient-to-r from-blue-600 to-blue-500">
             <Save className="w-5 h-5 mr-2" />Sauvegarder
@@ -1354,6 +1402,22 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           </div>
         </div>
 
+        {/* GPS Status */}  
+        {state === 'idle' && permissionStatus === 'checking' && (
+          <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-xl px-3 py-2 mb-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-500" />
+            </span>
+            <span className="text-xs text-white/80">Recherche du GPS...</span>
+          </div>
+        )}
+        {state === 'idle' && (permissionStatus === 'denied' || permissionStatus === 'unsupported') && (
+          <div className="flex items-center gap-2 bg-red-500/20 backdrop-blur-sm rounded-xl px-3 py-2 mb-2">
+            <AlertTriangle className="w-3.5 h-3.5 text-red-300" />
+            <span className="text-xs text-red-200">GPS non disponible — activez la localisation</span>
+          </div>
+        )}
         {/* Sport + Route picker */}
         <button
           onClick={() => state === 'idle' && setShowSportPicker(true)}
@@ -1409,7 +1473,11 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
         {/* Timer */}
         <div className="text-center mb-4">
           <motion.div
-            className="text-6xl font-mono font-bold text-slate-900 dark:text-white tracking-tight"
+            className={`font-mono font-bold tracking-tight ${
+              state === 'recording' ? 'text-7xl text-blue-600 dark:text-blue-400 drop-shadow-glow' :
+              state === 'paused' ? 'text-6xl text-amber-600 dark:text-amber-400' :
+              'text-5xl text-slate-900 dark:text-white'
+            }`}
             key={state === 'paused' ? 'paused' : state === 'recording' ? 'recording' : 'idle'}
             animate={{ scale: state === 'recording' ? [1, 1.02, 1] : 1 }}
             transition={{ duration: 2, repeat: state === 'recording' ? Infinity : 0 }}
@@ -1558,6 +1626,12 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
               </span>
             </div>
           )}
+          {currentGPS && currentGPS.speed && currentGPS.speed > 0 && (
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl px-3 py-1.5 flex items-center gap-1.5 text-xs">
+              <Clock className="w-3.5 h-3.5 text-orange-500" />
+              <span className="font-medium text-slate-700 dark:text-slate-300">{formatPace((currentGPS.speed * 3.6))}/km</span>
+            </div>
+          )}
           {hrConnected && hrData && (
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
@@ -1571,7 +1645,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           {stats.gap && (
             <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl px-3 py-1.5 flex items-center gap-1.5 text-xs">
               <Gauge className="w-3.5 h-3.5 text-indigo-500" />
-              <span className="font-medium text-indigo-700 dark:text-indigo-300">{formatPace(60 / (stats.gap / 60))}</span>
+              <span className="font-medium text-indigo-700 dark:text-indigo-300">{formatDuration(stats.gap)}/km</span>
             </div>
           )}
           {laps.length > 0 && (
@@ -1620,10 +1694,8 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
 
       {/* Controls */}
       <div className="px-4 pb-6 pt-3 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800">
-        <motion.div
-          className="flex items-center justify-center gap-3 max-w-sm mx-auto"
-          layout
-        >
+        <div className="flex items-center justify-center gap-3 max-w-sm mx-auto">
+          <AnimatePresence mode="wait">
           {state === 'idle' && (
             <motion.div
               key="idle-controls"
@@ -1837,7 +1909,8 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
               </motion.button>
             </motion.div>
           )}
-        </motion.div>
+          </AnimatePresence>
+        </div>
 
         {/* Extra controls row - only during recording */}
         {state === 'recording' && (

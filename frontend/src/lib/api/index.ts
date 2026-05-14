@@ -151,13 +151,8 @@ export const api = {
   enable2FA: authApi.enable2FA,
   disable2FA: authApi.disable2FA,
   deleteAccount: authApi.deleteAccount,
-  disconnectService: authApi.disconnectService,
-  connectStrava: authApi.connectStrava,
   connectGarmin: authApi.connectGarmin,
-  connectSuunto: authApi.connectSuunto,
-  disconnectStrava: () => authApi.disconnectService('strava'),
   disconnectGarmin: () => authApi.disconnectService('garmin'),
-  disconnectSuunto: () => authApi.disconnectService('suunto'),
 
   // Profile endpoints
   getProfile: profileApi.getProfile,
@@ -185,10 +180,7 @@ export const api = {
   // Sync endpoints
   sync: syncApi.sync,
   getSyncStatus: syncApi.getSyncStatus,
-  getStravaUrl: syncApi.getStravaUrl,
-  getDecathlonUrl: syncApi.getDecathlonUrl,
-  disconnectDecathlon: syncApi.disconnectDecathlon,
-  uploadHealthConnectActivities: syncApi.uploadHealthConnectActivities,
+
 
   // Algorithm endpoints
   getZones: algoApi.getZones,
@@ -230,7 +222,9 @@ export const api = {
   matchActivityToSession: coachApi.matchActivityToSession,
   getPendingSessions: coachApi.getPendingSessions,
   getWizardDefaults: coachApi.getWizardDefaults,
-  calculateRaceStrategy: coachApi.calculateRaceStrategy,
+  getUpcomingSessions: coachApi.getUpcomingSessions,
+  getWeeklyPlanSummary: coachApi.getWeeklyPlanSummary,
+  adaptPlanBasedOnFeedback: coachApi.adaptPlanBasedOnFeedback,
 
   // Social endpoints
   getFriends: socialApi.getFriends,
@@ -318,6 +312,7 @@ export const api = {
   getSegmentLeaderboard: exploreApi.getSegmentLeaderboard,
   createSegmentEffort: exploreApi.createSegmentEffort,
   getMySegmentEfforts: exploreApi.getMySegmentEfforts,
+  deleteSegment: exploreApi.deleteSegment,
   createRoute: exploreApi.createRoute,
   getPublicRoutes: exploreApi.getPublicRoutes,
   getRoute: exploreApi.getRoute,
@@ -326,6 +321,8 @@ export const api = {
   useRoute: exploreApi.useRoute,
   getMyRoutes: exploreApi.getMyRoutes,
   getFavoriteRoutes: exploreApi.getFavoriteRoutes,
+  deleteRoute: exploreApi.deleteRoute,
+  rateRoute: exploreApi.rateRoute,
   getHeatmap: exploreApi.getHeatmap,
   getPopularLocations: exploreApi.getPopularLocations,
   getCommunityTraces: exploreApi.getCommunityTraces,
@@ -356,6 +353,10 @@ export const api = {
 
   // Race Planning endpoints
   calculateRacePlan: racePlanningApi.calculateRacePlan,
+  saveRacePlan: racePlanningApi.saveRacePlan,
+  listRacePlans: racePlanningApi.listRacePlans,
+  deleteRacePlan: racePlanningApi.deleteRacePlan,
+  calculateRaceStrategy: racePlanningApi.calculateRaceStrategy,
 
   // Weather endpoints
   getActivityWeather: weatherApi.getActivityWeather,

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
+import { Search, X } from 'lucide-react';
 import ExplorePanel from '@/components/features/explore/ExplorePanel';
 import MapLayerSwitcher from '@/components/features/explore/MapLayerSwitcher';
 import LocationSearch from '@/components/features/explore/LocationSearch';
@@ -117,9 +118,12 @@ export default function ExplorePage() {
   const [isLoop, setIsLoop] = useState(false);
   const [selectedRoute, setSelectedRoute] = useState<RouteItem | null>(null);
 
-  // Community traces
+  // Community traces & heatmap
   const [showCommunityTraces, setShowCommunityTraces] = useState(false);
+  const [showHeatmap, setShowHeatmap] = useState(false);
+  const [heatmapData, setHeatmapData] = useState<Array<{ lat: number; lng: number; intensity: number }>>([]);
   const [mapInstance, setMapInstance] = useState<any>(null);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   // Has user been located
   const locatedRef = useRef(false);
@@ -182,7 +186,7 @@ export default function ExplorePage() {
     } finally {
       setRoutesLoading(false);
     }
-  }, [router]);
+  }, []);
 
   const loadFavorites = useCallback(async () => {
     setFavoritesLoading(true);
@@ -234,6 +238,23 @@ export default function ExplorePage() {
     loadFavorites();
   }, [loadFavorites]);
 
+  // Load heatmap data when activated
+  useEffect(() => {
+    if (!showHeatmap) {
+      setHeatmapData([]);
+      return;
+    }
+
+    const radius = 10000;
+    api.getHeatmap(mapCenter.lat, mapCenter.lng, radius, activeFilter.type || undefined).then((res) => {
+      if (res.success) {
+        setHeatmapData(res.heatmap || []);
+      }
+    }).catch(() => {
+      /* ignore */
+    });
+  }, [showHeatmap, mapCenter, activeFilter.type]);
+
   const handleLocateMe = useCallback(() => {
     if (!navigator.geolocation) {
       toast.error('Géolocalisation non supportée');
@@ -251,10 +272,9 @@ export default function ExplorePage() {
     );
   }, [loadSegments]);
 
-  const handleMapClick = useCallback((latlng: { lat: number; lng: number }) => {
-    if (!routePlannerOpen) return;
+  const handleWaypointAdd = useCallback((latlng: { lat: number; lng: number }) => {
     setWaypoints((prev) => [...prev, latlng]);
-  }, [routePlannerOpen]);
+  }, []);
 
   const handleWaypointDrag = useCallback((index: number, latlng: { lat: number; lng: number }) => {
     setWaypoints((prev) => {
@@ -262,10 +282,6 @@ export default function ExplorePage() {
       next[index] = latlng;
       return next;
     });
-  }, []);
-
-  const handleWaypointAdd = useCallback((latlng: { lat: number; lng: number }) => {
-    setWaypoints((prev) => [...prev, latlng]);
   }, []);
 
   const openRoutePlanner = useCallback(() => {
@@ -295,11 +311,12 @@ export default function ExplorePage() {
           userLocation={userLocation}
           routeCreationActive={routePlannerOpen}
           routeCreationPoints={waypoints}
-          onMapClick={handleMapClick}
           onWaypointAdd={handleWaypointAdd}
           onWaypointDrag={handleWaypointDrag}
           isLoop={isLoop}
           onMapReady={setMapInstance}
+          heatmapData={heatmapData}
+          showHeatmap={showHeatmap}
         />
       </div>
 
@@ -311,11 +328,72 @@ export default function ExplorePage() {
         />
       )}
 
+      {/* Desktop search */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[500] max-sm:hidden">
+        <LocationSearch
+          onSelectLocation={(lat, lng, label) => {
+            setMapCenter({ lat, lng });
+            setMapZoom(15);
+            userLocation && loadSegments(lat, lng);
+            toast.success(label.split(',')[0]);
+          }}
+        />
+      </div>
+
+      {/* Mobile search overlay */}
+      {showMobileSearch && (
+        <div className="absolute inset-x-0 top-0 z-[600] sm:hidden">
+          <div className="flex items-center gap-2 p-3 bg-white/95 backdrop-blur-md border-b border-border shadow-md">
+            <div className="flex-1">
+              <LocationSearch
+                onSelectLocation={(lat, lng, label) => {
+                  setMapCenter({ lat, lng });
+                  setMapZoom(15);
+                  userLocation && loadSegments(lat, lng);
+                  setShowMobileSearch(false);
+                  toast.success(label.split(',')[0]);
+                }}
+              />
+            </div>
+            <button
+              onClick={() => setShowMobileSearch(false)}
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-surface transition-colors"
+            >
+              <X className="w-5 h-5 text-muted-foreground" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Control overlays */}
       <div className="absolute top-4 right-4 z-[500] flex flex-col gap-2">
+        {/* Mobile search toggle */}
+        <button
+          onClick={() => setShowMobileSearch(true)}
+          className="sm:hidden flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg shadow-md border
+                     bg-white/90 backdrop-blur-sm border-border hover:bg-white transition-colors text-muted-foreground"
+          title="Rechercher"
+        >
+          <Search className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => setShowHeatmap((p) => !p)}
+          className={`flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg shadow-md border transition-all ${
+            showHeatmap
+              ? 'bg-orange-500 text-white border-orange-500'
+              : 'bg-white/90 backdrop-blur-sm border-border hover:bg-white text-muted-foreground'
+          }`}
+          title="Heatmap"
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <circle cx="12" cy="12" r="3" />
+            <circle cx="12" cy="12" r="6" strokeDasharray="2 2" />
+            <circle cx="12" cy="12" r="10" strokeDasharray="2 4" />
+          </svg>
+        </button>
         <button
           onClick={() => setShowCommunityTraces((p) => !p)}
-          className={`flex items-center justify-center w-9 h-9 rounded-lg shadow-md border transition-all ${
+          className={`flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg shadow-md border transition-all ${
             showCommunityTraces
               ? 'bg-purple-600 text-white border-purple-600'
               : 'bg-white/90 backdrop-blur-sm border-border hover:bg-white text-muted-foreground'
@@ -329,22 +407,11 @@ export default function ExplorePage() {
         <MapLayerSwitcher activeLayer={mapLayer} onLayerChange={setMapLayer} />
       </div>
 
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[500] hidden sm:block">
-        <LocationSearch
-          onSelectLocation={(lat, lng, label) => {
-            setMapCenter({ lat, lng });
-            setMapZoom(15);
-            userLocation && loadSegments(lat, lng);
-            toast.success(label.split(',')[0]);
-          }}
-        />
-      </div>
-
       {/* Geolocate button */}
       <button
         onClick={handleLocateMe}
-        className="absolute top-4 right-16 z-[500] flex items-center justify-center w-9 h-9
-                   bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-border
+        className="absolute max-sm:bottom-4 max-sm:right-4 sm:top-4 sm:right-16 z-[500] flex items-center justify-center
+                   min-w-[44px] min-h-[44px] bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-border
                    hover:bg-white transition-colors"
         title="Me localiser"
       >

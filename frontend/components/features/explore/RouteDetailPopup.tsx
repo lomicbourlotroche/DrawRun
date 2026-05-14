@@ -68,7 +68,7 @@ export default function RouteDetailPopup({
         </div>
         <button
           onClick={onClose}
-          className="p-1 rounded-md hover:bg-surface transition-colors shrink-0"
+          className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-surface transition-colors shrink-0"
         >
           <X className="w-4 h-4 text-muted-foreground" />
         </button>

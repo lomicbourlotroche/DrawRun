@@ -5,6 +5,7 @@ import { api, exploreApi } from '@/lib/api';
 import { Button, Input, Badge } from '@/components/ui';
 import { X, Undo2, Save, Trash2, Map, Navigation, Repeat, Redo2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { encodePolyline } from '@/lib/utils';
 import ElevationProfile from './ElevationProfile';
 
 interface Waypoint {
@@ -30,36 +31,6 @@ function haversineDistance(a: Waypoint, b: Waypoint): number {
   const sinDLng = Math.sin(dLng / 2);
   const h = sinDLat * sinDLat + Math.cos(lat1) * Math.cos(lat2) * sinDLng * sinDLng;
   return R * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
-}
-
-function encodePolyline(points: [number, number][]): string {
-  if (points.length === 0) return '';
-  let result = '';
-  let lat = 0;
-  let lng = 0;
-
-  for (const point of points) {
-    const dLat = Math.round((point[0] - lat) * 1e5);
-    const dLng = Math.round((point[1] - lng) * 1e5);
-    lat += dLat / 1e5;
-    lng += dLng / 1e5;
-
-    const encode = (v: number) => {
-      v = v < 0 ? ~(v << 1) : v << 1;
-      let str = '';
-      while (v >= 0x20) {
-        str += String.fromCharCode((0x20 | (v & 0x1f)) + 63);
-        v >>= 5;
-      }
-      str += String.fromCharCode(v + 63);
-      return str;
-    };
-
-    result += encode(dLat);
-    result += encode(dLng);
-  }
-
-  return result;
 }
 
 export default function RoutePlanner({
@@ -229,7 +200,7 @@ export default function RoutePlanner({
 
   return (
     <div className="absolute bottom-0 left-0 right-0 z-[600] bg-white/95 backdrop-blur-md border-t border-border
-                    rounded-t-xl shadow-xl overflow-y-auto"
+                    rounded-t-xl shadow-xl overflow-y-auto pb-[env(safe-area-inset-bottom,0px)]"
          style={{ maxHeight: 'min(60dvh, 50vh)' }}>
       <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-white/95 z-10">
         <h3 className="font-bold flex items-center gap-2">
@@ -240,7 +211,7 @@ export default function RoutePlanner({
           <button
             onClick={handleUndo}
             disabled={historyIdx <= 0}
-            className="p-2 rounded-md hover:bg-surface transition-colors disabled:opacity-30"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-surface transition-colors disabled:opacity-30"
             title="Annuler"
           >
             <Undo2 className="w-4 h-4" />
@@ -248,7 +219,7 @@ export default function RoutePlanner({
           <button
             onClick={handleRedo}
             disabled={historyIdx >= history.length - 1}
-            className="p-2 rounded-md hover:bg-surface transition-colors disabled:opacity-30"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-surface transition-colors disabled:opacity-30"
             title="Refaire"
           >
             <Redo2 className="w-4 h-4" />
@@ -256,7 +227,7 @@ export default function RoutePlanner({
           <button
             onClick={handleRemoveLast}
             disabled={waypoints.length === 0}
-            className="p-2 rounded-md hover:bg-surface transition-colors disabled:opacity-30"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-surface transition-colors disabled:opacity-30"
             title="Supprimer dernier point"
           >
             <Trash2 className="w-4 h-4" />
@@ -264,14 +235,14 @@ export default function RoutePlanner({
           <button
             onClick={handleClear}
             disabled={waypoints.length === 0}
-            className="p-2 rounded-md hover:bg-surface transition-colors disabled:opacity-30"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-surface transition-colors disabled:opacity-30"
             title="Tout effacer"
           >
             <X className="w-4 h-4" />
           </button>
           <button
             onClick={onClose}
-            className="p-2 rounded-md hover:bg-surface transition-colors ml-2"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-surface transition-colors ml-2"
           >
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
@@ -311,7 +282,7 @@ export default function RoutePlanner({
           <button
             onClick={handleToggleLoop}
             disabled={waypoints.length < 2}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
+            className={`flex items-center gap-2 px-3 min-h-[44px] rounded-lg text-sm font-medium transition-all border ${
               isLoop
                 ? 'bg-blue-50 text-blue-700 border-blue-300 shadow-sm'
                 : 'bg-background text-muted-foreground border-border hover:border-blue-300 hover:text-blue-600'

@@ -13,7 +13,7 @@
  */
 
 import { client } from './client';
-import type { Activity, ActivityDetail, ActivityStreams, SplitData, SplitSummary } from '@/types';
+import type { Activity, ActivityDetail, ActivityStreams, SplitData, SplitSummary, ActivityAnalysisResponse } from '@/types';
 import type { AddManualActivityParams } from './types';
 
 export const activitiesApi = {
@@ -48,7 +48,7 @@ export const activitiesApi = {
   /**
    * Récupère l'analyse d'une activité
    */
-  getActivityAnalysis(id: number): Promise<Record<string, number | null>> {
+  getActivityAnalysis(id: number): Promise<ActivityAnalysisResponse> {
     return client.request(`/api/activities/${id}/analysis`);
   },
 

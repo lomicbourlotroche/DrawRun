@@ -160,4 +160,66 @@ router.put('/challenges/:id/progress', verifyToken, async (req, res) => {
     }
 });
 
+// ============================================================
+// Challenge Teams (Phase 2)
+// ============================================================
+
+router.post('/challenges/:id/teams', verifyToken, async (req, res) => {
+    try {
+        const challengeId = parseInt(req.params.id);
+        const { name } = req.body;
+        if (!challengeId || challengeId <= 0) {
+            return res.status(400).json({ error: 'Invalid challenge ID' });
+        }
+        if (!name) {
+            return res.status(400).json({ error: 'Team name is required' });
+        }
+        try {
+            const result = await social.createChallengeTeam(req.user.id, challengeId, name);
+            res.status(201).json(result);
+        } catch (_) {
+            res.status(500).json({ error: 'Failed to create team' });
+        }
+    } catch (error) {
+        logger.error('Create challenge team error:', { error: error.message });
+        res.status(500).json({ error: 'Failed to create team' });
+    }
+});
+
+router.post('/challenges/teams/:teamId/join', verifyToken, async (req, res) => {
+    try {
+        const teamId = parseInt(req.params.teamId);
+        if (!teamId || teamId <= 0) {
+            return res.status(400).json({ error: 'Invalid team ID' });
+        }
+        try {
+            const result = await social.joinChallengeTeam(req.user.id, teamId);
+            res.json(result);
+        } catch (_) {
+            res.status(500).json({ error: 'Failed to join team' });
+        }
+    } catch (error) {
+        logger.error('Join challenge team error:', { error: error.message });
+        res.status(500).json({ error: 'Failed to join team' });
+    }
+});
+
+router.get('/challenges/:id/teams', verifyToken, async (req, res) => {
+    try {
+        const challengeId = parseInt(req.params.id);
+        if (!challengeId || challengeId <= 0) {
+            return res.status(400).json({ error: 'Invalid challenge ID' });
+        }
+        try {
+            const teams = await social.getChallengeTeams(challengeId);
+            res.json({ success: true, teams });
+        } catch (_) {
+            res.json({ success: true, teams: [] });
+        }
+    } catch (error) {
+        logger.error('Get challenge teams error:', { error: error.message });
+        res.status(500).json({ error: 'Failed to get teams' });
+    }
+});
+
 module.exports = router;

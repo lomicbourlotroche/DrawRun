@@ -200,15 +200,9 @@ export default function CoachContent() {
   const loadActivePlan = useCallback(async () => {
     setIsPlanLoading(true);
     try {
-      // GET /api/coach/plan returns { plan, sessions, planId } or null
+      // GET /api/coach/plan now returns { plan, sessions, planId, fullPlan }
       const data = await api.getActivePlan();
-      if (data?.plan && data.planId) {
-        // Fetch full plan structure via GET /api/coach/plan/:id
-        const fullPlan = await api.getPlan(data.planId).catch(() => null);
-        setActivePlan(fullPlan?.plan ?? null);
-      } else {
-        setActivePlan(null);
-      }
+      setActivePlan(data?.fullPlan?.plan ?? null);
     } catch {
       setActivePlan(null);
     } finally {

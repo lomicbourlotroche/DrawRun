@@ -475,7 +475,7 @@ router.get('/:id/splits', verifyToken, async (req, res) => {
     }
 });
 
-// GET /api/activities/:id/analysis — analyse avancée (VDOT, zones, TRIMP)
+// GET /api/activities/:id/analysis — analyse avancée sport-spécifique
 router.get('/:id/analysis', verifyToken, async (req, res) => {
     try {
         const activityId = parseInt(req.params.id);
@@ -488,44 +488,57 @@ router.get('/:id/analysis', verifyToken, async (req, res) => {
             return res.status(404).json({ error: 'Activity not found' });
         }
 
-        // Récupérer le profil utilisateur pour FCM, VDOT
+        // Récupérer le profil utilisateur
         const user = await dbGetMain('SELECT profile_data FROM users WHERE id = ?', [req.user.id]);
-        let fcm = 180, vdot = null, restingHR = 60;
-        if (user?.profile_data) {
-            try {
-                const p = JSON.parse(user.profile_data);
-                fcm = p.fcm || p.max_heart_rate || 180;
-                vdot = p.vdot || null;
-                restingHR = p.restingHR || p.resting_heart_rate || 60;
-            } catch { /* ignore */ }
+        const profileData = user?.profile_data ? JSON.parse(user.profile_data) : {};
+
+        let fcm = 180, restingHR = 60;
+        if (profileData) {
+            fcm = profileData.fcm || profileData.max_heart_rate || 180;
+            restingHR = profileData.restingHR || profileData.resting_heart_rate || 60;
         }
 
+        // Récupérer les streams pour les analyses qui en ont besoin
+        let streams = null;
+        try {
+            const streamRows = await dbAllUser(userDb,
+                `SELECT stream_type, data FROM activity_streams WHERE activity_id = ?`,
+                [activityId]
+            );
+            if (streamRows && streamRows.length > 0) {
+                streams = {};
+                for (const row of streamRows) {
+                    try { streams[row.stream_type] = JSON.parse(row.data); } catch { /* skip */ }
+                }
+            }
+        } catch { /* non-bloquant */ }
+
         const { SportAnalysis } = require('../algorithms/index');
-        const profileData = user?.profile_data ? JSON.parse(user.profile_data) : {};
-        const avgHR = activity.average_heartrate;
-        
-        // Use the centralized SportAnalysis engine
-        const sportAnalysis = SportAnalysis.analyze(activity, profileData);
-        
-        // Merging with legacy structure expected by frontend
+
+        // Analyse sport-spécifique avec streams
+        const sportAnalysis = SportAnalysis.analyze(activity, profileData, streams);
+
+        // Ajouter les champs communs et rétrocompatibilité
         const analysis = {
             ...sportAnalysis,
-            avgHrPercent: sportAnalysis.zones?.percent || null,
             profileFcm: fcm,
-            hrReserve: avgHR ? Math.round(((avgHR - restingHR) / (fcm - restingHR)) * 100) : null,
-            estimatedVdot: sportAnalysis.vdot,
-            paceFormatted: sportAnalysis.pace?.formatted,
-            estimatedGrade: activity.distance > 0 ? Math.round(((activity.total_elevation_gain || 0) / activity.distance) * 100 * 10) / 10 : 0,
+            avgHrPercent: sportAnalysis.hrZones?.avgHrPercent || null,
+            estimatedVdot: sportAnalysis.vdot || null,
+            paceFormatted: sportAnalysis.pace?.formatted || sportAnalysis.pacePer100m?.formatted || null,
+            estimatedGrade: sportAnalysis.estimatedGrade ?? (activity.distance > 0
+                ? Math.round(((activity.total_elevation_gain || 0) / activity.distance) * 100 * 10) / 10
+                : 0),
+            efficiency_factor: sportAnalysis.efficiency_factor ?? sportAnalysis.efficiencyFactor ?? null,
+            intensity_factor: sportAnalysis.intensity_factor ?? sportAnalysis.intensityFactor ?? null,
+            gapFormatted: sportAnalysis.gap?.formatted || null,
         };
 
-        // Add predictions if VDOT is available
-        if (analysis.estimatedVdot) {
-            const { RunningPerformance } = require('../algorithms/index');
-            const preds = RunningPerformance.predictRaceTimes(analysis.estimatedVdot);
-            analysis.predicted5k = preds?.['5k'] ? Math.round(preds['5k'] * 60) : null;
-            analysis.predicted10k = preds?.['10k'] ? Math.round(preds['10k'] * 60) : null;
-            analysis.predictedHalfMarathon = preds?.['half'] ? { time: `${Math.floor(preds['half'])}:${String(Math.round((preds['half'] % 1) * 60)).padStart(2, '0')}` } : null;
-            analysis.predictedMarathon = preds?.['marathon'] ? { time: `${Math.floor(preds['marathon'])}:${String(Math.round((preds['marathon'] % 1) * 60)).padStart(2, '0')}` } : null;
+        // Ajouter les prédictions si VDOT disponible (rétrocompatibilité)
+        if (sportAnalysis.racePredictions) {
+            analysis.predicted5k = sportAnalysis.racePredictions['5k'] || null;
+            analysis.predicted10k = sportAnalysis.racePredictions['10k'] || null;
+            analysis.predictedHalfMarathon = sportAnalysis.racePredictions.half || null;
+            analysis.predictedMarathon = sportAnalysis.racePredictions.marathon || null;
         }
 
         res.json(analysis);
@@ -578,9 +591,10 @@ router.post('/import/gpx', verifyToken, async (req, res) => {
 
         const result = await dbRunUser(userDb, `
             INSERT INTO activities (source, source_id, name, type, start_date, distance, moving_time,
+                        elapsed_time,
                         average_speed, average_heartrate, max_heartrate, total_elevation_gain,
                         elev_high, elev_low, map_polyline, is_manual)
-            VALUES ('gpx', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+            VALUES ('gpx', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
         `, [
             'gpx-' + Date.now(),
             activityName,
@@ -588,6 +602,7 @@ router.post('/import/gpx', verifyToken, async (req, res) => {
             parsed.startDate,
             parsed.distance,
             parsed.duration,
+            parsed.duration, // elapsed_time = duration for GPX
             Math.round(parsed.avgSpeed * 100) / 100,
             parsed.avgHR,
             parsed.maxHR,

@@ -10,7 +10,7 @@ module.exports = {
     getPlanById: planService.getPlanById,
     getPlanProgress: planService.getPlanProgress,
     getWeeklyPlanSummary: planService.getWeeklyPlanSummary,
-    getActivePlan: sessionService.getActivePlan,
+    getActivePlan: planService.getActivePlan,
     getPlanSessions: sessionService.getPlanSessions,
     markSessionCompleted: sessionService.markSessionCompleted,
     getTodaySessions: sessionService.getTodaySessions,

@@ -11,11 +11,12 @@ const express = require('express');
 const { verifyToken } = require('./auth');
 const { getUserDb, dbGetUser, dbGetMain } = require('../database');
 const { PMC } = require('../algorithms/index');
+const { cacheRoute } = require('../middleware/performance');
 
 const router = express.Router();
 
-// GET /api/overtraining/check
-router.get('/check', verifyToken, async (req, res) => {
+// GET /api/overtraining/check — cached for 15 minutes
+router.get('/check', verifyToken, cacheRoute('pmc', 15 * 60 * 1000), async (req, res) => {
     try {
         const userDb = await getUserDb(req.user.id);
         const profile = await dbGetMain('SELECT * FROM users WHERE id = ?', [req.user.id]);

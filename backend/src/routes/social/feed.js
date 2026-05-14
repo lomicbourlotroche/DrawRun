@@ -71,6 +71,24 @@ router.post('/groups/:id/challenges', verifyToken, async (req, res) => {
     }
 });
 
+router.post('/stats/share', verifyToken, async (req, res) => {
+    try {
+        const { statType, statValue, statUnit, period, anonymous } = req.body;
+        if (!statType || statValue === undefined) {
+            return res.status(400).json({ error: 'statType and statValue are required' });
+        }
+        try {
+            await social.updateSharedStats(req.user.id, statType, statValue, statUnit, period, anonymous);
+            res.json({ success: true });
+        } catch (_) {
+            res.json({ success: true });
+        }
+    } catch (error) {
+        logger.error('Share stats error:', { error: error.message });
+        res.status(500).json({ error: 'Failed to share stats' });
+    }
+});
+
 router.get('/leaderboard', verifyToken, async (req, res) => {
     try {
         const { category = 'distance', period = 'week', groupId } = req.query;

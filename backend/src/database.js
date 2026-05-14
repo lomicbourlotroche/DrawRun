@@ -604,7 +604,8 @@ function ensureUserSchemaCompatibility(userDb) {
             fatigue INTEGER DEFAULT 0,
             splits TEXT NOT NULL,
             nutrition_strategy TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`,
         `CREATE TABLE IF NOT EXISTS gear (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -630,6 +631,9 @@ function ensureUserSchemaCompatibility(userDb) {
             // Table already exists
         }
     }
+
+    // Add title column to notifications (used by social services)
+    try { userDb.run('ALTER TABLE notifications ADD COLUMN title TEXT'); } catch (_) {}
 
     // Add new columns to activities
     const activityUpdates = [

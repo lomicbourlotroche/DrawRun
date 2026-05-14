@@ -61,7 +61,7 @@ router.post('/login', async (req, res) => {
     
     try {
         const normalizedEmail = email.trim().toLowerCase();
-        const user = await dbGet('SELECT id, email, password_hash, profile_data, created_at, last_login, strava_client_id, garmin_username, suunto_username, decathlon_access_token, twofa_enabled, totp_secret FROM users WHERE email = ?', [normalizedEmail]);
+        const user = await dbGet('SELECT id, email, password_hash, profile_data, created_at, last_login, garmin_username, twofa_enabled, totp_secret FROM users WHERE email = ?', [normalizedEmail]);
         
         logger.info(`Login attempt for ${normalizedEmail}, user found: ${!!user}`);
         
@@ -119,13 +119,10 @@ router.post('/login', async (req, res) => {
             profileData = {};
         }
         
-        // Trigger background sync if user has connected services
-        const hasStrava = !!user.strava_client_id;
+        // Trigger background sync if user has Garmin configured
         const hasGarmin = !!user.garmin_username;
-        const hasSuunto = !!user.suunto_username;
-        const hasDecathlon = !!user.decathlon_access_token;
-        if (hasStrava || hasGarmin || hasSuunto || hasDecathlon) {
-            triggerBackgroundSync(user.id, hasStrava, hasGarmin, hasSuunto, hasDecathlon);
+        if (hasGarmin) {
+            triggerBackgroundSync(user.id, hasGarmin);
         }
         
         res.json({
@@ -133,10 +130,7 @@ router.post('/login', async (req, res) => {
             refreshToken,
             expiresIn: 900,
             userId: user.id,
-            has_strava: hasStrava,
             has_garmin: hasGarmin,
-            has_suunto: hasSuunto,
-            has_decathlon: hasDecathlon,
             twofa_enabled: user.twofa_enabled === 1,
             message: 'Login successful',
             user: {
@@ -502,29 +496,6 @@ router.post('/profile', verifyToken, async (req, res) => {
     }
 });
 
-// Save Strava credentials (email/password - no developer account needed)
-router.post('/credentials/strava', verifyToken, async (req, res) => {
-    const { email, password, clientId, clientSecret } = req.body;
-    const resolvedEmail = email || clientId;
-    const resolvedPassword = password || clientSecret;
-    
-    if (!resolvedEmail || !resolvedPassword) {
-        return res.status(400).json({ error: 'Email and password required' });
-    }
-    
-    try {
-        await dbRun(
-            'UPDATE users SET strava_client_id = ?, strava_client_secret = ?, strava_enabled = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-            [encrypt(resolvedEmail), encrypt(resolvedPassword), req.user.id]
-        );
-        
-        res.json({ success: true, message: 'Strava credentials saved successfully' });
-    } catch (error) {
-        logger.error('Save Strava credentials error:', error);
-        res.status(500).json({ error: 'Failed to save Strava credentials' });
-    }
-});
-
 // Save Garmin credentials
 router.post('/credentials/garmin', verifyToken, async (req, res) => {
     const { username, email, password } = req.body;
@@ -555,7 +526,6 @@ router.post('/disconnect/garmin', verifyToken, async (req, res) => {
             [req.user.id]
         );
         
-        // Clear stored tokens
         try {
             const { clearGarminTokens } = require('../services/sync/garmin');
             await clearGarminTokens(req.user.id);
@@ -570,82 +540,11 @@ router.post('/disconnect/garmin', verifyToken, async (req, res) => {
     }
 });
 
-// Save Suunto credentials
-router.post('/credentials/suunto', verifyToken, async (req, res) => {
-    const { username, email, password } = req.body;
-    const resolvedUsername = username || email;
-    
-    if (!resolvedUsername || !password) {
-        return res.status(400).json({ error: 'Username (or email) and password required' });
-    }
-    
-    try {
-        await dbRun(
-            'UPDATE users SET suunto_username = ?, suunto_password = ?, suunto_enabled = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-            [resolvedUsername, encrypt(password), req.user.id]
-        );
-        
-        // Test credentials
-        const { testSuuntoCredentials } = require('../services/sync/suunto');
-        const testResult = await testSuuntoCredentials(resolvedUsername, password);
-        
-        if (!testResult.success) {
-            // Still save credentials but warn user
-            return res.json({ 
-                success: true, 
-                message: 'Suunto credentials saved but connection failed. Check your credentials.',
-                warning: testResult.error
-            });
-        }
-        
-        res.json({ 
-            success: true, 
-            message: 'Suunto credentials saved successfully',
-            displayName: testResult.displayName
-        });
-    } catch (error) {
-        logger.error('Save Suunto credentials error:', error);
-        res.status(500).json({ error: 'Failed to save Suunto credentials' });
-    }
-});
-
-// Disconnect Suunto
-router.post('/disconnect/suunto', verifyToken, async (req, res) => {
-    try {
-        await dbRun(
-            'UPDATE users SET suunto_username = NULL, suunto_password = NULL, suunto_enabled = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-            [req.user.id]
-        );
-        
-        res.json({ success: true, message: 'Suunto disconnected' });
-    } catch (error) {
-        logger.error('Disconnect Suunto error:', error);
-        res.status(500).json({ error: 'Failed to disconnect Suunto' });
-    }
-});
-
-// Disconnect Strava
-router.post('/disconnect/strava', verifyToken, async (req, res) => {
-    try {
-        const { disconnectStrava } = require('../services/sync/strava');
-        const result = await disconnectStrava(req.user.id);
-        
-        if (result.success) {
-            res.json({ success: true, message: 'Strava disconnected' });
-        } else {
-            res.status(500).json({ error: result.error || 'Failed to disconnect Strava' });
-        }
-    } catch (error) {
-        logger.error('Disconnect Strava error:', error);
-        res.status(500).json({ error: 'Failed to disconnect Strava' });
-    }
-});
-
 // Get profile
 router.get('/profile', verifyToken, async (req, res) => {
     try {
         const user = await dbGet(
-            'SELECT id, email, profile_data, strava_enabled, garmin_enabled, suunto_enabled, decathlon_enabled, strava_client_id, garmin_username, suunto_username, decathlon_access_token, created_at, last_login FROM users WHERE id = ?',
+            'SELECT id, email, profile_data, garmin_enabled, garmin_username, created_at, last_login FROM users WHERE id = ?',
             [req.user.id]
         );
         
@@ -654,23 +553,14 @@ router.get('/profile', verifyToken, async (req, res) => {
         }
         
         const profileData = user.profile_data ? JSON.parse(user.profile_data) : {};
-        const hasStrava = !!user.strava_enabled || !!user.strava_client_id;
         const hasGarmin = !!user.garmin_enabled || !!user.garmin_username;
-        const hasSuunto = !!user.suunto_enabled || !!user.suunto_username;
-        const hasDecathlon = !!user.decathlon_enabled || !!user.decathlon_access_token;
         
         res.json({
             id: user.id,
             email: user.email,
             ...profileData,
-            strava_enabled: hasStrava,
             garmin_enabled: hasGarmin,
-            suunto_enabled: hasSuunto,
-            decathlon_enabled: hasDecathlon,
-            has_strava: hasStrava,
             has_garmin: hasGarmin,
-            has_suunto: hasSuunto,
-            has_decathlon: hasDecathlon,
             created_at: user.created_at,
             last_login: user.last_login
         });

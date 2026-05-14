@@ -1,7 +1,7 @@
 const { dbGetMain, getUserDb, dbAllUser, dbGetUser } = require('../../database');
 const { resolveUserConstants } = require('../userConstants.service');
 const { RunningPerformance } = require('../../algorithms');
-const { getActivePlan } = require('./session.service');
+const { getActivePlan } = require('./plan.service');
 
 async function getCoachProfile(userId) {
     const user = await dbGetMain('SELECT id, email, name FROM users WHERE id = ?', [userId]);

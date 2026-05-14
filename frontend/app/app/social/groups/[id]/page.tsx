@@ -11,37 +11,8 @@ import {
   ChevronLeft, Copy, Trash2, Edit2, UserX, Crown, Shield, Flame, Save, Eye, Check, Sparkles, Loader2, X
 } from 'lucide-react';
 import { toast } from 'sonner';
-
-// ── Challenge mode/type constants (same as SocialContent) ──────────────────
-const CHALLENGE_MODES = [
-  { id: 'quota',       label: 'Quota total',      icon: '🎯', desc: 'Atteindre un objectif cumulé' },
-  { id: 'progressive', label: 'Jauge progressive', icon: '📈', desc: 'Objectif croissant chaque semaine' },
-  { id: 'streak',      label: 'Streak',            icon: '🔥', desc: 'X jours consécutifs' },
-  { id: 'frequency',   label: 'Fréquence',         icon: '📅', desc: 'X sorties par semaine' },
-] as const;
-
-const CHALLENGE_TYPES = [
-  { id: 'distance',   label: 'Distance',    unit: 'km',      icon: '📏', modes: ['quota','progressive','streak'] },
-  { id: 'elevation',  label: 'Dénivelé',    unit: 'm',       icon: '⛰️', modes: ['quota','progressive'] },
-  { id: 'time',       label: 'Temps actif', unit: 'min',     icon: '⏱️', modes: ['quota','progressive','streak'] },
-  { id: 'activities', label: 'Activités',   unit: 'sorties', icon: '📊', modes: ['quota','frequency','streak'] },
-] as const;
-
-const SPORT_TYPES = [
-  { id: 'any',  label: 'Tous', icon: '🏅' },
-  { id: 'run',  label: 'Course', icon: '🏃' },
-  { id: 'bike', label: 'Vélo', icon: '🚴' },
-  { id: 'swim', label: 'Natation', icon: '🏊' },
-];
-
-const BADGE_ICONS = ['🏆','🔥','⚡','🎯','💪','🌟','🚀','🏅','💎','🦁'];
-
-type ChallengeForm = {
-  title: string; description: string; type: string; target_value: string;
-  end_date: string; challenge_mode: string; weekly_target: string;
-  weekly_increase_pct: string; streak_days: string; frequency_per_week: string;
-  sport_type: string; badge_icon: string;
-};
+import { getModeInfo, getTypeInfo, CHALLENGE_MODES, SPORT_TYPES } from '../../tabs/challenge-constants';
+import ChallengeWizard from '../../modals/ChallengeWizard';
 
 type GroupChallenge = {
   id: number; title: string; description: string; type: string;
@@ -64,14 +35,6 @@ export default function GroupDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [editForm, setEditForm] = useState({ name: '', description: '', isPrivate: false });
   const [showWizard, setShowWizard] = useState(false);
-  const [wizardStep, setWizardStep] = useState(1);
-  const [isCreating, setIsCreating] = useState(false);
-  const [form, setForm] = useState<ChallengeForm>({
-    title: '', description: '', type: 'distance', target_value: '',
-    end_date: '', challenge_mode: 'quota', weekly_target: '',
-    weekly_increase_pct: '10', streak_days: '', frequency_per_week: '3',
-    sport_type: 'any', badge_icon: '🏆',
-  });
 
   const loadGroup = useCallback(async () => {
     setIsLoading(true);
@@ -129,39 +92,29 @@ export default function GroupDetailPage() {
     if (group?.inviteCode) { navigator.clipboard.writeText(group.inviteCode); toast.success('Code copié'); }
   };
 
-  const handleCreateChallenge = async () => {
-    if (!form.title.trim()) return;
-    setIsCreating(true);
-    try {
-      const durationDays = form.end_date
-        ? Math.max(1, Math.ceil((new Date(form.end_date).getTime() - Date.now()) / 86400000))
-        : 30;
-      await (api as any).createGroupChallenge(groupId, {
-        title: form.title, description: form.description, type: form.type,
-        target_value: parseFloat(form.target_value) || 0, duration_days: durationDays,
-        challenge_mode: form.challenge_mode, badge_icon: form.badge_icon,
-        sport_type: form.sport_type,
-        weekly_target: form.weekly_target ? parseFloat(form.weekly_target) : undefined,
-        weekly_increase_pct: form.weekly_increase_pct ? parseFloat(form.weekly_increase_pct) : undefined,
-        streak_days: form.streak_days ? parseInt(form.streak_days) : undefined,
-        frequency_per_week: form.frequency_per_week ? parseInt(form.frequency_per_week) : undefined,
-      } as CreateChallengeParams);
-      toast.success('Défi créé ! 🏆');
-      setShowWizard(false);
-      setWizardStep(1);
-      setForm({ title: '', description: '', type: 'distance', target_value: '', end_date: '', challenge_mode: 'quota', weekly_target: '', weekly_increase_pct: '10', streak_days: '', frequency_per_week: '3', sport_type: 'any', badge_icon: '🏆' });
-      loadGroup();
-    } catch { toast.error('Erreur lors de la création'); }
-    finally { setIsCreating(false); }
+  const handleCreateChallenge = async (form: { title: string; description: string; type: string; target_value: string; end_date: string; challenge_mode: string; weekly_target: string; weekly_increase_pct: string; streak_days: string; frequency_per_week: string; sport_type: string; badge_icon: string; is_public: boolean }) => {
+    const durationDays = form.end_date
+      ? Math.max(1, Math.ceil((new Date(form.end_date).getTime() - Date.now()) / 86400000))
+      : 30;
+    await (api as any).createGroupChallenge(groupId, {
+      title: form.title, description: form.description, type: form.type,
+      target_value: parseFloat(form.target_value) || 0, duration_days: durationDays,
+      challenge_mode: form.challenge_mode, badge_icon: form.badge_icon,
+      sport_type: form.sport_type,
+      weekly_target: form.weekly_target ? parseFloat(form.weekly_target) : undefined,
+      weekly_increase_pct: form.weekly_increase_pct ? parseFloat(form.weekly_increase_pct) : undefined,
+      streak_days: form.streak_days ? parseInt(form.streak_days) : undefined,
+      frequency_per_week: form.frequency_per_week ? parseInt(form.frequency_per_week) : undefined,
+    } as CreateChallengeParams);
+    toast.success('Défi créé ! 🏆');
+    setShowWizard(false);
+    loadGroup();
   };
 
   const handleJoinChallenge = async (challengeId: number) => {
     try { await api.joinChallenge(challengeId); toast.success('Défi rejoint !'); loadGroup(); }
     catch { toast.error('Erreur'); }
   };
-
-  const getModeInfo = (mode: string) => CHALLENGE_MODES.find(m => m.id === mode) || CHALLENGE_MODES[0];
-  const getTypeInfo = (type: string) => CHALLENGE_TYPES.find(t => t.id === type) || CHALLENGE_TYPES[0];
 
   const isAdmin = group?.userRole === 'admin';
 
@@ -353,7 +306,7 @@ export default function GroupDetailPage() {
       {activeTab === 'challenges' && (
         <div className="space-y-4">
           {isAdmin && (
-            <Button className="w-full rounded-xl gap-2" onClick={() => { setShowWizard(true); setWizardStep(1); }}>
+            <Button className="w-full rounded-xl gap-2" onClick={() => setShowWizard(true)}>
               <Sparkles className="w-4 h-4" /> Créer un défi de groupe
             </Button>
           )}
@@ -435,109 +388,13 @@ export default function GroupDetailPage() {
 
       {/* ── WIZARD CRÉATION DÉFI ── */}
       {showWizard && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
-          <div className="bg-card rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
-            <div className="px-6 pt-5 pb-4 border-b border-border">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold text-lg flex items-center gap-2"><Trophy className="w-5 h-5 text-yellow-500" />Défi de groupe</h3>
-                <button onClick={() => { setShowWizard(false); setWizardStep(1); }} className="p-2 rounded-xl hover:bg-border transition-colors"><X className="w-4 h-4" /></button>
-              </div>
-              <div className="flex gap-1">{[1,2,3].map(s => <div key={s} className={`h-1 flex-1 rounded-full transition-all ${s <= wizardStep ? 'bg-primary' : 'bg-border'}`} />)}</div>
-              <p className="text-xs text-muted mt-2">{wizardStep === 1 && 'Étape 1 — Mode du défi'}{wizardStep === 2 && 'Étape 2 — Objectif'}{wizardStep === 3 && 'Étape 3 — Personnaliser'}</p>
-            </div>
-
-            <div className="px-6 py-5 max-h-[65vh] overflow-y-auto space-y-4">
-              {wizardStep === 1 && (
-                <div className="space-y-2">
-                  <p className="text-xs text-muted uppercase font-medium tracking-wide">Mode du défi</p>
-                  {CHALLENGE_MODES.map(m => (
-                    <button key={m.id} onClick={() => setForm(p => ({ ...p, challenge_mode: m.id }))} className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${form.challenge_mode === m.id ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/30'}`}>
-                      <span className="text-xl">{m.icon}</span>
-                      <div className="flex-1"><p className="text-sm font-medium">{m.label}</p><p className="text-xs text-muted">{m.desc}</p></div>
-                      {form.challenge_mode === m.id && <Check className="w-4 h-4 text-primary shrink-0" />}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {wizardStep === 2 && (
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-xs text-muted uppercase font-medium tracking-wide mb-2">Sport</p>
-                    <div className="flex flex-wrap gap-2">
-                      {SPORT_TYPES.map(s => (
-                        <button key={s.id} onClick={() => setForm(p => ({ ...p, sport_type: s.id }))} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm border transition-all ${form.sport_type === s.id ? 'border-primary bg-primary/10 font-medium' : 'border-border hover:border-primary/30'}`}>
-                          {s.icon} {s.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted uppercase font-medium tracking-wide mb-2">Métrique</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {CHALLENGE_TYPES.filter(t => (t.modes as readonly string[]).includes(form.challenge_mode)).map(t => (
-                        <button key={t.id} onClick={() => setForm(p => ({ ...p, type: t.id }))} className={`flex items-center gap-2 p-3 rounded-xl border transition-all ${form.type === t.id ? 'border-primary bg-primary/10 font-medium' : 'border-border hover:border-primary/30'}`}>
-                          <span>{t.icon}</span><div className="text-left"><p className="text-sm">{t.label}</p><p className="text-xs text-muted">{t.unit}</p></div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  {form.challenge_mode !== 'streak' && form.challenge_mode !== 'frequency' && (
-                    <Input label={`Objectif (${getTypeInfo(form.type).unit})`} type="number" value={form.target_value} onChange={e => setForm(p => ({ ...p, target_value: e.target.value }))} placeholder="Ex: 100" />
-                  )}
-                  {form.challenge_mode === 'progressive' && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <Input label={`Départ sem. 1 (${getTypeInfo(form.type).unit})`} type="number" value={form.weekly_target} onChange={e => setForm(p => ({ ...p, weekly_target: e.target.value }))} placeholder="Ex: 20" />
-                      <Input label="Augmentation/sem. (%)" type="number" value={form.weekly_increase_pct} onChange={e => setForm(p => ({ ...p, weekly_increase_pct: e.target.value }))} placeholder="Ex: 10" />
-                    </div>
-                  )}
-                  {form.challenge_mode === 'streak' && (
-                    <Input label="Jours consécutifs" type="number" value={form.streak_days} onChange={e => setForm(p => ({ ...p, streak_days: e.target.value, target_value: e.target.value }))} placeholder="Ex: 30" />
-                  )}
-                  {form.challenge_mode === 'frequency' && (
-                    <Input label="Sorties par semaine" type="number" value={form.frequency_per_week} onChange={e => setForm(p => ({ ...p, frequency_per_week: e.target.value }))} placeholder="Ex: 3" />
-                  )}
-                  <Input label="Date de fin" type="date" value={form.end_date} onChange={e => setForm(p => ({ ...p, end_date: e.target.value }))} min={new Date(Date.now() + 86400000).toISOString().split('T')[0]} />
-                </div>
-              )}
-
-              {wizardStep === 3 && (
-                <div className="space-y-4">
-                  <Input label="Nom du défi *" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Ex: 100km en juin" />
-                  <div>
-                    <label className="text-xs font-medium text-muted uppercase tracking-wide mb-1 block">Description</label>
-                    <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Décrivez le défi..." rows={3} className="w-full px-3 py-2 rounded-xl bg-background border border-border text-sm focus:border-primary outline-none resize-none" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Badge</p>
-                    <div className="flex flex-wrap gap-2">
-                      {BADGE_ICONS.map(icon => (
-                        <button key={icon} onClick={() => setForm(p => ({ ...p, badge_icon: icon }))} className={`w-10 h-10 text-xl rounded-xl border transition-all ${form.badge_icon === icon ? 'border-primary bg-primary/10 scale-110' : 'border-border hover:border-primary/30'}`}>{icon}</button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-1">
-                    <p className="text-sm font-semibold">{form.badge_icon} {form.title || 'Mon défi'}</p>
-                    <p className="text-xs text-muted">{getModeInfo(form.challenge_mode).icon} {getModeInfo(form.challenge_mode).label} · {getTypeInfo(form.type).icon} {form.target_value || '?'} {getTypeInfo(form.type).unit}</p>
-                    {form.end_date && <p className="text-xs text-muted">⏳ Jusqu&apos;au {new Date(form.end_date).toLocaleDateString('fr-FR')}</p>}
-                    <p className="text-xs text-muted">👥 Défi privé — membres du groupe uniquement</p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="px-6 py-4 border-t border-border flex gap-3">
-              {wizardStep > 1 && <Button variant="secondary" onClick={() => setWizardStep(s => s - 1)} className="rounded-xl">← Retour</Button>}
-              {wizardStep < 3 ? (
-                <Button onClick={() => setWizardStep(s => s + 1)} className="flex-1 rounded-xl" disabled={wizardStep === 2 && !form.target_value && form.challenge_mode !== 'frequency'}>Suivant →</Button>
-              ) : (
-                <Button onClick={handleCreateChallenge} disabled={isCreating || !form.title.trim()} className="flex-1 rounded-xl">
-                  {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : '🏆 Créer le défi'}
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
+        <ChallengeWizard
+          title="Défi de groupe"
+          showPresets={false}
+          showPublicToggle={false}
+          onClose={() => setShowWizard(false)}
+          onCreate={handleCreateChallenge}
+        />
       )}
     </div>
   );

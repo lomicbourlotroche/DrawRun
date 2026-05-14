@@ -11,7 +11,7 @@ import { useUserConstantsStore } from '@/stores';
 import { PerformanceZones, PerformanceMetrics, ProgressionChart } from '@/components/features/performance';
 import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent, Skeleton, Progress } from '@/components/ui';
 import { Dumbbell, Bike, Waves, Heart, Activity, TrendingUp, Gauge, Zap, BarChart3, Brain, AlertCircle, MapPin, Clock, Crown, Star } from 'lucide-react';
-import type { PmcDataPoint, Activity as ActivityType } from '@/types';
+import type { PmcDataPoint, Activity as ActivityType, Zones } from '@/types';
 
 interface PolarizationData {
   index: number;
@@ -61,6 +61,7 @@ export default function PerformanceContent() {
   const [hrv, setHrv] = useState<HRVData | null>(null);
   const [hrvError, setHrvError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRecalculating, setIsRecalculating] = useState(false);
 
   const { data: userConstants, fetchConstants, zones, profile } = useUserConstantsStore();
 
@@ -153,6 +154,18 @@ export default function PerformanceContent() {
     finally { setIsLoading(false); }
   };
 
+  const handleRecalculate = async () => {
+    setIsRecalculating(true);
+    try {
+      await api.recalculateMetrics();
+      await loadData();
+    } catch {
+      // silent
+    } finally {
+      setIsRecalculating(false);
+    }
+  };
+
   const sportTabs = [
     { id: 'run', label: 'Course', icon: <Dumbbell className="w-4 h-4" /> },
     { id: 'bike', label: 'Vélo', icon: <Bike className="w-4 h-4" /> },
@@ -171,11 +184,23 @@ export default function PerformanceContent() {
   return (
     <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <Activity className="w-6 h-6 text-primary" />
-          Performances
-        </h1>
-        <p className="text-muted mt-1">Suivez vos métriques et progressions</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <Activity className="w-6 h-6 text-primary" />
+              Performances
+            </h1>
+            <p className="text-muted mt-1">Suivez vos métriques et progressions</p>
+          </div>
+          <button
+            onClick={handleRecalculate}
+            disabled={isRecalculating}
+            className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+          >
+            <Activity className={`w-4 h-4 ${isRecalculating ? 'animate-spin' : ''}`} />
+            {isRecalculating ? 'Calcul...' : 'Recalculer'}
+          </button>
+        </div>
       </div>
 
       {/* Sport selector */}
@@ -258,7 +283,7 @@ export default function PerformanceContent() {
             fcm: profile?.fcm || 0,
             vma: profile?.vma || 0,
             vdot: profile?.vdot || 0,
-          } as any} />}
+          } as unknown as Zones} />}
           {activeTab === 'stats' && (
             (() => {
               const stats = computeStats(activities);

@@ -131,9 +131,9 @@ export const socialApi = {
   },
 
   kickMember(groupId: number, targetUserId: number): Promise<{ success: boolean; error?: string }> {
-    return client.request('/api/social/groups/kick', {
+    return client.request(`/api/social/groups/${groupId}/kick`, {
       method: 'POST',
-      body: JSON.stringify({ targetUserId }),
+      body: JSON.stringify({ userId: targetUserId }),
     });
   },
 

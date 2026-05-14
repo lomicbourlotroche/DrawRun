@@ -97,7 +97,7 @@ export default function ExplorePanel({
       {/* Toggle button */}
       <button
         onClick={onToggle}
-        className="absolute top-4 left-4 z-[500] flex items-center gap-2 px-3 py-2 bg-white/90 backdrop-blur-sm
+        className="absolute top-4 left-4 z-[500] flex items-center gap-2 px-3 min-h-[44px] bg-white/90 backdrop-blur-sm
                    rounded-lg shadow-md border border-border text-sm font-medium hover:bg-white transition-colors"
       >
         {isOpen ? <X className="w-4 h-4" /> : <Compass className="w-4 h-4" />}
@@ -118,7 +118,7 @@ export default function ExplorePanel({
           </h2>
           <button
             onClick={onToggle}
-            className="p-1.5 rounded-md hover:bg-surface transition-colors sm:hidden"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-surface transition-colors sm:hidden"
           >
             <X className="w-5 h-5" />
           </button>
@@ -197,7 +197,7 @@ export default function ExplorePanel({
         </div>
 
         {/* Bottom action */}
-        <div className="p-4 border-t border-border">
+        <div className="p-4 pb-[env(safe-area-inset-bottom,16px)] border-t border-border">
           <button
             onClick={onOpenRoutePlanner}
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white
