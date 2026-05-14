@@ -15,7 +15,7 @@ import {
   Battery, BatteryMedium, BatteryLow, Target, TrendingUp, Footprints, Bike, Waves,
   Heart, Lock, Camera, Sun, CloudSun, Cloud, CloudDrizzle, CloudRain, CloudSnow,
   CloudLightning, Flag, Clock, Zap, BluetoothConnected,
-  AlertTriangle, Eye, EyeOff, Gauge,
+  AlertTriangle, Eye, EyeOff, Gauge, ChevronRight, PauseCircle,
 } from 'lucide-react';
 import { createGPSFilter, isSpuriousJump, type FilteredGPSPoint } from '@/lib/gpsFilter';
 import { useBluetoothHR } from '@/lib/hooks/useBluetoothHR';
@@ -26,7 +26,7 @@ import {
 } from '@/lib/offlineQueue';
 import { fetchWeather, type WeatherData } from '@/lib/weather';
 
-function LiveMap({ points, height = 'h-48', currentPosition, accuracy, segments }: {
+function LiveMap({ points, height = 'h-32', currentPosition, accuracy, segments }: {
   points: Array<{ gps: { latitude: number; longitude: number } }>;
   height?: string;
   currentPosition?: [number, number] | null;
@@ -38,7 +38,7 @@ function LiveMap({ points, height = 'h-48', currentPosition, accuracy, segments 
     <ActivityMap
       latlng={latlng}
       className={height}
-      color="#3B82F6"
+      color="#FC4C02"
       showTrailAnimation
       currentPosition={currentPosition}
       accuracy={accuracy}
@@ -49,7 +49,9 @@ function LiveMap({ points, height = 'h-48', currentPosition, accuracy, segments 
 
 // ── Animated sub-components ──
 
-function TimerFlip({ seconds }: { seconds: number }) {
+// ── Simplified Timer ──
+
+function SimpleTimer({ seconds }: { seconds: number }) {
   const hrs = Math.floor(seconds / 3600);
   const mins = Math.floor((seconds % 3600) / 60);
   const secs = Math.floor(seconds % 60);
@@ -58,32 +60,9 @@ function TimerFlip({ seconds }: { seconds: number }) {
     : `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 
   return (
-    <div className="flex items-center justify-center gap-1">
-      {display.split('').map((char, i) => (
-        <motion.span
-          key={`${i}-${char}`}
-          initial={{ rotateX: -90, opacity: 0 }}
-          animate={{ rotateX: 0, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 20, delay: i * 0.03 }}
-          className="inline-block w-[0.6em] text-center font-mono"
-        >
-          {char}
-        </motion.span>
-      ))}
-    </div>
-  );
-}
-
-function RollingNumber({ value, suffix = '', decimals = 2 }: { value: number; suffix?: string; decimals?: number }) {
-  return (
-    <motion.span
-      key={Math.round(value * (decimals === 0 ? 1 : 10 ** decimals))}
-      initial={{ y: 8, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ type: 'spring', stiffness: 150, damping: 15 }}
-    >
-      {value.toFixed(decimals)}{suffix}
-    </motion.span>
+    <span className="font-mono font-bold tracking-tight">
+      {display}
+    </span>
   );
 }
 
@@ -98,7 +77,7 @@ function IntervalRing({ timeLeft, total, phase }: { timeLeft: number; total: num
   return (
     <div className="relative w-16 h-16">
       <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
-        <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" strokeWidth="4" className="text-slate-200 dark:text-slate-700" />
+        <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" strokeWidth="4" className="text-slate-700" />
         <motion.circle
           cx="32" cy="32" r="28" fill="none" strokeWidth="4"
           stroke={color}
@@ -115,57 +94,12 @@ function IntervalRing({ timeLeft, total, phase }: { timeLeft: number; total: num
           key={timeLeft}
           initial={{ scale: 1.3 }}
           animate={{ scale: 1 }}
-          className="text-xs font-mono font-bold text-slate-900 dark:text-white"
+          className="text-xs font-mono font-bold text-white"
         >
           {timeLeft}s
         </motion.span>
       </div>
     </div>
-  );
-}
-
-function SpeedGauge({ speed, maxSpeed = 25 }: { speed: number; maxSpeed?: number }) {
-  const pct = Math.min(100, (speed / maxSpeed) * 100);
-  const angle = (pct / 100) * 180;
-
-  return (
-    <div className="relative w-12 h-6 overflow-hidden">
-      <svg className="w-12 h-6" viewBox="0 0 48 24">
-        <path d="M4 20 A20 20 0 0 1 44 20" fill="none" stroke="#e2e8f0" strokeWidth="3" strokeLinecap="round" />
-        <motion.path
-          d="M4 20 A20 20 0 0 1 44 20"
-          fill="none"
-          stroke={speed > 20 ? '#ef4444' : speed > 12 ? '#f59e0b' : '#22c55e'}
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeDasharray="62.8"
-          strokeDashoffset={62.8 - (pct / 100) * 62.8}
-          initial={false}
-          animate={{ strokeDashoffset: 62.8 - (pct / 100) * 62.8 }}
-          transition={{ duration: 0.4, ease: 'easeOut' }}
-        />
-        <motion.line
-          x1="24" y1="20" x2="24" y2="8"
-          stroke="#64748b" strokeWidth="1.5" strokeLinecap="round"
-          animate={{ rotate: angle - 90, originX: '24px', originY: '20px' }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
-        />
-      </svg>
-    </div>
-  );
-}
-
-function HrPulse({ bpm }: { bpm: number }) {
-  const interval = bpm > 0 ? 60000 / bpm : 1000;
-
-  return (
-    <motion.div
-      className="relative"
-      animate={{ scale: [1, 1.15, 1] }}
-      transition={{ duration: interval / 1000, repeat: Infinity, ease: 'easeInOut' }}
-    >
-      <Heart className="w-4 h-4 text-red-500 fill-red-500" />
-    </motion.div>
   );
 }
 

@@ -131,19 +131,19 @@ export default function VDOTSection() {
                 {zones.map((zone, index) => (
                   <div 
                     key={index}
-                    className="flex items-center justify-between p-3 bg-white/50 rounded-xl border border-neutral-100 hover:border-neutral-200 transition-colors"
+                    className="flex items-center justify-between gap-2 p-3 bg-white/50 rounded-xl border border-neutral-100 hover:border-neutral-200 transition-colors"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
                       <span 
                         className="w-3 h-3 rounded-full shrink-0"
                         style={{ backgroundColor: zone.color }}
                       />
-                      <div>
-                        <div className="font-semibold text-neutral-900 text-sm">{zone.name}</div>
-                        <div className="text-xs text-neutral-500">{zone.description}</div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-neutral-900 text-sm truncate">{zone.name}</div>
+                        <div className="text-xs text-neutral-500 truncate">{zone.description}</div>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right shrink-0 whitespace-nowrap">
                       <div className="font-bold text-neutral-900 font-mono">{zone.range}</div>
                       <div className="text-xs text-neutral-400">min/km</div>
                     </div>

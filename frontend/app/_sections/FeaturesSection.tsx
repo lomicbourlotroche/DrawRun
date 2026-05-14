@@ -199,7 +199,7 @@ export default function FeaturesSection() {
         {/* Bottom CTA */}
         <div className={`mt-16 transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 p-4 sm:p-6 bg-white border border-neutral-200 rounded-2xl shadow-card max-w-2xl mx-auto">
-            <div className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start pb-4 sm:pb-0 border-b sm:border-b-0 border-neutral-200">
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start pb-3 sm:pb-0 border-b sm:border-b-0 border-neutral-200">
               <div className="w-10 sm:w-12 h-10 sm:h-12 bg-success-100 rounded-xl flex items-center justify-center shrink-0">
                 <Target className="w-5 sm:w-6 h-5 sm:h-6 text-success-600" />
               </div>
@@ -209,7 +209,7 @@ export default function FeaturesSection() {
               </div>
             </div>
             <div className="hidden sm:block w-px h-12 bg-neutral-200 shrink-0" />
-            <div className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start pb-4 sm:pb-0 border-b sm:border-b-0 border-neutral-200">
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start pb-3 sm:pb-0 border-b sm:border-b-0 border-neutral-200">
               <div className="w-10 sm:w-12 h-10 sm:h-12 bg-primary-100 rounded-xl flex items-center justify-center shrink-0">
                 <Activity className="w-5 sm:w-6 h-5 sm:h-6 text-primary-600" />
               </div>

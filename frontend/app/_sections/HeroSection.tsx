@@ -18,7 +18,7 @@ export default function HeroSection() {
       <div className="absolute inset-0">
         <div className="absolute top-20 left-10 w-72 h-72 bg-primary-400/20 rounded-full blur-3xl animate-pulse-soft" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-success-400/10 rounded-full blur-3xl animate-pulse-soft" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-primary-100/40 to-transparent rounded-full" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[radial-gradient(ellipse_at_center,theme(colors.primary.100/0.4),transparent)] rounded-full" />
       </div>
 
       {/* Grid Pattern */}
@@ -94,14 +94,14 @@ export default function HeroSection() {
 
           {/* Right Content - Stats Grid */}
           <div className={`transition-all duration-700 delay-200 ease-smooth ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <MetricCard
                 label="Métriques avancées"
                 value="15+"
                 icon={<Activity className="w-5 h-5" />}
                 color="primary"
                 size="lg"
-                className="col-span-2"
+                className="col-span-2 sm:col-span-2"
               />
               <MetricCard
                 label="Précision VDOT"
@@ -124,7 +124,7 @@ export default function HeroSection() {
                 icon={<HeartPulse className="w-5 h-5" />}
                 color="peak"
                 size="md"
-                className="col-span-2"
+                className="col-span-2 sm:col-span-2"
               />
             </div>
 
