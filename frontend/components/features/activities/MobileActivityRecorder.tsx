@@ -15,7 +15,7 @@ import {
   Battery, BatteryMedium, BatteryLow, Target, TrendingUp, Footprints, Bike, Waves,
   Heart, Lock, Camera, Sun, CloudSun, Cloud, CloudDrizzle, CloudRain, CloudSnow,
   CloudLightning, Flag, Clock, Zap, BluetoothConnected,
-  AlertTriangle, Eye, EyeOff, Gauge, ChevronRight, PauseCircle,
+  AlertTriangle, Eye, EyeOff, Gauge, ChevronRight, Upload, Ghost, Plus,
 } from 'lucide-react';
 import { createGPSFilter, isSpuriousJump, type FilteredGPSPoint } from '@/lib/gpsFilter';
 import { useBluetoothHR } from '@/lib/hooks/useBluetoothHR';
@@ -173,6 +173,23 @@ interface WorkInterval {
   repeats: number;
 }
 
+interface GPXRoute {
+  name: string;
+  points: Array<{ latitude: number; longitude: number; elevation?: number }>;
+  distance: number;
+  elevationGain: number;
+  polyline: string;
+}
+
+interface GhostState {
+  segmentId: string;
+  segmentName: string;
+  prTime: number;
+  currentOffset: number; // seconds ahead (>0) or behind (<0)
+  ghostPosition: [number, number] | null;
+  progress: number; // 0-100%
+}
+
 type RecordingState = 'idle' | 'recording' | 'paused' | 'finished' | 'review';
 
 interface MobileActivityRecorderProps {
@@ -241,6 +258,23 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   // Adaptive GPS
   const [gpsHighAccuracy, setGpsHighAccuracy] = useState(true);
   const stationaryDurationRef = useRef(0);
+
+  // GPX Upload
+  const [showGpxUpload, setShowGpxUpload] = useState(false);
+  const [uploadedGpxRoute, setUploadedGpxRoute] = useState<GPXRoute | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Ghost Racing
+  const [ghostState, setGhostState] = useState<GhostState | null>(null);
+  const [ghostRaceMode, setGhostRaceMode] = useState(false);
+  const [selectedRaceSegment, setSelectedRaceSegment] = useState<Segment | null>(null);
+  const [segmentEfforts, setSegmentEfforts] = useState<Map<string, { startTime: number; elapsedTime: number; prOffset: number }>>(new Map());
+
+  // Create Segment
+  const [showCreateSegment, setShowCreateSegment] = useState(false);
+  const [segmentStartIdx, setSegmentStartIdx] = useState<number | null>(null);
+  const [segmentEndIdx, setSegmentEndIdx] = useState<number | null>(null);
+  const [newSegmentName, setNewSegmentName] = useState('');
 
   // Refs
   const watchIdRef = useRef<number | null>(null);
@@ -1034,7 +1068,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     }
   };
 
-  // ── Picker overlays ──
+  // ── Picker overlays — dark bottom sheet style ──
   if (showSportPicker || showRoutePicker || showSegmentPicker) {
     const title = showSportPicker ? 'Choisir un sport' : showRoutePicker ? 'Choisir un parcours' : 'Gérer les segments';
     const onClose = showSportPicker ? () => setShowSportPicker(false) :
@@ -1046,7 +1080,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center"
+        className="fixed inset-0 z-50 bg-black/70 flex items-end justify-center"
         onClick={onClose}
       >
         <motion.div
@@ -1054,13 +1088,13 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden"
+          className="bg-slate-900 rounded-t-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden"
           onClick={e => e.stopPropagation()}
         >
-          <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
-            <button onClick={onClose} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-              <X className="w-5 h-5 text-slate-500" />
+          <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-white">{title}</h3>
+            <button onClick={onClose} className="p-2 rounded-lg hover:bg-slate-800 transition-colors">
+              <X className="w-5 h-5 text-slate-400" />
             </button>
           </div>
           <div className="p-4 overflow-y-auto max-h-[70vh]">
@@ -1071,74 +1105,56 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
               />
             )}
             {showRoutePicker && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ staggerChildren: 0.05 }}
-                className="space-y-3"
-              >
+              <div className="space-y-2">
                 {loadingRoutes && <p className="text-center text-slate-500">Chargement...</p>}
                 {!loadingRoutes && userRoutes.length === 0 && (
                   <p className="text-center text-slate-500 py-8">Aucun parcours enregistré</p>
                 )}
                 {userRoutes.map(route => (
-                  <motion.button
+                  <button
                     key={route.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
                     onClick={() => { setSelectedRoute(route); setShowRoutePicker(false); toast.info(`Parcours: ${route.name}`); }}
-                    className="w-full text-left p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 transition-colors"
+                    className="w-full text-left p-3 rounded-lg hover:bg-slate-800 transition-colors"
                   >
-                    <p className="font-medium text-slate-900 dark:text-white">{route.name}</p>
-                    <p className="text-sm text-slate-500 mt-1">
+                    <p className="font-medium text-white">{route.name}</p>
+                    <p className="text-sm text-slate-500 mt-0.5">
                       {formatDistance(route.distance)} · {Math.round(route.elevationGain)}m D+
                     </p>
-                  </motion.button>
+                  </button>
                 ))}
-                <Button onClick={onClose} className="w-full">Retour</Button>
-              </motion.div>
+                <button onClick={onClose} className="w-full h-12 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition-colors">Retour</button>
+              </div>
             )}
             {showSegmentPicker && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ staggerChildren: 0.05 }}
-                className="space-y-3"
-              >
-                <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 mb-3">
-                  <input type="checkbox" checked={showSegmentsOnMap} onChange={e => setShowSegmentsOnMap(e.target.checked)} className="rounded" />
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm text-slate-300 mb-3">
+                  <input type="checkbox" checked={showSegmentsOnMap} onChange={e => setShowSegmentsOnMap(e.target.checked)} className="rounded bg-slate-800 border-slate-700" />
                   Afficher les segments sur la carte
                 </label>
                 {nearbySegments.length === 0 && (
                   <p className="text-center text-slate-500 py-8">Aucun segment à proximité</p>
                 )}
                 {nearbySegments.map(seg => (
-                  <motion.div
+                  <div
                     key={seg.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-3 rounded-xl border border-slate-200 dark:border-slate-700"
+                    className="p-3 rounded-lg bg-slate-800/50"
                   >
                     <div className="flex items-center justify-between">
-                      <p className="font-medium text-slate-900 dark:text-white">{seg.name}</p>
+                      <p className="font-medium text-white">{seg.name}</p>
                       {seg.personalRecord && (
-                        <span className="text-xs text-green-500 font-mono">{formatDuration(seg.personalRecord)}</span>
+                        <span className="text-xs text-emerald-400 font-mono">{formatDuration(seg.personalRecord)}</span>
                       )}
                     </div>
-                    <p className="text-sm text-slate-500">{formatDistance(seg.distance)} · {Math.round(seg.elevationGain)}m D+</p>
-                  </motion.div>
+                    <p className="text-sm text-slate-500 mt-0.5">{formatDistance(seg.distance)} · {Math.round(seg.elevationGain)}m D+</p>
+                  </div>
                 ))}
                 {activeSegment && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
-                  >
-                    <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Segment en cours: {activeSegment.name}</p>
-                  </motion.div>
+                  <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                    <p className="text-sm font-medium text-orange-400">Segment en cours: {activeSegment.name}</p>
+                  </div>
                 )}
-                <Button onClick={onClose} className="w-full">Retour</Button>
-              </motion.div>
+                <button onClick={onClose} className="w-full h-12 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition-colors">Retour</button>
+              </div>
             )}
           </div>
         </motion.div>
@@ -1154,136 +1170,138 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -50 }}
       transition={{ type: 'spring', stiffness: 250, damping: 25 }}
-      className="fixed inset-0 z-40 bg-white dark:bg-slate-950 flex flex-col"
+      className="fixed inset-0 z-40 bg-slate-950 flex flex-col"
     >
-      <div className={`bg-gradient-to-r ${getSportColor()} text-white px-4 pt-12 pb-8`}>
-        <div className="flex items-center justify-center gap-2">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', stiffness: 300, delay: 0.2 }}
-          >
+      {/* Header */}
+      <div className="px-4 pt-12 pb-4">
+        <div className="flex items-center gap-3 mb-1">
+          <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center">
             {getSportIcon()}
-          </motion.div>
-          <h2 className="text-xl font-bold text-center">Résumé de l&apos;activité</h2>
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-white">Résumé de l&apos;activité</h2>
+            <p className="text-xs text-slate-500">{activityName || sport.nameFr}</p>
+          </div>
         </div>
-        <p className="text-center text-white/70 text-sm mt-1">{activityName || sport.nameFr}</p>
       </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 text-center">
-              <Navigation className="w-5 h-5 mx-auto mb-1 text-blue-500" />
-              <div className="text-2xl font-bold text-slate-900 dark:text-white">{formatDistance(stats.distance)}</div>
-              <div className="text-xs text-slate-500">Distance</div>
-            </div>
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 text-center">
-              <Clock className="w-5 h-5 mx-auto mb-1 text-purple-500" />
-              <div className="text-2xl font-bold text-slate-900 dark:text-white">{formatDuration(stats.duration)}</div>
-              <div className="text-xs text-slate-500">Durée</div>
-            </div>
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 text-center">
-              <TrendingUp className="w-5 h-5 mx-auto mb-1 text-green-500" />
-              <div className="text-2xl font-bold text-slate-900 dark:text-white">{stats.avgSpeed.toFixed(1)}</div>
-              <div className="text-xs text-slate-500">km/h moy</div>
-            </div>
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 text-center">
-              <Target className="w-5 h-5 mx-auto mb-1 text-orange-500" />
-              <div className="text-2xl font-bold text-slate-900 dark:text-white">
-                {stats.avgSpeed > 0 ? formatPace(stats.avgSpeed) : '--:--'}
-              </div>
-              <div className="text-xs text-slate-500">Allure moy</div>
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
+        {/* Primary Stats — 2x2 grid */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-slate-900 rounded-lg p-4">
+            <div className="text-xs text-slate-500 mb-1">Distance</div>
+            <div className="text-2xl font-bold text-white">{formatDistance(stats.distance)}</div>
+          </div>
+          <div className="bg-slate-900 rounded-lg p-4">
+            <div className="text-xs text-slate-500 mb-1">Durée</div>
+            <div className="text-2xl font-bold text-white">{formatDuration(stats.duration)}</div>
+          </div>
+          <div className="bg-slate-900 rounded-lg p-4">
+            <div className="text-xs text-slate-500 mb-1">Vitesse moy</div>
+            <div className="text-2xl font-bold text-white">{stats.avgSpeed.toFixed(1)} <span className="text-sm text-slate-500">km/h</span></div>
+          </div>
+          <div className="bg-slate-900 rounded-lg p-4">
+            <div className="text-xs text-slate-500 mb-1">Allure moy</div>
+            <div className="text-2xl font-bold text-white">
+              {stats.avgSpeed > 0 ? formatPace(stats.avgSpeed) : '--:--'}
             </div>
           </div>
+        </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            {stats.elevationGain > 0 && (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 text-center">
-                <Mountain className="w-4 h-4 mx-auto mb-1 text-emerald-500" />
-                <div className="font-semibold text-slate-900 dark:text-white">+{Math.round(stats.elevationGain)}m</div>
-                <div className="text-xs text-slate-500">Dénivelé</div>
+        {/* Secondary Stats */}
+        <div className="flex flex-wrap gap-2">
+          {stats.elevationGain > 0 && (
+            <div className="bg-slate-900 rounded-md px-3 py-2 flex items-center gap-2">
+              <Mountain className="w-4 h-4 text-emerald-400" />
+              <div>
+                <div className="text-sm font-semibold text-white">+{Math.round(stats.elevationGain)}m</div>
+                <div className="text-[10px] text-slate-500">Dénivelé</div>
               </div>
-            )}
-            {stats.avgHR && (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 text-center">
-                <Heart className="w-4 h-4 mx-auto mb-1 text-red-500" />
-                <div className="font-semibold text-slate-900 dark:text-white">{stats.avgHR} bpm</div>
-                <div className="text-xs text-slate-500">FC moy</div>
-              </div>
-            )}
-            {stats.maxHR && (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 text-center">
-                <Heart className="w-4 h-4 mx-auto mb-1 text-rose-500" />
-                <div className="font-semibold text-slate-900 dark:text-white">{stats.maxHR} bpm</div>
-                <div className="text-xs text-slate-500">FC max</div>
-              </div>
-            )}
-            {stats.gap && (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 text-center">
-                <Gauge className="w-4 h-4 mx-auto mb-1 text-indigo-500" />
-                <div className="font-semibold text-slate-900 dark:text-white">{formatDuration(stats.gap)}</div>
-                <div className="text-xs text-slate-500">GAP</div>
-              </div>
-            )}
-            {laps.length > 0 && (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 text-center">
-                <Flag className="w-4 h-4 mx-auto mb-1 text-amber-500" />
-                <div className="font-semibold text-slate-900 dark:text-white">{laps.length}</div>
-                <div className="text-xs text-slate-500">Tours</div>
-              </div>
-            )}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3 text-center">
-              <MapPin className="w-4 h-4 mx-auto mb-1 text-slate-500" />
-              <div className="font-semibold text-slate-900 dark:text-white">{points.length}</div>
-              <div className="text-xs text-slate-500">Points GPS</div>
             </div>
-          </div>
-
-          {/* Laps detail */}
+          )}
+          {stats.avgHR && (
+            <div className="bg-slate-900 rounded-md px-3 py-2 flex items-center gap-2">
+              <Heart className="w-4 h-4 text-red-400" />
+              <div>
+                <div className="text-sm font-semibold text-white">{stats.avgHR} bpm</div>
+                <div className="text-[10px] text-slate-500">FC moy</div>
+              </div>
+            </div>
+          )}
+          {stats.maxHR && (
+            <div className="bg-slate-900 rounded-md px-3 py-2 flex items-center gap-2">
+              <Heart className="w-4 h-4 text-rose-400" />
+              <div>
+                <div className="text-sm font-semibold text-white">{stats.maxHR} bpm</div>
+                <div className="text-[10px] text-slate-500">FC max</div>
+              </div>
+            </div>
+          )}
+          {stats.gap && (
+            <div className="bg-slate-900 rounded-md px-3 py-2 flex items-center gap-2">
+              <Gauge className="w-4 h-4 text-indigo-400" />
+              <div>
+                <div className="text-sm font-semibold text-white">{formatDuration(stats.gap)}</div>
+                <div className="text-[10px] text-slate-500">GAP</div>
+              </div>
+            </div>
+          )}
           {laps.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Tours</h3>
-              <div className="space-y-1">
-                {laps.map(lap => (
-                  <div key={lap.number} className="flex items-center justify-between text-sm px-3 py-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                    <span className="font-medium text-slate-700 dark:text-slate-300">Tour {lap.number}</span>
-                    <span className="text-slate-500">{formatDistance(lap.distance)}</span>
-                    <span className="text-slate-500 font-mono">{formatDuration(lap.duration)}</span>
-                  </div>
-                ))}
+            <div className="bg-slate-900 rounded-md px-3 py-2 flex items-center gap-2">
+              <Flag className="w-4 h-4 text-amber-400" />
+              <div>
+                <div className="text-sm font-semibold text-white">{laps.length}</div>
+                <div className="text-[10px] text-slate-500">Tours</div>
               </div>
             </div>
           )}
+        </div>
 
-          {/* Photos */}
-          {photos.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Photos ({photos.length})</h3>
-              <div className="flex gap-2 overflow-x-auto">
-                {photos.map((photo, i) => (
-                  <img key={i} src={photo} alt="" className="w-20 h-20 rounded-lg object-cover shrink-0" />
-                ))}
-              </div>
+        {/* Laps detail */}
+        {laps.length > 0 && (
+          <div>
+            <h3 className="text-sm font-semibold text-white mb-2">Tours</h3>
+            <div className="space-y-px">
+              {laps.map(lap => (
+                <div key={lap.number} className="flex items-center justify-between text-sm px-3 py-2.5 bg-slate-900 first:rounded-t-lg last:rounded-b-lg">
+                  <span className="text-slate-400">Tour {lap.number}</span>
+                  <span className="text-slate-500">{formatDistance(lap.distance)}</span>
+                  <span className="text-slate-300 font-mono">{formatDuration(lap.duration)}</span>
+                </div>
+              ))}
             </div>
-          )}
+          </div>
+        )}
 
-          <input
-            type="text"
-            value={activityName}
-            onChange={(e) => setActivityName(e.target.value)}
-            placeholder="Nom de l'activité"
-            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-          />
-        </div>
+        {/* Photos */}
+        {photos.length > 0 && (
+          <div>
+            <h3 className="text-sm font-semibold text-white mb-2">Photos ({photos.length})</h3>
+            <div className="flex gap-2 overflow-x-auto">
+              {photos.map((photo, i) => (
+                <img key={i} src={photo} alt="" className="w-20 h-20 rounded-lg object-cover shrink-0" />
+              ))}
+            </div>
+          </div>
+        )}
 
-        <div className="px-4 pb-8 pt-4 border-t border-slate-100 dark:border-slate-800 flex gap-3">
-          <Button onClick={() => setStateAndRef('finished')} variant="secondary" className="flex-1 h-14">
-            <X className="w-5 h-5 mr-2" />Retour
-          </Button>
-          <Button onClick={saveActivity} className="flex-1 h-14 bg-gradient-to-r from-blue-600 to-blue-500">
-            <Save className="w-5 h-5 mr-2" />Sauvegarder
-          </Button>
-        </div>
+        <input
+          type="text"
+          value={activityName}
+          onChange={(e) => setActivityName(e.target.value)}
+          placeholder="Nom de l'activité"
+          className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-lg text-white placeholder:text-slate-600 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20"
+        />
+      </div>
+
+      <div className="px-4 pb-8 pt-4 border-t border-slate-900 flex gap-3">
+        <button onClick={() => setStateAndRef('finished')} className="flex-1 h-12 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 flex items-center justify-center gap-2 text-sm font-medium transition-colors">
+          <X className="w-4 h-4" />Retour
+        </button>
+        <button onClick={saveActivity} className="flex-1 h-12 rounded-lg bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white flex items-center justify-center gap-2 text-sm font-medium transition-colors">
+          <Save className="w-4 h-4" />Sauvegarder
+        </button>
+      </div>
     </motion.div>
   );
 
@@ -1295,12 +1313,12 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, y: 50 }}
       transition={{ duration: 0.3 }}
-      className="fixed inset-0 z-40 bg-white dark:bg-slate-950 flex flex-col"
+      className="fixed inset-0 z-40 bg-slate-950 flex flex-col"
     >
       <ScreenLockOverlay isLocked={screenLocked} onUnlock={unlockScreen} />
 
-      {/* Header */}
-      <div className={`bg-gradient-to-r ${getSportColor()} text-white px-4 pt-12 pb-4`}>
+      {/* Header — minimal dark */}
+      <div className="px-4 pt-12 pb-3">
         <div className="flex items-center justify-between mb-3">
           <button
             onClick={() => {
@@ -1314,21 +1332,20 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
                 setStateAndRef('review');
               }
             }}
-            className="p-2 rounded-xl bg-white/20 active:scale-95 transition-transform"
+            className="p-2 rounded-lg hover:bg-slate-800 active:bg-slate-700 transition-colors"
           >
-            {state === 'finished' ? <Save className="w-5 h-5" /> : <X className="w-5 h-5" />}
+            {state === 'finished' ? <Save className="w-5 h-5 text-slate-300" /> : <X className="w-5 h-5 text-slate-300" />}
           </button>
 
-          <div className="flex items-center gap-2">
-            {/* Weather */}
+          <div className="flex items-center gap-3">
             {weather && (
-              <div className="flex items-center gap-1 bg-white/20 px-2.5 py-1.5 rounded-full text-xs">
+              <div className="flex items-center gap-1.5 text-slate-400 text-sm">
                 {getWeatherIcon()}
                 <span>{weather.temperature}°C</span>
               </div>
             )}
             {batteryLevel !== null && (
-              <div className="flex items-center gap-1.5 bg-white/20 px-3 py-1.5 rounded-full text-sm">
+              <div className="flex items-center gap-1.5 text-slate-400 text-sm">
                 {getBatteryIcon()}
                 <span>{batteryLevel}%</span>
               </div>
@@ -1336,68 +1353,69 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           </div>
         </div>
 
-        {/* GPS Status */}  
+        {/* GPS Status */}
         {state === 'idle' && permissionStatus === 'checking' && (
-          <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-xl px-3 py-2 mb-2">
+          <div className="flex items-center gap-2 text-slate-400 text-sm mb-2">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-500" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
             </span>
-            <span className="text-xs text-white/80">Recherche du GPS...</span>
+            <span>Recherche du GPS...</span>
           </div>
         )}
         {state === 'idle' && (permissionStatus === 'denied' || permissionStatus === 'unsupported') && (
-          <div className="flex items-center gap-2 bg-red-500/20 backdrop-blur-sm rounded-xl px-3 py-2 mb-2">
-            <AlertTriangle className="w-3.5 h-3.5 text-red-300" />
-            <span className="text-xs text-red-200">GPS non disponible — activez la localisation</span>
+          <div className="flex items-center gap-2 text-red-400 text-sm mb-2">
+            <AlertTriangle className="w-4 h-4" />
+            <span>GPS non disponible — activez la localisation</span>
           </div>
         )}
-        {/* Sport + Route picker */}
+
+        {/* Sport selector */}
         <button
           onClick={() => state === 'idle' && setShowSportPicker(true)}
-          className="w-full flex items-center gap-3 bg-white/15 backdrop-blur-sm rounded-2xl p-3 active:scale-[0.98] transition-transform"
+          className="w-full flex items-center gap-3 py-2 active:opacity-80 transition-opacity"
           disabled={state !== 'idle'}
         >
-          <div className="w-10 h-10 bg-white/25 rounded-xl flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center shrink-0">
             {getSportIcon()}
           </div>
           <div className="text-left flex-1 min-w-0">
-            <p className="font-bold truncate">{sport.nameFr}</p>
-            <p className="text-xs text-white/80 truncate">
-              {selectedRoute ? selectedRoute.name : sport.name}
+            <p className="font-semibold text-white truncate">{sport.nameFr}</p>
+            <p className="text-xs text-slate-500 truncate">
+              {selectedRoute ? selectedRoute.name : 'Appuyez pour changer'}
             </p>
           </div>
-          {state === 'idle' && <ChevronDown className="w-4 h-4 text-white/60 shrink-0" />}
+          {state === 'idle' && <ChevronRight className="w-4 h-4 text-slate-600 shrink-0" />}
         </button>
 
-        {/* Route progress bar */}
+        {/* Route progress */}
         {selectedRoute && state !== 'idle' && (
-          <div className="mt-2">
-            <div className="flex items-center justify-between text-xs text-white/70 mb-1">
+          <div className="mt-3">
+            <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
               <span>{selectedRoute.name}</span>
               <span>{Math.round(routeProgress)}%</span>
             </div>
-            <div className="h-1.5 bg-white/20 rounded-full overflow-hidden">
-              <div className="h-full bg-white/60 rounded-full transition-all duration-500" style={{ width: `${routeProgress}%` }} />
+            <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+              <div className="h-full bg-orange-500 rounded-full transition-all duration-500" style={{ width: `${routeProgress}%` }} />
             </div>
           </div>
         )}
 
-        {/* Coach session info */}
+        {/* Coach session */}
         {activeCoachSession && state !== 'idle' && (
-          <div className="mt-2 bg-white/10 rounded-xl px-3 py-2 text-xs">
-            <p className="font-medium text-white/90">{activeCoachSession.name}</p>
+          <div className="mt-3 bg-slate-900 rounded-lg px-3 py-2">
+            <p className="text-sm font-medium text-slate-300">{activeCoachSession.name}</p>
             {activeCoachSession.targetPace && (
-              <p className="text-white/70">Allure cible: {formatPace(60 / (activeCoachSession.targetPace / 60))}</p>
+              <p className="text-xs text-slate-500 mt-0.5">Allure cible: {formatPace(60 / (activeCoachSession.targetPace / 60))}</p>
             )}
           </div>
         )}
 
-        {/* Auto-pause indicator */}
+        {/* Auto-pause */}
         {isAutoPaused && (
-          <div className="mt-2 flex items-center gap-1.5 text-amber-200 text-xs">
+          <div className="mt-2 flex items-center gap-1.5 text-amber-400 text-xs">
             <AlertTriangle className="w-3.5 h-3.5" />
-            <span>Pause automatique — plus de mouvement détecté</span>
+            <span>Pause automatique</span>
           </div>
         )}
       </div>
@@ -1405,187 +1423,107 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-4 overflow-y-auto">
         {/* Timer */}
-        <div className="text-center mb-4">
-          <motion.div
-            className={`font-mono font-bold tracking-tight ${
-              state === 'recording' ? 'text-7xl text-blue-600 dark:text-blue-400 drop-shadow-glow' :
-              state === 'paused' ? 'text-6xl text-amber-600 dark:text-amber-400' :
-              'text-5xl text-slate-900 dark:text-white'
-            }`}
-            key={state === 'paused' ? 'paused' : state === 'recording' ? 'recording' : 'idle'}
-            animate={{ scale: state === 'recording' ? [1, 1.02, 1] : 1 }}
-            transition={{ duration: 2, repeat: state === 'recording' ? Infinity : 0 }}
-          >
-            <TimerFlip seconds={stats.duration} />
-          </motion.div>
-          {stats.elapsedTime > stats.duration && (
-            <motion.div
-              initial={{ opacity: 0, y: -5 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-xs text-slate-400 font-mono"
-            >
-              écoulé: {formatDuration(stats.elapsedTime)}
-            </motion.div>
-          )}
+        <div className="text-center mb-6">
+          <div className={`font-mono font-bold tracking-tight ${
+            state === 'recording' ? 'text-6xl text-white' :
+            state === 'paused' ? 'text-5xl text-amber-400' :
+            'text-4xl text-slate-400'
+          }`}>
+            <SimpleTimer seconds={stats.duration} />
+          </div>
           {state === 'recording' && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex items-center justify-center gap-2 mt-1"
-            >
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+            <div className="flex items-center justify-center gap-2 mt-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
               </span>
-              <motion.span
-                className="text-xs font-medium text-red-500 uppercase tracking-wider"
-                animate={{ opacity: [1, 0.5, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
+              <span className="text-xs font-medium text-slate-500 uppercase tracking-widest">
                 Enregistrement
-              </motion.span>
-            </motion.div>
+              </span>
+            </div>
           )}
           {state === 'paused' && (
-            <motion.span
-              initial={{ opacity: 0, y: -5 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-xs font-medium text-amber-500 uppercase tracking-wider"
-            >
+            <span className="text-xs font-medium text-amber-400 uppercase tracking-widest mt-2 block">
               {isAutoPaused ? 'Pause automatique' : 'En pause'}
-            </motion.span>
+            </span>
+          )}
+          {state === 'finished' && (
+            <span className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-2 block">
+              Terminé
+            </span>
           )}
 
           {/* Interval display */}
           {currentInterval && (
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-              className="mt-2 flex flex-col items-center gap-1"
-            >
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-medium">
-                <Zap className="w-4 h-4" />
-                <span>{currentInterval.phase === 'work' ? 'Effort' : 'Récup'}</span>
-                <span className="text-indigo-400">| Série {currentInterval.round}/{intervalConfig?.repeats}</span>
+            <div className="mt-3 flex flex-col items-center gap-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 text-sm font-medium">
+                <Zap className="w-4 h-4 text-orange-400" />
+                <span className="text-slate-300">{currentInterval.phase === 'work' ? 'Effort' : 'Récup'}</span>
+                <span className="text-slate-500">| Série {currentInterval.round}/{intervalConfig?.repeats}</span>
               </div>
               <IntervalRing
                 timeLeft={intervalTimeLeft}
                 total={currentInterval.phase === 'work' ? (intervalConfig?.work || 60) : (intervalConfig?.rest || 30)}
                 phase={currentInterval.phase}
               />
-            </motion.div>
+            </div>
           )}
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-3 w-full max-w-sm mb-4">
-          <motion.div
-            className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-3 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            whileHover={{ scale: 1.02 }}
-          >
-            <Navigation className="w-4 h-4 mx-auto mb-1 text-blue-500" />
-            <div className="text-lg font-bold text-slate-900 dark:text-white">
-              {stats.distance < 1000
-                ? <motion.span key={Math.round(stats.distance)} initial={{ y: 5, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>{Math.round(stats.distance)}</motion.span>
-                : <RollingNumber value={stats.distance / 1000} />
-              }
-              <span className="text-xs ml-0.5">{stats.distance < 1000 ? 'm' : 'km'}</span>
+        {/* Primary Stats — horizontal row */}
+        <div className="w-full max-w-sm mb-4">
+          <div className="flex items-center justify-between py-3 border-y border-slate-800">
+            <div className="flex-1 text-center">
+              <div className="text-3xl font-bold text-white">
+                {stats.distance < 1000 ? Math.round(stats.distance) : (stats.distance / 1000).toFixed(2)}
+              </div>
+              <div className="text-xs text-slate-500 mt-0.5">{stats.distance < 1000 ? 'mètres' : 'km'}</div>
             </div>
-            <div className="text-[10px] text-slate-500 mt-0.5">Distance</div>
-          </motion.div>
-          <motion.div
-            className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-3 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            whileHover={{ scale: 1.02 }}
-          >
-            <div className="flex items-center justify-center gap-1">
-              <TrendingUp className="w-4 h-4 text-green-500" />
-              {stats.avgSpeed > 0 && <SpeedGauge speed={stats.avgSpeed} />}
+            <div className="w-px h-10 bg-slate-800" />
+            <div className="flex-1 text-center">
+              <div className="text-3xl font-bold text-white">{formatDuration(stats.duration)}</div>
+              <div className="text-xs text-slate-500 mt-0.5">durée</div>
             </div>
-            <div className="text-lg font-bold text-slate-900 dark:text-white">
-              {stats.avgSpeed > 0 ? (
-                <motion.span
-                  key={Math.round(stats.avgSpeed * 10)}
-                  initial={{ y: 5, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                >
-                  {stats.avgSpeed.toFixed(1)}
-                </motion.span>
-              ) : '--'}
+            <div className="w-px h-10 bg-slate-800" />
+            <div className="flex-1 text-center">
+              <div className="text-3xl font-bold text-white">
+                {stats.avgSpeed > 0 ? formatPace(stats.avgSpeed) : '--:--'}
+              </div>
+              <div className="text-xs text-slate-500 mt-0.5">allure</div>
             </div>
-            <div className="text-[10px] text-slate-500 mt-0.5">km/h</div>
-          </motion.div>
-          <motion.div
-            className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-3 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            whileHover={{ scale: 1.02 }}
-          >
-            <Target className="w-4 h-4 mx-auto mb-1 text-orange-500" />
-            <div className="text-lg font-bold text-slate-900 dark:text-white">
-              {stats.avgSpeed > 0 ? (
-                <motion.span
-                  key={Math.round(stats.avgSpeed * 10)}
-                  initial={{ y: 5, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                >
-                  {formatPace(stats.avgSpeed)}
-                </motion.span>
-              ) : '--:--'}
-            </div>
-            <div className="text-[10px] text-slate-500 mt-0.5">allure</div>
-          </motion.div>
+          </div>
         </div>
 
-        {/* Secondary Stats Row */}
-        <div className="flex flex-wrap gap-2 justify-center w-full max-w-sm mb-3">
+        {/* Secondary Stats — compact chips */}
+        <div className="flex flex-wrap gap-2 justify-center w-full max-w-sm mb-4">
           {stats.elevationGain > 0 && (
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl px-3 py-1.5 flex items-center gap-1.5 text-xs">
-              <Mountain className="w-3.5 h-3.5 text-emerald-500" />
-              <span className="font-medium text-slate-700 dark:text-slate-300">+{Math.round(stats.elevationGain)}m</span>
-            </div>
-          )}
-          {currentGPS && (
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl px-3 py-1.5 flex items-center gap-1.5 text-xs">
-              <MapPin className="w-3.5 h-3.5 text-purple-500" />
-              <span className="font-medium text-slate-700 dark:text-slate-300">
-                {currentGPS.speed ? `${(currentGPS.speed * 3.6).toFixed(1)}` : '--'} km/h
-              </span>
+            <div className="bg-slate-900 rounded-md px-2.5 py-1.5 flex items-center gap-1.5 text-xs">
+              <Mountain className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-slate-300 font-medium">+{Math.round(stats.elevationGain)}m</span>
             </div>
           )}
           {currentGPS && currentGPS.speed && currentGPS.speed > 0 && (
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl px-3 py-1.5 flex items-center gap-1.5 text-xs">
-              <Clock className="w-3.5 h-3.5 text-orange-500" />
-              <span className="font-medium text-slate-700 dark:text-slate-300">{formatPace((currentGPS.speed * 3.6))}/km</span>
+            <div className="bg-slate-900 rounded-md px-2.5 py-1.5 flex items-center gap-1.5 text-xs">
+              <TrendingUp className="w-3.5 h-3.5 text-green-400" />
+              <span className="text-slate-300 font-medium">{(currentGPS.speed * 3.6).toFixed(1)} km/h</span>
             </div>
           )}
           {hrConnected && hrData && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-red-50 dark:bg-red-900/20 rounded-xl px-3 py-1.5 flex items-center gap-1.5 text-xs"
-            >
-              <HrPulse bpm={hrData.heartRate} />
-              <span className="font-medium text-red-700 dark:text-red-300">{hrData.heartRate} bpm</span>
-            </motion.div>
+            <div className="bg-slate-900 rounded-md px-2.5 py-1.5 flex items-center gap-1.5 text-xs">
+              <Heart className="w-3.5 h-3.5 text-red-400" />
+              <span className="text-slate-300 font-medium">{hrData.heartRate} bpm</span>
+            </div>
           )}
           {stats.gap && (
-            <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl px-3 py-1.5 flex items-center gap-1.5 text-xs">
-              <Gauge className="w-3.5 h-3.5 text-indigo-500" />
-              <span className="font-medium text-indigo-700 dark:text-indigo-300">{formatDuration(stats.gap)}/km</span>
+            <div className="bg-slate-900 rounded-md px-2.5 py-1.5 flex items-center gap-1.5 text-xs">
+              <Gauge className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="text-slate-300 font-medium">{formatDuration(stats.gap)}/km</span>
             </div>
           )}
           {laps.length > 0 && (
-            <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl px-3 py-1.5 flex items-center gap-1.5 text-xs">
-              <Flag className="w-3.5 h-3.5 text-amber-500" />
-              <span className="font-medium text-amber-700 dark:text-amber-300">{laps.length} tour{(laps.length > 1 ? 's' : '')}</span>
+            <div className="bg-slate-900 rounded-md px-2.5 py-1.5 flex items-center gap-1.5 text-xs">
+              <Flag className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-slate-300 font-medium">{laps.length} tour{(laps.length > 1 ? 's' : '')}</span>
             </div>
           )}
         </div>
@@ -1596,11 +1534,11 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             transition={{ duration: 0.5 }}
-            className="w-full max-w-sm mb-3 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm"
+            className="w-full max-w-sm mb-3 rounded-lg overflow-hidden"
           >
             <LiveMap
               points={points}
-              height={state === 'finished' ? 'h-40' : 'h-36'}
+              height={state === 'finished' ? 'h-32' : 'h-28'}
               currentPosition={currentGPS ? [currentGPS.latitude, currentGPS.longitude] : null}
               accuracy={currentGPS?.accuracy}
               segments={showSegmentsOnMap && segments.length > 0 ? segments.map(s => ({
@@ -1620,250 +1558,191 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
               value={activityName}
               onChange={(e) => setActivityName(e.target.value)}
               placeholder="Nom de l'activité (optionnel)"
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-lg text-white placeholder:text-slate-600 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20"
             />
           </div>
         )}
       </div>
 
       {/* Controls */}
-      <div className="px-4 pb-6 pt-3 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800">
-        <div className="flex items-center justify-center gap-3 max-w-sm mx-auto">
-          <AnimatePresence mode="wait">
-          {state === 'idle' && (
-            <motion.div
-              key="idle-controls"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ staggerChildren: 0.08 }}
-              className="flex items-center justify-center gap-3"
+      <div className="px-4 pb-6 pt-3 bg-slate-950 border-t border-slate-900">
+        <AnimatePresence mode="wait">
+        {state === 'idle' && (
+          <motion.div
+            key="idle-controls"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="flex items-center justify-center gap-6"
+          >
+            <button
+              onClick={() => setShowRoutePicker(true)}
+              className="w-12 h-12 rounded-full hover:bg-slate-800 active:bg-slate-700 flex items-center justify-center transition-colors"
             >
-              <motion.button
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setShowRoutePicker(true)}
-                className="w-14 h-14 rounded-full bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/30 flex items-center justify-center"
-              >
-                <MapPin className="w-6 h-6 fill-white text-white" />
-              </motion.button>
-              <motion.button
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.08 }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={startRecording}
-                disabled={permissionStatus === 'denied' || permissionStatus === 'unsupported'}
-                className="w-20 h-20 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-lg shadow-green-500/30 flex items-center justify-center disabled:opacity-50"
-              >
-                <Play className="w-8 h-8 fill-white text-white ml-1" />
-              </motion.button>
-              <motion.button
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.16 }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setShowSegmentPicker(true)}
-                className="w-14 h-14 rounded-full bg-purple-500 hover:bg-purple-600 shadow-lg shadow-purple-500/30 flex items-center justify-center"
-              >
-                <Target className="w-6 h-6 text-white" />
-              </motion.button>
-            </motion.div>
-          )}
-
-          {state === 'recording' && (
-            <motion.div
-              key="recording-controls"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ staggerChildren: 0.05 }}
-              className="flex items-center justify-center gap-3"
+              <MapPin className="w-5 h-5 text-slate-400" />
+            </button>
+            <button
+              onClick={startRecording}
+              disabled={permissionStatus === 'denied' || permissionStatus === 'unsupported'}
+              className="w-20 h-20 rounded-full bg-orange-500 hover:bg-orange-600 active:bg-orange-700 disabled:opacity-50 flex items-center justify-center transition-colors"
             >
-              {/* HR Connect */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0 }}
-              >
-                {!hrConnected ? (
-                  <button
-                    onClick={connectHR}
-                    disabled={isScanning}
-                    className="w-12 h-12 rounded-full bg-pink-500 hover:bg-pink-600 shadow-lg shadow-pink-500/30 flex items-center justify-center disabled:opacity-50"
-                  >
-                    <Heart className="w-5 h-5 text-white" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={disconnectHR}
-                    className="w-12 h-12 rounded-full bg-pink-600 shadow-lg flex items-center justify-center"
-                    title={hrData ? `${hrData.heartRate} bpm` : 'Connecté'}
-                  >
-                    <BluetoothConnected className="w-5 h-5 text-white" />
-                  </button>
-                )}
-              </motion.div>
-
-              {/* Lap button */}
-              <motion.button
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.05 }}
-                whileTap={{ scale: 0.85 }}
-                onClick={markLap}
-                className="w-12 h-12 rounded-full bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/30 flex items-center justify-center"
-              >
-                <Flag className="w-5 h-5 text-white" />
-              </motion.button>
-
-              {/* Pause */}
-              <motion.button
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
-                whileTap={{ scale: 0.85 }}
-                onClick={pauseRecording}
-                className="w-16 h-16 rounded-full bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/30 flex items-center justify-center"
-              >
-                <Pause className="w-7 h-7 fill-white text-white" />
-              </motion.button>
-
-              {/* Stop */}
-              <motion.button
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.15 }}
-                whileTap={{ scale: 0.85 }}
-                onClick={stopRecording}
-                className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30 flex items-center justify-center"
-              >
-                <Square className="w-7 h-7 fill-white text-white" />
-              </motion.button>
-
-              {/* Lock */}
-              <motion.button
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
-                whileTap={{ scale: 0.85 }}
-                onClick={lockScreen}
-                className="w-12 h-12 rounded-full bg-slate-500 hover:bg-slate-600 shadow-lg flex items-center justify-center"
-              >
-                <Lock className="w-5 h-5 text-white" />
-              </motion.button>
-
-              {/* Photo */}
-              <motion.button
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.25 }}
-                whileTap={{ scale: 0.85 }}
-                onClick={takePhoto}
-                className="w-12 h-12 rounded-full bg-emerald-500 hover:bg-emerald-600 shadow-lg flex items-center justify-center"
-              >
-                <Camera className="w-5 h-5 text-white" />
-              </motion.button>
-
-              {/* Intervals */}
-              {!intervalConfig && (
-                <motion.button
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.3 }}
-                  whileTap={{ scale: 0.85 }}
-                  onClick={startIntervalMode}
-                  className="w-12 h-12 rounded-full bg-indigo-500 hover:bg-indigo-600 shadow-lg flex items-center justify-center"
-                >
-                  <Zap className="w-5 h-5 text-white" />
-                </motion.button>
-              )}
-            </motion.div>
-          )}
-
-          {state === 'paused' && (
-            <motion.div
-              key="paused-controls"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-              className="flex items-center justify-center gap-3"
+              <Play className="w-8 h-8 fill-white text-white ml-1" />
+            </button>
+            <button
+              onClick={() => setShowSegmentPicker(true)}
+              className="w-12 h-12 rounded-full hover:bg-slate-800 active:bg-slate-700 flex items-center justify-center transition-colors"
             >
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={resumeRecording}
-                className="w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-lg shadow-green-500/30 flex items-center justify-center"
-              >
-                <Play className="w-7 h-7 fill-white text-white ml-1" />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={stopRecording}
-                className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30 flex items-center justify-center"
-              >
-                <Square className="w-7 h-7 fill-white text-white" />
-              </motion.button>
-            </motion.div>
-          )}
+              <Target className="w-5 h-5 text-slate-400" />
+            </button>
+          </motion.div>
+        )}
 
-          {state === 'finished' && (
-            <motion.div
-              key="finished-controls"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-              className="flex items-center justify-center gap-3 w-full max-w-sm"
-            >
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={cancelRecording}
-                className="flex-1 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center gap-2 text-sm font-medium"
-              >
-                <X className="w-4 h-4" />
-                Supprimer
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setStateAndRef('review')}
-                className="flex-1 h-12 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-lg shadow-blue-500/30 text-white flex items-center justify-center gap-2 text-sm font-medium"
-              >
-                <Save className="w-4 h-4" />
-                Voir le résumé
-              </motion.button>
-            </motion.div>
-          )}
-          </AnimatePresence>
-        </div>
-
-        {/* Extra controls row - only during recording */}
         {state === 'recording' && (
-          <div className="flex items-center justify-center gap-4 mt-2">
+          <motion.div
+            key="recording-controls"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex items-center justify-center gap-4"
+          >
+            {/* HR */}
+            {!hrConnected ? (
+              <button
+                onClick={connectHR}
+                disabled={isScanning}
+                className="w-10 h-10 rounded-full hover:bg-slate-800 active:bg-slate-700 disabled:opacity-50 flex items-center justify-center transition-colors"
+              >
+                <Heart className="w-4 h-4 text-slate-400" />
+              </button>
+            ) : (
+              <button
+                onClick={disconnectHR}
+                className="w-10 h-10 rounded-full hover:bg-slate-800 active:bg-slate-700 flex items-center justify-center transition-colors"
+                title={hrData ? `${hrData.heartRate} bpm` : 'Connecté'}
+              >
+                <BluetoothConnected className="w-4 h-4 text-slate-400" />
+              </button>
+            )}
+
+            {/* Lap */}
+            <button
+              onClick={markLap}
+              className="w-10 h-10 rounded-full hover:bg-slate-800 active:bg-slate-700 flex items-center justify-center transition-colors"
+            >
+              <Flag className="w-4 h-4 text-slate-400" />
+            </button>
+
+            {/* Pause */}
+            <button
+              onClick={pauseRecording}
+              className="w-14 h-14 rounded-full bg-amber-500 hover:bg-amber-600 active:bg-amber-700 flex items-center justify-center transition-colors"
+            >
+              <Pause className="w-6 h-6 fill-white text-white" />
+            </button>
+
+            {/* Stop */}
+            <button
+              onClick={stopRecording}
+              className="w-14 h-14 rounded-full bg-red-500 hover:bg-red-600 active:bg-red-700 flex items-center justify-center transition-colors"
+            >
+              <Square className="w-6 h-6 fill-white text-white" />
+            </button>
+
+            {/* Lock */}
+            <button
+              onClick={lockScreen}
+              className="w-10 h-10 rounded-full hover:bg-slate-800 active:bg-slate-700 flex items-center justify-center transition-colors"
+            >
+              <Lock className="w-4 h-4 text-slate-400" />
+            </button>
+
+            {/* Photo */}
+            <button
+              onClick={takePhoto}
+              className="w-10 h-10 rounded-full hover:bg-slate-800 active:bg-slate-700 flex items-center justify-center transition-colors"
+            >
+              <Camera className="w-4 h-4 text-slate-400" />
+            </button>
+
+            {/* Intervals */}
+            {!intervalConfig && (
+              <button
+                onClick={startIntervalMode}
+                className="w-10 h-10 rounded-full hover:bg-slate-800 active:bg-slate-700 flex items-center justify-center transition-colors"
+              >
+                <Zap className="w-4 h-4 text-slate-400" />
+              </button>
+            )}
+          </motion.div>
+        )}
+
+        {state === 'paused' && (
+          <motion.div
+            key="paused-controls"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="flex items-center justify-center gap-6"
+          >
+            <button
+              onClick={resumeRecording}
+              className="w-16 h-16 rounded-full bg-orange-500 hover:bg-orange-600 active:bg-orange-700 flex items-center justify-center transition-colors"
+            >
+              <Play className="w-7 h-7 fill-white text-white ml-1" />
+            </button>
+            <button
+              onClick={stopRecording}
+              className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 active:bg-red-700 flex items-center justify-center transition-colors"
+            >
+              <Square className="w-7 h-7 fill-white text-white" />
+            </button>
+          </motion.div>
+        )}
+
+        {state === 'finished' && (
+          <motion.div
+            key="finished-controls"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="flex items-center justify-center gap-3 w-full max-w-sm"
+          >
+            <button
+              onClick={cancelRecording}
+              className="flex-1 h-12 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 flex items-center justify-center gap-2 text-sm font-medium transition-colors"
+            >
+              <X className="w-4 h-4" />
+              Supprimer
+            </button>
+            <button
+              onClick={() => setStateAndRef('review')}
+              className="flex-1 h-12 rounded-lg bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white flex items-center justify-center gap-2 text-sm font-medium transition-colors"
+            >
+              <Save className="w-4 h-4" />
+              Voir le résumé
+            </button>
+          </motion.div>
+        )}
+        </AnimatePresence>
+
+        {/* Extra controls */}
+        {state === 'recording' && (
+          <div className="flex items-center justify-center gap-4 mt-3">
             <button
               onClick={() => {
                 autoPauseEnabledRef.current = !autoPauseEnabledRef.current;
                 toast.info(autoPauseEnabledRef.current ? 'Auto-pause activée' : 'Auto-pause désactivée');
               }}
-              className={`text-xs flex items-center gap-1 px-2 py-1 rounded-full transition-colors ${
+              className={`text-xs flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-colors ${
                 autoPauseEnabledRef.current
-                  ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                  : 'text-slate-400'
+                  ? 'text-slate-300 bg-slate-800'
+                  : 'text-slate-600'
               }`}
             >
               {autoPauseEnabledRef.current ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
               Auto-pause
             </button>
-            <span className="text-[10px] text-slate-400">
+            <span className="text-[10px] text-slate-600">
               {gpsHighAccuracy ? 'GPS haute précision' : 'GPS économie'}
             </span>
           </div>
@@ -1872,7 +1751,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
 
       {/* GPS Status Bar */}
       {currentGPS && state !== 'idle' && (
-        <div className="px-4 py-1.5 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+        <div className="px-4 py-1.5 bg-slate-900 border-t border-slate-800">
           <div className="flex items-center justify-between text-[10px] text-slate-500 max-w-sm mx-auto">
             <div className="flex items-center gap-1.5">
               <MapPin className="w-3 h-3" />

@@ -42,7 +42,7 @@ export function SportPicker({ selectedSport, onSelect, onClose }: SportPickerPro
   const sportsInCategory = Object.values(SPORTS).filter(s => s.category === activeCategory);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Category Tabs */}
       <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide">
         {CATEGORY_ORDER.map((cat) => {
@@ -54,14 +54,14 @@ export function SportPicker({ selectedSport, onSelect, onClose }: SportPickerPro
               onClick={() => setActiveCategory(cat)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
                 activeCategory === cat
-                  ? 'bg-primary text-white shadow-sm'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  ? 'bg-orange-500 text-white'
+                  : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
               {CATEGORY_LABELS[cat]}
               <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${
-                activeCategory === cat ? 'bg-white/20' : 'bg-muted-foreground/20'
+                activeCategory === cat ? 'bg-white/20' : 'bg-slate-700'
               }`}>
                 {count}
               </span>
@@ -81,20 +81,20 @@ export function SportPicker({ selectedSport, onSelect, onClose }: SportPickerPro
                 onSelect(sport.id);
                 onClose?.();
               }}
-              className={`flex items-center gap-2 p-3 rounded-xl border-2 text-left transition-all ${
+              className={`flex items-center gap-2 p-3 rounded-lg text-left transition-all ${
                 isSelected
-                  ? 'border-primary bg-primary/5 shadow-sm'
-                  : 'border-border hover:border-primary/30 hover:bg-muted/50'
+                  ? 'bg-slate-800 border border-orange-500/30'
+                  : 'bg-slate-800/50 border border-transparent hover:bg-slate-800'
               }`}
             >
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                isSelected ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'
+              <div className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${
+                isSelected ? 'bg-orange-500 text-white' : 'bg-slate-700 text-slate-400'
               }`}>
                 {isSelected ? <Check className="w-4 h-4" /> : <SportIcon sport={sport.id} />}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-medium truncate">{sport.nameFr}</p>
-                <p className="text-xs text-muted-foreground truncate">{sport.name}</p>
+                <p className="text-sm font-medium text-white truncate">{sport.nameFr}</p>
+                <p className="text-xs text-slate-500 truncate">{sport.name}</p>
               </div>
             </button>
           );
