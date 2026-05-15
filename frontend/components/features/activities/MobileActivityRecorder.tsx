@@ -26,6 +26,12 @@ import {
 } from '@/lib/offlineQueue';
 import { fetchWeather, type WeatherData } from '@/lib/weather';
 
+const logger = {
+  info: (msg: string, data?: any) => console.log(`[INFO] ${msg}`, data),
+  error: (msg: string, data?: any) => console.error(`[ERROR] ${msg}`, data),
+  warn: (msg: string, data?: any) => console.warn(`[WARN] ${msg}`, data),
+};
+
 function LiveMap({ points, height = 'h-32', currentPosition, accuracy, segments }: {
   points: Array<{ gps: { latitude: number; longitude: number } }>;
   height?: string;
@@ -697,17 +703,60 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             setActiveSegment(nowInSegment);
             setSegmentStartTime(Date.now());
             toast.info(`Segment: ${nowInSegment.name}`);
+
+            // Start ghost race if in race mode
+            if (ghostRaceMode && selectedRaceSegment?.id === nowInSegment.id) {
+              setSegmentEfforts(prev => new Map(prev).set(nowInSegment.id, {
+                startTime: Date.now(),
+                elapsedTime: 0,
+                prOffset: 0,
+              }));
+            }
           } else if (!nowInSegment && activeSegment) {
             const segDuration = (Date.now() - (segmentStartTime || Date.now())) / 1000;
-              if ((activeSegment.personalRecord ?? Infinity) > segDuration) {
+            if ((activeSegment.personalRecord ?? Infinity) > segDuration) {
               setSegments(prevSegments =>
                 prevSegments.map(seg =>
                   seg.id === activeSegment.id ? { ...seg, personalRecord: segDuration } : seg
                 )
               );
             }
+
+            // Save effort if in ghost race mode
+            if (ghostRaceMode && selectedRaceSegment?.id === activeSegment.id) {
+              setSegmentEfforts(prev => {
+                const next = new Map(prev);
+                const effort = next.get(activeSegment.id);
+                if (effort) {
+                  effort.elapsedTime = segDuration;
+                  next.set(activeSegment.id, effort);
+                }
+                return next;
+              });
+              toast.info(`Segment terminé: ${formatDuration(segDuration)}`);
+            }
+
             setActiveSegment(null);
             setSegmentStartTime(null);
+          }
+        }
+
+        // Ghost race update
+        if (ghostRaceMode && ghostState) {
+          updateGhostPosition(gpsData.latitude, gpsData.longitude);
+
+          // Track elapsed time for active ghost segment
+          if (activeSegment && ghostRaceMode) {
+            setSegmentEfforts(prev => {
+              const next = new Map(prev);
+              const effort = next.get(activeSegment.id);
+              if (effort) {
+                effort.elapsedTime = (Date.now() - effort.startTime) / 1000;
+                effort.prOffset = effort.elapsedTime - (ghostState.progress / 100) * ghostState.prTime;
+                next.set(activeSegment.id, effort);
+              }
+              return next;
+            });
           }
         }
 
@@ -904,6 +953,11 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
         await uploadPhotos(activityId);
       }
 
+      // Save segment efforts
+      if (activityId && segmentEfforts.size > 0) {
+        await saveSegmentEffortToBackend(activityId);
+      }
+
       vibrate([80, 50, 80]);
       toast.success('Activité sauvegardée !');
       resetState();
@@ -934,6 +988,15 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     isAutoPausedRef.current = false;
     setGpsHighAccuracy(true);
     clearCheckpoint();
+    setUploadedGpxRoute(null);
+    setGhostState(null);
+    setGhostRaceMode(false);
+    setSelectedRaceSegment(null);
+    setSegmentEfforts(new Map());
+    setShowCreateSegment(false);
+    setSegmentStartIdx(null);
+    setSegmentEndIdx(null);
+    setNewSegmentName('');
   };
 
   const cancelRecording = () => {
@@ -966,7 +1029,6 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
 
   const loadUserSegments = async () => {
     try {
-      // Load nearby segments based on last known position (if available)
       if (currentGPS) {
         const result = await api.getNearbySegments(currentGPS.latitude, currentGPS.longitude, 50000);
         if (result?.segments) {
@@ -980,6 +1042,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             endLng: s.end_lng || 0,
             distance: s.distance || 0,
             elevationGain: s.elevation_gain || 0,
+            personalRecord: s.pr_time || undefined,
           })));
         }
       }
@@ -1024,6 +1087,223 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     const mins = Math.floor(paceMinPerKm);
     const secs = Math.round((paceMinPerKm - mins) * 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // ── GPX Upload ──
+  const parseGPX = (gpxText: string): GPXRoute | null => {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(gpxText, 'text/xml');
+      const trackPoints = doc.querySelectorAll('trkpt');
+      if (trackPoints.length === 0) return null;
+
+      const pts: Array<{ latitude: number; longitude: number; elevation?: number }> = [];
+      let totalElevation = 0;
+      let totalDistance = 0;
+
+      trackPoints.forEach((pt, i) => {
+        const lat = parseFloat(pt.getAttribute('lat') || '0');
+        const lon = parseFloat(pt.getAttribute('lon') || '0');
+        const ele = pt.querySelector('ele');
+        const elevation = ele ? parseFloat(ele.textContent || '0') : undefined;
+
+        if (i > 0) {
+          const prev = pts[pts.length - 1];
+          totalDistance += haversine(prev, { latitude: lat, longitude: lon });
+          if (elevation !== undefined && prev.elevation !== undefined) {
+            const diff = elevation - prev.elevation;
+            if (diff > 2) totalElevation += diff;
+          }
+        }
+
+        pts.push({ latitude: lat, longitude: lon, elevation });
+      });
+
+      const nameEl = doc.querySelector('name');
+      const name = nameEl?.textContent || 'Parcours importé';
+
+      // Simple polyline encoding
+      const polyline = pts.map(p => `${p.latitude.toFixed(5)},${p.longitude.toFixed(5)}`).join(';');
+
+      return { name, points: pts, distance: totalDistance, elevationGain: totalElevation, polyline };
+    } catch {
+      return null;
+    }
+  };
+
+  const handleGpxUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.gpx')) {
+      toast.error('Format GPX uniquement');
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const route = parseGPX(text);
+      if (route && route.points.length > 2) {
+        setUploadedGpxRoute(route);
+        setShowGpxUpload(false);
+
+        // Add as a temporary route for following
+        const tempRoute: Route = {
+          id: `gpx_${Date.now()}`,
+          name: route.name,
+          polyline: route.polyline,
+          distance: route.distance,
+          elevationGain: route.elevationGain,
+        };
+        setSelectedRoute(tempRoute);
+        toast.success(`Parcours "${route.name}" importé (${formatDistance(route.distance)})`);
+      } else {
+        toast.error('Impossible de parser le fichier GPX');
+      }
+    } catch {
+      toast.error('Erreur lors de la lecture du fichier');
+    }
+
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  // ── Ghost Racing ──
+  const startGhostRace = async (segment: Segment) => {
+    try {
+      const efforts = await api.getMySegmentEfforts(parseInt(segment.id));
+      const bestEffort = (efforts?.efforts as any[])?.[0];
+
+      if (!bestEffort) {
+        toast.error('Aucun effort enregistré sur ce segment');
+        return;
+      }
+
+      setSelectedRaceSegment(segment);
+      setGhostRaceMode(true);
+      setGhostState({
+        segmentId: segment.id,
+        segmentName: segment.name,
+        prTime: bestEffort.elapsed_time,
+        currentOffset: 0,
+        ghostPosition: [segment.startLat, segment.startLng],
+        progress: 0,
+      });
+      toast.info(`Ghost race: ${segment.name} — PR: ${formatDuration(bestEffort.elapsed_time)}`);
+    } catch {
+      toast.error('Erreur lors du chargement du PR');
+    }
+  };
+
+  const updateGhostPosition = (currentLat: number, currentLng: number) => {
+    if (!ghostState || !selectedRaceSegment) return;
+
+    // Calculate progress along segment
+    const segDist = haversine(
+      { latitude: selectedRaceSegment.startLat, longitude: selectedRaceSegment.startLng },
+      { latitude: selectedRaceSegment.endLat, longitude: selectedRaceSegment.endLng }
+    );
+    const userDistFromStart = haversine(
+      { latitude: selectedRaceSegment.startLat, longitude: selectedRaceSegment.startLng },
+      { latitude: currentLat, longitude: currentLng }
+    );
+    const progress = Math.min(100, (userDistFromStart / segDist) * 100);
+
+    // Calculate ghost position based on time offset
+    const elapsed = (Date.now() - (segmentEfforts.get(ghostState.segmentId)?.startTime || Date.now())) / 1000;
+    const ghostProgress = Math.min(100, (elapsed / ghostState.prTime) * 100);
+
+    // Interpolate ghost position
+    const ghostLat = selectedRaceSegment.startLat + (selectedRaceSegment.endLat - selectedRaceSegment.startLat) * (ghostProgress / 100);
+    const ghostLng = selectedRaceSegment.startLng + (selectedRaceSegment.endLng - selectedRaceSegment.startLng) * (ghostProgress / 100);
+
+    const offset = elapsed - (ghostProgress / 100) * ghostState.prTime;
+
+    setGhostState(prev => prev ? {
+      ...prev,
+      currentOffset: -offset, // Negative = behind, Positive = ahead
+      ghostPosition: [ghostLat, ghostLng],
+      progress,
+    } : null);
+  };
+
+  const saveSegmentEffortToBackend = async (activityId: number) => {
+    for (const [segmentId, effort] of segmentEfforts.entries()) {
+      try {
+        await api.createSegmentEffort({
+          segmentId: parseInt(segmentId),
+          data: {
+            activity_id: activityId,
+            elapsed_time: effort.elapsedTime,
+            moving_time: effort.elapsedTime,
+            start_date: new Date(effort.startTime).toISOString(),
+          },
+        });
+      } catch (err) {
+        logger.error('Failed to save segment effort', { segmentId, error: err });
+      }
+    }
+  };
+
+  // ── Create Segment from Activity ──
+  const createSegmentFromActivity = async () => {
+    if (segmentStartIdx === null || segmentEndIdx === null || points.length === 0) {
+      toast.error('Sélectionnez un start et end sur le tracé');
+      return;
+    }
+
+    const startPt = points[segmentStartIdx].gps;
+    const endPt = points[segmentEndIdx].gps;
+    const distance = haversine(startPt, endPt);
+
+    if (distance < 100) {
+      toast.error('Le segment doit faire au moins 100m');
+      return;
+    }
+
+    // Calculate elevation gain for the segment
+    let elevationGain = 0;
+    for (let i = segmentStartIdx; i < segmentEndIdx && i < points.length - 1; i++) {
+      const alt1 = points[i].gps.altitude;
+      const alt2 = points[i + 1].gps.altitude;
+      if (alt1 !== null && alt2 !== null) {
+        const diff = alt2 - alt1;
+        if (diff > 2) elevationGain += diff;
+      }
+    }
+
+    // Create polyline for the segment
+    const segmentPoints = points.slice(segmentStartIdx, segmentEndIdx + 1);
+    const polyline = segmentPoints.map(p => `${p.gps.latitude.toFixed(5)},${p.gps.longitude.toFixed(5)}`).join(';');
+
+    try {
+      const result = await api.createSegment({
+        name: newSegmentName || `Segment ${sport.nameFr}`,
+        description: `Créé depuis une activité ${sport.nameFr}`,
+        start_lat: startPt.latitude,
+        start_lng: startPt.longitude,
+        end_lat: endPt.latitude,
+        end_lng: endPt.longitude,
+        distance,
+        elevation_gain: elevationGain,
+        polyline,
+        activity_type: sport.name,
+      });
+
+      if (result.success) {
+        toast.success(`Segment "${newSegmentName || sport.nameFr}" créé !`);
+        setShowCreateSegment(false);
+        setSegmentStartIdx(null);
+        setSegmentEndIdx(null);
+        setNewSegmentName('');
+
+        // Reload segments
+        await loadUserSegments();
+      } else {
+        toast.error(result.error || 'Erreur lors de la création du segment');
+      }
+    } catch {
+      toast.error('Erreur lors de la création du segment');
+    }
   };
 
   const getBatteryIcon = () => {
@@ -1127,6 +1407,30 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             )}
             {showSegmentPicker && (
               <div className="space-y-2">
+                {/* Actions */}
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  <button
+                    onClick={() => { setShowSegmentPicker(false); setShowGpxUpload(true); fileInputRef.current?.click(); }}
+                    className="flex items-center gap-2 p-3 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors"
+                  >
+                    <Upload className="w-4 h-4 text-orange-400" />
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-white">Importer GPX</p>
+                      <p className="text-[10px] text-slate-500">Suivre une trace</p>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => { setShowSegmentPicker(false); setShowCreateSegment(true); }}
+                    className="flex items-center gap-2 p-3 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors"
+                  >
+                    <Plus className="w-4 h-4 text-emerald-400" />
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-white">Créer segment</p>
+                      <p className="text-[10px] text-slate-500">Depuis le tracé</p>
+                    </div>
+                  </button>
+                </div>
+
                 <label className="flex items-center gap-2 text-sm text-slate-300 mb-3">
                   <input type="checkbox" checked={showSegmentsOnMap} onChange={e => setShowSegmentsOnMap(e.target.checked)} className="rounded bg-slate-800 border-slate-700" />
                   Afficher les segments sur la carte
@@ -1139,13 +1443,22 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
                     key={seg.id}
                     className="p-3 rounded-lg bg-slate-800/50"
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-1">
                       <p className="font-medium text-white">{seg.name}</p>
                       {seg.personalRecord && (
                         <span className="text-xs text-emerald-400 font-mono">{formatDuration(seg.personalRecord)}</span>
                       )}
                     </div>
-                    <p className="text-sm text-slate-500 mt-0.5">{formatDistance(seg.distance)} · {Math.round(seg.elevationGain)}m D+</p>
+                    <p className="text-sm text-slate-500">{formatDistance(seg.distance)} · {Math.round(seg.elevationGain)}m D+</p>
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => { setShowSegmentPicker(false); startGhostRace(seg); }}
+                        className="flex-1 h-8 rounded-md bg-slate-700 hover:bg-slate-600 text-xs text-slate-300 flex items-center justify-center gap-1 transition-colors"
+                      >
+                        <Ghost className="w-3 h-3" />
+                        Ghost race
+                      </button>
+                    </div>
                   </div>
                 ))}
                 {activeSegment && (
@@ -1779,8 +2092,130 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   );
 
   return (
-    <AnimatePresence mode="wait">
-      {state === 'review' ? reviewScreen : mainScreen}
-    </AnimatePresence>
+    <>
+      {/* Hidden file input for GPX upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".gpx"
+        className="hidden"
+        onChange={handleGpxUpload}
+      />
+
+      {/* Create Segment Modal */}
+      {showCreateSegment && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-end justify-center" onClick={() => setShowCreateSegment(false)}>
+          <motion.div
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            className="bg-slate-900 rounded-t-2xl w-full max-w-lg p-4"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white">Créer un segment</h3>
+              <button onClick={() => setShowCreateSegment(false)} className="p-2 rounded-lg hover:bg-slate-800">
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <input
+                type="text"
+                value={newSegmentName}
+                onChange={(e) => setNewSegmentName(e.target.value)}
+                placeholder="Nom du segment"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:border-orange-500/50"
+              />
+
+              <div className="bg-slate-800/50 rounded-lg p-3 text-sm text-slate-400">
+                <p>Sélectionnez le start et end sur le tracé :</p>
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={() => {
+                      if (points.length > 0) {
+                        setSegmentStartIdx(Math.max(0, points.length - 1));
+                        toast.info('Start défini à la position actuelle');
+                      }
+                    }}
+                    className="flex-1 h-10 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors"
+                  >
+                    Définir Start ici
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (points.length > 0) {
+                        setSegmentEndIdx(Math.max(0, points.length - 1));
+                        toast.info('End défini à la position actuelle');
+                      }
+                    }}
+                    className="flex-1 h-10 rounded-md bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors"
+                  >
+                    Définir End ici
+                  </button>
+                </div>
+              </div>
+
+              {segmentStartIdx !== null && segmentEndIdx !== null && (
+                <div className="bg-slate-800 rounded-lg p-3">
+                  <p className="text-sm text-slate-300">
+                    Distance: {formatDistance(haversine(points[segmentStartIdx].gps, points[segmentEndIdx].gps))}
+                  </p>
+                </div>
+              )}
+
+              <button
+                onClick={createSegmentFromActivity}
+                disabled={segmentStartIdx === null || segmentEndIdx === null}
+                className="w-full h-12 rounded-lg bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium transition-colors"
+              >
+                Créer le segment
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Ghost Race Indicator */}
+      {ghostRaceMode && ghostState && state === 'recording' && (
+        <div className="fixed top-20 left-4 right-4 z-40 bg-slate-900/95 backdrop-blur-sm rounded-xl border border-orange-500/30 p-3 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Ghost className="w-4 h-4 text-orange-400" />
+              <div>
+                <p className="text-sm font-medium text-white">{ghostState.segmentName}</p>
+                <p className="text-xs text-slate-500">PR: {formatDuration(ghostState.prTime)}</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className={`text-lg font-bold font-mono ${
+                ghostState.currentOffset > 0 ? 'text-emerald-400' : 'text-red-400'
+              }`}>
+                {ghostState.currentOffset > 0 ? '+' : ''}{ghostState.currentOffset.toFixed(1)}s
+              </div>
+              <p className="text-[10px] text-slate-500">{ghostState.currentOffset > 0 ? 'en avance' : 'en retard'}</p>
+            </div>
+          </div>
+          <div className="mt-2 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-300 ${
+                ghostState.currentOffset > 0 ? 'bg-emerald-500' : 'bg-red-500'
+              }`}
+              style={{ width: `${Math.min(100, Math.max(0, 50 + ghostState.currentOffset))}%` }}
+            />
+          </div>
+          <button
+            onClick={() => { setGhostRaceMode(false); setGhostState(null); }}
+            className="mt-2 text-xs text-slate-500 hover:text-slate-300"
+          >
+            Quitter le ghost race
+          </button>
+        </div>
+      )}
+
+      <AnimatePresence mode="wait">
+        {state === 'review' ? reviewScreen : mainScreen}
+      </AnimatePresence>
+    </>
   );
 }
