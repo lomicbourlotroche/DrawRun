@@ -260,11 +260,11 @@ export function ProgressionChart({ activities, sport }: ProgressionChartProps) {
               <span className="text-sm font-medium">Tendance</span>
             </div>
             <div className="flex items-center gap-2">
-              {trend.direction === 'up' && <TrendingUp className="w-4 h-4 text-green-500" />}
-              {trend.direction === 'down' && <TrendingUp className="w-4 h-4 text-red-500 rotate-180" />}
+              {trend.direction === 'up' && <TrendingUp className="w-4 h-4 text-success" />}
+              {trend.direction === 'down' && <TrendingUp className="w-4 h-4 text-danger rotate-180" />}
               <span className={`text-sm font-medium ${
-                trend.direction === 'up' ? 'text-green-500' : 
-                trend.direction === 'down' ? 'text-red-500' : 
+                trend.direction === 'up' ? 'text-success' : 
+                trend.direction === 'down' ? 'text-danger' : 
                 'text-muted'
               }`}>
                 {trend.direction === 'up' ? '+' : trend.direction === 'down' ? '-' : ''}

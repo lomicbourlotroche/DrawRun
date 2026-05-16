@@ -94,7 +94,7 @@ export default function FeedTab() {
     return (
       <div className="text-center py-12 md:py-16">
         <div className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-4 md:mb-6 rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center">
-          <Flame className="w-8 h-8 md:w-12 md:h-12 text-orange-500/50" />
+          <Flame className="w-8 h-8 md:w-12 md:h-12 text-peak/50" />
         </div>
         <p className="font-semibold text-base md:text-lg">Aucune activité récente</p>
         <p className="text-sm text-muted mt-2">Ajoutez des amis pour voir leurs activités</p>
@@ -127,7 +127,7 @@ export default function FeedTab() {
                 <div className="flex items-center gap-2 md:gap-3 min-w-0">
                   <div className="relative shrink-0">
                     <Avatar name={activity.owner_name} size="md" />
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-card" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-success rounded-full border-2 border-card" />
                   </div>
                   <div className="min-w-0">
                     <p className="font-semibold text-sm md:text-base truncate">{activity.owner_name}</p>
@@ -173,8 +173,8 @@ export default function FeedTab() {
                   onClick={() => handleLike(activity.id, !!activity.user_liked)}
                   className={`flex items-center gap-1.5 px-3 md:px-4 py-2 rounded-full transition-all min-h-[36px] ${
                     activity.user_liked
-                      ? 'bg-red-500/20 text-red-500'
-                      : 'bg-muted text-muted hover:bg-red-500/10 hover:text-red-500'
+                      ? 'bg-danger/20 text-danger'
+                      : 'bg-muted text-muted hover:bg-danger/10 hover:text-danger'
                   }`}
                 >
                   <Heart className={`w-4 h-4 md:w-5 md:h-5 ${activity.user_liked ? 'fill-current' : ''}`} />

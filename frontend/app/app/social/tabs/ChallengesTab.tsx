@@ -82,7 +82,7 @@ export default function ChallengesTab() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-foreground flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-yellow-500" />
+          <Trophy className="w-5 h-5 text-warning" />
           Défis
         </h3>
         <Button size="sm" onClick={() => setShowCreate(true)} className="rounded-xl gap-1">
@@ -110,14 +110,14 @@ export default function ChallengesTab() {
                           <p className="text-xs text-muted">{mode.icon} {mode.label} · {getTypeInfo(c.type).icon} {c.target_value} {c.target_unit}</p>
                         </div>
                       </div>
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium shrink-0 ${c.user_status === 'completed' ? 'bg-green-500/10 text-green-500' : 'bg-primary/10 text-primary'}`}>
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium shrink-0 ${c.user_status === 'completed' ? 'bg-success/10 text-success' : 'bg-primary/10 text-primary'}`}>
                         {c.user_status === 'completed' ? '✓ Terminé' : formatDaysLeft(c.end_date)}
                       </span>
                     </div>
                     {c.challenge_mode === 'streak' && (
                       <div className="flex items-center gap-4 text-sm">
-                        <div className="flex items-center gap-1"><span className="text-orange-400">🔥</span><span className="font-bold">{c.streak_current || 0}</span><span className="text-muted text-xs">actuel</span></div>
-                        <div className="flex items-center gap-1"><span className="text-yellow-400">⭐</span><span className="font-bold">{c.streak_best || 0}</span><span className="text-muted text-xs">record</span></div>
+                        <div className="flex items-center gap-1"><span className="text-peak/80">🔥</span><span className="font-bold">{c.streak_current || 0}</span><span className="text-muted text-xs">actuel</span></div>
+                        <div className="flex items-center gap-1"><span className="text-warning/80">⭐</span><span className="font-bold">{c.streak_best || 0}</span><span className="text-muted text-xs">record</span></div>
                       </div>
                     )}
                     <div className="space-y-1">
@@ -137,7 +137,7 @@ export default function ChallengesTab() {
                     </div>
                     <div className="flex gap-1">
                       {milestones.map((m: {pct: number; label: string; icon: string}) => (
-                        <div key={m.pct} className={`flex-1 text-center py-1 rounded-lg text-xs transition-all ${pct >= m.pct ? 'bg-yellow-500/20 text-yellow-600 font-medium' : 'bg-border/50 text-muted'}`}>
+                        <div key={m.pct} className={`flex-1 text-center py-1 rounded-lg text-xs transition-all ${pct >= m.pct ? 'bg-warning/20 text-yellow-600 font-medium' : 'bg-border/50 text-muted'}`}>
                           {m.icon} {m.label}
                         </div>
                       ))}
@@ -182,7 +182,7 @@ export default function ChallengesTab() {
                   {!alreadyJoined ? (
                     <Button size="sm" variant="secondary" onClick={() => handleJoin(c.id)} className="rounded-xl shrink-0">Rejoindre</Button>
                   ) : (
-                    <span className="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-500 font-medium shrink-0">✓ Rejoint</span>
+                    <span className="text-xs px-2 py-1 rounded-full bg-success/10 text-success font-medium shrink-0">✓ Rejoint</span>
                   )}
                 </div>
               </GlassCardContent>

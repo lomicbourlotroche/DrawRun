@@ -60,7 +60,7 @@ export default function WeatherGuide() {
         {/* Temperature impact */}
         <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-            <Thermometer className="w-6 h-6 text-red-500" />
+            <Thermometer className="w-6 h-6 text-danger" />
             Impact de la température
           </h3>
           <p className="text-neutral-600 mb-4 leading-relaxed">
@@ -68,11 +68,11 @@ export default function WeatherGuide() {
           </p>
           <div className="space-y-3">
             {[
-              { range: '< 10°C', impact: 'Optimal pour la performance', color: 'text-blue-600', bg: 'bg-blue-50' },
-              { range: '10-15°C', impact: 'Conditions idéales, aucun impact', color: 'text-green-600', bg: 'bg-green-50' },
+              { range: '< 10°C', impact: 'Optimal pour la performance', color: 'text-primary', bg: 'bg-blue-50' },
+              { range: '10-15°C', impact: 'Conditions idéales, aucun impact', color: 'text-success', bg: 'bg-green-50' },
               { range: '15-20°C', impact: 'Léger impact (+1-2% sur l\'allure)', color: 'text-yellow-600', bg: 'bg-yellow-50' },
               { range: '20-25°C', impact: 'Impact modéré (+3-5% sur l\'allure)', color: 'text-orange-600', bg: 'bg-orange-50' },
-              { range: '> 25°C', impact: 'Impact significatif (+5-10% sur l\'allure)', color: 'text-red-600', bg: 'bg-red-50' },
+              { range: '> 25°C', impact: 'Impact significatif (+5-10% sur l\'allure)', color: 'text-danger', bg: 'bg-red-50' },
             ].map((item, i) => (
               <div key={i} className={`flex items-center justify-between p-3 ${item.bg} rounded-xl`}>
                 <span className={`font-semibold text-sm ${item.color}`}>{item.range}</span>
@@ -85,7 +85,7 @@ export default function WeatherGuide() {
         {/* Humidity */}
         <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
-            <Droplets className="w-6 h-6 text-blue-500" />
+            <Droplets className="w-6 h-6 text-primary" />
             Humidité et indice de chaleur
           </h3>
           <p className="text-neutral-600 leading-relaxed">

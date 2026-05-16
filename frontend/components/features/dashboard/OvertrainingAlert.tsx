@@ -50,9 +50,9 @@ export default function OvertrainingAlert() {
   }
 
   const riskColors = {
-    low: 'bg-green-500/10 border-green-500/20 text-green-400',
-    moderate: 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400',
-    high: 'bg-red-500/10 border-red-500/20 text-red-400',
+    low: 'bg-success/10 border-success/20 text-success/80',
+    moderate: 'bg-warning/10 border-warning/20 text-warning/80',
+    high: 'bg-danger/10 border-danger/20 text-danger/80',
     unknown: 'bg-muted border-border text-muted'
   };
 
@@ -74,11 +74,11 @@ export default function OvertrainingAlert() {
 
   if (data.risk === 'low') {
     return (
-      <Card className="border-green-500/20">
+      <Card className="border-success/20">
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-green-400" />
+            <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-success/80" />
             </div>
             <div>
               <p className="font-medium text-foreground">Charge optimale</p>
@@ -112,15 +112,15 @@ export default function OvertrainingAlert() {
             </div>
             <div className="text-center p-3 rounded-lg bg-background border border-border">
               <div className="flex items-center justify-center gap-1">
-                <TrendingUp className="w-4 h-4 text-green-400" />
-                <p className="text-2xl font-bold text-green-400">{data.ctl}</p>
+                <TrendingUp className="w-4 h-4 text-success/80" />
+                <p className="text-2xl font-bold text-success/80">{data.ctl}</p>
               </div>
               <p className="text-xs text-muted">Fitness (CTL)</p>
             </div>
             <div className="text-center p-3 rounded-lg bg-background border border-border">
               <div className="flex items-center justify-center gap-1">
-                <TrendingDown className="w-4 h-4 text-red-400" />
-                <p className="text-2xl font-bold text-red-400">{data.atl}</p>
+                <TrendingDown className="w-4 h-4 text-danger/80" />
+                <p className="text-2xl font-bold text-danger/80">{data.atl}</p>
               </div>
               <p className="text-xs text-muted">Fatigue (ATL)</p>
             </div>
@@ -129,7 +129,7 @@ export default function OvertrainingAlert() {
 
         <div className="text-center">
           <p className="text-lg font-semibold">
-            <span className={data.tsb > 0 ? 'text-green-400' : data.tsb < -10 ? 'text-red-400' : 'text-yellow-400'}>
+            <span className={data.tsb > 0 ? 'text-success/80' : data.tsb < -10 ? 'text-danger/80' : 'text-warning/80'}>
               {data.tsb > 0 ? '+' : ''}{data.tsb}
             </span>
           </p>
@@ -150,15 +150,15 @@ export default function OvertrainingAlert() {
 
         <div className="flex gap-2 text-xs text-muted">
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-green-400" />
+            <div className="w-2 h-2 rounded-full bg-success/80" />
             <span>Optimal: 0.8-1.3</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-yellow-400" />
+            <div className="w-2 h-2 rounded-full bg-warning/80" />
             <span>Modéré: 1.3-1.5</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-red-400" />
+            <div className="w-2 h-2 rounded-full bg-danger/80" />
             <span>Risque: {'>'}1.5</span>
           </div>
         </div>

@@ -92,7 +92,7 @@ export default function RouteDetailPopup({
             <TrendingUp className="w-3.5 h-3.5" />
             <span className="font-semibold text-foreground">
               {route.avg_rating ? (
-                <>{route.avg_rating.toFixed(1)} <Star className="w-3 h-3 inline text-yellow-500" /></>
+                <>{route.avg_rating.toFixed(1)} <Star className="w-3 h-3 inline text-warning" /></>
               ) : '—'}
             </span>
           </div>

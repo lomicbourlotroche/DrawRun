@@ -93,7 +93,7 @@ export function SegmentList({ segments, onSegmentClick, isLoading }: SegmentList
                 <div className="flex items-center gap-4 mt-2">
                   {segment.kom && (
                     <div className="flex items-center gap-1 text-xs">
-                      <Trophy className="w-3.5 h-3.5 text-yellow-500" />
+                      <Trophy className="w-3.5 h-3.5 text-warning" />
                       <span className="text-yellow-600">
                         KOM: {segment.kom.user_name} • {formatDuration(segment.kom.elapsed_time)}
                       </span>
@@ -171,7 +171,7 @@ export function SegmentLeaderboard({ segmentId }: SegmentLeaderboardProps) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-yellow-500" />
+          <Trophy className="w-5 h-5 text-warning" />
           Classement
         </CardTitle>
       </CardHeader>

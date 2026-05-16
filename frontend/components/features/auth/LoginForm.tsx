@@ -585,7 +585,7 @@ export default function LoginForm() {
                       <p className="text-sm font-semibold text-blue-800">
                         🔐 Authentification à deux facteurs
                       </p>
-                      <p className="text-xs text-blue-600 mb-2">
+                      <p className="text-xs text-primary mb-2">
                         Entrez le code à 6 chiffres de votre application d&apos;authentification.
                       </p>
                       <label htmlFor="totp-code" className={labelClass}>Code 2FA</label>

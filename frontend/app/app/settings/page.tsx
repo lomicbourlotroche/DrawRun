@@ -163,8 +163,8 @@ export default function SettingsPage() {
             <label className="text-sm font-medium mb-3 block text-foreground">Thème</label>
             <div className="grid grid-cols-3 gap-3">
               {([
-                { id: 'light', label: 'Clair',  Icon: Sun,     ic: 'text-yellow-400', pb: 'bg-white', pbd: 'border-neutral-200' },
-                { id: 'dark',  label: 'Sombre', Icon: Moon,    ic: 'text-blue-400',   pb: 'bg-[#080C14]', pbd: 'border-[#1E2D45]' },
+                { id: 'light', label: 'Clair',  Icon: Sun,     ic: 'text-warning/80', pb: 'bg-white', pbd: 'border-neutral-200' },
+                { id: 'dark',  label: 'Sombre', Icon: Moon,    ic: 'text-primary/80',   pb: 'bg-[#080C14]', pbd: 'border-[#1E2D45]' },
                 { id: 'auto',  label: 'Auto',   Icon: Monitor, ic: 'text-muted',      pb: 'bg-gradient-to-br from-white to-[#080C14]', pbd: 'border-border' },
               ] as const).map(t => (
                 <button key={t.id} onClick={() => handleThemeChange(t.id)} className={`relative p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${theme === t.id ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/40'}`}>

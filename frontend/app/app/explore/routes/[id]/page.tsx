@@ -204,7 +204,7 @@ export default function RouteDetailPage() {
           <CardContent className="p-4">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
-                <Star className="w-6 h-6 text-yellow-500 fill-yellow-500" />
+                <Star className="w-6 h-6 text-warning fill-yellow-500" />
                 <span className="text-2xl font-bold">{route.avg_rating.toFixed(1)}</span>
               </div>
               <div className="text-muted-foreground">

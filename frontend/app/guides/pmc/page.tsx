@@ -50,16 +50,16 @@ export default function PMCGuide() {
           <div className="space-y-6">
             <div className="p-6 bg-blue-50 rounded-2xl border border-blue-100">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                   <Activity className="w-4 h-4 text-white" />
                 </div>
                 <h4 className="text-lg font-bold text-blue-700">CTL — Chronic Training Load</h4>
               </div>
-              <p className="text-sm text-blue-600 mb-3">Votre <strong>forme physique</strong> à long terme. C'est une moyenne exponentielle pondérée des TSS des 42 derniers jours (tau = 42).</p>
+              <p className="text-sm text-primary mb-3">Votre <strong>forme physique</strong> à long terme. C'est une moyenne exponentielle pondérée des TSS des 42 derniers jours (tau = 42).</p>
               <div className="p-3 bg-white rounded-lg">
-                <code className="text-xs font-mono text-blue-600">CTL(t) = CTL(t-1) × e^(-1/42) + TSS × (1 - e^(-1/42))</code>
+                <code className="text-xs font-mono text-primary">CTL(t) = CTL(t-1) × e^(-1/42) + TSS × (1 - e^(-1/42))</code>
               </div>
-              <ul className="mt-3 space-y-1 text-sm text-blue-600">
+              <ul className="mt-3 space-y-1 text-sm text-primary">
                 <li>• Monte lentement (il faut des semaines de cohérence)</li>
                 <li>• Descend lentement (la forme se perd progressivement)</li>
                 <li>• Un CTL de 80+ est typique d'un marathonien bien entraîné</li>
@@ -68,16 +68,16 @@ export default function PMCGuide() {
 
             <div className="p-6 bg-red-50 rounded-2xl border border-red-100">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-danger rounded-lg flex items-center justify-center">
                   <Heart className="w-4 h-4 text-white" />
                 </div>
                 <h4 className="text-lg font-bold text-red-700">ATL — Acute Training Load</h4>
               </div>
-              <p className="text-sm text-red-600 mb-3">Votre <strong>fatigue</strong> récente. Moyenne exponentielle pondérée des TSS des 7 derniers jours (tau = 7).</p>
+              <p className="text-sm text-danger mb-3">Votre <strong>fatigue</strong> récente. Moyenne exponentielle pondérée des TSS des 7 derniers jours (tau = 7).</p>
               <div className="p-3 bg-white rounded-lg">
-                <code className="text-xs font-mono text-red-600">ATL(t) = ATL(t-1) × e^(-1/7) + TSS × (1 - e^(-1/7))</code>
+                <code className="text-xs font-mono text-danger">ATL(t) = ATL(t-1) × e^(-1/7) + TSS × (1 - e^(-1/7))</code>
               </div>
-              <ul className="mt-3 space-y-1 text-sm text-red-600">
+              <ul className="mt-3 space-y-1 text-sm text-danger">
                 <li>• Monte rapidement après une séance intense</li>
                 <li>• Descend rapidement après 2-3 jours de repos</li>
                 <li>• Un ATL élevé = fatigue accumulée récente</li>
@@ -86,16 +86,16 @@ export default function PMCGuide() {
 
             <div className="p-6 bg-green-50 rounded-2xl border border-green-100">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-success rounded-lg flex items-center justify-center">
                   <Target className="w-4 h-4 text-white" />
                 </div>
                 <h4 className="text-lg font-bold text-green-700">TSB — Training Stress Balance</h4>
               </div>
-              <p className="text-sm text-green-600 mb-3">Votre <strong>fraîcheur</strong>. C'est la différence entre forme et fatigue : TSB = CTL - ATL.</p>
+              <p className="text-sm text-success mb-3">Votre <strong>fraîcheur</strong>. C'est la différence entre forme et fatigue : TSB = CTL - ATL.</p>
               <div className="p-3 bg-white rounded-lg">
-                <code className="text-xs font-mono text-green-600">TSB(t) = CTL(t) - ATL(t)</code>
+                <code className="text-xs font-mono text-success">TSB(t) = CTL(t) - ATL(t)</code>
               </div>
-              <ul className="mt-3 space-y-1 text-sm text-green-600">
+              <ul className="mt-3 space-y-1 text-sm text-success">
                 <li>• <strong>TSB &gt; +25</strong> : très frais, mais forme potentiellement basse</li>
                 <li>• <strong>TSB +10 à +25</strong> : zone idéale pour la compétition</li>
                 <li>• <strong>TSB 0 à +10</strong> : bon pour les entraînements intenses</li>
@@ -115,21 +115,21 @@ export default function PMCGuide() {
 
           <div className="space-y-4">
             <div className="flex items-start gap-4 p-4 bg-neutral-50 rounded-xl">
-              <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+              <CheckCircle className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold mb-1">Planifier le tapering</h4>
                 <p className="text-sm text-neutral-600">Réduisez progressivement la charge 7-14 jours avant la compétition pour amener le TSB dans la zone +10 à +25.</p>
               </div>
             </div>
             <div className="flex items-start gap-4 p-4 bg-neutral-50 rounded-xl">
-              <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+              <CheckCircle className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold mb-1">Éviter le surentraînement</h4>
                 <p className="text-sm text-neutral-600">Si le TSB descend sous -30 pendant plus de 3 jours, insérez une semaine de récupération.</p>
               </div>
             </div>
             <div className="flex items-start gap-4 p-4 bg-neutral-50 rounded-xl">
-              <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+              <CheckCircle className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold mb-1">Suivre la progression</h4>
                 <p className="text-sm text-neutral-600">Un CTL qui monte régulièrement sur 8-12 semaines indique une base aérobie en construction.</p>

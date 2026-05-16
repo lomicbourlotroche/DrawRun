@@ -108,7 +108,7 @@ export default function GroupsTab() {
                         )}
                         <div className="flex flex-wrap items-center gap-1.5 mt-2">
                           <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">{group.member_count ?? 0} membres</span>
-                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${group.is_private ? 'bg-orange-500/10 text-orange-500' : 'bg-green-500/10 text-green-500'}`}>
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${group.is_private ? 'bg-peak/10 text-peak' : 'bg-success/10 text-success'}`}>
                             {group.is_private ? 'Privé' : 'Public'}
                           </span>
                           {group.role === 'admin' && (
@@ -160,8 +160,8 @@ export default function GroupsTab() {
               <GlassCard key={group.id} padding="sm">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-green-500/10 flex items-center justify-center shrink-0">
-                      <Users2 className="w-4 h-5 text-green-500" />
+                    <div className="w-9 h-9 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
+                      <Users2 className="w-4 h-5 text-success" />
                     </div>
                     <div className="min-w-0">
                       <h4 className="font-medium text-sm truncate">{group.name}</h4>

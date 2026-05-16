@@ -213,7 +213,7 @@ export default function RacePlannerPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium flex items-center gap-2">
-                  <Thermometer className="w-4 h-4 text-orange-500" />
+                  <Thermometer className="w-4 h-4 text-peak" />
                   Température prévue (°C)
                 </label>
                 <Input 
@@ -225,7 +225,7 @@ export default function RacePlannerPage() {
               
               <div className="space-y-2">
                 <label className="text-sm font-medium flex items-center gap-2">
-                  <Droplets className="w-4 h-4 text-blue-500" />
+                  <Droplets className="w-4 h-4 text-primary" />
                   Humidité relative (%)
                 </label>
                 <Input 
@@ -264,7 +264,7 @@ export default function RacePlannerPage() {
               </Button>
             </div>
             
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && <p className="text-danger text-sm">{error}</p>}
           </Card>
           
           <Card className="p-6 bg-muted/30">
@@ -376,15 +376,15 @@ export default function RacePlannerPage() {
             </div>
             <div className="flex items-center justify-center gap-6 mt-4 text-xs font-medium text-muted-foreground">
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 bg-red-500/60 rounded-sm"></div>
+                <div className="w-3 h-3 bg-danger/60 rounded-sm"></div>
                 <span>Montée (Allure +)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 bg-green-500/60 rounded-sm"></div>
+                <div className="w-3 h-3 bg-success/60 rounded-sm"></div>
                 <span>Descente (Allure -)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 bg-blue-500/10 border border-blue-500/30 rounded-sm"></div>
+                <div className="w-3 h-3 bg-primary/10 border border-primary/30 rounded-sm"></div>
                 <span>Profil Altitude</span>
               </div>
             </div>

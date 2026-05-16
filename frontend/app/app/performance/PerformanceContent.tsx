@@ -255,22 +255,22 @@ export default function PerformanceContent() {
               <GlassCard>
                 <GlassCardHeader>
                   <GlassCardTitle className="flex items-center gap-2">
-                    <Heart className="w-5 h-5 text-red-500" />
+                    <Heart className="w-5 h-5 text-danger" />
                     Métriques clés
                   </GlassCardTitle>
                 </GlassCardHeader>
                 <GlassCardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-center">
-                      <p className="text-2xl font-bold text-red-400">{profile?.fcm || '--'}</p>
+                    <div className="p-3 rounded-lg bg-danger/10 border border-danger/20 text-center">
+                      <p className="text-2xl font-bold text-danger/80">{profile?.fcm || '--'}</p>
                       <p className="text-xs text-muted">FCM</p>
                     </div>
-                    <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-center">
-                      <p className="text-2xl font-bold text-blue-400">{profile?.vdot || '--'}</p>
+                    <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-center">
+                      <p className="text-2xl font-bold text-primary/80">{profile?.vdot || '--'}</p>
                       <p className="text-xs text-muted">VDOT</p>
                     </div>
-                    <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
-                      <p className="text-2xl font-bold text-green-400">{profile?.vma ? `${profile.vma.toFixed(1)}` : '--'}</p>
+                    <div className="p-3 rounded-lg bg-success/10 border border-success/20 text-center">
+                      <p className="text-2xl font-bold text-success/80">{profile?.vma ? `${profile.vma.toFixed(1)}` : '--'}</p>
                       <p className="text-xs text-muted">VMA km/h</p>
                     </div>
                   </div>
@@ -307,18 +307,18 @@ export default function PerformanceContent() {
                       <p className="text-2xl font-bold text-foreground">{stats.totalKm.toFixed(1)}</p>
                       <p className="text-xs text-muted">km total</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-center">
-                      <Clock className="w-5 h-5 mx-auto mb-1 text-blue-400" />
+                    <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 text-center">
+                      <Clock className="w-5 h-5 mx-auto mb-1 text-primary/80" />
                       <p className="text-2xl font-bold text-foreground">{stats.totalHours.toFixed(1)}</p>
                       <p className="text-xs text-muted">heures</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-center">
-                      <TrendingUp className="w-5 h-5 mx-auto mb-1 text-green-400" />
+                    <div className="p-4 rounded-xl bg-success/10 border border-success/20 text-center">
+                      <TrendingUp className="w-5 h-5 mx-auto mb-1 text-success/80" />
                       <p className="text-2xl font-bold text-foreground">{stats.avgKm.toFixed(1)}</p>
                       <p className="text-xs text-muted">km/séance</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 text-center">
-                      <BarChart3 className="w-5 h-5 mx-auto mb-1 text-orange-400" />
+                    <div className="p-4 rounded-xl bg-peak/10 border border-peak/20 text-center">
+                      <BarChart3 className="w-5 h-5 mx-auto mb-1 text-peak/80" />
                       <p className="text-2xl font-bold text-foreground">{activities.length}</p>
                       <p className="text-xs text-muted">activités</p>
                     </div>
@@ -579,9 +579,9 @@ function IntensityDistributionSection({ polarization, error }: IntensityDistribu
     color: string;
     bgColor: string;
   }> = [
-    { key: 'low', label: 'Faible intensité (Z1–Z2)', targetKey: 'low', color: 'bg-green-500', bgColor: 'bg-green-500/10' },
-    { key: 'moderate', label: 'Intensité modérée (Z3)', targetKey: 'moderate', color: 'bg-yellow-500', bgColor: 'bg-yellow-500/10' },
-    { key: 'high', label: 'Haute intensité (Z4–Z5)', targetKey: 'high', color: 'bg-red-500', bgColor: 'bg-red-500/10' },
+    { key: 'low', label: 'Faible intensité (Z1–Z2)', targetKey: 'low', color: 'bg-success', bgColor: 'bg-success/10' },
+    { key: 'moderate', label: 'Intensité modérée (Z3)', targetKey: 'moderate', color: 'bg-warning', bgColor: 'bg-warning/10' },
+    { key: 'high', label: 'Haute intensité (Z4–Z5)', targetKey: 'high', color: 'bg-danger', bgColor: 'bg-danger/10' },
   ];
 
   const isOptimal = polarization.classification.optimal;
@@ -597,9 +597,9 @@ function IntensityDistributionSection({ polarization, error }: IntensityDistribu
       <GlassCardContent className="space-y-5">
         {/* Classification badge */}
         <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
-          isOptimal ? 'bg-green-500/15 text-green-400' : 'bg-yellow-500/15 text-yellow-400'
+          isOptimal ? 'bg-success/15 text-success/80' : 'bg-warning/15 text-warning/80'
         }`}>
-          <span className={`w-2 h-2 rounded-full ${isOptimal ? 'bg-green-400' : 'bg-yellow-400'}`} />
+          <span className={`w-2 h-2 rounded-full ${isOptimal ? 'bg-success/80' : 'bg-warning/80'}`} />
           {polarization.classification.label}
         </div>
 
@@ -665,7 +665,7 @@ function HRVRecoverySection({ hrv, error }: HRVRecoverySectionProps) {
       <GlassCard>
         <GlassCardHeader>
           <GlassCardTitle className="flex items-center gap-2">
-            <Heart className="w-5 h-5 text-red-500" />
+            <Heart className="w-5 h-5 text-danger" />
             HRV &amp; Récupération
           </GlassCardTitle>
         </GlassCardHeader>
@@ -684,7 +684,7 @@ function HRVRecoverySection({ hrv, error }: HRVRecoverySectionProps) {
       <GlassCard>
         <GlassCardHeader>
           <GlassCardTitle className="flex items-center gap-2">
-            <Heart className="w-5 h-5 text-red-500" />
+            <Heart className="w-5 h-5 text-danger" />
             HRV &amp; Récupération
           </GlassCardTitle>
         </GlassCardHeader>
@@ -700,11 +700,11 @@ function HRVRecoverySection({ hrv, error }: HRVRecoverySectionProps) {
   }
 
   const statusConfig: Record<string, { label: string; color: string; bgColor: string; barColor: string }> = {
-    excellent: { label: 'Excellent', color: 'text-green-400', bgColor: 'bg-green-500/15', barColor: 'bg-green-500' },
-    good:      { label: 'Bon',       color: 'text-blue-400',  bgColor: 'bg-blue-500/15',  barColor: 'bg-blue-500'  },
-    moderate:  { label: 'Modéré',    color: 'text-yellow-400',bgColor: 'bg-yellow-500/15',barColor: 'bg-yellow-500'},
-    low:       { label: 'Faible',    color: 'text-orange-400',bgColor: 'bg-orange-500/15',barColor: 'bg-orange-500'},
-    poor:      { label: 'Mauvais',   color: 'text-red-400',   bgColor: 'bg-red-500/15',   barColor: 'bg-red-500'   },
+    excellent: { label: 'Excellent', color: 'text-success/80', bgColor: 'bg-success/15', barColor: 'bg-success' },
+    good:      { label: 'Bon',       color: 'text-primary/80',  bgColor: 'bg-primary/15',  barColor: 'bg-primary'  },
+    moderate:  { label: 'Modéré',    color: 'text-warning/80',bgColor: 'bg-warning/15',barColor: 'bg-warning'},
+    low:       { label: 'Faible',    color: 'text-peak/80',bgColor: 'bg-peak/15',barColor: 'bg-peak'},
+    poor:      { label: 'Mauvais',   color: 'text-danger/80',   bgColor: 'bg-danger/15',   barColor: 'bg-danger'   },
   };
 
   const cfg = statusConfig[hrv.status] ?? statusConfig['moderate'];
@@ -715,7 +715,7 @@ function HRVRecoverySection({ hrv, error }: HRVRecoverySectionProps) {
     <GlassCard>
       <GlassCardHeader>
         <GlassCardTitle className="flex items-center gap-2">
-          <Heart className="w-5 h-5 text-red-500" />
+          <Heart className="w-5 h-5 text-danger" />
           HRV &amp; Récupération
         </GlassCardTitle>
       </GlassCardHeader>

@@ -23,15 +23,15 @@ interface BiomechanicsCardProps {
 
 export const BiomechanicsCard: React.FC<BiomechanicsCardProps> = ({ metrics }) => {
   const getGctColor = (gct: number) => {
-    if (gct < 210) return 'text-green-500';
-    if (gct < 250) return 'text-orange-500';
-    return 'text-red-500';
+    if (gct < 210) return 'text-success';
+    if (gct < 250) return 'text-peak';
+    return 'text-danger';
   };
 
   const getVoColor = (vo: number) => {
-    if (vo < 8) return 'text-green-500';
-    if (vo < 11) return 'text-orange-500';
-    return 'text-red-500';
+    if (vo < 8) return 'text-success';
+    if (vo < 11) return 'text-peak';
+    return 'text-danger';
   };
 
   return (
@@ -59,7 +59,7 @@ export const BiomechanicsCard: React.FC<BiomechanicsCardProps> = ({ metrics }) =
           </div>
           <div className="space-y-1">
             <p className="text-xs text-muted uppercase font-medium">Raideur (Stiffness)</p>
-            <p className="text-2xl font-bold text-blue-500">
+            <p className="text-2xl font-bold text-primary">
               {metrics.stiffness} <span className="text-sm font-normal text-muted">kN/m</span>
             </p>
           </div>
@@ -92,9 +92,9 @@ export const BiomechanicsCard: React.FC<BiomechanicsCardProps> = ({ metrics }) =
             <div className="space-y-2">
               {metrics.advice.map((adv, i) => (
                 <div key={i} className={`p-3 rounded-xl border-l-4 ${
-                  adv.priority === 'high' ? 'bg-red-500/5 border-red-500' : 
+                  adv.priority === 'high' ? 'bg-danger/5 border-danger' : 
                   adv.priority === 'moderate' ? 'bg-amber-500/5 border-amber-500' : 
-                  'bg-blue-500/5 border-blue-500'
+                  'bg-primary/5 border-primary'
                 }`}>
                   <p className="text-sm font-bold">{adv.message}</p>
                   <p className="text-xs text-muted mt-1">{adv.detail}</p>
@@ -104,7 +104,7 @@ export const BiomechanicsCard: React.FC<BiomechanicsCardProps> = ({ metrics }) =
           </div>
         )}
 
-        <div className="flex items-center gap-2 p-3 bg-blue-500/5 rounded-xl text-[10px] text-blue-700/70">
+        <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-xl text-[10px] text-blue-700/70">
           <Info className="w-3 h-3 shrink-0" />
           <p>Ces métriques sont des estimations algorithmiques basées sur la vitesse et la cadence. Elles visent à identifier des tendances techniques majeures.</p>
         </div>

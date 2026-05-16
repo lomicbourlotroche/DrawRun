@@ -103,7 +103,7 @@ export default function Sidebar() {
       <aside
         className={cn(
           'fixed top-0 left-0 h-full bg-white/98 backdrop-blur-xl border-r border-neutral-200/60 z-50 transition-all duration-300 flex flex-col',
-          isCollapsed ? 'w-16' : 'w-64',
+          isCollapsed ? 'w-16' : 'w-full max-w-64 lg:max-w-none',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
@@ -158,7 +158,7 @@ export default function Sidebar() {
                     )}
                   />
                   {hasNotifications && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-bold text-white leading-none">
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-danger rounded-full flex items-center justify-center text-[9px] font-bold text-white leading-none">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
@@ -186,7 +186,7 @@ export default function Sidebar() {
         <div className="lg:hidden px-3 py-2 border-t border-neutral-200/60">
           <Link
             href="/app/record"
-            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 text-white font-medium text-sm shadow-lg shadow-primary-500/20 active:scale-95 transition-transform"
+            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl bg-gradient-to-r from-primary to-info text-white font-medium text-sm shadow-lg shadow-primary/20 active:scale-95 transition-transform"
           >
             <Plus className="w-5 h-5" />
             {!isCollapsed && <span>Enregistrer une activité</span>}

@@ -13,8 +13,8 @@ export const InjuryRiskCard: React.FC<InjuryRiskCardProps> = ({ acwr, trend }) =
   const getStatus = (value: number) => {
     if (value < 0.8) {return {
       label: 'Sous-entraînement',
-      color: 'text-blue-400',
-      bgColor: 'bg-blue-400/10',
+      color: 'text-primary/80',
+      bgColor: 'bg-primary/80/10',
       borderColor: 'border-blue-400/20',
       icon: <TrendingDown className="w-5 h-5" />,
       message: 'Votre charge est faible. Augmentez progressivement pour progresser.',
@@ -40,9 +40,9 @@ export const InjuryRiskCard: React.FC<InjuryRiskCardProps> = ({ acwr, trend }) =
     };}
     return {
       label: 'DANGER !',
-      color: 'text-red-500',
-      bgColor: 'bg-red-500/10',
-      borderColor: 'border-red-500/20',
+      color: 'text-danger',
+      bgColor: 'bg-danger/10',
+      borderColor: 'border-danger/20',
       icon: <AlertTriangle className="w-5 h-5" />,
       message: 'Risque de blessure très élevé (3-4x). Repos impératif.',
       risk: 'Critique'
@@ -62,7 +62,7 @@ export const InjuryRiskCard: React.FC<InjuryRiskCardProps> = ({ acwr, trend }) =
               {acwr.toFixed(2)}
             </span>
             <span className="text-xs text-gray-500">ACWR</span>
-            {trend === 'up' && <TrendingUp className="w-3 h-3 text-red-400" />}
+            {trend === 'up' && <TrendingUp className="w-3 h-3 text-danger/80" />}
             {trend === 'down' && <TrendingDown className="w-3 h-3 text-emerald-400" />}
           </div>
         </div>

@@ -80,9 +80,9 @@ function StatCard({ title, value, subtitle, icon, iconBg, trend }: StatCardProps
           <div
             className={`flex items-center gap-0.5 text-xs font-medium px-2 py-1 rounded-full ${
               trend > 0
-                ? 'bg-green-50 text-green-600'
+                ? 'bg-green-50 text-success'
                 : trend < 0
-                ? 'bg-red-50 text-red-500'
+                ? 'bg-red-50 text-danger'
                 : 'bg-neutral-100 text-neutral-500'
             }`}
           >
@@ -120,7 +120,7 @@ function ActivityRow({ activity }: ActivityRowProps) {
       className="flex items-center justify-between p-3.5 rounded-xl hover:bg-neutral-50 transition-colors duration-150 group"
     >
       <div className="flex items-center gap-3 min-w-0">
-        <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 transition-colors">
+        <div className="w-9 h-9 rounded-lg bg-blue-50 text-primary flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 transition-colors">
           {getActivityIcon(activity.type)}
         </div>
         <div className="min-w-0">
@@ -242,7 +242,7 @@ export function ModernDashboard() {
           title="Activités ce mois"
           value={String(monthly.count)}
           subtitle="depuis le 1er du mois"
-          icon={<Activity className="w-5 h-5 text-blue-600" />}
+          icon={<Activity className="w-5 h-5 text-primary" />}
           iconBg="bg-blue-50"
           trend={null}
         />
@@ -250,7 +250,7 @@ export function ModernDashboard() {
           title="Distance totale"
           value={monthly.totalDistance > 0 ? formatDistance(monthly.totalDistance) : '—'}
           subtitle="ce mois-ci"
-          icon={<TrendingUp className="w-5 h-5 text-green-600" />}
+          icon={<TrendingUp className="w-5 h-5 text-success" />}
           iconBg="bg-green-50"
           trend={null}
         />
@@ -294,7 +294,7 @@ export function ModernDashboard() {
             <h3 className="text-base font-semibold text-neutral-900">Activités récentes</h3>
             <Link
               href="/app/activities"
-              className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+              className="text-sm font-medium text-primary hover:text-blue-700 transition-colors"
             >
               Voir tout
             </Link>
@@ -345,12 +345,12 @@ export function ModernDashboard() {
               </div>
               <div className="p-5 space-y-3">
                 {[
-                  { label: 'CTL — Forme', value: pmc.ctl, color: 'bg-blue-500' },
-                  { label: 'ATL — Fatigue', value: pmc.atl, color: 'bg-red-400' },
+                  { label: 'CTL — Forme', value: pmc.ctl, color: 'bg-primary' },
+                  { label: 'ATL — Fatigue', value: pmc.atl, color: 'bg-danger/80' },
                   {
                     label: 'TSB — Fraîcheur',
                     value: Math.abs(pmc.tsb),
-                    color: pmc.tsb >= 0 ? 'bg-green-500' : 'bg-amber-400',
+                    color: pmc.tsb >= 0 ? 'bg-success' : 'bg-amber-400',
                   },
                 ].map((m) => (
                   <div key={m.label}>

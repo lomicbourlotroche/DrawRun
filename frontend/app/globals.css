@@ -3,17 +3,17 @@
 @tailwind utilities;
 
 :root {
-  /* Primary - Modern Blue Gradient */
-  --primary-50: #F0F9FF;
-  --primary-100: #E0F2FE;
-  --primary-200: #BAE6FD;
-  --primary-300: #7DD3FC;
-  --primary-400: #38BDF8;
-  --primary-500: #0EA5E9;
-  --primary-600: #0284C7;
-  --primary-700: #0369A1;
-  --primary-800: #075985;
-  --primary-900: #0C4A6E;
+  /* Primary - Aligned with tailwind.config.js */
+  --primary-50: #E6F2FF;
+  --primary-100: #CCE5FF;
+  --primary-200: #99CBFF;
+  --primary-300: #66B0FF;
+  --primary-400: #4C9AFF;
+  --primary-500: #007AFF;
+  --primary-600: #0066FF;
+  --primary-700: #0052CC;
+  --primary-800: #003D99;
+  --primary-900: #001A4D;
   
   /* Gradients */
   --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -21,23 +21,25 @@
   --gradient-warning: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   --gradient-dark: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   
-  /* Success/Récupération - Modern Green */
-  --success-400: #4ADE80;
-  --success-500: #22C55E;
-  --success-600: #16A34A;
-  --recovery-400: #67E8F9;
-  --recovery-500: #06B6D4;
-  --recovery-600: #0891B2;
+  /* Success - Aligned with tailwind.config.js */
+  --success-400: #4DD0E1;
+  --success-500: #00C853;
+  --success-600: #00A042;
+  --recovery-400: #80DEEA;
+  --recovery-500: #00BCD4;
+  --recovery-600: #0097A7;
   
-  /* Alertes - Modern Colors */
-  --warning-400: #FCD34D;
-  --warning-500: #F59E0B;
-  --warning-600: #D97706;
-  --danger-400: #F87171;
-  --danger-500: #EF4444;
-  --danger-600: #DC2626;
-  --peak-500: #F97316;
-  --peak-600: #EA580C;
+  /* Warning - Aligned with tailwind.config.js */
+  --warning-400: #FFD54F;
+  --warning-500: #FFAB00;
+  --warning-600: #FF8F00;
+  /* Danger - Aligned with tailwind.config.js */
+  --danger-400: #FF8A80;
+  --danger-500: #FF5252;
+  --danger-600: #D32F2F;
+  /* Peak - Aligned with tailwind.config.js */
+  --peak-500: #FF6D00;
+  --peak-600: #E65100;
   
   /* Neutres */
   --neutral-50: #F8FAFC;
@@ -64,11 +66,13 @@
   --text-secondary: var(--neutral-600);
   --text-primary: var(--neutral-900);
   --foreground: var(--neutral-900);
-  --primary: var(--primary-600);
-  --danger: var(--danger-500);
-  --info: var(--primary-500);
-  --success: var(--success-500);
-  --warning: var(--warning-500);
+  --primary: #0066FF;
+  --danger: #FF5252;
+  --info: #007AFF;
+  --success: #00C853;
+  --warning: #FFAB00;
+  --peak: #FF6D00;
+  --recovery: #00BCD4;
   
   /* Modern Shadows with depth */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);

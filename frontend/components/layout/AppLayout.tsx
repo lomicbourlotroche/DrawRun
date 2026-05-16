@@ -56,11 +56,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <Sidebar />
       {/*
         The sidebar is 64px (collapsed) or 256px (expanded).
-        We use lg:pl-64 as the default; the sidebar collapse state is
-        managed inside Sidebar itself and doesn't affect this layout
-        because the sidebar is fixed-positioned.
+        We use md:pl-16 for tablets (collapsed sidebar) and lg:pl-64 for desktop.
+        The sidebar collapse state is managed inside Sidebar itself and doesn't affect
+        this layout because the sidebar is fixed-positioned.
       */}
-      <div className="lg:pl-64 min-h-screen transition-all duration-300 relative z-0">
+      <div className="md:pl-16 lg:pl-64 min-h-screen transition-all duration-300 relative z-0 overflow-y-auto">
         <Header />
         <main className="p-4 lg:p-6">
           {children}

@@ -112,7 +112,7 @@ export default function Header() {
             >
               <Bell className="w-5 h-5" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-danger text-white text-xs font-bold rounded-full flex items-center justify-center">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
@@ -202,7 +202,7 @@ export default function Header() {
                   onClick={() => setIsUserMenuOpen(false)}
                 />
                 {/* Dropdown */}
-                <div className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-xl border border-neutral-200/60 rounded-2xl shadow-lg z-50 py-1 animate-slide-down overflow-hidden">
+                <div className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-xl border border-neutral-200/60 rounded-2xl shadow-lg z-50 py-1 animate-slide-down overflow-hidden max-h-[70vh] overflow-y-auto">
                   {/* User info */}
                   <div className="px-4 py-3 border-b border-neutral-100">
                     <p className="text-sm font-semibold text-neutral-900 truncate">{user?.name}</p>
@@ -229,7 +229,7 @@ export default function Header() {
                    <div className="border-t border-slate-100 mt-1 pt-1">
                      <button
                        onClick={handleLogout}
-                       className="flex items-center gap-2.5 w-full px-4 py-3 min-h-[44px] text-sm text-red-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+                       className="flex items-center gap-2.5 w-full px-4 py-3 min-h-[44px] text-sm text-danger hover:text-danger hover:bg-red-50 transition-colors"
                      >
                       <LogOut className="w-4 h-4" />
                       Déconnexion

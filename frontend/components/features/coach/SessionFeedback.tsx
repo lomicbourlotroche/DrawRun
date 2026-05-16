@@ -29,9 +29,9 @@ export default function SessionFeedback({ session, planId, sessionNumber, onComp
   const [isLoading, setIsLoading] = useState(false);
 
   const difficultyOptions = [
-    { value: 'easy', label: 'Facile', icon: Smile, color: 'text-green-400' },
-    { value: 'normal', label: 'Normal', icon: Meh, color: 'text-blue-400' },
-    { value: 'hard', label: 'Difficile', icon: Frown, color: 'text-orange-400' },
+    { value: 'easy', label: 'Facile', icon: Smile, color: 'text-success/80' },
+    { value: 'normal', label: 'Normal', icon: Meh, color: 'text-primary/80' },
+    { value: 'hard', label: 'Difficile', icon: Frown, color: 'text-peak/80' },
   ];
 
   const handleSubmit = async () => {

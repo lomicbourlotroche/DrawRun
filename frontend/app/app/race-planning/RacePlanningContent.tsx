@@ -78,8 +78,8 @@ function GpxProfileBadge({ profile }: { profile: GpxProfile }) {
         <span className={cn('text-xs font-bold px-2 py-0.5 rounded-full', terrainColor)}>{terrainLabel}</span>
       </div>
       <div className="grid grid-cols-3 gap-2 text-xs">
-        <div className="text-center"><p className="font-bold text-green-600">+{profile.elevGain}m</p><p className="text-muted">Dénivelé +</p></div>
-        <div className="text-center"><p className="font-bold text-red-500">-{profile.elevLoss}m</p><p className="text-muted">Dénivelé -</p></div>
+        <div className="text-center"><p className="font-bold text-success">+{profile.elevGain}m</p><p className="text-muted">Dénivelé +</p></div>
+        <div className="text-center"><p className="font-bold text-danger">-{profile.elevLoss}m</p><p className="text-muted">Dénivelé -</p></div>
         <div className="text-center"><p className="font-bold">{profile.gainPerKm}m/km</p><p className="text-muted">Gain/km</p></div>
       </div>
     </div>
@@ -630,7 +630,7 @@ export function RacePlanningContent() {
                 </div>
                 <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted">
                   <div className="flex items-center gap-1.5"><div className="w-4 h-0.5 bg-indigo-400 rounded" /><span>Allure cible</span></div>
-                  <div className="flex items-center gap-1.5"><div className="w-4 h-3 bg-blue-400/20 border border-blue-400/40 rounded-sm" /><span>Dénivelé</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-4 h-3 bg-primary/80/20 border border-blue-400/40 rounded-sm" /><span>Dénivelé</span></div>
                   {result.summary?.strategyBias !== undefined && (
                     <div className="ml-auto text-xs font-medium text-primary">
                       Stratégie : {result.summary.strategyBias < -0.1 ? '⬇ Negative split' : result.summary.strategyBias > 0.1 ? '⬆ Positive split' : '➡ Régulier'}

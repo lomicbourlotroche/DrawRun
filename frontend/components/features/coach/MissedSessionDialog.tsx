@@ -14,11 +14,11 @@ interface MissedSessionDialogProps {
 }
 
 const reasons = [
-  { value: 'injury', label: 'Blessure', icon: AlertTriangle, color: 'text-red-400' },
-  { value: 'illness', label: 'Maladie', icon: Activity, color: 'text-orange-400' },
-  { value: 'work', label: 'Travail', icon: Briefcase, color: 'text-blue-400' },
+  { value: 'injury', label: 'Blessure', icon: AlertTriangle, color: 'text-danger/80' },
+  { value: 'illness', label: 'Maladie', icon: Activity, color: 'text-peak/80' },
+  { value: 'work', label: 'Travail', icon: Briefcase, color: 'text-primary/80' },
   { value: 'travel', label: 'Voyage', icon: Plane, color: 'text-purple-400' },
-  { value: 'fatigue', label: 'Fatigue', icon: CloudOff, color: 'text-yellow-400' },
+  { value: 'fatigue', label: 'Fatigue', icon: CloudOff, color: 'text-warning/80' },
   { value: 'motivation', label: 'Manque de motivation', icon: Frown, color: 'text-gray-400' },
   { value: 'other', label: 'Autre', icon: HelpCircle, color: 'text-muted' },
 ];
@@ -123,24 +123,24 @@ export default function MissedSessionDialog({
               </div>
 
               {reason === 'injury' && (
-                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-                  <p className="text-sm text-red-400">
+                <div className="p-3 rounded-lg bg-danger/10 border border-danger/20">
+                  <p className="text-sm text-danger/80">
                     Prenez le temps de guérir complètement. Le plan sera automatiquement ajusté et une phase de reprise progressive vous sera proposée.
                   </p>
                 </div>
               )}
 
               {reason === 'illness' && (
-                <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
-                  <p className="text-sm text-orange-400">
+                <div className="p-3 rounded-lg bg-peak/10 border border-peak/20">
+                  <p className="text-sm text-peak/80">
                     Reposez-vous et récupérez. Le plan reprendra quand vous serez rétabli.
                   </p>
                 </div>
               )}
 
               {reason === 'fatigue' && (
-                <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-                  <p className="text-sm text-yellow-400">
+                <div className="p-3 rounded-lg bg-warning/10 border border-warning/20">
+                  <p className="text-sm text-warning/80">
                     Écoutez votre corps. La récupération fait partie de l&apos;entraînement.
                   </p>
                 </div>
@@ -148,7 +148,7 @@ export default function MissedSessionDialog({
             </>
           ) : (
             <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+              <div className="p-4 rounded-lg bg-success/10 border border-success/20">
                 <p className="font-medium text-foreground mb-2">Recommandation</p>
                 <p className="text-sm text-foreground/80">{recommendation}</p>
               </div>

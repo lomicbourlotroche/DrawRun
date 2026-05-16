@@ -19,7 +19,7 @@ function PowerCurveChart({ curve }: { curve: PowerCurvePoint[] }) {
           return (
             <div key={i} className="flex-1 flex flex-col items-center group relative">
               <div
-                className="w-full bg-orange-400/60 rounded-t hover:bg-orange-400/80 transition-colors cursor-pointer"
+                className="w-full bg-peak/80/60 rounded-t hover:bg-peak/80/80 transition-colors cursor-pointer"
                 style={{ height: `${pct}%`, minHeight: '4px' }}
               />
               <span className="text-[8px] text-muted mt-1 truncate w-full text-center">{pt.durationFormatted}</span>
@@ -36,10 +36,10 @@ function PowerCurveChart({ curve }: { curve: PowerCurvePoint[] }) {
 
 const powerZoneColors = [
   'bg-gray-500/10 text-gray-400',
-  'bg-green-500/10 text-green-400',
-  'bg-blue-500/10 text-blue-400',
-  'bg-orange-500/10 text-orange-400',
-  'bg-red-500/10 text-red-400',
+  'bg-success/10 text-success/80',
+  'bg-primary/10 text-primary/80',
+  'bg-peak/10 text-peak/80',
+  'bg-danger/10 text-danger/80',
   'bg-purple-500/10 text-purple-400',
   'bg-pink-500/10 text-pink-400',
 ];
@@ -61,7 +61,7 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
       {/* HR Analysis */}
       {analysis.hrZones && (
         <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Heart className="w-4 h-4 text-red-400" />Analyse Cardiaque</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Heart className="w-4 h-4 text-danger/80" />Analyse Cardiaque</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="text-center p-3 rounded-lg bg-background border border-border">
@@ -76,7 +76,7 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
               )}
               {analysis.trimp && (
                 <div className="text-center p-3 rounded-lg bg-background border border-border">
-                  <p className="text-lg font-bold text-orange-400">{Math.round(toNum(analysis.trimp))}</p>
+                  <p className="text-lg font-bold text-peak/80">{Math.round(toNum(analysis.trimp))}</p>
                   <p className="text-xs text-muted">TRIMP</p>
                 </div>
               )}
@@ -96,10 +96,10 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
           <CardContent>
             <div className="grid grid-cols-5 gap-2">
               <div className="text-center p-2 rounded-lg bg-gray-500/10"><p className="text-sm font-bold text-gray-400">{analysis.hrDistribution.zone1Percent}%</p><p className="text-xs text-muted">Z1</p></div>
-              <div className="text-center p-2 rounded-lg bg-green-500/10"><p className="text-sm font-bold text-green-400">{analysis.hrDistribution.zone2Percent}%</p><p className="text-xs text-muted">Z2</p></div>
-              <div className="text-center p-2 rounded-lg bg-blue-500/10"><p className="text-sm font-bold text-blue-400">{analysis.hrDistribution.zone3Percent}%</p><p className="text-xs text-muted">Z3</p></div>
-              <div className="text-center p-2 rounded-lg bg-orange-500/10"><p className="text-sm font-bold text-orange-400">{analysis.hrDistribution.zone4Percent}%</p><p className="text-xs text-muted">Z4</p></div>
-              <div className="text-center p-2 rounded-lg bg-red-500/10"><p className="text-sm font-bold text-red-400">{analysis.hrDistribution.zone5Percent}%</p><p className="text-xs text-muted">Z5</p></div>
+              <div className="text-center p-2 rounded-lg bg-success/10"><p className="text-sm font-bold text-success/80">{analysis.hrDistribution.zone2Percent}%</p><p className="text-xs text-muted">Z2</p></div>
+              <div className="text-center p-2 rounded-lg bg-primary/10"><p className="text-sm font-bold text-primary/80">{analysis.hrDistribution.zone3Percent}%</p><p className="text-xs text-muted">Z3</p></div>
+              <div className="text-center p-2 rounded-lg bg-peak/10"><p className="text-sm font-bold text-peak/80">{analysis.hrDistribution.zone4Percent}%</p><p className="text-xs text-muted">Z4</p></div>
+              <div className="text-center p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-danger/80">{analysis.hrDistribution.zone5Percent}%</p><p className="text-xs text-muted">Z5</p></div>
             </div>
           </CardContent>
         </Card>
@@ -107,24 +107,24 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
 
       {/* Power Analysis */}
       <Card>
-        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Zap className="w-4 h-4 text-orange-400" />Analyse de Puissance</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Zap className="w-4 h-4 text-peak/80" />Analyse de Puissance</CardTitle></CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {analysis.avgPower > 0 && (
               <div className="text-center p-3 rounded-lg bg-background border border-border">
-                <p className="text-lg font-bold text-orange-400">{Math.round(analysis.avgPower)}W</p>
+                <p className="text-lg font-bold text-peak/80">{Math.round(analysis.avgPower)}W</p>
                 <p className="text-xs text-muted">Puissance moy.</p>
               </div>
             )}
             {analysis.maxPower && (
               <div className="text-center p-3 rounded-lg bg-background border border-border">
-                <p className="text-lg font-bold text-orange-400">{Math.round(analysis.maxPower)}W</p>
+                <p className="text-lg font-bold text-peak/80">{Math.round(analysis.maxPower)}W</p>
                 <p className="text-xs text-muted">Puissance max</p>
               </div>
             )}
             {analysis.normalizedPower && (
               <div className="text-center p-3 rounded-lg bg-background border border-border">
-                <p className="text-lg font-bold text-orange-400">{Math.round(analysis.normalizedPower)}W</p>
+                <p className="text-lg font-bold text-peak/80">{Math.round(analysis.normalizedPower)}W</p>
                 <p className="text-xs text-muted">NP</p>
               </div>
             )}
@@ -139,7 +139,7 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
           {analysis.intensityFactor && (
             <div className="grid grid-cols-2 gap-3 mt-3">
               <div className="text-center p-3 rounded-lg bg-background border border-border">
-                <p className="text-lg font-bold text-blue-400">{analysis.intensityFactor.toFixed(2)}</p>
+                <p className="text-lg font-bold text-primary/80">{analysis.intensityFactor.toFixed(2)}</p>
                 <p className="text-xs text-muted">IF</p>
               </div>
               {analysis.tss && (
@@ -185,7 +185,7 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
       {/* Power Zone Distribution */}
       {analysis.powerZoneDistribution && analysis.powerZoneDistribution.length > 0 && (
         <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Bike className="w-4 h-4 text-green-400" />Répartition zones de puissance</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Bike className="w-4 h-4 text-success/80" />Répartition zones de puissance</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-7 gap-1.5">
               {analysis.powerZoneDistribution.map(z => <PowerZoneRow key={z.zone} zone={z} />)}
@@ -216,7 +216,7 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
                 return (
                   <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-background border border-border">
                     <span className="text-sm text-muted">{label}</span>
-                    <span className="text-sm font-bold text-orange-400">{Math.round(eff.value)}W</span>
+                    <span className="text-sm font-bold text-peak/80">{Math.round(eff.value)}W</span>
                   </div>
                 );
               })}

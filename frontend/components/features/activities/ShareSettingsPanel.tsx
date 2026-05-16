@@ -173,7 +173,7 @@ export function ShareSettingsPanel({ activityId, onSave }: ShareSettingsPanelPro
       <h3 className="text-lg font-semibold mb-4">Paramètres de partage</h3>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-danger text-sm">
           {error}
         </div>
       )}
@@ -185,7 +185,7 @@ export function ShareSettingsPanel({ activityId, onSave }: ShareSettingsPanelPro
             type="checkbox"
             checked={settings.share_to_friends}
             onChange={handleToggleFriends}
-            className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-blue-500"
           />
           <div>
             <span className="font-medium">Partager avec mes amis</span>

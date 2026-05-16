@@ -126,7 +126,7 @@ function FriendsTab() {
                   <div className="flex items-center gap-4">
                     <div className="relative">
                       <Avatar name={user.name} size="md" />
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-card" />
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-success rounded-full border-2 border-card" />
                     </div>
                     <div>
                       <p className="font-semibold">{user.name}</p>
@@ -148,13 +148,13 @@ function FriendsTab() {
       {requests.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center gap-2 px-1">
-            <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
+            <div className="w-2 h-2 bg-peak rounded-full animate-pulse" />
             <h3 className="text-sm font-semibold">Demandes en attente</h3>
-            <Badge variant="default" className="bg-orange-500 text-white">{requests.length}</Badge>
+            <Badge variant="default" className="bg-peak text-white">{requests.length}</Badge>
           </div>
           <div className="grid gap-2">
             {requests.map((req) => (
-              <div key={req.userId || req.user_id || 0} className="p-4 bg-gradient-to-r from-orange-500/10 to-amber-500/5 border border-orange-500/20 rounded-2xl">
+              <div key={req.userId || req.user_id || 0} className="p-4 bg-gradient-to-r from-orange-500/10 to-amber-500/5 border border-peak/20 rounded-2xl">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <Avatar name={req.name} size="md" />
@@ -164,7 +164,7 @@ function FriendsTab() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="md" className="rounded-xl bg-green-500 hover:bg-green-600" onClick={() => handleAccept(req.userId || req.user_id || 0)}>
+                    <Button size="md" className="rounded-xl bg-success hover:bg-success/90" onClick={() => handleAccept(req.userId || req.user_id || 0)}>
                       <Check className="w-4 h-4" />
                     </Button>
                     <Button size="md" variant="ghost" className="rounded-xl text-muted hover:text-danger" onClick={() => handleRemove(req.userId || req.user_id || 0)}>
@@ -207,7 +207,7 @@ function FriendsTab() {
                   <div className="flex items-center gap-4">
                     <div className="relative">
                       <Avatar name={friend.name} size="md" />
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-card" />
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-success rounded-full border-2 border-card" />
                     </div>
                     <div>
                       <p className="font-semibold">{friend.name}</p>
@@ -288,7 +288,7 @@ function FeedTab() {
       ) : activities.length === 0 ? (
         <div className="text-center py-16">
           <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center">
-            <Flame className="w-12 h-12 text-orange-500/50" />
+            <Flame className="w-12 h-12 text-peak/50" />
           </div>
           <p className="font-semibold text-lg">Aucune activité récente</p>
           <p className="text-sm text-muted mt-2">Ajoutez des amis pour voir leurs activités</p>
@@ -305,7 +305,7 @@ function FeedTab() {
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <Avatar name={activity.owner_name} size="md" />
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-card" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-success rounded-full border-2 border-card" />
                   </div>
                   <div>
                     <p className="font-semibold">{activity.owner_name}</p>
@@ -348,8 +348,8 @@ function FeedTab() {
                   onClick={() => handleLike(activity.id, !!activity.user_liked)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
                     activity.user_liked 
-                      ? 'bg-red-500/20 text-red-500' 
-                      : 'bg-muted text-muted hover:bg-red-500/10 hover:text-red-500'
+                      ? 'bg-danger/20 text-danger' 
+                      : 'bg-muted text-muted hover:bg-danger/10 hover:text-danger'
                   }`}
                 >
                   <Heart className={`w-5 h-5 ${activity.user_liked ? 'fill-current' : ''}`} />
@@ -465,7 +465,7 @@ function LeaderboardTab() {
       ) : entries.length === 0 ? (
         <div className="text-center py-16">
           <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-yellow-500/20 to-amber-500/20 flex items-center justify-center">
-            <Trophy className="w-12 h-12 text-yellow-500/50" />
+            <Trophy className="w-12 h-12 text-warning/50" />
           </div>
           <p className="font-semibold text-lg">Aucune donnée</p>
           <p className="text-sm text-muted mt-2">Commencez à vous entraîner pour apparaître ici</p>
@@ -718,8 +718,8 @@ function GroupsTab() {
 function MessagesTab() {
   return (
     <div className="text-center py-16">
-      <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center">
-        <MessageCircle className="w-12 h-12 text-blue-500/50" />
+      <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary/20 to-recovery/20 flex items-center justify-center">
+        <MessageCircle className="w-12 h-12 text-primary/50" />
       </div>
       <p className="font-semibold text-lg">Messagerie à venir</p>
       <p className="text-sm text-muted mt-2">Cette fonctionnalité sera disponible prochainement</p>
@@ -756,10 +756,10 @@ function NotificationsTab() {
 
   const getNotificationColor = (type: string) => {
     switch (type) {
-      case 'friend_request': return 'bg-blue-500/10 text-blue-500';
-      case 'challenge': return 'bg-yellow-500/10 text-yellow-500';
-      case 'like': return 'bg-red-500/10 text-red-500';
-      case 'message': return 'bg-green-500/10 text-green-500';
+      case 'friend_request': return 'bg-primary/10 text-primary';
+      case 'challenge': return 'bg-warning/10 text-warning';
+      case 'like': return 'bg-danger/10 text-danger';
+      case 'message': return 'bg-success/10 text-success';
       default: return 'bg-muted text-muted';
     }
   };
@@ -780,7 +780,7 @@ function NotificationsTab() {
           <Bell className="w-5 h-5 text-primary" />
           Notifications
           {unreadCount > 0 && (
-            <Badge variant="default" className="bg-red-500 text-white rounded-full">{unreadCount}</Badge>
+            <Badge variant="default" className="bg-danger text-white rounded-full">{unreadCount}</Badge>
           )}
         </h3>
         {unreadCount > 0 && (
@@ -863,7 +863,7 @@ function ChallengesTab() {
   return (
     <div className="text-center py-16">
       <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center">
-        <Target className="w-12 h-12 text-orange-500/50" />
+        <Target className="w-12 h-12 text-peak/50" />
       </div>
       <p className="font-semibold text-lg">Défis à venir</p>
       <p className="text-sm text-muted mt-2">Cette fonctionnalité sera disponible prochainement</p>

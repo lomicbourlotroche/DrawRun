@@ -109,9 +109,9 @@ export default function TestScheduler({ planId, onTestScheduled }: TestScheduler
                 />
               </div>
 
-              <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+              <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                  <AlertTriangle className="w-4 h-4 text-primary/80 flex-shrink-0 mt-0.5" />
                   <div className="text-sm text-foreground/80">
                     <p className="font-medium">Conseils pour le test :</p>
                     <ul className="list-disc list-inside text-xs mt-1 space-y-1">
@@ -125,9 +125,9 @@ export default function TestScheduler({ planId, onTestScheduled }: TestScheduler
             </>
           ) : (
             <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+              <div className="p-4 rounded-lg bg-success/10 border border-success/20">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-green-400" />
+                  <CheckCircle2 className="w-5 h-5 text-success/80" />
                   <span className="font-medium text-foreground">Test planifié avec succès !</span>
                 </div>
               </div>

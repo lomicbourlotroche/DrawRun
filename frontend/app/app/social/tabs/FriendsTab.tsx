@@ -140,9 +140,9 @@ export default function FriendsTab() {
       {requests.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center gap-2 px-1">
-            <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
+            <div className="w-2 h-2 bg-peak rounded-full animate-pulse" />
             <h3 className="text-sm font-semibold">Demandes en attente</h3>
-            <span className="text-xs px-1.5 py-0.5 rounded-full bg-orange-500/10 text-orange-500 font-medium">{requests.length}</span>
+            <span className="text-xs px-1.5 py-0.5 rounded-full bg-peak/10 text-peak font-medium">{requests.length}</span>
           </div>
           <div className="grid gap-2 sm:grid-cols-2">
             {requests.map((req) => (
@@ -156,7 +156,7 @@ export default function FriendsTab() {
                     </div>
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    <Button size="sm" className="rounded-xl bg-green-500 hover:bg-green-600 min-h-[36px] min-w-[36px] p-0" onClick={() => handleAccept(req.userId || req.user_id || 0)}>
+                    <Button size="sm" className="rounded-xl bg-success hover:bg-success min-h-[36px] min-w-[36px] p-0" onClick={() => handleAccept(req.userId || req.user_id || 0)}>
                       <Check className="w-4 h-4" />
                     </Button>
                     <Button size="sm" variant="ghost" className="rounded-xl text-muted hover:text-danger min-h-[36px] min-w-[36px] p-0" onClick={() => handleRemove(req.userId || req.user_id || 0)}>
@@ -195,7 +195,7 @@ export default function FriendsTab() {
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="relative shrink-0">
                       <Avatar name={friend.name} size="md" />
-                      <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-card" />
+                      <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-success rounded-full border-2 border-card" />
                     </div>
                     <div className="min-w-0">
                       <p className="font-semibold truncate">{friend.name}</p>

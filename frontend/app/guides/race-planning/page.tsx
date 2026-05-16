@@ -61,7 +61,7 @@ export default function RacePlanningGuide() {
         {/* HR zones */}
         <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-            <Heart className="w-6 h-6 text-red-500" />
+            <Heart className="w-6 h-6 text-danger" />
             Zones de fréquence cardiaque adaptatives
           </h3>
           <p className="text-neutral-600 mb-6 leading-relaxed">
@@ -89,7 +89,7 @@ export default function RacePlanningGuide() {
         {/* Nutrition */}
         <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-            <Droplets className="w-6 h-6 text-blue-500" />
+            <Droplets className="w-6 h-6 text-primary" />
             Stratégie nutritionnelle
           </h3>
           <p className="text-neutral-600 mb-6 leading-relaxed">
@@ -98,7 +98,7 @@ export default function RacePlanningGuide() {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="p-4 bg-blue-50 rounded-xl">
               <h4 className="font-semibold text-blue-700 mb-2">Hydratation</h4>
-              <p className="text-sm text-blue-600">200-300ml d'eau toutes les 20-30 minutes (5-7 km). Ajusté selon la température.</p>
+              <p className="text-sm text-primary">200-300ml d'eau toutes les 20-30 minutes (5-7 km). Ajusté selon la température.</p>
             </div>
             <div className="p-4 bg-orange-50 rounded-xl">
               <h4 className="font-semibold text-orange-700 mb-2">Glucides</h4>
@@ -110,7 +110,7 @@ export default function RacePlanningGuide() {
         {/* Terrain */}
         <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-            <TrendingUp className="w-6 h-6 text-green-500" />
+            <TrendingUp className="w-6 h-6 text-success" />
             Ajustement selon le profil
           </h3>
           <div className="space-y-3">
@@ -138,7 +138,7 @@ export default function RacePlanningGuide() {
           </h3>
           <ul className="space-y-2 text-sm text-neutral-600">
             <li className="flex items-start gap-2">
-              <span className="text-red-500 mt-1">•</span>
+              <span className="text-danger mt-1">•</span>
               <span><strong>Fatigue élevée (TSB &lt; -30) :</strong> le plan recommande de réduire l'objectif de temps</span>
             </li>
             <li className="flex items-start gap-2">
@@ -146,7 +146,7 @@ export default function RacePlanningGuide() {
               <span><strong>ACWR &gt; 1.5 :</strong> risque de blessure, stratégie conservatrice activée</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-blue-500 mt-1">•</span>
+              <span className="text-primary mt-1">•</span>
               <span><strong>Température &gt; 25°C :</strong> +3-5% sur l'allure cible (dégradation thermique)</span>
             </li>
           </ul>

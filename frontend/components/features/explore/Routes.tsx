@@ -138,7 +138,7 @@ export function RouteList({ routes, onRouteClick, isLoading, showFavoriteButton 
                 <div className="flex items-center gap-4 mt-2">
                   {route.avg_rating && (
                     <div className="flex items-center gap-1 text-xs">
-                      <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                      <Star className="w-3.5 h-3.5 text-warning fill-yellow-500" />
                       <span>{route.avg_rating.toFixed(1)} ({route.rating_count})</span>
                     </div>
                   )}
@@ -170,7 +170,7 @@ export function RouteList({ routes, onRouteClick, isLoading, showFavoriteButton 
                     <Heart
                       className={`w-5 h-5 ${
                         route.is_favorited || favorites.has(route.id)
-                          ? 'fill-red-500 text-red-500'
+                          ? 'fill-red-500 text-danger'
                           : 'text-muted-foreground'
                       }`}
                     />

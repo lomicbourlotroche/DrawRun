@@ -312,15 +312,15 @@ function validateCorsOrigin(origin, callback) {
         return;
     }
     
-        // No wildcard support in production — fail closed
-        if (allowedOrigins.includes('*')) {
-            if (process.env.NODE_ENV !== 'production') {
-                logger.warn('[CORS] Wildcard allowed only in development');
-                callback(null, true);
-            } else {
-                logger.error('[CORS] Wildcard blocked in production');
-                callback(new Error('CORS wildcard not allowed in production'));
-            }
+    // No wildcard support in production — fail closed
+    if (allowedOrigins.includes('*')) {
+        if (process.env.NODE_ENV !== 'production') {
+            logger.warn('[CORS] Wildcard allowed only in development');
+            callback(null, true);
+        } else {
+            logger.error('[CORS] Wildcard blocked in production');
+            callback(new Error('CORS wildcard not allowed in production'));
+        }
     } else if (allowedOrigins.includes(origin)) {
         callback(null, true);
     } else if (origin && origin.match(/^https?:\/\/(www\.)?drawrun\.fr(:\d+)?$/)) {
