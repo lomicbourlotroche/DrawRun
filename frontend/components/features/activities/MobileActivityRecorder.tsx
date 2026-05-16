@@ -1368,7 +1368,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="bg-slate-900 rounded-t-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden"
+          className="bg-slate-900 rounded-t-2xl shadow-2xl w-full max-w-[90vw] lg:max-w-lg max-h-[85vh] overflow-hidden"
           onClick={e => e.stopPropagation()}
         >
           <div className="p-4 border-b border-slate-800 flex items-center justify-between">
@@ -1402,7 +1402,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
                     </p>
                   </button>
                 ))}
-                <button onClick={onClose} className="w-full h-12 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition-colors">Retour</button>
+                <button onClick={onClose} className="w-full min-w-[120px] h-12 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition-colors">Retour</button>
               </div>
             )}
             {showSegmentPicker && (
@@ -1592,7 +1592,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             <h3 className="text-sm font-semibold text-white mb-2">Photos ({photos.length})</h3>
             <div className="flex gap-2 overflow-x-auto">
               {photos.map((photo, i) => (
-                <img key={i} src={photo} alt="" className="w-20 h-20 rounded-lg object-cover shrink-0" />
+                <img key={i} src={photo} alt="" className="w-16 h-16 md:w-24 md:h-24 rounded-lg object-cover shrink-0" />
               ))}
             </div>
           </div>
@@ -1608,7 +1608,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       </div>
 
       <div className="px-4 pb-8 pt-4 border-t border-slate-900 flex gap-3">
-        <button onClick={() => setStateAndRef('finished')} className="flex-1 h-12 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 flex items-center justify-center gap-2 text-sm font-medium transition-colors">
+        <button onClick={() => setStateAndRef('finished')} className="flex-1 min-w-[120px] h-12 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 flex items-center justify-center gap-2 text-sm font-medium transition-colors">
           <X className="w-4 h-4" />Retour
         </button>
         <button onClick={saveActivity} className="flex-1 h-12 rounded-lg bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white flex items-center justify-center gap-2 text-sm font-medium transition-colors">
