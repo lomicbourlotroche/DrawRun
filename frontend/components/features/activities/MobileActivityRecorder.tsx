@@ -1373,7 +1373,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
         >
           <div className="p-4 border-b border-slate-800 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-white">{title}</h3>
-            <button onClick={onClose} className="p-2 rounded-lg hover:bg-slate-800 transition-colors">
+            <button type="button" onClick={onClose} className="p-2 rounded-lg hover:bg-slate-800 transition-colors">
               <X className="w-5 h-5 text-slate-400" />
             </button>
           </div>
@@ -1392,6 +1392,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
                 )}
                 {userRoutes.map(route => (
                   <button
+                    type="button"
                     key={route.id}
                     onClick={() => { setSelectedRoute(route); setShowRoutePicker(false); toast.info(`Parcours: ${route.name}`); }}
                     className="w-full text-left p-3 rounded-lg hover:bg-slate-800 transition-colors"
@@ -1410,6 +1411,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
                 {/* Actions */}
                 <div className="grid grid-cols-2 gap-2 mb-3">
                   <button
+                    type="button"
                     onClick={() => { setShowSegmentPicker(false); setShowGpxUpload(true); fileInputRef.current?.click(); }}
                     className="flex items-center gap-2 p-3 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors"
                   >
@@ -1420,6 +1422,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
                     </div>
                   </button>
                   <button
+                    type="button"
                     onClick={() => { setShowSegmentPicker(false); setShowCreateSegment(true); }}
                     className="flex items-center gap-2 p-3 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors"
                   >
@@ -1466,7 +1469,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
                     <p className="text-sm font-medium text-peak-400">Segment en cours: {activeSegment.name}</p>
                   </div>
                 )}
-                <button onClick={onClose} className="w-full h-12 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition-colors">Retour</button>
+                <button type="button" onClick={onClose} className="w-full h-12 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition-colors">Retour</button>
               </div>
             )}
           </div>
@@ -1592,7 +1595,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             <h3 className="text-sm font-semibold text-white mb-2">Photos ({photos.length})</h3>
             <div className="flex gap-2 overflow-x-auto">
               {photos.map((photo, i) => (
-                <img key={i} src={photo} alt="" className="w-16 h-16 md:w-24 md:h-24 rounded-lg object-cover shrink-0" />
+                <img key={i} src={photo} alt={`Photo de l'activité ${i + 1}`} className="w-16 h-16 md:w-24 md:h-24 rounded-lg object-cover shrink-0" />
               ))}
             </div>
           </div>
@@ -1608,10 +1611,10 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       </div>
 
       <div className="px-4 pb-8 pt-4 border-t border-slate-900 flex gap-3">
-        <button onClick={() => setStateAndRef('finished')} className="flex-1 min-w-[120px] h-12 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 flex items-center justify-center gap-2 text-sm font-medium transition-colors">
+        <button type="button" onClick={() => setStateAndRef('finished')} className="flex-1 min-w-[120px] h-12 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 flex items-center justify-center gap-2 text-sm font-medium transition-colors">
           <X className="w-4 h-4" />Retour
         </button>
-        <button onClick={saveActivity} className="flex-1 h-12 rounded-lg bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white flex items-center justify-center gap-2 text-sm font-medium transition-colors">
+        <button type="button" onClick={saveActivity} className="flex-1 h-12 rounded-lg bg-peak hover:bg-peak/90 active:bg-peak/80 text-white flex items-center justify-center gap-2 text-sm font-medium transition-colors">
           <Save className="w-4 h-4" />Sauvegarder
         </button>
       </div>
