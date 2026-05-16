@@ -50,7 +50,7 @@ export default function PMCGuide() {
           <div className="space-y-6">
             <div className="p-6 bg-blue-50 rounded-2xl border border-blue-100">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                   <Activity className="w-4 h-4 text-white" />
                 </div>
                 <h4 className="text-lg font-bold text-blue-700">CTL — Chronic Training Load</h4>
@@ -68,7 +68,7 @@ export default function PMCGuide() {
 
             <div className="p-6 bg-red-50 rounded-2xl border border-red-100">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-danger rounded-lg flex items-center justify-center">
                   <Heart className="w-4 h-4 text-white" />
                 </div>
                 <h4 className="text-lg font-bold text-red-700">ATL — Acute Training Load</h4>
@@ -86,7 +86,7 @@ export default function PMCGuide() {
 
             <div className="p-6 bg-green-50 rounded-2xl border border-green-100">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-success rounded-lg flex items-center justify-center">
                   <Target className="w-4 h-4 text-white" />
                 </div>
                 <h4 className="text-lg font-bold text-green-700">TSB — Training Stress Balance</h4>
@@ -115,21 +115,21 @@ export default function PMCGuide() {
 
           <div className="space-y-4">
             <div className="flex items-start gap-4 p-4 bg-neutral-50 rounded-xl">
-              <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+              <CheckCircle className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold mb-1">Planifier le tapering</h4>
                 <p className="text-sm text-neutral-600">Réduisez progressivement la charge 7-14 jours avant la compétition pour amener le TSB dans la zone +10 à +25.</p>
               </div>
             </div>
             <div className="flex items-start gap-4 p-4 bg-neutral-50 rounded-xl">
-              <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+              <CheckCircle className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold mb-1">Éviter le surentraînement</h4>
                 <p className="text-sm text-neutral-600">Si le TSB descend sous -30 pendant plus de 3 jours, insérez une semaine de récupération.</p>
               </div>
             </div>
             <div className="flex items-start gap-4 p-4 bg-neutral-50 rounded-xl">
-              <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+              <CheckCircle className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold mb-1">Suivre la progression</h4>
                 <p className="text-sm text-neutral-600">Un CTL qui monte régulièrement sur 8-12 semaines indique une base aérobie en construction.</p>

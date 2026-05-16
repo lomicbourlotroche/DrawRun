@@ -71,7 +71,7 @@ export default function ChallengeWizard({
       <div className="bg-card rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
         <div className="px-6 pt-5 pb-4 border-b border-border">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold text-lg flex items-center gap-2"><Trophy className="w-5 h-5 text-yellow-500" />{title}</h3>
+            <h3 className="font-bold text-lg flex items-center gap-2"><Trophy className="w-5 h-5 text-warning" />{title}</h3>
             <button onClick={handleClose} className="p-2 rounded-xl hover:bg-border transition-colors"><X className="w-4 h-4" /></button>
           </div>
           <div className="flex gap-1">{[1,2,3].map(s => <div key={s} className={`h-1 flex-1 rounded-full transition-all ${s <= step ? 'bg-primary' : 'bg-border'}`} />)}</div>

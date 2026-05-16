@@ -82,7 +82,7 @@ function StatCard({ title, value, subtitle, icon, iconBg, trend }: StatCardProps
               trend > 0
                 ? 'bg-green-50 text-green-600'
                 : trend < 0
-                ? 'bg-red-50 text-red-500'
+                ? 'bg-red-50 text-danger'
                 : 'bg-neutral-100 text-neutral-500'
             }`}
           >
@@ -345,12 +345,12 @@ export function ModernDashboard() {
               </div>
               <div className="p-5 space-y-3">
                 {[
-                  { label: 'CTL — Forme', value: pmc.ctl, color: 'bg-blue-500' },
+                  { label: 'CTL — Forme', value: pmc.ctl, color: 'bg-primary' },
                   { label: 'ATL — Fatigue', value: pmc.atl, color: 'bg-red-400' },
                   {
                     label: 'TSB — Fraîcheur',
                     value: Math.abs(pmc.tsb),
-                    color: pmc.tsb >= 0 ? 'bg-green-500' : 'bg-amber-400',
+                    color: pmc.tsb >= 0 ? 'bg-success' : 'bg-amber-400',
                   },
                 ].map((m) => (
                   <div key={m.label}>

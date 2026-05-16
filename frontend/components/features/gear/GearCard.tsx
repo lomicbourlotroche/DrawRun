@@ -40,7 +40,7 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) =>
   };
 
   const getProgressBarColor = () => {
-    if (isOverLimit) return 'bg-red-500';
+    if (isOverLimit) return 'bg-danger';
     if (isNearLimit) return 'bg-amber-500';
     return 'bg-emerald-500';
   };

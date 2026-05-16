@@ -123,7 +123,7 @@ export default function MissedSessionDialog({
               </div>
 
               {reason === 'injury' && (
-                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                <div className="p-3 rounded-lg bg-danger/10 border border-red-500/20">
                   <p className="text-sm text-red-400">
                     Prenez le temps de guérir complètement. Le plan sera automatiquement ajusté et une phase de reprise progressive vous sera proposée.
                   </p>
@@ -131,7 +131,7 @@ export default function MissedSessionDialog({
               )}
 
               {reason === 'illness' && (
-                <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                <div className="p-3 rounded-lg bg-peak/10 border border-orange-500/20">
                   <p className="text-sm text-orange-400">
                     Reposez-vous et récupérez. Le plan reprendra quand vous serez rétabli.
                   </p>
@@ -139,7 +139,7 @@ export default function MissedSessionDialog({
               )}
 
               {reason === 'fatigue' && (
-                <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                <div className="p-3 rounded-lg bg-warning/10 border border-yellow-500/20">
                   <p className="text-sm text-yellow-400">
                     Écoutez votre corps. La récupération fait partie de l&apos;entraînement.
                   </p>
@@ -148,7 +148,7 @@ export default function MissedSessionDialog({
             </>
           ) : (
             <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+              <div className="p-4 rounded-lg bg-success/10 border border-green-500/20">
                 <p className="font-medium text-foreground mb-2">Recommandation</p>
                 <p className="text-sm text-foreground/80">{recommendation}</p>
               </div>

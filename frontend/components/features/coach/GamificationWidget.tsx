@@ -97,15 +97,15 @@ export default function GamificationWidget({ planId }: GamificationWidgetProps) 
         </div>
 
         <div className="grid grid-cols-3 gap-3">
-          <div className="text-center p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+          <div className="text-center p-3 rounded-lg bg-success/10 border border-green-500/20">
             <p className="text-xl font-bold text-green-400">{data.stats.totalKm}</p>
             <p className="text-xs text-muted">km</p>
           </div>
-          <div className="text-center p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+          <div className="text-center p-3 rounded-lg bg-primary/10 border border-blue-500/20">
             <p className="text-xl font-bold text-blue-400">{Math.round(data.stats.totalHours)}h</p>
             <p className="text-xs text-muted">entraînement</p>
           </div>
-          <div className="text-center p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
+          <div className="text-center p-3 rounded-lg bg-peak/10 border border-orange-500/20">
             <p className="text-xl font-bold text-orange-400">{data.stats.totalSessions}</p>
             <p className="text-xs text-muted">séances</p>
           </div>
@@ -116,7 +116,7 @@ export default function GamificationWidget({ planId }: GamificationWidgetProps) 
             <p className="text-sm font-medium text-foreground">Séries</p>
           </div>
           <div className="flex gap-4">
-            <div className="flex-1 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+            <div className="flex-1 p-3 rounded-lg bg-danger/10 border border-red-500/20">
               <div className="flex items-center gap-2">
                 <Flame className="w-5 h-5 text-red-400" />
                 <div>
@@ -125,7 +125,7 @@ export default function GamificationWidget({ planId }: GamificationWidgetProps) 
                 </div>
               </div>
             </div>
-            <div className="flex-1 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+            <div className="flex-1 p-3 rounded-lg bg-warning/10 border border-yellow-500/20">
               <div className="flex items-center gap-2">
                 <Medal className="w-5 h-5 text-yellow-400" />
                 <div>
@@ -169,7 +169,7 @@ export default function GamificationWidget({ planId }: GamificationWidgetProps) 
                 </div>
                 <div className="h-1.5 bg-background rounded-full overflow-hidden">
                   <div
-                    className={`h-full transition-all ${ach.unlocked ? 'bg-green-500' : 'bg-primary/60'}`}
+                    className={`h-full transition-all ${ach.unlocked ? 'bg-success' : 'bg-primary/60'}`}
                     style={{ width: `${(ach.progress / ach.target) * 100}%` }}
                   />
                 </div>

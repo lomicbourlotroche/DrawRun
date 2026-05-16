@@ -158,7 +158,7 @@ export default function Sidebar() {
                     )}
                   />
                   {hasNotifications && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-bold text-white leading-none">
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-danger rounded-full flex items-center justify-center text-[9px] font-bold text-white leading-none">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}

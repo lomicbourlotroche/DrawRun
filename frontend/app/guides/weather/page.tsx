@@ -60,7 +60,7 @@ export default function WeatherGuide() {
         {/* Temperature impact */}
         <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-            <Thermometer className="w-6 h-6 text-red-500" />
+            <Thermometer className="w-6 h-6 text-danger" />
             Impact de la température
           </h3>
           <p className="text-neutral-600 mb-4 leading-relaxed">
@@ -85,7 +85,7 @@ export default function WeatherGuide() {
         {/* Humidity */}
         <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
-            <Droplets className="w-6 h-6 text-blue-500" />
+            <Droplets className="w-6 h-6 text-primary" />
             Humidité et indice de chaleur
           </h3>
           <p className="text-neutral-600 leading-relaxed">

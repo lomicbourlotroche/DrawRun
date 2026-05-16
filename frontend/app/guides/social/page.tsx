@@ -57,7 +57,7 @@ export default function SocialGuide() {
               'Participent à un challenge',
             ].map((item, i) => (
               <li key={i} className="flex items-center gap-2 text-sm text-neutral-600">
-                <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                <Check className="w-4 h-4 text-success flex-shrink-0" />
                 {item}
               </li>
             ))}
@@ -116,7 +116,7 @@ export default function SocialGuide() {
         {/* Draws & comments */}
         <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
-            <Heart className="w-6 h-6 text-red-500" />
+            <Heart className="w-6 h-6 text-danger" />
             Draws & Commentaires
           </h3>
           <p className="text-neutral-600 leading-relaxed">

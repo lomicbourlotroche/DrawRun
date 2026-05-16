@@ -148,7 +148,7 @@ export default function GroupDetailPage() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-2xl font-bold truncate">{group.name}</h1>
-            <span className={`text-xs px-2 py-1 rounded-full font-medium ${group.isPrivate ? 'bg-orange-500/10 text-orange-500' : 'bg-green-500/10 text-green-500'}`}>
+            <span className={`text-xs px-2 py-1 rounded-full font-medium ${group.isPrivate ? 'bg-peak/10 text-peak' : 'bg-success/10 text-success'}`}>
               {group.isPrivate ? '🔒 Privé' : '🌍 Public'}
             </span>
             {group.userRole && (
@@ -188,9 +188,9 @@ export default function GroupDetailPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { icon: Users, color: 'text-primary', bg: 'bg-primary/10', val: group.memberCount, label: 'Membres' },
-              { icon: ActivityIcon, color: 'text-orange-500', bg: 'bg-orange-500/10', val: activities.length, label: 'Activités' },
-              { icon: Trophy, color: 'text-yellow-500', bg: 'bg-yellow-500/10', val: challenges.length, label: 'Défis' },
-              { icon: Crown, color: 'text-yellow-500', bg: 'bg-yellow-500/10', val: group.adminCount || 1, label: 'Admins' },
+              { icon: ActivityIcon, color: 'text-peak', bg: 'bg-peak/10', val: activities.length, label: 'Activités' },
+              { icon: Trophy, color: 'text-warning', bg: 'bg-warning/10', val: challenges.length, label: 'Défis' },
+              { icon: Crown, color: 'text-warning', bg: 'bg-warning/10', val: group.adminCount || 1, label: 'Admins' },
             ].map(s => (
               <div key={s.label} className="p-4 rounded-xl bg-card border border-border text-center">
                 <div className={`w-10 h-10 rounded-xl ${s.bg} flex items-center justify-center mx-auto mb-2`}>
@@ -221,7 +221,7 @@ export default function GroupDetailPage() {
 
           {challenges.length > 0 && (
             <Card>
-              <CardHeader><CardTitle className="text-base flex items-center gap-2"><Trophy className="w-4 h-4 text-yellow-500" />Défis actifs</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base flex items-center gap-2"><Trophy className="w-4 h-4 text-warning" />Défis actifs</CardTitle></CardHeader>
               <CardContent className="space-y-2">
                 {challenges.slice(0, 3).map(c => (
                   <div key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-background border border-border">
@@ -254,7 +254,7 @@ export default function GroupDetailPage() {
                 {member.role === 'admin' ? (
                   <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium flex items-center gap-1"><Crown className="w-3 h-3" />Admin</span>
                 ) : member.role === 'moderator' ? (
-                  <span className="text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-500 font-medium flex items-center gap-1"><Shield className="w-3 h-3" />Modo</span>
+                  <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium flex items-center gap-1"><Shield className="w-3 h-3" />Modo</span>
                 ) : (
                   <span className="text-xs px-2 py-1 rounded-full bg-border text-muted font-medium">Membre</span>
                 )}
@@ -262,7 +262,7 @@ export default function GroupDetailPage() {
                   <div className="flex gap-1">
                     {member.role !== 'moderator' && (
                       <button onClick={() => handlePromote(member.userId, 'moderator')} className="p-1.5 rounded-lg hover:bg-border transition-colors" title="Promouvoir modérateur">
-                        <Shield className="w-4 h-4 text-blue-500" />
+                        <Shield className="w-4 h-4 text-primary" />
                       </button>
                     )}
                     <button onClick={() => handleKick(member.userId)} className="p-1.5 rounded-lg hover:bg-danger/10 transition-colors" title="Exclure">

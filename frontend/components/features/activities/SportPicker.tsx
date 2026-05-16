@@ -54,7 +54,7 @@ export function SportPicker({ selectedSport, onSelect, onClose }: SportPickerPro
               onClick={() => setActiveCategory(cat)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
                 activeCategory === cat
-                  ? 'bg-orange-500 text-white'
+                  ? 'bg-peak text-white'
                   : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
               }`}
             >
@@ -88,7 +88,7 @@ export function SportPicker({ selectedSport, onSelect, onClose }: SportPickerPro
               }`}
             >
               <div className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${
-                isSelected ? 'bg-orange-500 text-white' : 'bg-slate-700 text-slate-400'
+                isSelected ? 'bg-peak text-white' : 'bg-slate-700 text-slate-400'
               }`}>
                 {isSelected ? <Check className="w-4 h-4" /> : <SportIcon sport={sport.id} />}
               </div>

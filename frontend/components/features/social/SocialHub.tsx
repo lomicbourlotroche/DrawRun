@@ -148,9 +148,9 @@ function FriendsTab() {
       {requests.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center gap-2 px-1">
-            <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
+            <div className="w-2 h-2 bg-peak rounded-full animate-pulse" />
             <h3 className="text-sm font-semibold">Demandes en attente</h3>
-            <Badge variant="default" className="bg-orange-500 text-white">{requests.length}</Badge>
+            <Badge variant="default" className="bg-peak text-white">{requests.length}</Badge>
           </div>
           <div className="grid gap-2">
             {requests.map((req) => (
@@ -288,7 +288,7 @@ function FeedTab() {
       ) : activities.length === 0 ? (
         <div className="text-center py-16">
           <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center">
-            <Flame className="w-12 h-12 text-orange-500/50" />
+            <Flame className="w-12 h-12 text-peak/50" />
           </div>
           <p className="font-semibold text-lg">Aucune activité récente</p>
           <p className="text-sm text-muted mt-2">Ajoutez des amis pour voir leurs activités</p>
@@ -465,7 +465,7 @@ function LeaderboardTab() {
       ) : entries.length === 0 ? (
         <div className="text-center py-16">
           <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-yellow-500/20 to-amber-500/20 flex items-center justify-center">
-            <Trophy className="w-12 h-12 text-yellow-500/50" />
+            <Trophy className="w-12 h-12 text-warning/50" />
           </div>
           <p className="font-semibold text-lg">Aucune donnée</p>
           <p className="text-sm text-muted mt-2">Commencez à vous entraîner pour apparaître ici</p>
@@ -863,7 +863,7 @@ function ChallengesTab() {
   return (
     <div className="text-center py-16">
       <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center">
-        <Target className="w-12 h-12 text-orange-500/50" />
+        <Target className="w-12 h-12 text-peak/50" />
       </div>
       <p className="font-semibold text-lg">Défis à venir</p>
       <p className="text-sm text-muted mt-2">Cette fonctionnalité sera disponible prochainement</p>

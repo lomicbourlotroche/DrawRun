@@ -36,10 +36,10 @@ function PowerCurveChart({ curve }: { curve: PowerCurvePoint[] }) {
 
 const powerZoneColors = [
   'bg-gray-500/10 text-gray-400',
-  'bg-green-500/10 text-green-400',
-  'bg-blue-500/10 text-blue-400',
-  'bg-orange-500/10 text-orange-400',
-  'bg-red-500/10 text-red-400',
+  'bg-success/10 text-green-400',
+  'bg-primary/10 text-blue-400',
+  'bg-peak/10 text-orange-400',
+  'bg-danger/10 text-red-400',
   'bg-purple-500/10 text-purple-400',
   'bg-pink-500/10 text-pink-400',
 ];
@@ -96,10 +96,10 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
           <CardContent>
             <div className="grid grid-cols-5 gap-2">
               <div className="text-center p-2 rounded-lg bg-gray-500/10"><p className="text-sm font-bold text-gray-400">{analysis.hrDistribution.zone1Percent}%</p><p className="text-xs text-muted">Z1</p></div>
-              <div className="text-center p-2 rounded-lg bg-green-500/10"><p className="text-sm font-bold text-green-400">{analysis.hrDistribution.zone2Percent}%</p><p className="text-xs text-muted">Z2</p></div>
-              <div className="text-center p-2 rounded-lg bg-blue-500/10"><p className="text-sm font-bold text-blue-400">{analysis.hrDistribution.zone3Percent}%</p><p className="text-xs text-muted">Z3</p></div>
-              <div className="text-center p-2 rounded-lg bg-orange-500/10"><p className="text-sm font-bold text-orange-400">{analysis.hrDistribution.zone4Percent}%</p><p className="text-xs text-muted">Z4</p></div>
-              <div className="text-center p-2 rounded-lg bg-red-500/10"><p className="text-sm font-bold text-red-400">{analysis.hrDistribution.zone5Percent}%</p><p className="text-xs text-muted">Z5</p></div>
+              <div className="text-center p-2 rounded-lg bg-success/10"><p className="text-sm font-bold text-green-400">{analysis.hrDistribution.zone2Percent}%</p><p className="text-xs text-muted">Z2</p></div>
+              <div className="text-center p-2 rounded-lg bg-primary/10"><p className="text-sm font-bold text-blue-400">{analysis.hrDistribution.zone3Percent}%</p><p className="text-xs text-muted">Z3</p></div>
+              <div className="text-center p-2 rounded-lg bg-peak/10"><p className="text-sm font-bold text-orange-400">{analysis.hrDistribution.zone4Percent}%</p><p className="text-xs text-muted">Z4</p></div>
+              <div className="text-center p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-red-400">{analysis.hrDistribution.zone5Percent}%</p><p className="text-xs text-muted">Z5</p></div>
             </div>
           </CardContent>
         </Card>

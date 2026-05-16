@@ -1712,7 +1712,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
               <span>{Math.round(routeProgress)}%</span>
             </div>
             <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-              <div className="h-full bg-orange-500 rounded-full transition-all duration-500" style={{ width: `${routeProgress}%` }} />
+              <div className="h-full bg-peak rounded-full transition-all duration-500" style={{ width: `${routeProgress}%` }} />
             </div>
           </div>
         )}
@@ -1750,8 +1750,8 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           {state === 'recording' && (
             <div className="flex items-center justify-center gap-2 mt-2">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-danger opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-danger" />
               </span>
               <span className="text-xs font-medium text-slate-500 uppercase tracking-widest">
                 Enregistrement
@@ -1900,7 +1900,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             <button
               onClick={startRecording}
               disabled={permissionStatus === 'denied' || permissionStatus === 'unsupported'}
-              className="w-20 h-20 rounded-full bg-orange-500 hover:bg-orange-600 active:bg-orange-700 disabled:opacity-50 flex items-center justify-center transition-colors"
+              className="w-20 h-20 rounded-full bg-peak hover:bg-orange-600 active:bg-orange-700 disabled:opacity-50 flex items-center justify-center transition-colors"
             >
               <Play className="w-8 h-8 fill-white text-white ml-1" />
             </button>
@@ -1959,7 +1959,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             {/* Stop */}
             <button
               onClick={stopRecording}
-              className="w-14 h-14 rounded-full bg-red-500 hover:bg-red-600 active:bg-red-700 flex items-center justify-center transition-colors"
+              className="w-14 h-14 rounded-full bg-danger hover:bg-red-600 active:bg-red-700 flex items-center justify-center transition-colors"
             >
               <Square className="w-6 h-6 fill-white text-white" />
             </button>
@@ -2002,13 +2002,13 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           >
             <button
               onClick={resumeRecording}
-              className="w-16 h-16 rounded-full bg-orange-500 hover:bg-orange-600 active:bg-orange-700 flex items-center justify-center transition-colors"
+              className="w-16 h-16 rounded-full bg-peak hover:bg-orange-600 active:bg-orange-700 flex items-center justify-center transition-colors"
             >
               <Play className="w-7 h-7 fill-white text-white ml-1" />
             </button>
             <button
               onClick={stopRecording}
-              className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 active:bg-red-700 flex items-center justify-center transition-colors"
+              className="w-16 h-16 rounded-full bg-danger hover:bg-red-600 active:bg-red-700 flex items-center justify-center transition-colors"
             >
               <Square className="w-7 h-7 fill-white text-white" />
             </button>
@@ -2032,7 +2032,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             </button>
             <button
               onClick={() => setStateAndRef('review')}
-              className="flex-1 h-12 rounded-lg bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white flex items-center justify-center gap-2 text-sm font-medium transition-colors"
+              className="flex-1 h-12 rounded-lg bg-peak hover:bg-orange-600 active:bg-orange-700 text-white flex items-center justify-center gap-2 text-sm font-medium transition-colors"
             >
               <Save className="w-4 h-4" />
               Voir le résumé
@@ -2170,7 +2170,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
               <button
                 onClick={createSegmentFromActivity}
                 disabled={segmentStartIdx === null || segmentEndIdx === null}
-                className="w-full h-12 rounded-lg bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium transition-colors"
+                className="w-full h-12 rounded-lg bg-peak hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium transition-colors"
               >
                 Créer le segment
               </button>
@@ -2202,7 +2202,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           <div className="mt-2 h-1.5 bg-slate-800 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-300 ${
-                ghostState.currentOffset > 0 ? 'bg-emerald-500' : 'bg-red-500'
+                ghostState.currentOffset > 0 ? 'bg-emerald-500' : 'bg-danger'
               }`}
               style={{ width: `${Math.min(100, Math.max(0, 50 + ghostState.currentOffset))}%` }}
             />

@@ -276,7 +276,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
         </div>
 
         {step.completed && (
-          <div className="mt-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+          <div className="mt-4 p-3 rounded-lg bg-success/10 border border-green-500/20">
             <div className="flex items-center gap-2 text-green-400">
               <CheckCircle2 className="w-4 h-4" />
               <span className="text-sm">Étape déjà complétée</span>

@@ -68,10 +68,10 @@ export function ActivityDraws({
 
   const getDrawIcon = () => {
     if (drawCount === 0) return <Heart className="w-4 h-4" />;
-    if (drawCount >= 50) return <Flame className="w-4 h-4 text-orange-500" />;
-    if (drawCount >= 20) return <Trophy className="w-4 h-4 text-yellow-500" />;
-    if (drawCount >= 10) return <Star className="w-4 h-4 text-blue-500" />;
-    return <Heart className="w-4 h-4 text-red-500" />;
+    if (drawCount >= 50) return <Flame className="w-4 h-4 text-peak" />;
+    if (drawCount >= 20) return <Trophy className="w-4 h-4 text-warning" />;
+    if (drawCount >= 10) return <Star className="w-4 h-4 text-primary" />;
+    return <Heart className="w-4 h-4 text-danger" />;
   };
 
   const getDrawColor = () => {
@@ -113,7 +113,7 @@ export function ActivityDraws({
         <div className="absolute top-full left-0 mt-2 w-80 bg-card border border-border rounded-lg shadow-lg z-50">
           <div className="p-4">
             <h4 className="font-semibold mb-3 flex items-center gap-2">
-              <Heart className="w-4 h-4 text-red-500" />
+              <Heart className="w-4 h-4 text-danger" />
               {drawCount} Draw{drawCount !== 1 ? 's' : ''}
             </h4>
             <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -126,7 +126,7 @@ export function ActivityDraws({
                       {new Date(draw.created_at).toLocaleDateString()}
                     </p>
                   </div>
-                  <Heart className="w-3 h-3 text-red-500" />
+                  <Heart className="w-3 h-3 text-danger" />
                 </div>
               ))}
             </div>
@@ -210,7 +210,7 @@ export function SocialDraw({
         disabled={isSubmitting}
         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
           hasDrawn 
-            ? 'bg-red-500 text-white hover:bg-red-600' 
+            ? 'bg-danger text-white hover:bg-red-600' 
             : 'bg-muted text-muted hover:bg-muted/80 hover:text-foreground'
         }`}
       >
@@ -249,7 +249,7 @@ export function DrawStats({ totalDraws, thisWeek, thisMonth, bestActivity }: Dra
       <div className="p-4 bg-gradient-to-br from-red-50 to-pink-50 rounded-lg border border-red-200">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-            <Heart className="w-6 h-6 text-red-500" />
+            <Heart className="w-6 h-6 text-danger" />
           </div>
           <div>
             <p className="text-2xl font-bold text-foreground">{totalDraws}</p>
@@ -261,7 +261,7 @@ export function DrawStats({ totalDraws, thisWeek, thisMonth, bestActivity }: Dra
       <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-            <TrendingUp className="w-6 h-6 text-blue-500" />
+            <TrendingUp className="w-6 h-6 text-primary" />
           </div>
           <div>
             <p className="text-2xl font-bold text-foreground">{thisWeek}</p>
@@ -273,7 +273,7 @@ export function DrawStats({ totalDraws, thisWeek, thisMonth, bestActivity }: Dra
       <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-            <Award className="w-6 h-6 text-green-500" />
+            <Award className="w-6 h-6 text-success" />
           </div>
           <div>
             <p className="text-2xl font-bold text-foreground">{thisMonth}</p>
@@ -285,7 +285,7 @@ export function DrawStats({ totalDraws, thisWeek, thisMonth, bestActivity }: Dra
       {bestActivity && (
         <div className="md:col-span-3 p-4 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
           <div className="flex items-center gap-3">
-            <Trophy className="w-6 h-6 text-yellow-500" />
+            <Trophy className="w-6 h-6 text-warning" />
             <div>
               <p className="text-sm font-medium text-muted">Meilleure activité</p>
               <p className="font-semibold">{bestActivity.name}</p>

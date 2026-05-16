@@ -72,7 +72,7 @@ export default function PowerAnalysisPage() {
     <div className="container mx-auto p-4 max-w-4xl">
       <div className="mb-6">
         <h1 className="text-3xl font-bold flex items-center gap-2 mb-2">
-          <Zap className="w-8 h-8 text-yellow-500" />
+          <Zap className="w-8 h-8 text-warning" />
           Analyse de Puissance
         </h1>
         <p className="text-muted-foreground">

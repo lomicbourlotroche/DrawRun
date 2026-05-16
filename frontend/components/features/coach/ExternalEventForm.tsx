@@ -13,9 +13,9 @@ interface ExternalEventFormProps {
 }
 
 const eventTypes = [
-  { value: 'competition', label: 'Compétition', icon: Trophy, color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
-  { value: 'vacation', label: 'Vacances', icon: Plane, color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-  { value: 'illness', label: 'Maladie', icon: AlertCircle, color: 'bg-red-500/20 text-red-400 border-red-500/30' },
+  { value: 'competition', label: 'Compétition', icon: Trophy, color: 'bg-warning/20 text-yellow-400 border-yellow-500/30' },
+  { value: 'vacation', label: 'Vacances', icon: Plane, color: 'bg-primary/20 text-blue-400 border-blue-500/30' },
+  { value: 'illness', label: 'Maladie', icon: AlertCircle, color: 'bg-danger/20 text-red-400 border-red-500/30' },
   { value: 'work_trip', label: 'Voyage travail', icon: Briefcase, color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
   { value: 'other', label: 'Autre', icon: Calendar, color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' },
 ];
@@ -144,7 +144,7 @@ export default function ExternalEventForm({ planId, onEventAdded }: ExternalEven
               </div>
 
               {eventType === 'competition' && (
-                <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                <div className="p-3 rounded-lg bg-warning/10 border border-yellow-500/20">
                   <p className="text-sm text-foreground/80">
                     L&apos;entraînement sera automatiquement adapté la semaine précédant la compétition (taper).
                   </p>
@@ -152,7 +152,7 @@ export default function ExternalEventForm({ planId, onEventAdded }: ExternalEven
               )}
 
               {eventType === 'illness' && (
-                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                <div className="p-3 rounded-lg bg-danger/10 border border-red-500/20">
                   <p className="text-sm text-foreground/80">
                     Le plan sera suspendu et reprendra après votre guérison avec une progression douce.
                   </p>
@@ -160,7 +160,7 @@ export default function ExternalEventForm({ planId, onEventAdded }: ExternalEven
               )}
 
               {(eventType === 'vacation' || eventType === 'work_trip') && (
-                <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                <div className="p-3 rounded-lg bg-primary/10 border border-blue-500/20">
                   <p className="text-sm text-foreground/80">
                     Les séances prévues pendant cette période seront automatiquement supprimées ou décalées.
                   </p>
@@ -169,7 +169,7 @@ export default function ExternalEventForm({ planId, onEventAdded }: ExternalEven
             </>
           ) : (
             <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+              <div className="p-4 rounded-lg bg-success/10 border border-green-500/20">
                 <p className="font-medium text-foreground">Événement ajouté avec succès</p>
                 <p className="text-sm text-muted mt-1">
                   {affectedSessions.length} séance(s) ont été affectées et le plan a été ajusté.

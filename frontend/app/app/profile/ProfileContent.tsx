@@ -809,7 +809,7 @@ function SettingsTab() {
                     : 'border-border hover:border-primary/50'
                 }`}
               >
-                <Sun className="w-5 h-5 mx-auto mb-1 text-yellow-500" />
+                <Sun className="w-5 h-5 mx-auto mb-1 text-warning" />
                 <p className="text-xs">Clair</p>
               </button>
               <button

@@ -204,9 +204,9 @@ export default function ActivityDetailPage() {
           <CardContent>
             <StreamChart data={hrData} color="#EF4444" fillColor="rgba(239,68,68,0.1)" unit="bpm" min={fcm ? fcm * 0.5 : undefined} max={fcm || undefined} formatValue={v => `${Math.round(v)}`} />
             <div className="grid grid-cols-3 gap-2 mt-3 text-center">
-              <div className="p-2 rounded-lg bg-red-500/10"><p className="text-sm font-bold text-red-400">{Math.round(avgHR || 0)}</p><p className="text-xs text-muted">Moyenne</p></div>
-              <div className="p-2 rounded-lg bg-red-500/10"><p className="text-sm font-bold text-red-400">{Math.round(maxHR || 0)}</p><p className="text-xs text-muted">Max</p></div>
-              <div className="p-2 rounded-lg bg-red-500/10"><p className="text-sm font-bold text-red-400">{Math.min(...hrData)}</p><p className="text-xs text-muted">Min</p></div>
+              <div className="p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-red-400">{Math.round(avgHR || 0)}</p><p className="text-xs text-muted">Moyenne</p></div>
+              <div className="p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-red-400">{Math.round(maxHR || 0)}</p><p className="text-xs text-muted">Max</p></div>
+              <div className="p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-red-400">{Math.min(...hrData)}</p><p className="text-xs text-muted">Min</p></div>
             </div>
           </CardContent>
         </Card>
@@ -264,19 +264,19 @@ export default function ActivityDetailPage() {
             />
             <div className="grid grid-cols-3 gap-2 mt-3 text-center">
               {(activity.average_watts || activity.average_power) && (
-                <div className="p-2 rounded-lg bg-orange-500/10">
+                <div className="p-2 rounded-lg bg-peak/10">
                   <p className="text-sm font-bold text-orange-400">{Math.round(activity.average_watts || activity.average_power || 0)}W</p>
                   <p className="text-xs text-muted">Moyenne</p>
                 </div>
               )}
               {(activity.normalized_power || activity.np) && (
-                <div className="p-2 rounded-lg bg-orange-500/10">
+                <div className="p-2 rounded-lg bg-peak/10">
                   <p className="text-sm font-bold text-orange-400">{Math.round(activity.normalized_power || activity.np || 0)}W</p>
                   <p className="text-xs text-muted">NP</p>
                 </div>
               )}
               {activity.variability_index && (
-                <div className="p-2 rounded-lg bg-orange-500/10">
+                <div className="p-2 rounded-lg bg-peak/10">
                   <p className="text-sm font-bold text-orange-400">{toNum(activity.variability_index).toFixed(2)}</p>
                   <p className="text-xs text-muted">VI</p>
                 </div>
@@ -339,8 +339,8 @@ export default function ActivityDetailPage() {
             </div>
             {(activity.is_race || activity.is_commute) && (
               <div className="flex gap-2 mt-3">
-                {!!activity.is_race && <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-600">🏆 Course</span>}
-                {!!activity.is_commute && <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-600">🚴 Trajet</span>}
+                {!!activity.is_race && <span className="px-2 py-1 rounded-full text-xs font-medium bg-warning/20 text-yellow-600">🏆 Course</span>}
+                {!!activity.is_commute && <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-blue-600">🚴 Trajet</span>}
               </div>
             )}
           </CardContent>

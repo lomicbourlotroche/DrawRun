@@ -59,10 +59,10 @@ export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRu
           <CardContent>
             <div className="grid grid-cols-5 gap-2">
               <div className="text-center p-2 rounded-lg bg-gray-500/10"><p className="text-sm font-bold text-gray-400">{analysis.hrDistribution.zone1Percent}%</p><p className="text-xs text-muted">Z1</p></div>
-              <div className="text-center p-2 rounded-lg bg-green-500/10"><p className="text-sm font-bold text-green-400">{analysis.hrDistribution.zone2Percent}%</p><p className="text-xs text-muted">Z2</p></div>
-              <div className="text-center p-2 rounded-lg bg-blue-500/10"><p className="text-sm font-bold text-blue-400">{analysis.hrDistribution.zone3Percent}%</p><p className="text-xs text-muted">Z3</p></div>
-              <div className="text-center p-2 rounded-lg bg-orange-500/10"><p className="text-sm font-bold text-orange-400">{analysis.hrDistribution.zone4Percent}%</p><p className="text-xs text-muted">Z4</p></div>
-              <div className="text-center p-2 rounded-lg bg-red-500/10"><p className="text-sm font-bold text-red-400">{analysis.hrDistribution.zone5Percent}%</p><p className="text-xs text-muted">Z5</p></div>
+              <div className="text-center p-2 rounded-lg bg-success/10"><p className="text-sm font-bold text-green-400">{analysis.hrDistribution.zone2Percent}%</p><p className="text-xs text-muted">Z2</p></div>
+              <div className="text-center p-2 rounded-lg bg-primary/10"><p className="text-sm font-bold text-blue-400">{analysis.hrDistribution.zone3Percent}%</p><p className="text-xs text-muted">Z3</p></div>
+              <div className="text-center p-2 rounded-lg bg-peak/10"><p className="text-sm font-bold text-orange-400">{analysis.hrDistribution.zone4Percent}%</p><p className="text-xs text-muted">Z4</p></div>
+              <div className="text-center p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-red-400">{analysis.hrDistribution.zone5Percent}%</p><p className="text-xs text-muted">Z5</p></div>
             </div>
           </CardContent>
         </Card>
@@ -99,7 +99,7 @@ export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRu
             )}
           </div>
           {analysis.runningEconomy && (
-            <div className="mt-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">
+            <div className="mt-3 p-3 rounded-lg bg-primary/5 border border-blue-500/20">
               <p className="text-sm text-blue-400"><span className="font-bold">{analysis.runningEconomy}</span> ml/kg/km — Économie de course</p>
             </div>
           )}
@@ -185,7 +185,7 @@ export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRu
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
               {Object.entries(analysis.trainingPaces).map(([key, val]) => {
-                const colors: Record<string, string> = { E: 'bg-green-500/10 border-green-500/30 text-green-400', M: 'bg-blue-500/10 border-blue-500/30 text-blue-400', T: 'bg-orange-500/10 border-orange-500/30 text-orange-400', I: 'bg-red-500/10 border-red-500/30 text-red-400', R: 'bg-purple-500/10 border-purple-500/30 text-purple-400' };
+                const colors: Record<string, string> = { E: 'bg-success/10 border-green-500/30 text-green-400', M: 'bg-primary/10 border-blue-500/30 text-blue-400', T: 'bg-peak/10 border-orange-500/30 text-orange-400', I: 'bg-danger/10 border-red-500/30 text-red-400', R: 'bg-purple-500/10 border-purple-500/30 text-purple-400' };
                 return (
                   <div key={key} className={`text-center p-2 rounded-lg border ${colors[key] || 'bg-background border-border'}`}>
                     <p className="text-xs uppercase font-bold">{key}</p>

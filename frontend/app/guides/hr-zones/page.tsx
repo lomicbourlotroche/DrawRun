@@ -8,14 +8,14 @@ export default function HRZonesGuide() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-red-50/30">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-danger/30">
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-neutral-200">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
           <button onClick={() => router.push('/')} className="p-2 rounded-xl hover:bg-neutral-100 transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-danger to-pink-500 flex items-center justify-center">
               <Heart className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -30,7 +30,7 @@ export default function HRZonesGuide() {
         <div className="text-center">
           <h2 className="text-4xl font-extrabold text-neutral-900 mb-4">
             Des zones basées sur{' '}
-            <span className="bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-danger to-pink-500 bg-clip-text text-transparent">
               votre physiologie
             </span>
           </h2>
@@ -43,14 +43,14 @@ export default function HRZonesGuide() {
         {/* FCM calculation */}
         <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-            <Thermometer className="w-6 h-6 text-red-500" />
+            <Thermometer className="w-6 h-6 text-danger" />
             Calcul de la FC Max (FCM)
           </h3>
           <p className="text-neutral-600 mb-4 leading-relaxed">
             DrawRun utilise la formule de <strong>Tanaka et al. (2001)</strong>, la plus précise pour la population générale :
           </p>
-          <div className="p-4 bg-red-50 rounded-xl border border-red-100">
-            <code className="text-sm font-mono text-red-600">FCM = 208 - (0.7 × âge)</code>
+          <div className="p-4 bg-danger/10 rounded-xl border border-danger/20">
+            <code className="text-sm font-mono text-danger/80">FCM = 208 - (0.7 × âge)</code>
           </div>
           <p className="text-sm text-neutral-500 mt-3">
             Cette formule est plus précise que la formule historique « 220 - âge » qui sous-estime la FCM chez les jeunes et la surestime chez les seniors.
@@ -60,14 +60,14 @@ export default function HRZonesGuide() {
         {/* Karvonen zones */}
         <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-            <Activity className="w-6 h-6 text-red-500" />
+            <Activity className="w-6 h-6 text-danger" />
             Méthode Karvonen (réserve de FC)
           </h3>
           <p className="text-neutral-600 mb-4 leading-relaxed">
             DrawRun utilise la <strong>méthode Karvonen</strong> qui tient compte de la FC de repos pour des zones plus précises :
           </p>
-          <div className="p-4 bg-red-50 rounded-xl border border-red-100 mb-6">
-            <code className="text-sm font-mono text-red-600">FC cible = FCrepos + (FCM - FCrepos) × %intensité</code>
+          <div className="p-4 bg-danger/10 rounded-xl border border-danger/20 mb-6">
+            <code className="text-sm font-mono text-danger/80">FC cible = FCrepos + (FCM - FCrepos) × %intensité</code>
           </div>
 
           <div className="space-y-3">
@@ -93,7 +93,7 @@ export default function HRZonesGuide() {
         {/* VDOT zones */}
         <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-            <Target className="w-6 h-6 text-red-500" />
+            <Target className="w-6 h-6 text-danger" />
             Zones d'allure Jack Daniels (VDOT)
           </h3>
           <p className="text-neutral-600 mb-4 leading-relaxed">
@@ -108,7 +108,7 @@ export default function HRZonesGuide() {
               { zone: 'R', name: 'Repetition', percent: '~115% VMA', desc: 'Vitesse pure, sprints courts' },
             ].map((z) => (
               <div key={z.zone} className="flex items-center gap-4 p-3 bg-neutral-50 rounded-xl">
-                <div className="w-8 h-8 bg-red-500 text-white rounded-lg flex items-center justify-center font-bold text-sm flex-shrink-0">
+                <div className="w-8 h-8 bg-danger text-white rounded-lg flex items-center justify-center font-bold text-sm flex-shrink-0">
                   {z.zone}
                 </div>
                 <div className="flex-1">
@@ -124,7 +124,7 @@ export default function HRZonesGuide() {
         {/* Cardiac drift */}
         <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
-            <TrendingUp className="w-6 h-6 text-red-500" />
+            <TrendingUp className="w-6 h-6 text-danger" />
             Dérive cardiaque
           </h3>
           <p className="text-neutral-600 leading-relaxed">

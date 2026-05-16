@@ -54,8 +54,8 @@ export function getMilestones(c: { milestones?: string }) {
 
 export function getProgressColor(pct: number) {
   if (pct >= 100) return 'bg-yellow-400';
-  if (pct >= 75) return 'bg-green-500';
-  if (pct >= 50) return 'bg-blue-500';
+  if (pct >= 75) return 'bg-success';
+  if (pct >= 50) return 'bg-primary';
   if (pct >= 25) return 'bg-orange-400';
   return 'bg-primary';
 }

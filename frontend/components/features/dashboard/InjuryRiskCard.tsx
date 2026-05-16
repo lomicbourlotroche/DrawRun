@@ -40,8 +40,8 @@ export const InjuryRiskCard: React.FC<InjuryRiskCardProps> = ({ acwr, trend }) =
     };}
     return {
       label: 'DANGER !',
-      color: 'text-red-500',
-      bgColor: 'bg-red-500/10',
+      color: 'text-danger',
+      bgColor: 'bg-danger/10',
       borderColor: 'border-red-500/20',
       icon: <AlertTriangle className="w-5 h-5" />,
       message: 'Risque de blessure très élevé (3-4x). Repos impératif.',

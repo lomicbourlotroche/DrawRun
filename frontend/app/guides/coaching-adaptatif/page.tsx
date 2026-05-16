@@ -43,7 +43,7 @@ export default function CoachingAdaptatifGuide() {
         {/* How it works */}
         <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-8 flex items-center gap-3">
-            <Brain className="w-6 h-6 text-green-500" />
+            <Brain className="w-6 h-6 text-success" />
             Comment fonctionne l'adaptation
           </h3>
 
@@ -76,13 +76,13 @@ export default function CoachingAdaptatifGuide() {
             ].map((item, i) => (
               <div key={i} className="flex gap-4">
                 <div className="flex-shrink-0">
-                  <div className="w-10 h-10 bg-green-500 text-white rounded-full flex items-center justify-center font-bold">
+                  <div className="w-10 h-10 bg-success text-white rounded-full flex items-center justify-center font-bold">
                     {item.step}
                   </div>
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold text-lg mb-2 flex items-center gap-2">
-                    <item.icon className="w-5 h-5 text-green-500" />
+                    <item.icon className="w-5 h-5 text-success" />
                     {item.title}
                   </h4>
                   <p className="text-neutral-600 leading-relaxed">{item.content}</p>
@@ -95,7 +95,7 @@ export default function CoachingAdaptatifGuide() {
         {/* Algorithm details */}
         <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-            <BarChart3 className="w-6 h-6 text-green-500" />
+            <BarChart3 className="w-6 h-6 text-success" />
             Logique d'adaptation
           </h3>
 

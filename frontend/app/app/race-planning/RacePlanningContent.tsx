@@ -79,7 +79,7 @@ function GpxProfileBadge({ profile }: { profile: GpxProfile }) {
       </div>
       <div className="grid grid-cols-3 gap-2 text-xs">
         <div className="text-center"><p className="font-bold text-green-600">+{profile.elevGain}m</p><p className="text-muted">Dénivelé +</p></div>
-        <div className="text-center"><p className="font-bold text-red-500">-{profile.elevLoss}m</p><p className="text-muted">Dénivelé -</p></div>
+        <div className="text-center"><p className="font-bold text-danger">-{profile.elevLoss}m</p><p className="text-muted">Dénivelé -</p></div>
         <div className="text-center"><p className="font-bold">{profile.gainPerKm}m/km</p><p className="text-muted">Gain/km</p></div>
       </div>
     </div>

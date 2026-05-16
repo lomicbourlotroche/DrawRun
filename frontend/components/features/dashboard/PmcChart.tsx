@@ -57,11 +57,11 @@ export function PmcChart({ data, isLoading }: PmcChartProps) {
   }
 
   const getFormStatus = (tsb: number) => {
-    if (tsb < -15) return { label: 'Surentrainement', color: 'text-red-500' };
-    if (tsb < -5) return { label: 'Fatigué', color: 'text-orange-500' };
+    if (tsb < -15) return { label: 'Surentrainement', color: 'text-danger' };
+    if (tsb < -5) return { label: 'Fatigué', color: 'text-peak' };
     if (tsb < 5) return { label: 'Neutre', color: 'text-gray-500' };
-    if (tsb < 25) return { label: 'Bonne forme', color: 'text-green-500' };
-    return { label: 'Optimale', color: 'text-blue-500' };
+    if (tsb < 25) return { label: 'Bonne forme', color: 'text-success' };
+    return { label: 'Optimale', color: 'text-primary' };
   };
 
   const formStatus = getFormStatus(latest.tsb);
@@ -127,7 +127,7 @@ export function PmcChart({ data, isLoading }: PmcChartProps) {
               <span className="text-muted text-xs">Monotonie</span>
               <p className={cn(
                 'font-semibold',
-                (latest.monotony || 1) > 2 ? 'text-danger' : (latest.monotony || 1) > 1.5 ? 'text-orange-500' : 'text-foreground'
+                (latest.monotony || 1) > 2 ? 'text-danger' : (latest.monotony || 1) > 1.5 ? 'text-peak' : 'text-foreground'
               )}>
                 {(latest.monotony || 1).toFixed(2)}
               </p>

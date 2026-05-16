@@ -142,12 +142,12 @@ export default function ScienceEngineGuide() {
         {/* Architecture */}
         <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-            <Layers className="w-6 h-6 text-blue-500" />
+            <Layers className="w-6 h-6 text-primary" />
             Architecture de calcul
           </h3>
           <div className="grid md:grid-cols-3 gap-6">
             <div className="p-4 bg-blue-50 rounded-2xl">
-              <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center mb-3">
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center mb-3">
                 <span className="text-white font-bold">1</span>
               </div>
               <h4 className="font-semibold mb-2">Collecte</h4>
@@ -161,7 +161,7 @@ export default function ScienceEngineGuide() {
               <p className="text-sm text-neutral-600">TSS, TRIMP, VDOT, PMC calculés par les algorithmes backend (Node.js) selon les formules scientifiques.</p>
             </div>
             <div className="p-4 bg-green-50 rounded-2xl">
-              <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center mb-3">
+              <div className="w-10 h-10 bg-success rounded-xl flex items-center justify-center mb-3">
                 <span className="text-white font-bold">3</span>
               </div>
               <h4 className="font-semibold mb-2">Analyse</h4>
@@ -200,7 +200,7 @@ export default function ScienceEngineGuide() {
                 <ul className="space-y-2">
                   {metric.details.map((detail, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-neutral-600">
-                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                      <span className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0" />
                       {detail}
                     </li>
                   ))}

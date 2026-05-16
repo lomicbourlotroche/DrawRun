@@ -261,7 +261,7 @@ export default function NewActivityPage() {
             required
             className={fieldErrors.name ? 'border-red-500' : ''}
           />
-          {fieldErrors.name && <p className="text-xs text-red-500 mt-1">{fieldErrors.name}</p>}
+          {fieldErrors.name && <p className="text-xs text-danger mt-1">{fieldErrors.name}</p>}
         </div>
 
         <div>
@@ -273,7 +273,7 @@ export default function NewActivityPage() {
           <div>
             <label className="block text-sm font-medium mb-1">Date et heure</label>
             <Input type="datetime-local" value={form.start_date} onChange={e => { setForm({ ...form, start_date: e.target.value }); setFieldErrors(f => ({ ...f, start_date: '' })); }} required className={fieldErrors.start_date ? 'border-red-500' : ''} />
-            {fieldErrors.start_date && <p className="text-xs text-red-500 mt-1">{fieldErrors.start_date}</p>}
+            {fieldErrors.start_date && <p className="text-xs text-danger mt-1">{fieldErrors.start_date}</p>}
           </div>
         )}
 
@@ -295,7 +295,7 @@ export default function NewActivityPage() {
                 <label className="block text-sm font-medium mb-1">Vitesse moyenne (km/h)</label>
                 <Input type="number" step="0.1" value={form.average_speed} onChange={e => setForm({ ...form, average_speed: e.target.value })} placeholder="10.0" />
                 {computedAvgSpeed && !form.average_speed && (
-                  <p className="text-xs text-blue-500 mt-1">Auto-calculée: {computedAvgSpeed} km/h</p>
+                  <p className="text-xs text-primary mt-1">Auto-calculée: {computedAvgSpeed} km/h</p>
                 )}
               </div>
               <div>

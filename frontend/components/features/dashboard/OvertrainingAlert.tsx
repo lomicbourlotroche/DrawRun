@@ -50,9 +50,9 @@ export default function OvertrainingAlert() {
   }
 
   const riskColors = {
-    low: 'bg-green-500/10 border-green-500/20 text-green-400',
-    moderate: 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400',
-    high: 'bg-red-500/10 border-red-500/20 text-red-400',
+    low: 'bg-success/10 border-green-500/20 text-green-400',
+    moderate: 'bg-warning/10 border-yellow-500/20 text-yellow-400',
+    high: 'bg-danger/10 border-red-500/20 text-red-400',
     unknown: 'bg-muted border-border text-muted'
   };
 
@@ -77,7 +77,7 @@ export default function OvertrainingAlert() {
       <Card className="border-green-500/20">
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
               <CheckCircle className="w-5 h-5 text-green-400" />
             </div>
             <div>

@@ -61,7 +61,7 @@ export default function LeaderboardTab() {
     return (
       <div className="text-center py-16">
         <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-yellow-500/20 to-amber-500/20 flex items-center justify-center">
-          <Trophy className="w-12 h-12 text-yellow-500/50" />
+          <Trophy className="w-12 h-12 text-warning/50" />
         </div>
         <p className="font-semibold text-lg">Aucune donnée</p>
         <p className="text-sm text-muted mt-2">Commencez à vous entraîner pour apparaître ici</p>
