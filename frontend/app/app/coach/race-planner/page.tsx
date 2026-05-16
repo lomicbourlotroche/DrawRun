@@ -384,7 +384,7 @@ export default function RacePlannerPage() {
                 <span>Descente (Allure -)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 bg-primary/10 border border-blue-500/30 rounded-sm"></div>
+                <div className="w-3 h-3 bg-primary/10 border border-primary/30 rounded-sm"></div>
                 <span>Profil Altitude</span>
               </div>
             </div>

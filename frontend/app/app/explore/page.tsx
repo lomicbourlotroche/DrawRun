@@ -380,7 +380,7 @@ export default function ExplorePage() {
           onClick={() => setShowHeatmap((p) => !p)}
           className={`flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg shadow-md border transition-all ${
             showHeatmap
-              ? 'bg-peak text-white border-orange-500'
+              ? 'bg-peak text-white border-peak'
               : 'bg-white/90 backdrop-blur-sm border-border hover:bg-white text-muted-foreground'
           }`}
           title="Heatmap"

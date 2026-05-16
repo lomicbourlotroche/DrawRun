@@ -49,7 +49,7 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) =>
     <Card className={`p-5 relative overflow-hidden transition-all duration-300 hover:shadow-xl ${!gear.is_active ? 'opacity-60 grayscale' : ''}`}>
       <div className="flex justify-between items-start mb-4">
         <div className="flex gap-4">
-          <div className={`p-3 rounded-xl ${isNearLimit ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'}`}>
+          <div className={`p-3 rounded-xl ${isNearLimit ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-primary'}`}>
             {getIcon()}
           </div>
           <div>
@@ -60,13 +60,13 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) =>
         <div className="flex gap-1">
           <button 
             onClick={() => onEdit(gear)}
-            className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            className="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors"
           >
             <Settings className="w-4 h-4" />
           </button>
           <button 
             onClick={() => onDelete(gear.id)}
-            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className="p-2 text-slate-400 hover:text-danger hover:bg-red-50 rounded-lg transition-colors"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -91,7 +91,7 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) =>
         </div>
 
         {isNearLimit && (
-          <div className={`flex items-center gap-2 text-xs font-medium ${isOverLimit ? 'text-red-600' : 'text-amber-600'}`}>
+          <div className={`flex items-center gap-2 text-xs font-medium ${isOverLimit ? 'text-danger' : 'text-amber-600'}`}>
             <AlertCircle className="w-4 h-4" />
             {isOverLimit ? 'Matériel à remplacer impérativement !' : 'Pensez à renouveler bientôt.'}
           </div>

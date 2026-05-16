@@ -240,7 +240,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
             <div key={field.name} className="space-y-2">
               <label className="block text-sm font-medium text-foreground">
                 {field.label}
-                {field.required && <span className="text-red-400 ml-1">*</span>}
+                {field.required && <span className="text-danger/80 ml-1">*</span>}
               </label>
               {field.type === 'text' && (
                 <input
@@ -276,8 +276,8 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
         </div>
 
         {step.completed && (
-          <div className="mt-4 p-3 rounded-lg bg-success/10 border border-green-500/20">
-            <div className="flex items-center gap-2 text-green-400">
+          <div className="mt-4 p-3 rounded-lg bg-success/10 border border-success/20">
+            <div className="flex items-center gap-2 text-success/80">
               <CheckCircle2 className="w-4 h-4" />
               <span className="text-sm">Étape déjà complétée</span>
             </div>

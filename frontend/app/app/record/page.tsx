@@ -41,7 +41,7 @@ export default function RecordActivityPage() {
   if (isMobile === null) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex flex-col items-center justify-center gap-4">
-        <div className="w-12 h-12 rounded-full border-4 border-blue-500/30 border-t-blue-500 animate-spin" />
+        <div className="w-12 h-12 rounded-full border-4 border-primary/30 border-t-blue-500 animate-spin" />
         <div className="text-slate-400 text-sm font-medium">Préparation de l&apos;enregistrement...</div>
       </div>
     );

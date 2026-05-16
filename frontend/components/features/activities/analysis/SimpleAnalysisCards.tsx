@@ -24,13 +24,13 @@ export function SimpleAnalysisCards({ analysis }: { analysis: SimpleAnalysis }) 
             )}
             {analysis.trimp && (
               <div className="text-center p-3 rounded-lg bg-background border border-border">
-                <p className="text-lg font-bold text-orange-400">{Math.round(toNum(analysis.trimp))}</p>
+                <p className="text-lg font-bold text-peak/80">{Math.round(toNum(analysis.trimp))}</p>
                 <p className="text-xs text-muted">TRIMP</p>
               </div>
             )}
             {analysis.intensityFactor && (
               <div className="text-center p-3 rounded-lg bg-background border border-border">
-                <p className="text-lg font-bold text-blue-400">{analysis.intensityFactor.toFixed(2)}</p>
+                <p className="text-lg font-bold text-primary/80">{analysis.intensityFactor.toFixed(2)}</p>
                 <p className="text-xs text-muted">IF</p>
               </div>
             )}
@@ -47,7 +47,7 @@ export function SimpleAnalysisCards({ analysis }: { analysis: SimpleAnalysis }) 
       {/* HR Analysis */}
       {analysis.hrZones && (
         <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Heart className="w-4 h-4 text-red-400" />Analyse Cardiaque</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Heart className="w-4 h-4 text-danger/80" />Analyse Cardiaque</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               <div className="text-center p-3 rounded-lg bg-background border border-border">

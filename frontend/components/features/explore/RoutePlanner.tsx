@@ -285,10 +285,10 @@ export default function RoutePlanner({
             className={`flex items-center gap-2 px-3 min-h-[44px] rounded-lg text-sm font-medium transition-all border ${
               isLoop
                 ? 'bg-blue-50 text-blue-700 border-blue-300 shadow-sm'
-                : 'bg-background text-muted-foreground border-border hover:border-blue-300 hover:text-blue-600'
+                : 'bg-background text-muted-foreground border-border hover:border-blue-300 hover:text-primary'
             } disabled:opacity-30 disabled:cursor-not-allowed`}
           >
-            <Repeat className={`w-4 h-4 ${isLoop ? 'text-blue-600' : ''}`} />
+            <Repeat className={`w-4 h-4 ${isLoop ? 'text-primary' : ''}`} />
             {isLoop ? 'Boucle activée' : 'Générer une boucle'}
           </button>
           {isLoop && waypoints.length >= 3 && (
@@ -306,7 +306,7 @@ export default function RoutePlanner({
               <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
             )}
             {!elevationLoading && elevationStats.total_gain > 0 && (
-              <span className="text-xs font-semibold text-green-600">
+              <span className="text-xs font-semibold text-success">
                 D+ {elevationStats.total_gain} m
               </span>
             )}

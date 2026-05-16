@@ -55,11 +55,11 @@ export default function PMCGuide() {
                 </div>
                 <h4 className="text-lg font-bold text-blue-700">CTL — Chronic Training Load</h4>
               </div>
-              <p className="text-sm text-blue-600 mb-3">Votre <strong>forme physique</strong> à long terme. C'est une moyenne exponentielle pondérée des TSS des 42 derniers jours (tau = 42).</p>
+              <p className="text-sm text-primary mb-3">Votre <strong>forme physique</strong> à long terme. C'est une moyenne exponentielle pondérée des TSS des 42 derniers jours (tau = 42).</p>
               <div className="p-3 bg-white rounded-lg">
-                <code className="text-xs font-mono text-blue-600">CTL(t) = CTL(t-1) × e^(-1/42) + TSS × (1 - e^(-1/42))</code>
+                <code className="text-xs font-mono text-primary">CTL(t) = CTL(t-1) × e^(-1/42) + TSS × (1 - e^(-1/42))</code>
               </div>
-              <ul className="mt-3 space-y-1 text-sm text-blue-600">
+              <ul className="mt-3 space-y-1 text-sm text-primary">
                 <li>• Monte lentement (il faut des semaines de cohérence)</li>
                 <li>• Descend lentement (la forme se perd progressivement)</li>
                 <li>• Un CTL de 80+ est typique d'un marathonien bien entraîné</li>
@@ -73,11 +73,11 @@ export default function PMCGuide() {
                 </div>
                 <h4 className="text-lg font-bold text-red-700">ATL — Acute Training Load</h4>
               </div>
-              <p className="text-sm text-red-600 mb-3">Votre <strong>fatigue</strong> récente. Moyenne exponentielle pondérée des TSS des 7 derniers jours (tau = 7).</p>
+              <p className="text-sm text-danger mb-3">Votre <strong>fatigue</strong> récente. Moyenne exponentielle pondérée des TSS des 7 derniers jours (tau = 7).</p>
               <div className="p-3 bg-white rounded-lg">
-                <code className="text-xs font-mono text-red-600">ATL(t) = ATL(t-1) × e^(-1/7) + TSS × (1 - e^(-1/7))</code>
+                <code className="text-xs font-mono text-danger">ATL(t) = ATL(t-1) × e^(-1/7) + TSS × (1 - e^(-1/7))</code>
               </div>
-              <ul className="mt-3 space-y-1 text-sm text-red-600">
+              <ul className="mt-3 space-y-1 text-sm text-danger">
                 <li>• Monte rapidement après une séance intense</li>
                 <li>• Descend rapidement après 2-3 jours de repos</li>
                 <li>• Un ATL élevé = fatigue accumulée récente</li>
@@ -91,11 +91,11 @@ export default function PMCGuide() {
                 </div>
                 <h4 className="text-lg font-bold text-green-700">TSB — Training Stress Balance</h4>
               </div>
-              <p className="text-sm text-green-600 mb-3">Votre <strong>fraîcheur</strong>. C'est la différence entre forme et fatigue : TSB = CTL - ATL.</p>
+              <p className="text-sm text-success mb-3">Votre <strong>fraîcheur</strong>. C'est la différence entre forme et fatigue : TSB = CTL - ATL.</p>
               <div className="p-3 bg-white rounded-lg">
-                <code className="text-xs font-mono text-green-600">TSB(t) = CTL(t) - ATL(t)</code>
+                <code className="text-xs font-mono text-success">TSB(t) = CTL(t) - ATL(t)</code>
               </div>
-              <ul className="mt-3 space-y-1 text-sm text-green-600">
+              <ul className="mt-3 space-y-1 text-sm text-success">
                 <li>• <strong>TSB &gt; +25</strong> : très frais, mais forme potentiellement basse</li>
                 <li>• <strong>TSB +10 à +25</strong> : zone idéale pour la compétition</li>
                 <li>• <strong>TSB 0 à +10</strong> : bon pour les entraînements intenses</li>

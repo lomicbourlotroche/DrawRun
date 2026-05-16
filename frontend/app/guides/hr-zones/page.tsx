@@ -140,7 +140,7 @@ export default function HRZonesGuide() {
           <p className="text-white/80 mb-6">Entrez votre âge et FC de repos pour obtenir vos 5 zones personnalisées.</p>
           <button
             onClick={() => router.push('/vdot-calculator')}
-            className="px-8 py-3 bg-white text-red-600 font-semibold rounded-xl hover:bg-neutral-100 transition-colors"
+            className="px-8 py-3 bg-white text-danger font-semibold rounded-xl hover:bg-neutral-100 transition-colors"
           >
             Calculer mes zones
           </button>

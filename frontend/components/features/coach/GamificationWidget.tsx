@@ -70,7 +70,7 @@ export default function GamificationWidget({ planId }: GamificationWidgetProps) 
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-yellow-400" />
+          <Trophy className="w-5 h-5 text-warning/80" />
           Gamification
         </CardTitle>
       </CardHeader>
@@ -78,7 +78,7 @@ export default function GamificationWidget({ planId }: GamificationWidgetProps) 
         <div className="p-4 rounded-xl bg-gradient-to-r from-primary/20 to-primary/5 border border-primary/20">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <Crown className="w-6 h-6 text-yellow-400" />
+              <Crown className="w-6 h-6 text-warning/80" />
               <div>
                 <p className="font-bold text-foreground">{data.level.title}</p>
                 <p className="text-xs text-muted">Niveau {data.level.current}</p>
@@ -97,16 +97,16 @@ export default function GamificationWidget({ planId }: GamificationWidgetProps) 
         </div>
 
         <div className="grid grid-cols-3 gap-3">
-          <div className="text-center p-3 rounded-lg bg-success/10 border border-green-500/20">
-            <p className="text-xl font-bold text-green-400">{data.stats.totalKm}</p>
+          <div className="text-center p-3 rounded-lg bg-success/10 border border-success/20">
+            <p className="text-xl font-bold text-success/80">{data.stats.totalKm}</p>
             <p className="text-xs text-muted">km</p>
           </div>
-          <div className="text-center p-3 rounded-lg bg-primary/10 border border-blue-500/20">
-            <p className="text-xl font-bold text-blue-400">{Math.round(data.stats.totalHours)}h</p>
+          <div className="text-center p-3 rounded-lg bg-primary/10 border border-primary/20">
+            <p className="text-xl font-bold text-primary/80">{Math.round(data.stats.totalHours)}h</p>
             <p className="text-xs text-muted">entraînement</p>
           </div>
-          <div className="text-center p-3 rounded-lg bg-peak/10 border border-orange-500/20">
-            <p className="text-xl font-bold text-orange-400">{data.stats.totalSessions}</p>
+          <div className="text-center p-3 rounded-lg bg-peak/10 border border-peak/20">
+            <p className="text-xl font-bold text-peak/80">{data.stats.totalSessions}</p>
             <p className="text-xs text-muted">séances</p>
           </div>
         </div>
@@ -116,20 +116,20 @@ export default function GamificationWidget({ planId }: GamificationWidgetProps) 
             <p className="text-sm font-medium text-foreground">Séries</p>
           </div>
           <div className="flex gap-4">
-            <div className="flex-1 p-3 rounded-lg bg-danger/10 border border-red-500/20">
+            <div className="flex-1 p-3 rounded-lg bg-danger/10 border border-danger/20">
               <div className="flex items-center gap-2">
-                <Flame className="w-5 h-5 text-red-400" />
+                <Flame className="w-5 h-5 text-danger/80" />
                 <div>
-                  <p className="text-lg font-bold text-red-400">{data.streaks.current}</p>
+                  <p className="text-lg font-bold text-danger/80">{data.streaks.current}</p>
                   <p className="text-xs text-muted">Actuelle</p>
                 </div>
               </div>
             </div>
-            <div className="flex-1 p-3 rounded-lg bg-warning/10 border border-yellow-500/20">
+            <div className="flex-1 p-3 rounded-lg bg-warning/10 border border-warning/20">
               <div className="flex items-center gap-2">
-                <Medal className="w-5 h-5 text-yellow-400" />
+                <Medal className="w-5 h-5 text-warning/80" />
                 <div>
-                  <p className="text-lg font-bold text-yellow-400">{data.streaks.longest}</p>
+                  <p className="text-lg font-bold text-warning/80">{data.streaks.longest}</p>
                   <p className="text-xs text-muted">Record</p>
                 </div>
               </div>
@@ -146,10 +146,10 @@ export default function GamificationWidget({ planId }: GamificationWidgetProps) 
                 return (
                   <div
                     key={badge.id}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-warning/30"
                     title={badge.description}
                   >
-                    <Icon className="w-4 h-4 text-yellow-400" />
+                    <Icon className="w-4 h-4 text-warning/80" />
                     <span className="text-xs font-medium text-foreground">{badge.name}</span>
                   </div>
                 );

@@ -229,7 +229,7 @@ export default function Header() {
                    <div className="border-t border-slate-100 mt-1 pt-1">
                      <button
                        onClick={handleLogout}
-                       className="flex items-center gap-2.5 w-full px-4 py-3 min-h-[44px] text-sm text-danger hover:text-red-600 hover:bg-red-50 transition-colors"
+                       className="flex items-center gap-2.5 w-full px-4 py-3 min-h-[44px] text-sm text-danger hover:text-danger hover:bg-red-50 transition-colors"
                      >
                       <LogOut className="w-4 h-4" />
                       Déconnexion

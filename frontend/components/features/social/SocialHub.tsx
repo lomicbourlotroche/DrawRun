@@ -154,7 +154,7 @@ function FriendsTab() {
           </div>
           <div className="grid gap-2">
             {requests.map((req) => (
-              <div key={req.userId || req.user_id || 0} className="p-4 bg-gradient-to-r from-orange-500/10 to-amber-500/5 border border-orange-500/20 rounded-2xl">
+              <div key={req.userId || req.user_id || 0} className="p-4 bg-gradient-to-r from-orange-500/10 to-amber-500/5 border border-peak/20 rounded-2xl">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <Avatar name={req.name} size="md" />

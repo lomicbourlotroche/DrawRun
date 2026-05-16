@@ -116,8 +116,8 @@ export default function ChallengesTab() {
                     </div>
                     {c.challenge_mode === 'streak' && (
                       <div className="flex items-center gap-4 text-sm">
-                        <div className="flex items-center gap-1"><span className="text-orange-400">🔥</span><span className="font-bold">{c.streak_current || 0}</span><span className="text-muted text-xs">actuel</span></div>
-                        <div className="flex items-center gap-1"><span className="text-yellow-400">⭐</span><span className="font-bold">{c.streak_best || 0}</span><span className="text-muted text-xs">record</span></div>
+                        <div className="flex items-center gap-1"><span className="text-peak/80">🔥</span><span className="font-bold">{c.streak_current || 0}</span><span className="text-muted text-xs">actuel</span></div>
+                        <div className="flex items-center gap-1"><span className="text-warning/80">⭐</span><span className="font-bold">{c.streak_best || 0}</span><span className="text-muted text-xs">record</span></div>
                       </div>
                     )}
                     <div className="space-y-1">

@@ -83,7 +83,7 @@ export function SportPicker({ selectedSport, onSelect, onClose }: SportPickerPro
               }}
               className={`flex items-center gap-2 p-3 rounded-lg text-left transition-all ${
                 isSelected
-                  ? 'bg-slate-800 border border-orange-500/30'
+                  ? 'bg-slate-800 border border-peak/30'
                   : 'bg-slate-800/50 border border-transparent hover:bg-slate-800'
               }`}
             >

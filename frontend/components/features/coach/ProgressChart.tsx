@@ -70,20 +70,20 @@ export default function ProgressChart({ planId }: ProgressChartProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-4 gap-4">
-          <div className="text-center p-3 rounded-xl bg-success/10 border border-green-500/20">
-            <p className="text-2xl font-bold text-green-400">{progress.completedSessions}</p>
+          <div className="text-center p-3 rounded-xl bg-success/10 border border-success/20">
+            <p className="text-2xl font-bold text-success/80">{progress.completedSessions}</p>
             <p className="text-xs text-muted">Complétées</p>
           </div>
-          <div className="text-center p-3 rounded-xl bg-danger/10 border border-red-500/20">
-            <p className="text-2xl font-bold text-red-400">{progress.missedSessions}</p>
+          <div className="text-center p-3 rounded-xl bg-danger/10 border border-danger/20">
+            <p className="text-2xl font-bold text-danger/80">{progress.missedSessions}</p>
             <p className="text-xs text-muted">Manquées</p>
           </div>
-          <div className="text-center p-3 rounded-xl bg-primary/10 border border-blue-500/20">
-            <p className="text-2xl font-bold text-blue-400">{progress.currentStreak}</p>
+          <div className="text-center p-3 rounded-xl bg-primary/10 border border-primary/20">
+            <p className="text-2xl font-bold text-primary/80">{progress.currentStreak}</p>
             <p className="text-xs text-muted">Série actuelle</p>
           </div>
-          <div className="text-center p-3 rounded-xl bg-warning/10 border border-yellow-500/20">
-            <p className="text-2xl font-bold text-yellow-400">{Math.round(progress.completionRate)}%</p>
+          <div className="text-center p-3 rounded-xl bg-warning/10 border border-warning/20">
+            <p className="text-2xl font-bold text-warning/80">{Math.round(progress.completionRate)}%</p>
             <p className="text-xs text-muted">Taux</p>
           </div>
         </div>
@@ -167,7 +167,7 @@ export default function ProgressChart({ planId }: ProgressChartProps) {
 
         {progress.averageRpe > 0 && (
           <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-            <Zap className="w-5 h-5 text-orange-400" />
+            <Zap className="w-5 h-5 text-peak/80" />
             <div>
               <p className="text-sm font-medium text-foreground">RPE moyen</p>
               <p className="text-xs text-muted">{progress.averageRpe.toFixed(1)}/10</p>

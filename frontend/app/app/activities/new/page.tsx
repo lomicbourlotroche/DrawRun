@@ -238,7 +238,7 @@ export default function NewActivityPage() {
               <div className="grid grid-cols-3 gap-2 text-xs text-center">
                 <div className="bg-white dark:bg-slate-800 rounded-lg p-2"><p className="font-bold text-lg">{gpxPreview.distanceKm}</p><p className="text-muted">km</p></div>
                 <div className="bg-white dark:bg-slate-800 rounded-lg p-2"><p className="font-bold text-lg">{gpxPreview.durationMin}</p><p className="text-muted">min</p></div>
-                <div className="bg-white dark:bg-slate-800 rounded-lg p-2"><p className="font-bold text-lg text-green-600 dark:text-green-400">+{gpxPreview.elevGain}m</p><p className="text-muted">D+</p></div>
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-2"><p className="font-bold text-lg text-success dark:text-success/80">+{gpxPreview.elevGain}m</p><p className="text-muted">D+</p></div>
               </div>
               {/* Map preview */}
               {gpxPreview.latlng.length > 0 && (
@@ -259,7 +259,7 @@ export default function NewActivityPage() {
             onChange={e => { setForm({ ...form, name: e.target.value }); setFieldErrors(f => ({ ...f, name: '' })); }}
             placeholder="Morning Run"
             required
-            className={fieldErrors.name ? 'border-red-500' : ''}
+            className={fieldErrors.name ? 'border-danger' : ''}
           />
           {fieldErrors.name && <p className="text-xs text-danger mt-1">{fieldErrors.name}</p>}
         </div>
@@ -272,7 +272,7 @@ export default function NewActivityPage() {
         {!gpxMode && (
           <div>
             <label className="block text-sm font-medium mb-1">Date et heure</label>
-            <Input type="datetime-local" value={form.start_date} onChange={e => { setForm({ ...form, start_date: e.target.value }); setFieldErrors(f => ({ ...f, start_date: '' })); }} required className={fieldErrors.start_date ? 'border-red-500' : ''} />
+            <Input type="datetime-local" value={form.start_date} onChange={e => { setForm({ ...form, start_date: e.target.value }); setFieldErrors(f => ({ ...f, start_date: '' })); }} required className={fieldErrors.start_date ? 'border-danger' : ''} />
             {fieldErrors.start_date && <p className="text-xs text-danger mt-1">{fieldErrors.start_date}</p>}
           </div>
         )}

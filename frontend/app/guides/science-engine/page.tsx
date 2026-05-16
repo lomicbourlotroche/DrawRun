@@ -189,7 +189,7 @@ export default function ScienceEngineGuide() {
               
               <div className="p-4 bg-neutral-50 rounded-xl border border-neutral-200">
                 <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Formule</p>
-                <code className="text-sm font-mono text-blue-600">{metric.formula}</code>
+                <code className="text-sm font-mono text-primary">{metric.formula}</code>
               </div>
 
               <div>
@@ -223,7 +223,7 @@ export default function ScienceEngineGuide() {
           <p className="text-white/80 mb-6">Créez un compte pour bénéficier de toutes ces métriques appliquées à vos données.</p>
           <button
             onClick={() => router.push('/login?mode=register')}
-            className="px-8 py-3 bg-white text-blue-600 font-semibold rounded-xl hover:bg-neutral-100 transition-colors"
+            className="px-8 py-3 bg-white text-primary font-semibold rounded-xl hover:bg-neutral-100 transition-colors"
           >
             Créer un compte gratuit
           </button>

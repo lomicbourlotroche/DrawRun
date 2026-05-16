@@ -181,7 +181,7 @@ export default function ActivityDetailPage() {
           <p className="text-xs text-muted">/km</p>
         </div>
         {avgHR && <div className="p-4 rounded-xl bg-background border border-border">
-          <div className="flex items-center gap-2 mb-1"><Heart className="w-4 h-4 text-red-400" /><span className="text-xs text-muted uppercase">FC moy.</span></div>
+          <div className="flex items-center gap-2 mb-1"><Heart className="w-4 h-4 text-danger/80" /><span className="text-xs text-muted uppercase">FC moy.</span></div>
           <p className="text-xl font-bold text-foreground">{Math.round(avgHR)}</p>
           <p className="text-xs text-muted">{maxHR ? `Max: ${Math.round(maxHR)} bpm` : 'bpm'}</p>
         </div>}
@@ -190,23 +190,23 @@ export default function ActivityDetailPage() {
       {/* Secondary metrics */}
       <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
         {activity.max_speed && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-sm font-bold text-foreground">{pace(activity.max_speed)}</p><p className="text-xs text-muted">Allure max</p></div>}
-        {activity.max_heartrate && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-sm font-bold text-red-400">{Math.round(activity.max_heartrate)}</p><p className="text-xs text-muted">FC max</p></div>}
-        {activity.total_elevation_gain && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-sm font-bold text-green-400">+{Math.round(activity.total_elevation_gain)}m</p><p className="text-xs text-muted">Dénivelé</p></div>}
-        {activity.tss && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-sm font-bold text-blue-400">{Math.round(activity.tss)}</p><p className="text-xs text-muted">TSS</p></div>}
-        {activity.calories && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-sm font-bold text-yellow-400">{Math.round(activity.calories)}</p><p className="text-xs text-muted">kcal</p></div>}
+        {activity.max_heartrate && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-sm font-bold text-danger/80">{Math.round(activity.max_heartrate)}</p><p className="text-xs text-muted">FC max</p></div>}
+        {activity.total_elevation_gain && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-sm font-bold text-success/80">+{Math.round(activity.total_elevation_gain)}m</p><p className="text-xs text-muted">Dénivelé</p></div>}
+        {activity.tss && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-sm font-bold text-primary/80">{Math.round(activity.tss)}</p><p className="text-xs text-muted">TSS</p></div>}
+        {activity.calories && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-sm font-bold text-warning/80">{Math.round(activity.calories)}</p><p className="text-xs text-muted">kcal</p></div>}
         {activity.average_cadence && <div className="text-center p-3 rounded-lg bg-background border border-border"><p className="text-sm font-bold text-foreground">{Math.round(activity.average_cadence)}</p><p className="text-xs text-muted">Cadence</p></div>}
       </div>
 
       {/* HR Chart */}
       {hrData && Array.isArray(hrData) && hrData.length > 10 && (
         <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Heart className="w-4 h-4 text-red-400" />Fréquence Cardiaque</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Heart className="w-4 h-4 text-danger/80" />Fréquence Cardiaque</CardTitle></CardHeader>
           <CardContent>
             <StreamChart data={hrData} color="#EF4444" fillColor="rgba(239,68,68,0.1)" unit="bpm" min={fcm ? fcm * 0.5 : undefined} max={fcm || undefined} formatValue={v => `${Math.round(v)}`} />
             <div className="grid grid-cols-3 gap-2 mt-3 text-center">
-              <div className="p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-red-400">{Math.round(avgHR || 0)}</p><p className="text-xs text-muted">Moyenne</p></div>
-              <div className="p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-red-400">{Math.round(maxHR || 0)}</p><p className="text-xs text-muted">Max</p></div>
-              <div className="p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-red-400">{Math.min(...hrData)}</p><p className="text-xs text-muted">Min</p></div>
+              <div className="p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-danger/80">{Math.round(avgHR || 0)}</p><p className="text-xs text-muted">Moyenne</p></div>
+              <div className="p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-danger/80">{Math.round(maxHR || 0)}</p><p className="text-xs text-muted">Max</p></div>
+              <div className="p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-danger/80">{Math.min(...hrData)}</p><p className="text-xs text-muted">Min</p></div>
             </div>
           </CardContent>
         </Card>
@@ -215,7 +215,7 @@ export default function ActivityDetailPage() {
       {/* Speed Chart */}
       {spdData && Array.isArray(spdData) && spdData.length > 10 && (
         <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Zap className="w-4 h-4 text-blue-400" />Vitesse</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Zap className="w-4 h-4 text-primary/80" />Vitesse</CardTitle></CardHeader>
           <CardContent>
             <StreamChart
               data={spdData.map((v: number) => paceFromMs(v) || 0).filter((v: number) => v > 0)}
@@ -231,7 +231,7 @@ export default function ActivityDetailPage() {
       {/* Elevation Chart */}
       {altData && Array.isArray(altData) && altData.length > 10 && (
         <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Mountain className="w-4 h-4 text-green-400" />Altitude</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Mountain className="w-4 h-4 text-success/80" />Altitude</CardTitle></CardHeader>
           <CardContent>
             <StreamChart data={altData} color="#22C55E" fillColor="rgba(34,197,94,0.1)" unit="m" formatValue={v => `${Math.round(v)}m`} />
           </CardContent>
@@ -251,7 +251,7 @@ export default function ActivityDetailPage() {
       {/* Power Chart */}
       {wattsData && Array.isArray(wattsData) && wattsData.length > 10 && (
         <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Zap className="w-4 h-4 text-orange-400" />Puissance</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Zap className="w-4 h-4 text-peak/80" />Puissance</CardTitle></CardHeader>
           <CardContent>
             <StreamChart
               data={wattsData}
@@ -265,19 +265,19 @@ export default function ActivityDetailPage() {
             <div className="grid grid-cols-3 gap-2 mt-3 text-center">
               {(activity.average_watts || activity.average_power) && (
                 <div className="p-2 rounded-lg bg-peak/10">
-                  <p className="text-sm font-bold text-orange-400">{Math.round(activity.average_watts || activity.average_power || 0)}W</p>
+                  <p className="text-sm font-bold text-peak/80">{Math.round(activity.average_watts || activity.average_power || 0)}W</p>
                   <p className="text-xs text-muted">Moyenne</p>
                 </div>
               )}
               {(activity.normalized_power || activity.np) && (
                 <div className="p-2 rounded-lg bg-peak/10">
-                  <p className="text-sm font-bold text-orange-400">{Math.round(activity.normalized_power || activity.np || 0)}W</p>
+                  <p className="text-sm font-bold text-peak/80">{Math.round(activity.normalized_power || activity.np || 0)}W</p>
                   <p className="text-xs text-muted">NP</p>
                 </div>
               )}
               {activity.variability_index && (
                 <div className="p-2 rounded-lg bg-peak/10">
-                  <p className="text-sm font-bold text-orange-400">{toNum(activity.variability_index).toFixed(2)}</p>
+                  <p className="text-sm font-bold text-peak/80">{toNum(activity.variability_index).toFixed(2)}</p>
                   <p className="text-xs text-muted">VI</p>
                 </div>
               )}
@@ -340,7 +340,7 @@ export default function ActivityDetailPage() {
             {(activity.is_race || activity.is_commute) && (
               <div className="flex gap-2 mt-3">
                 {!!activity.is_race && <span className="px-2 py-1 rounded-full text-xs font-medium bg-warning/20 text-yellow-600">🏆 Course</span>}
-                {!!activity.is_commute && <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-blue-600">🚴 Trajet</span>}
+                {!!activity.is_commute && <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary">🚴 Trajet</span>}
               </div>
             )}
           </CardContent>
@@ -433,8 +433,8 @@ export default function ActivityDetailPage() {
                 </thead>
                 <tbody>
                   {splits.splits.map((split) => {
-                    const paceColor = split.pace && split.pace < 300 ? 'text-green-400' : split.pace && split.pace > 360 ? 'text-red-400' : 'text-foreground';
-                    const gradientColor = split.gradient > 2 ? 'text-orange-400' : split.gradient < -2 ? 'text-blue-400' : 'text-muted';
+                    const paceColor = split.pace && split.pace < 300 ? 'text-success/80' : split.pace && split.pace > 360 ? 'text-danger/80' : 'text-foreground';
+                    const gradientColor = split.gradient > 2 ? 'text-peak/80' : split.gradient < -2 ? 'text-primary/80' : 'text-muted';
                     return (
                       <tr key={split.split} className="border-b border-border/50 hover:bg-muted/30">
                         <td className="py-2 font-medium">
@@ -450,7 +450,7 @@ export default function ActivityDetailPage() {
                         </td>
                         <td className="py-2 text-right font-mono">{split.speed.toFixed(1)} km/h</td>
                         <td className="py-2 text-right">{split.avgHR || '-'}</td>
-                        <td className={`py-2 text-right ${split.elevationChange > 0 ? 'text-green-400' : split.elevationChange < 0 ? 'text-red-400' : 'text-muted'}`}>
+                        <td className={`py-2 text-right ${split.elevationChange > 0 ? 'text-success/80' : split.elevationChange < 0 ? 'text-danger/80' : 'text-muted'}`}>
                           {split.elevationChange > 0 ? '+' : ''}{split.elevationChange || '-'}m
                         </td>
                         <td className={`py-2 text-right ${gradientColor}`}>

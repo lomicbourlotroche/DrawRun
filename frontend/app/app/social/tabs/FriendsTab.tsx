@@ -156,7 +156,7 @@ export default function FriendsTab() {
                     </div>
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    <Button size="sm" className="rounded-xl bg-success hover:bg-green-600 min-h-[36px] min-w-[36px] p-0" onClick={() => handleAccept(req.userId || req.user_id || 0)}>
+                    <Button size="sm" className="rounded-xl bg-success hover:bg-success min-h-[36px] min-w-[36px] p-0" onClick={() => handleAccept(req.userId || req.user_id || 0)}>
                       <Check className="w-4 h-4" />
                     </Button>
                     <Button size="sm" variant="ghost" className="rounded-xl text-muted hover:text-danger min-h-[36px] min-w-[36px] p-0" onClick={() => handleRemove(req.userId || req.user_id || 0)}>

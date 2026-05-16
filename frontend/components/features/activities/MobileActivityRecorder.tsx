@@ -1537,7 +1537,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           )}
           {stats.avgHR && (
             <div className="bg-slate-900 rounded-md px-3 py-2 flex items-center gap-2">
-              <Heart className="w-4 h-4 text-red-400" />
+              <Heart className="w-4 h-4 text-danger/80" />
               <div>
                 <div className="text-sm font-semibold text-white">{stats.avgHR} bpm</div>
                 <div className="text-[10px] text-slate-500">FC moy</div>
@@ -1606,7 +1606,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           value={activityName}
           onChange={(e) => setActivityName(e.target.value)}
           placeholder="Nom de l'activité"
-          className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-lg text-white placeholder:text-slate-600 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20"
+          className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-lg text-white placeholder:text-slate-600 focus:outline-none focus:border-peak/50 focus:ring-1 focus:ring-orange-500/20"
         />
       </div>
 
@@ -1680,7 +1680,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           </div>
         )}
         {state === 'idle' && (permissionStatus === 'denied' || permissionStatus === 'unsupported') && (
-          <div className="flex items-center gap-2 text-red-400 text-sm mb-2">
+          <div className="flex items-center gap-2 text-danger/80 text-sm mb-2">
             <AlertTriangle className="w-4 h-4" />
             <span>GPS non disponible — activez la localisation</span>
           </div>
@@ -1773,7 +1773,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           {currentInterval && (
             <div className="mt-3 flex flex-col items-center gap-2">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 text-sm font-medium">
-                <Zap className="w-4 h-4 text-orange-400" />
+                <Zap className="w-4 h-4 text-peak/80" />
                 <span className="text-slate-300">{currentInterval.phase === 'work' ? 'Effort' : 'Récup'}</span>
                 <span className="text-slate-500">| Série {currentInterval.round}/{intervalConfig?.repeats}</span>
               </div>
@@ -1820,13 +1820,13 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           )}
           {currentGPS && currentGPS.speed && currentGPS.speed > 0 && (
             <div className="bg-slate-900 rounded-md px-2.5 py-1.5 flex items-center gap-1.5 text-xs">
-              <TrendingUp className="w-3.5 h-3.5 text-green-400" />
+              <TrendingUp className="w-3.5 h-3.5 text-success/80" />
               <span className="text-slate-300 font-medium">{(currentGPS.speed * 3.6).toFixed(1)} km/h</span>
             </div>
           )}
           {hrConnected && hrData && (
             <div className="bg-slate-900 rounded-md px-2.5 py-1.5 flex items-center gap-1.5 text-xs">
-              <Heart className="w-3.5 h-3.5 text-red-400" />
+              <Heart className="w-3.5 h-3.5 text-danger/80" />
               <span className="text-slate-300 font-medium">{hrData.heartRate} bpm</span>
             </div>
           )}
@@ -1874,7 +1874,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
               value={activityName}
               onChange={(e) => setActivityName(e.target.value)}
               placeholder="Nom de l'activité (optionnel)"
-              className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-lg text-white placeholder:text-slate-600 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20"
+              className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-lg text-white placeholder:text-slate-600 focus:outline-none focus:border-peak/50 focus:ring-1 focus:ring-orange-500/20"
             />
           </div>
         )}
@@ -1959,7 +1959,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             {/* Stop */}
             <button
               onClick={stopRecording}
-              className="w-14 h-14 rounded-full bg-danger hover:bg-red-600 active:bg-red-700 flex items-center justify-center transition-colors"
+              className="w-14 h-14 rounded-full bg-danger hover:bg-danger active:bg-red-700 flex items-center justify-center transition-colors"
             >
               <Square className="w-6 h-6 fill-white text-white" />
             </button>
@@ -2008,7 +2008,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             </button>
             <button
               onClick={stopRecording}
-              className="w-16 h-16 rounded-full bg-danger hover:bg-red-600 active:bg-red-700 flex items-center justify-center transition-colors"
+              className="w-16 h-16 rounded-full bg-danger hover:bg-danger active:bg-red-700 flex items-center justify-center transition-colors"
             >
               <Square className="w-7 h-7 fill-white text-white" />
             </button>
@@ -2128,7 +2128,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
                 value={newSegmentName}
                 onChange={(e) => setNewSegmentName(e.target.value)}
                 placeholder="Nom du segment"
-                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:border-orange-500/50"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:border-peak/50"
               />
 
               <div className="bg-slate-800/50 rounded-lg p-3 text-sm text-slate-400">
@@ -2152,7 +2152,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
                         toast.info('End défini à la position actuelle');
                       }
                     }}
-                    className="flex-1 h-10 rounded-md bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors"
+                    className="flex-1 h-10 rounded-md bg-danger hover:bg-red-700 text-white text-sm font-medium transition-colors"
                   >
                     Définir End ici
                   </button>
@@ -2181,10 +2181,10 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
 
       {/* Ghost Race Indicator */}
       {ghostRaceMode && ghostState && state === 'recording' && (
-        <div className="fixed top-20 left-4 right-4 z-40 bg-slate-900/95 backdrop-blur-sm rounded-xl border border-orange-500/30 p-3 shadow-lg">
+        <div className="fixed top-20 left-4 right-4 z-40 bg-slate-900/95 backdrop-blur-sm rounded-xl border border-peak/30 p-3 shadow-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Ghost className="w-4 h-4 text-orange-400" />
+              <Ghost className="w-4 h-4 text-peak/80" />
               <div>
                 <p className="text-sm font-medium text-white">{ghostState.segmentName}</p>
                 <p className="text-xs text-slate-500">PR: {formatDuration(ghostState.prTime)}</p>
@@ -2192,7 +2192,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             </div>
             <div className="text-right">
               <div className={`text-lg font-bold font-mono ${
-                ghostState.currentOffset > 0 ? 'text-emerald-400' : 'text-red-400'
+                ghostState.currentOffset > 0 ? 'text-emerald-400' : 'text-danger/80'
               }`}>
                 {ghostState.currentOffset > 0 ? '+' : ''}{ghostState.currentOffset.toFixed(1)}s
               </div>

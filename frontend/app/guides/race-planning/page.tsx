@@ -98,7 +98,7 @@ export default function RacePlanningGuide() {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="p-4 bg-blue-50 rounded-xl">
               <h4 className="font-semibold text-blue-700 mb-2">Hydratation</h4>
-              <p className="text-sm text-blue-600">200-300ml d'eau toutes les 20-30 minutes (5-7 km). Ajusté selon la température.</p>
+              <p className="text-sm text-primary">200-300ml d'eau toutes les 20-30 minutes (5-7 km). Ajusté selon la température.</p>
             </div>
             <div className="p-4 bg-orange-50 rounded-xl">
               <h4 className="font-semibold text-orange-700 mb-2">Glucides</h4>

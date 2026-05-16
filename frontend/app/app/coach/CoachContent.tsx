@@ -102,19 +102,19 @@ function TodayTab() {
                 )}
                 {rec.metrics.vdot !== undefined && (
                   <div className="text-center p-2 rounded-lg bg-muted/50">
-                    <p className="text-lg font-bold text-green-400">{rec.metrics.vdot}</p>
+                    <p className="text-lg font-bold text-success/80">{rec.metrics.vdot}</p>
                     <p className="text-xs text-muted">VDOT</p>
                   </div>
                 )}
                 {rec.metrics.streak !== undefined && (
                   <div className="text-center p-2 rounded-lg bg-muted/50">
-                    <p className="text-lg font-bold text-orange-400">{rec.metrics.streak}</p>
+                    <p className="text-lg font-bold text-peak/80">{rec.metrics.streak}</p>
                     <p className="text-xs text-muted">Série</p>
                   </div>
                 )}
                 {rec.metrics.activitiesCount !== undefined && (
                   <div className="text-center p-2 rounded-lg bg-muted/50">
-                    <p className="text-lg font-bold text-blue-400">{rec.metrics.activitiesCount}</p>
+                    <p className="text-lg font-bold text-primary/80">{rec.metrics.activitiesCount}</p>
                     <p className="text-xs text-muted">Séances</p>
                   </div>
                 )}

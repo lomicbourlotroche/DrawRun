@@ -14,7 +14,7 @@ export function SwimAnalysisCards({ analysis }: { analysis: SwimAnalysis }) {
       {/* HR Analysis */}
       {analysis.hrZones && (
         <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Heart className="w-4 h-4 text-red-400" />Analyse Cardiaque</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Heart className="w-4 h-4 text-danger/80" />Analyse Cardiaque</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               <div className="text-center p-3 rounded-lg bg-background border border-border">
@@ -23,7 +23,7 @@ export function SwimAnalysisCards({ analysis }: { analysis: SwimAnalysis }) {
               </div>
               {analysis.trimp && (
                 <div className="text-center p-3 rounded-lg bg-background border border-border">
-                  <p className="text-lg font-bold text-orange-400">{Math.round(toNum(analysis.trimp))}</p>
+                  <p className="text-lg font-bold text-peak/80">{Math.round(toNum(analysis.trimp))}</p>
                   <p className="text-xs text-muted">TRIMP</p>
                 </div>
               )}
@@ -40,7 +40,7 @@ export function SwimAnalysisCards({ analysis }: { analysis: SwimAnalysis }) {
 
       {/* Swim Metrics */}
       <Card>
-        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Waves className="w-4 h-4 text-blue-400" />Métriques Natation</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Waves className="w-4 h-4 text-primary/80" />Métriques Natation</CardTitle></CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {analysis.pacePer100m && (
@@ -51,7 +51,7 @@ export function SwimAnalysisCards({ analysis }: { analysis: SwimAnalysis }) {
             )}
             {analysis.swolf !== null && analysis.swolf !== undefined && (
               <div className="text-center p-3 rounded-lg bg-background border border-border">
-                <p className={`text-lg font-bold ${analysis.swolf <= 45 ? 'text-green-400' : analysis.swolf <= 55 ? 'text-orange-400' : 'text-red-400'}`}>
+                <p className={`text-lg font-bold ${analysis.swolf <= 45 ? 'text-success/80' : analysis.swolf <= 55 ? 'text-peak/80' : 'text-danger/80'}`}>
                   {analysis.swolf}
                 </p>
                 <p className="text-xs text-muted">SWOLF</p>
@@ -72,8 +72,8 @@ export function SwimAnalysisCards({ analysis }: { analysis: SwimAnalysis }) {
           </div>
 
           {analysis.estimatedCSS && (
-            <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-blue-500/20">
-              <p className="text-sm font-medium text-blue-400 mb-1">CSS (Critical Swim Speed) estimée</p>
+            <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/20">
+              <p className="text-sm font-medium text-primary/80 mb-1">CSS (Critical Swim Speed) estimée</p>
               <div className="grid grid-cols-2 gap-2 mt-2">
                 <div className="text-center p-2 rounded-lg bg-background">
                   <p className="text-sm font-bold text-foreground">{analysis.estimatedCSS.pacePer100m}</p>
@@ -96,10 +96,10 @@ export function SwimAnalysisCards({ analysis }: { analysis: SwimAnalysis }) {
           <CardContent>
             <div className="grid grid-cols-5 gap-2">
               <div className="text-center p-2 rounded-lg bg-gray-500/10"><p className="text-sm font-bold text-gray-400">{analysis.hrDistribution.zone1Percent}%</p><p className="text-xs text-muted">Z1</p></div>
-              <div className="text-center p-2 rounded-lg bg-success/10"><p className="text-sm font-bold text-green-400">{analysis.hrDistribution.zone2Percent}%</p><p className="text-xs text-muted">Z2</p></div>
-              <div className="text-center p-2 rounded-lg bg-primary/10"><p className="text-sm font-bold text-blue-400">{analysis.hrDistribution.zone3Percent}%</p><p className="text-xs text-muted">Z3</p></div>
-              <div className="text-center p-2 rounded-lg bg-peak/10"><p className="text-sm font-bold text-orange-400">{analysis.hrDistribution.zone4Percent}%</p><p className="text-xs text-muted">Z4</p></div>
-              <div className="text-center p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-red-400">{analysis.hrDistribution.zone5Percent}%</p><p className="text-xs text-muted">Z5</p></div>
+              <div className="text-center p-2 rounded-lg bg-success/10"><p className="text-sm font-bold text-success/80">{analysis.hrDistribution.zone2Percent}%</p><p className="text-xs text-muted">Z2</p></div>
+              <div className="text-center p-2 rounded-lg bg-primary/10"><p className="text-sm font-bold text-primary/80">{analysis.hrDistribution.zone3Percent}%</p><p className="text-xs text-muted">Z3</p></div>
+              <div className="text-center p-2 rounded-lg bg-peak/10"><p className="text-sm font-bold text-peak/80">{analysis.hrDistribution.zone4Percent}%</p><p className="text-xs text-muted">Z4</p></div>
+              <div className="text-center p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-danger/80">{analysis.hrDistribution.zone5Percent}%</p><p className="text-xs text-muted">Z5</p></div>
             </div>
           </CardContent>
         </Card>
@@ -119,7 +119,7 @@ export function SwimAnalysisCards({ analysis }: { analysis: SwimAnalysis }) {
               )}
               {analysis.intensityFactor && (
                 <div className="text-center p-3 rounded-lg bg-background border border-border">
-                  <p className="text-lg font-bold text-blue-400">{analysis.intensityFactor.toFixed(2)}</p>
+                  <p className="text-lg font-bold text-primary/80">{analysis.intensityFactor.toFixed(2)}</p>
                   <p className="text-xs text-muted">IF</p>
                 </div>
               )}

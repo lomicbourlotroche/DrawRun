@@ -12,7 +12,7 @@ const guides = [
     href: '/guides/science-engine',
     gradient: 'from-blue-500 to-cyan-500',
     bgLight: 'bg-blue-50',
-    textColor: 'text-blue-600',
+    textColor: 'text-primary',
   },
   {
     icon: Calendar,
@@ -22,7 +22,7 @@ const guides = [
     href: '/guides/coaching-adaptatif',
     gradient: 'from-green-500 to-emerald-500',
     bgLight: 'bg-green-50',
-    textColor: 'text-green-600',
+    textColor: 'text-success',
   },
   {
     icon: Trophy,
@@ -52,7 +52,7 @@ const guides = [
     href: '/guides/hr-zones',
     gradient: 'from-red-500 to-pink-500',
     bgLight: 'bg-red-50',
-    textColor: 'text-red-600',
+    textColor: 'text-danger',
   },
   {
     icon: CloudSun,
