@@ -1,23 +1,45 @@
 'use strict';
 
 const MIGRATIONS = [
-{
+    {
         version: '001_add_otp_lockout_columns',
         description: 'Add OTP lockout columns to users table',
         up: (db) => {
-            try { db.run('ALTER TABLE users ADD COLUMN otp_attempts INTEGER DEFAULT 0'); },
-{
+            try { db.run('ALTER TABLE users ADD COLUMN otp_attempts INTEGER DEFAULT 0'); } catch (_) { /* Column may not exist */ }
+            try { db.run('ALTER TABLE users ADD COLUMN otp_locked_until DATETIME'); } catch (_) { /* Column may not exist */ }
+        },
+    },
+    {
         version: '004_remove_other_providers',
         description: 'Remove Strava, Suunto, Decathlon columns from users table',
         up: (db) => {
             // Strava columns
-            try { db.run('ALTER TABLE users DROP COLUMN strava_client_id'); },
-{
+            try { db.run('ALTER TABLE users DROP COLUMN strava_client_id'); } catch (_) { /* Column may not exist */ }
+            try { db.run('ALTER TABLE users DROP COLUMN strava_client_secret'); } catch (_) { /* Column may not exist */ }
+            try { db.run('ALTER TABLE users DROP COLUMN strava_access_token'); } catch (_) { /* Column may not exist */ }
+            try { db.run('ALTER TABLE users DROP COLUMN strava_refresh_token'); } catch (_) { /* Column may not exist */ }
+            try { db.run('ALTER TABLE users DROP COLUMN strava_expires_at'); } catch (_) { /* Column may not exist */ }
+            try { db.run('ALTER TABLE users DROP COLUMN strava_athlete_id'); } catch (_) { /* Column may not exist */ }
+            try { db.run('ALTER TABLE users DROP COLUMN strava_enabled'); } catch (_) { /* Column may not exist */ }
+            // Suunto columns
+            try { db.run('ALTER TABLE users DROP COLUMN suunto_username'); } catch (_) { /* Column may not exist */ }
+            try { db.run('ALTER TABLE users DROP COLUMN suunto_password'); } catch (_) { /* Column may not exist */ }
+            try { db.run('ALTER TABLE users DROP COLUMN suunto_enabled'); } catch (_) { /* Column may not exist */ }
+            // Decathlon columns
+            try { db.run('ALTER TABLE users DROP COLUMN decathlon_access_token'); } catch (_) { /* Column may not exist */ }
+            try { db.run('ALTER TABLE users DROP COLUMN decathlon_refresh_token'); } catch (_) { /* Column may not exist */ }
+            try { db.run('ALTER TABLE users DROP COLUMN decathlon_expires_at'); } catch (_) { /* Column may not exist */ }
+            try { db.run('ALTER TABLE users DROP COLUMN decathlon_enabled'); } catch (_) { /* Column may not exist */ }
+        },
+    },
+    {
         version: '024_add_group_id_to_challenges',
         description: 'Add group_id column to challenges table',
         up: (db) => {
-            try { db.run('ALTER TABLE challenges ADD COLUMN group_id INTEGER REFERENCES training_groups(id)'); },
-{
+            try { db.run('ALTER TABLE challenges ADD COLUMN group_id INTEGER REFERENCES training_groups(id)'); } catch (_) { /* Column may not exist */ }
+        },
+    },
+    {
         version: '025_add_sync_queue_table',
         description: 'Add sync_queue table for retry mechanism',
         up: (db) => {
@@ -40,7 +62,8 @@ const MIGRATIONS = [
             db.run('CREATE INDEX IF NOT EXISTS idx_sync_queue_status ON sync_queue(status)');
             db.run('CREATE INDEX IF NOT EXISTS idx_sync_queue_user ON sync_queue(user_id)');
         },
-{
+    },
+    {
         version: '026_add_explore_tables',
         description: 'Add explore domain tables (segments, routes, heatmap)',
         up: (db) => {
@@ -166,7 +189,8 @@ const MIGRATIONS = [
             db.run('CREATE INDEX IF NOT EXISTS idx_heatmap_activity_type ON heatmap_data(activity_type)');
             db.run('CREATE INDEX IF NOT EXISTS idx_heatmap_intensity ON heatmap_data(intensity)');
         },
-{
+    },
+    {
         version: '027_add_social_tables',
         description: 'Add all social domain tables (likes, draws, comments, reactions, photos, conversations, messaging, challenges, events, badges, XP, partner suggestions, shared stats)',
         up: (db) => {
@@ -455,8 +479,9 @@ const MIGRATIONS = [
                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             `);
-        }
-
+        },
+    },
+];
 
 async function runMigrations(db) {
     db.run(`

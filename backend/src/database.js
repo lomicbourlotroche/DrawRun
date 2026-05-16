@@ -175,25 +175,25 @@ async function initMainDb() {
             // Create users table in main.db
             mainDb.run(`
                 CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
-    name TEXT DEFAULT '',
-    profile_data TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    last_login DATETIME,
-    email_verified INTEGER DEFAULT 0,
-    consent_given INTEGER DEFAULT 0,
-    consent_date DATETIME,
-    twofa_enabled INTEGER DEFAULT 0,
-    totp_secret TEXT,
-    twofa_pending INTEGER DEFAULT 0,
-    otp TEXT,
-    otp_expiry DATETIME,
-    otp_attempts INTEGER DEFAULT 0,
-    otp_locked_until DATETIME
-  )
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    email TEXT UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    name TEXT DEFAULT '',
+                    profile_data TEXT,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    last_login DATETIME,
+                    email_verified INTEGER DEFAULT 0,
+                    consent_given INTEGER DEFAULT 0,
+                    consent_date DATETIME,
+                    twofa_enabled INTEGER DEFAULT 0,
+                    totp_secret TEXT,
+                    twofa_pending INTEGER DEFAULT 0,
+                    otp TEXT,
+                    otp_expiry DATETIME,
+                    otp_attempts INTEGER DEFAULT 0,
+                    otp_locked_until DATETIME
+                )
             `);
             
             saveMainDb();
