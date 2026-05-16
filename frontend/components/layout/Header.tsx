@@ -202,7 +202,7 @@ export default function Header() {
                   onClick={() => setIsUserMenuOpen(false)}
                 />
                 {/* Dropdown */}
-                <div className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-xl border border-neutral-200/60 rounded-2xl shadow-lg z-50 py-1 animate-slide-down overflow-hidden">
+                <div className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-xl border border-neutral-200/60 rounded-2xl shadow-lg z-50 py-1 animate-slide-down overflow-hidden max-h-[70vh] overflow-y-auto">
                   {/* User info */}
                   <div className="px-4 py-3 border-b border-neutral-100">
                     <p className="text-sm font-semibold text-neutral-900 truncate">{user?.name}</p>
