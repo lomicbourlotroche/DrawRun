@@ -312,7 +312,7 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
             ].map((item: { key: 'fcm' | 'vma' | 'vdot' | 'vo2max'; label: string; source?: string; unit: string; placeholder: string; readOnly?: boolean }) => {
               const src = item.source || 'estimated';
               const isEditable = !autoUpdate;
-              const badgeColor = src === 'manual' ? 'bg-green-500/15 text-green-400' : src === 'computed' ? 'bg-blue-500/15 text-blue-400' : 'bg-yellow-500/15 text-yellow-400';
+              const badgeColor = src === 'manual' ? 'bg-success/15 text-success/80' : src === 'computed' ? 'bg-primary/15 text-primary/80' : 'bg-warning/15 text-warning/80';
               const badgeLabel = src === 'manual' ? 'Manuel' : src === 'computed' ? 'Auto' : 'Estimé';
               return (
                 <div key={item.key} className={`p-3 rounded-xl bg-card border ${isEditable ? 'border-primary/30' : 'border-border'} text-center`}>
@@ -820,7 +820,7 @@ function SettingsTab() {
                     : 'border-border hover:border-primary/50'
                 }`}
               >
-                <Moon className="w-5 h-5 mx-auto mb-1 text-blue-500" />
+                <Moon className="w-5 h-5 mx-auto mb-1 text-primary" />
                 <p className="text-xs">Sombre</p>
               </button>
               <button
@@ -831,7 +831,7 @@ function SettingsTab() {
                     : 'border-border hover:border-primary/50'
                 }`}
               >
-                <Monitor className="w-5 h-5 mx-auto mb-1 text-gray-500" />
+                <Monitor className="w-5 h-5 mx-auto mb-1 text-muted" />
                 <p className="text-xs">Auto</p>
               </button>
             </div>
