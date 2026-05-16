@@ -131,7 +131,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['SF Pro Display', '-apple-system', 'system-ui', 'sans-serif'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
         mono: ['SF Mono', 'SF Pro Mono', 'monospace'],
       },
       fontSize: {
