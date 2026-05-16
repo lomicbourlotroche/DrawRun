@@ -23,7 +23,7 @@ require('dotenv').config({ path: require('path').join(__dirname, '.env'), overri
 
 // Fail fast if JWT_SECRET is missing (no fallback)
 if (!process.env.JWT_SECRET) {
-    console.error('FATAL: JWT_SECRET is required. Set it in .env or environment.');
+    logger.error('FATAL: JWT_SECRET is required. Set it in .env or environment.');
     // eslint-disable-next-line no-process-exit
     process.exit(1);
 }
@@ -35,7 +35,7 @@ const config = {
 };
 
 if (process.env.NODE_ENV === 'production' && !config.CORS_ORIGINS) {
-    console.error('FATAL: CORS_ORIGINS must be set in production');
+    logger.error('FATAL: CORS_ORIGINS must be set in production');
     // eslint-disable-next-line no-process-exit
     process.exit(1);
 }
@@ -46,22 +46,22 @@ if (process.env.NODE_ENV === 'production' && !config.CORS_ORIGINS) {
 // ============================================================================
 if (process.env.NODE_ENV !== 'production') {
     const { execSync } = require('child_process');
-    console.log('\n╔══════════════════════════════════════════════════╗');
-    console.log('║         🧪  Running startup test suite…          ║');
-    console.log('╚══════════════════════════════════════════════════╝\n');
+    logger.info('\n╔══════════════════════════════════════════════════╗');
+    logger.info('║         🧪  Running startup test suite…          ║');
+    logger.info('╚══════════════════════════════════════════════════╝\n');
     try {
         execSync('npm test -- --passWithNoTests --forceExit', {
             cwd: __dirname,
             stdio: 'inherit',
             timeout: 120000
         });
-        console.log('\n╔══════════════════════════════════════════════════╗');
-        console.log('║         ✅  All tests passed — starting server   ║');
-        console.log('╚══════════════════════════════════════════════════╝\n');
+        logger.info('\n╔══════════════════════════════════════════════════╗');
+        logger.info('║         ✅  All tests passed — starting server   ║');
+        logger.info('╚══════════════════════════════════════════════════╝\n');
     } catch (err) {
-        console.error('\n╔══════════════════════════════════════════════════╗');
-        console.error('║   ❌  Tests FAILED — server will NOT start       ║');
-        console.error('╚══════════════════════════════════════════════════╝\n');
+        logger.error('\n╔══════════════════════════════════════════════════╗');
+        logger.error('║   ❌  Tests FAILED — server will NOT start       ║');
+        logger.error('╚══════════════════════════════════════════════════╝\n');
         // eslint-disable-next-line no-process-exit
         process.exit(1);
     }
