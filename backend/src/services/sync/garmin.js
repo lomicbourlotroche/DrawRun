@@ -38,16 +38,16 @@ function log(userId, message, ...args) {
  * Les credentials sont passés via stdin (jamais en argument de ligne de commande).
  */
 async function callGarminApi(userId, options = {}) {
-    const user = await dbGetMain(
-        'SELECT garmin_username, garmin_password FROM users WHERE id = ?',
-        [userId]
+    const creds = await dbGetMain(
+        'SELECT username, password FROM user_credentials WHERE user_id = ? AND provider = ? AND enabled = 1',
+        [userId, 'garmin']
     );
 
-    if (!user || !user.garmin_username) {
+    if (!creds || !creds.username) {
         throw new Error('Garmin credentials not configured');
     }
 
-    const password = decrypt(user.garmin_password) || user.garmin_password;
+    const password = decrypt(creds.password) || creds.password;
     const tokenstore = path.join(GARMIN_TOKEN_DIR, String(userId));
 
     fs.mkdirSync(tokenstore, { recursive: true });

@@ -194,6 +194,7 @@ interface GhostState {
   currentOffset: number; // seconds ahead (>0) or behind (<0)
   ghostPosition: [number, number] | null;
   progress: number; // 0-100%
+  startTime: number; // timestamp when ghost race started
 }
 
 type RecordingState = 'idle' | 'recording' | 'paused' | 'finished' | 'review';
@@ -1187,6 +1188,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
         currentOffset: 0,
         ghostPosition: [segment.startLat, segment.startLng],
         progress: 0,
+        startTime: Date.now(),
       });
       toast.info(`Ghost race: ${segment.name} — PR: ${formatDuration(bestEffort.elapsed_time)}`);
     } catch {
@@ -1208,19 +1210,21 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     );
     const progress = Math.min(100, (userDistFromStart / segDist) * 100);
 
-    // Calculate ghost position based on time offset
-    const elapsed = (Date.now() - (segmentEfforts.get(ghostState.segmentId)?.startTime || Date.now())) / 1000;
+    // Calculate ghost position based on time elapsed since start
+    const elapsed = (Date.now() - ghostState.startTime) / 1000;
     const ghostProgress = Math.min(100, (elapsed / ghostState.prTime) * 100);
 
     // Interpolate ghost position
     const ghostLat = selectedRaceSegment.startLat + (selectedRaceSegment.endLat - selectedRaceSegment.startLat) * (ghostProgress / 100);
     const ghostLng = selectedRaceSegment.startLng + (selectedRaceSegment.endLng - selectedRaceSegment.startLng) * (ghostProgress / 100);
 
-    const offset = elapsed - (ghostProgress / 100) * ghostState.prTime;
+    // Calculate time offset: positive if user is ahead, negative if behind
+    const userExpectedTime = (progress / 100) * ghostState.prTime;
+    const offset = userExpectedTime - elapsed;
 
     setGhostState(prev => prev ? {
       ...prev,
-      currentOffset: -offset, // Negative = behind, Positive = ahead
+      currentOffset: offset, // Positive = ahead, Negative = behind
       ghostPosition: [ghostLat, ghostLng],
       progress,
     } : null);
@@ -2192,7 +2196,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             </div>
             <div className="text-right">
               <div className={`text-lg font-bold font-mono ${
-                ghostState.currentOffset > 0 ? 'text-emerald-400' : 'text-danger/80'
+                ghostState.currentOffset > 0 ? 'text-success/80' : 'text-danger/80'
               }`}>
                 {ghostState.currentOffset > 0 ? '+' : ''}{ghostState.currentOffset.toFixed(1)}s
               </div>
@@ -2202,7 +2206,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           <div className="mt-2 h-1.5 bg-slate-800 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-300 ${
-                ghostState.currentOffset > 0 ? 'bg-emerald-500' : 'bg-danger'
+                ghostState.currentOffset > 0 ? 'bg-success' : 'bg-danger'
               }`}
               style={{ width: `${Math.min(100, Math.max(0, 50 + ghostState.currentOffset))}%` }}
             />

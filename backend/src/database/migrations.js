@@ -481,6 +481,34 @@ const MIGRATIONS = [
             `);
         },
     },
+    {
+        version: '028_add_user_credentials_table',
+        description: 'Add user_credentials table for third-party provider credentials',
+        up: (db) => {
+            db.run(`
+                CREATE TABLE IF NOT EXISTS user_credentials (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                    provider TEXT NOT NULL,
+                    username TEXT,
+                    password TEXT,
+                    access_token TEXT,
+                    refresh_token TEXT,
+                    expires_at INTEGER,
+                    athlete_id INTEGER,
+                    user_id_provider TEXT,
+                    enabled INTEGER DEFAULT 1,
+                    last_sync DATETIME,
+                    sync_error TEXT,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(user_id, provider)
+                )
+            `);
+            db.run('CREATE INDEX IF NOT EXISTS idx_user_credentials_user ON user_credentials(user_id)');
+            db.run('CREATE INDEX IF NOT EXISTS idx_user_credentials_provider ON user_credentials(provider)');
+        },
+    },
 ];
 
 async function runMigrations(db) {

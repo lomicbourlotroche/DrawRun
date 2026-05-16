@@ -143,14 +143,8 @@ router.post('/login', async (req, res) => {
                 restingHR: profileData.restingHR || null,
                 sex: profileData.sex || null,
                 age: profileData.age || null,
-                strava_enabled: false,
                 garmin_enabled: hasGarmin,
-                suunto_enabled: false,
-                decathlon_enabled: false,
-                has_strava: false,
                 has_garmin: hasGarmin,
-                has_suunto: false,
-                has_decathlon: false,
                 created_at: user.created_at,
                 last_login: user.last_login
             }
@@ -267,20 +261,11 @@ router.post('/register', async (req, res) => {
             refreshToken,
             expiresIn: 900,
             userId: result.lastID,
-            has_strava: false,
-            has_garmin: false,
-            has_suunto: false,
             message: 'User registered successfully',
             user: {
                 id: result.lastID,
                 email,
                 name,
-                strava_enabled: false,
-                garmin_enabled: false,
-                suunto_enabled: false,
-                has_strava: false,
-                has_garmin: false,
-                has_suunto: false,
                 created_at: new Date().toISOString()
             }
         });
@@ -507,8 +492,10 @@ router.post('/credentials/garmin', verifyToken, async (req, res) => {
     
     try {
         await dbRun(
-            'UPDATE users SET garmin_username = ?, garmin_password = ?, garmin_enabled = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-            [resolvedUsername, encrypt(password), req.user.id]
+            `INSERT OR REPLACE INTO user_credentials 
+             (user_id, provider, username, password, enabled, updated_at) 
+             VALUES (?, 'garmin', ?, ?, 1, CURRENT_TIMESTAMP)`,
+            [req.user.id, resolvedUsername, encrypt(password)]
         );
         
         res.json({ message: 'Garmin credentials saved successfully' });
@@ -522,8 +509,8 @@ router.post('/credentials/garmin', verifyToken, async (req, res) => {
 router.post('/disconnect/garmin', verifyToken, async (req, res) => {
     try {
         await dbRun(
-            'UPDATE users SET garmin_username = NULL, garmin_password = NULL, garmin_enabled = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-            [req.user.id]
+            'UPDATE user_credentials SET enabled = 0, username = NULL, password = NULL, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND provider = ?',
+            [req.user.id, 'garmin']
         );
         
         try {
@@ -540,11 +527,87 @@ router.post('/disconnect/garmin', verifyToken, async (req, res) => {
     }
 });
 
+// Save Strava credentials
+router.post('/credentials/strava', verifyToken, async (req, res) => {
+    const { accessToken, refreshToken, expiresAt, athleteId } = req.body;
+    
+    if (!accessToken) {
+        return res.status(400).json({ error: 'Access token required' });
+    }
+    
+    try {
+        await dbRun(
+            `INSERT OR REPLACE INTO user_credentials 
+             (user_id, provider, access_token, refresh_token, expires_at, athlete_id, enabled, updated_at) 
+             VALUES (?, 'strava', ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)`,
+            [req.user.id, encrypt(accessToken), refreshToken ? encrypt(refreshToken) : null, expiresAt, athleteId]
+        );
+        
+        res.json({ message: 'Strava credentials saved successfully' });
+    } catch (error) {
+        logger.error('Save Strava credentials error:', error);
+        res.status(500).json({ error: 'Failed to save Strava credentials' });
+    }
+});
+
+// Disconnect Strava
+router.post('/disconnect/strava', verifyToken, async (req, res) => {
+    try {
+        await dbRun(
+            'UPDATE user_credentials SET enabled = 0, access_token = NULL, refresh_token = NULL, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND provider = ?',
+            [req.user.id, 'strava']
+        );
+        
+        res.json({ success: true, message: 'Strava disconnected' });
+    } catch (error) {
+        logger.error('Disconnect Strava error:', error);
+        res.status(500).json({ error: 'Failed to disconnect Strava' });
+    }
+});
+
+// Save Suunto credentials
+router.post('/credentials/suunto', verifyToken, async (req, res) => {
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password required' });
+    }
+    
+    try {
+        await dbRun(
+            `INSERT OR REPLACE INTO user_credentials 
+             (user_id, provider, username, password, enabled, updated_at) 
+             VALUES (?, 'suunto', ?, ?, 1, CURRENT_TIMESTAMP)`,
+            [req.user.id, username, encrypt(password)]
+        );
+        
+        res.json({ message: 'Suunto credentials saved successfully' });
+    } catch (error) {
+        logger.error('Save Suunto credentials error:', error);
+        res.status(500).json({ error: 'Failed to save Suunto credentials' });
+    }
+});
+
+// Disconnect Suunto
+router.post('/disconnect/suunto', verifyToken, async (req, res) => {
+    try {
+        await dbRun(
+            'UPDATE user_credentials SET enabled = 0, username = NULL, password = NULL, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND provider = ?',
+            [req.user.id, 'suunto']
+        );
+        
+        res.json({ success: true, message: 'Suunto disconnected' });
+    } catch (error) {
+        logger.error('Disconnect Suunto error:', error);
+        res.status(500).json({ error: 'Failed to disconnect Suunto' });
+    }
+});
+
 // Get profile
 router.get('/profile', verifyToken, async (req, res) => {
     try {
         const user = await dbGet(
-            'SELECT id, email, profile_data, garmin_enabled, garmin_username, created_at, last_login FROM users WHERE id = ?',
+            'SELECT id, email, profile_data, created_at, last_login FROM users WHERE id = ?',
             [req.user.id]
         );
         
@@ -553,7 +616,13 @@ router.get('/profile', verifyToken, async (req, res) => {
         }
         
         const profileData = user.profile_data ? JSON.parse(user.profile_data) : {};
-        const hasGarmin = !!user.garmin_enabled || !!user.garmin_username;
+        
+        // Check if user has Garmin credentials
+        const garminCreds = await dbGet(
+            'SELECT id FROM user_credentials WHERE user_id = ? AND provider = ? AND enabled = 1',
+            [req.user.id, 'garmin']
+        );
+        const hasGarmin = !!garminCreds;
         
         res.json({
             id: user.id,
