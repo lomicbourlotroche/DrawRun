@@ -39,11 +39,11 @@ function TodayTab() {
   }, []);
 
   const intensityStyles: Record<string, { bg: string; border: string; icon: string }> = {
-    green: { bg: 'bg-green-500/20', border: 'border-l-green-500', icon: 'text-green-400' },
-    blue: { bg: 'bg-blue-500/20', border: 'border-l-blue-500', icon: 'text-blue-400' },
-    orange: { bg: 'bg-orange-500/20', border: 'border-l-orange-500', icon: 'text-orange-400' },
-    red: { bg: 'bg-red-500/20', border: 'border-l-red-500', icon: 'text-red-400' },
-    gray: { bg: 'bg-gray-500/20', border: 'border-l-gray-500', icon: 'text-gray-400' },
+    green: { bg: 'bg-success/20', border: 'border-l-success', icon: 'text-success/80' },
+    blue: { bg: 'bg-primary/20', border: 'border-l-primary', icon: 'text-primary/80' },
+    orange: { bg: 'bg-peak/20', border: 'border-l-peak', icon: 'text-peak/80' },
+    red: { bg: 'bg-danger/20', border: 'border-l-danger', icon: 'text-danger/80' },
+    gray: { bg: 'bg-neutral-500/20', border: 'border-l-neutral-500', icon: 'text-neutral-400' },
   };
 
   const style = intensityStyles[rec?.intensityColor || 'blue'];
@@ -141,26 +141,26 @@ function TodayTab() {
         </GlassCardHeader>
         <GlassCardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-center">
-              <p className="text-2xl font-bold text-blue-400">
+            <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-center">
+              <p className="text-2xl font-bold text-primary/80">
                 {profile?.vdot != null ? String(profile.vdot) : '-'}
               </p>
               <p className="text-xs text-muted">VDOT</p>
             </div>
-            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-center">
-              <p className="text-2xl font-bold text-red-400">
+            <div className="p-3 rounded-lg bg-danger/10 border border-danger/20 text-center">
+              <p className="text-2xl font-bold text-danger/80">
                 {profile?.fcm != null ? String(profile.fcm) : '-'}
               </p>
               <p className="text-xs text-muted">FCM</p>
             </div>
-            <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-center">
-              <p className="text-2xl font-bold text-green-400">
+            <div className="p-3 rounded-lg bg-success/10 border border-success/20 text-center">
+              <p className="text-2xl font-bold text-success/80">
                 {profile?.weeklyKm != null ? `${profile.weeklyKm}km` : '-'}
               </p>
               <p className="text-xs text-muted">Volume/sem</p>
             </div>
-            <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20 text-center">
-              <p className="text-2xl font-bold text-orange-400">
+            <div className="p-3 rounded-lg bg-peak/10 border border-peak/20 text-center">
+              <p className="text-2xl font-bold text-peak/80">
                 {profile?.pace != null ? String(profile.pace) : '-'}
               </p>
               <p className="text-xs text-muted">Allure</p>
