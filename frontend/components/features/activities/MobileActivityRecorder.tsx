@@ -1310,7 +1310,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     if (batteryLevel === null) return null;
     if (batteryLevel > 50) return <Battery className="w-4 h-4" />;
     if (batteryLevel > 20) return <BatteryMedium className="w-4 h-4" />;
-    return <BatteryLow className="w-4 h-4 text-red-500" />;
+    return <BatteryLow className="w-4 h-4 text-danger" />;
   };
 
   const getSportIcon = () => {
@@ -1413,7 +1413,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
                     onClick={() => { setShowSegmentPicker(false); setShowGpxUpload(true); fileInputRef.current?.click(); }}
                     className="flex items-center gap-2 p-3 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors"
                   >
-                    <Upload className="w-4 h-4 text-orange-400" />
+                    <Upload className="w-4 h-4 text-peak-400" />
                     <div className="text-left">
                       <p className="text-sm font-medium text-white">Importer GPX</p>
                       <p className="text-[10px] text-slate-500">Suivre une trace</p>
@@ -1462,8 +1462,8 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
                   </div>
                 ))}
                 {activeSegment && (
-                  <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
-                    <p className="text-sm font-medium text-orange-400">Segment en cours: {activeSegment.name}</p>
+                  <div className="p-3 rounded-lg bg-peak/10 border border-peak/20">
+                    <p className="text-sm font-medium text-peak-400">Segment en cours: {activeSegment.name}</p>
                   </div>
                 )}
                 <button onClick={onClose} className="w-full h-12 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition-colors">Retour</button>

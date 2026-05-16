@@ -186,7 +186,7 @@ export default function Sidebar() {
         <div className="lg:hidden px-3 py-2 border-t border-neutral-200/60">
           <Link
             href="/app/record"
-            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 text-white font-medium text-sm shadow-lg shadow-primary-500/20 active:scale-95 transition-transform"
+            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl bg-gradient-to-r from-primary to-info text-white font-medium text-sm shadow-lg shadow-primary/20 active:scale-95 transition-transform"
           >
             <Plus className="w-5 h-5" />
             {!isCollapsed && <span>Enregistrer une activité</span>}
