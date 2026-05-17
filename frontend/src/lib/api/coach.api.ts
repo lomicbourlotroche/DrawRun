@@ -37,6 +37,10 @@ import type {
   PlanProgress,
   RaceStrategyParams,
   RaceStrategyResult,
+  CoachProfile,
+  GeneratePlanParams,
+  GeneratePlanResult,
+  PlanFeedback,
 } from './coach-types';
 
 export const coachApi = {
@@ -50,14 +54,14 @@ export const coachApi = {
   /**
    * Récupère le profil coach
    */
-  getCoachProfile(): Promise<Record<string, unknown>> {
+  getCoachProfile(): Promise<CoachProfile> {
     return client.request('/api/coach/profile');
   },
 
   /**
    * Génère un plan d'entraînement
    */
-  generatePlan(params: { target: string; vdot: number; weeklyKm: number; includePPG?: boolean }): Promise<Record<string, unknown>> {
+  generatePlan(params: GeneratePlanParams): Promise<GeneratePlanResult> {
     return client.request('/api/coach/generate-plan', {
       method: 'POST',
       body: JSON.stringify(params),
@@ -246,11 +250,7 @@ export const coachApi = {
   /**
    * Adapte le plan en fonction du feedback
    */
-  adaptPlanBasedOnFeedback(params: {
-    sessionId: number;
-    planId: number;
-    feedback: Record<string, unknown>;
-  }): Promise<{ success: boolean; adaptation: { adjustedSessions: number; reason: string } }> {
+  adaptPlanBasedOnFeedback(params: PlanFeedback): Promise<{ success: boolean; adaptation: { adjustedSessions: number; reason: string } }> {
     return client.request('/api/coach/adapt-plan', {
       method: 'POST',
       body: JSON.stringify(params),

@@ -13,10 +13,105 @@ import { client } from './client';
 import type { RacePlanningRequest, RacePlanningResponse } from '@/types';
 
 /**
+ * Split data for race planning
+ */
+export interface RaceSplit {
+  km: number;
+  distance: number; // in meters
+  splitTime: number; // in seconds
+  cumulativeTime: number; // in seconds
+  pace: number; // in seconds per km
+  hrZone: number;
+  hrRange: string;
+  elevationGain: number; // in meters
+  elevationLoss: number; // in meters
+  nutrition: Array<{
+    label: string;
+    quantity: string;
+    type: 'gel' | 'drink' | 'bar' | 'other';
+    timing: 'before' | 'during' | 'after';
+  }>;
+}
+
+/**
+ * Nutrition strategy for race planning
+ */
+export interface NutritionStrategy {
+  totalCalories: number;
+  totalCarbs: number; // in grams
+  totalLiquids: number; // in ml
+  perHour: {
+    calories: number;
+    carbs: number;
+    liquids: number;
+  };
+  schedule: Array<{
+    time: number; // in minutes
+    type: 'gel' | 'drink' | 'bar' | 'other';
+    quantity: string;
+    notes?: string;
+  }>;
+}
+
+/**
+ * Saved race plan data
+ */
+export interface SavedRacePlan {
+  id: number;
+  userId: string;
+  name: string;
+  distance: number; // in meters
+  targetPace: number; // in seconds per km
+  totalTime: number; // in seconds
+  elevationProfile?: string;
+  fatigue: number; // percentage
+  splits: RaceSplit[];
+  nutritionStrategy?: NutritionStrategy;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Race strategy parameters
+ */
+export interface RaceStrategyParams {
+  points?: Array<{ dist: number; elev: number }>;
+  gpxData?: string;
+  temp?: number; // in Celsius
+  humidity?: number; // percentage
+  goalTime?: number; // in seconds
+}
+
+/**
+ * Race strategy result
+ */
+export interface RaceStrategyResult {
+  success: boolean;
+  strategy: {
+    name: string;
+    description: string;
+    splits: RaceSplit[];
+    pacingAdvice: string;
+    nutritionRecommendations: NutritionStrategy;
+    elevationAnalysis: {
+      totalGain: number;
+      totalLoss: number;
+      difficultyScore: number;
+    };
+    weatherImpact: {
+      temperatureEffect: number;
+      humidityEffect: number;
+      adjustedPace: number;
+    };
+  };
+  message?: string;
+}
+
+/**
  * Calculate race plan with splits, HR zones and nutrition strategy
  */
 async function calculateRacePlan(params: RacePlanningRequest): Promise<RacePlanningResponse> {
-  return client.post<RacePlanningResponse>('/api/race-planning/calculate', params as unknown as Record<string, unknown>);
+  return client.post<RacePlanningResponse>('/api/race-planning/calculate', params);
 }
 
 /**
@@ -29,16 +124,16 @@ async function saveRacePlan(data: {
   totalTime?: number;
   elevationProfile?: string;
   fatigue?: number;
-  splits: unknown[];
-  nutritionStrategy?: unknown;
+  splits: RaceSplit[];
+  nutritionStrategy?: NutritionStrategy;
 }): Promise<{ success: boolean; message: string }> {
-  return client.post('/api/race-planning/save', data as unknown as Record<string, unknown>);
+  return client.post('/api/race-planning/save', data);
 }
 
 /**
  * List all saved race plans
  */
-async function listRacePlans(): Promise<Array<Record<string, unknown>>> {
+async function listRacePlans(): Promise<SavedRacePlan[]> {
   return client.get('/api/race-planning/list');
 }
 
@@ -52,12 +147,8 @@ async function deleteRacePlan(id: number): Promise<{ success: boolean; message: 
 /**
  * Generate a pacing strategy from GPX points
  */
-async function calculateRaceStrategy(params: {
-  points?: Array<{ dist: number; elev: number }>;
-  gpxData?: string;
-  params: { temp?: number; humidity?: number; goalTime?: number };
-}): Promise<Record<string, unknown>> {
-  return client.post('/api/race-planning/race-strategy', params as unknown as Record<string, unknown>);
+async function calculateRaceStrategy(params: RaceStrategyParams): Promise<RaceStrategyResult> {
+  return client.post('/api/race-planning/race-strategy', params);
 }
 
 /**

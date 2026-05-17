@@ -1,5 +1,109 @@
+ * PROFILE API - Endpoints profil utilisateur
+ * ============================================================
+ * 
+ * Ce fichier contient tous les endpoints liés au profil :
+ * - Get / Update profile
+ * - Extended profile
+ * - Athlete info
+ * 
+ * @module lib/api/profile.api
+ */
+
+import { client } from './client';
+import type { User, AthleteStats } from '@/types';
+=======
 /**
  * ============================================================
+ * PROFILE API - Endpoints profil utilisateur
+ * ============================================================
+ * 
+ * Ce fichier contient tous les endpoints liés au profil :
+ * - Get / Update profile
+ * - Extended profile
+ * - Athlete info
+ * 
+ * @module lib/api/profile.api
+ */
+
+import { client } from './client';
+import type { User, AthleteStats } from '@/types';
+
+/**
+ * Extended profile data with additional user information
+ */
+export interface ExtendedProfile {
+  id: string;
+  userId: string;
+  bio?: string;
+  location?: string;
+  website?: string;
+  birthDate?: string;
+  height?: number; // in cm
+  weight?: number; // in kg
+  preferredLanguage?: string;
+  preferredUnits?: 'metric' | 'imperial';
+  notificationPreferences?: {
+    email?: boolean;
+    push?: boolean;
+    weeklyReport?: boolean;
+    achievementNotifications?: boolean;
+    socialNotifications?: boolean;
+  };
+  privacySettings?: {
+    profileVisibility?: 'public' | 'friends' | 'private';
+    activityVisibility?: 'public' | 'friends' | 'private';
+    showLocation?: boolean;
+    showAge?: boolean;
+    showWeight?: boolean;
+  };
+  socialLinks?: {
+    strava?: string;
+    garmin?: string;
+    twitter?: string;
+    instagram?: string;
+    facebook?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Athlete information from connected services
+ */
+export interface AthleteInfo {
+  id: string;
+  userId: string;
+  service: 'garmin' | 'strava' | 'polar' | 'suunto' | 'coros' | 'other';
+  serviceUserId: string;
+  displayName: string;
+  avatarUrl?: string;
+  accessToken?: string;
+  refreshToken?: string;
+  tokenExpiresAt?: string;
+  lastSyncAt?: string;
+  syncEnabled: boolean;
+  profileData?: {
+    athleteType?: string;
+    sex?: string;
+    age?: number;
+    weight?: number;
+    height?: number;
+    fcm?: number;
+    restingHR?: number;
+    vdot?: number;
+    vma?: number;
+    maxHR?: number;
+    thresholdHR?: number;
+    zones?: Array<{
+      zone: number;
+      name: string;
+      minHR: number;
+      maxHR: number;
+    }>;
+  };
+  connectedAt: string;
+  updatedAt: string;
+}============================================================
  * PROFILE API - Endpoints profil utilisateur
  * ============================================================
  * 
@@ -42,11 +146,17 @@ export const profileApi = {
     });
   },
 
-  getExtendedProfile(): Promise<Record<string, unknown>> {
+  /**
+   * Get extended profile data
+   */
+  getExtendedProfile(): Promise<ExtendedProfile> {
     return client.request('/api/profile/extended');
   },
 
-  updateExtendedProfile(data: Record<string, unknown>): Promise<{ success: boolean }> {
+  /**
+   * Update extended profile data
+   */
+  updateExtendedProfile(data: Partial<ExtendedProfile>): Promise<{ success: boolean }> {
     return client.request('/api/profile/extended', {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -68,7 +178,10 @@ export const profileApi = {
     return client.request('/api/metrics/constants');
   },
 
-  getAthlete(): Promise<Record<string, unknown>> {
+  /**
+   * Get athlete information from connected services
+   */
+  getAthlete(): Promise<AthleteInfo> {
     return client.request('/api/profile/athlete');
   },
 

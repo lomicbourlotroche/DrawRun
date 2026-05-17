@@ -234,21 +234,21 @@ class ApiClient {
     return this.request<T>(endpoint, { method: 'GET' });
   }
 
-  post<T>(endpoint: string, body: Record<string, unknown>): Promise<T> {
+  post<T>(endpoint: string, body: unknown): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: JSON.stringify(body),
     });
   }
 
-  put<T>(endpoint: string, body: Record<string, unknown>): Promise<T> {
+  put<T>(endpoint: string, body: unknown): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PUT',
       body: JSON.stringify(body),
     });
   }
 
-  delete<T>(endpoint: string, body?: Record<string, unknown>): Promise<T> {
+  delete<T>(endpoint: string, body?: unknown): Promise<T> {
     const options: RequestInit = { method: 'DELETE' };
     if (body) {
       options.body = JSON.stringify(body);

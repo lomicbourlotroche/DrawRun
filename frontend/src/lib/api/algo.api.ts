@@ -208,9 +208,53 @@ export const algoApi = {
   },
 
   /**
-   * Récupère les constantes
+   * Récupère les constantes algorithmiques
    */
-  getConstants(): Promise<Record<string, unknown>> {
+  getConstants(): Promise<{
+    zones: {
+      heartRate: Array<{
+        zone: number;
+        name: string;
+        minHR: number;
+        maxHR: number;
+        min: number;
+        max: number;
+      }>;
+      speed: Array<{
+        zone: number;
+        name: string;
+        minPace: string;
+        maxPace: string;
+        min: number;
+        max: number;
+      }>;
+      power?: Array<{
+        zone: number;
+        name: string;
+        minWatts: number;
+        maxWatts: number;
+        min: number;
+        max: number;
+      }>;
+    };
+    defaults: {
+      fcm: number;
+      restingHR: number;
+      vma: number;
+      vdot: number;
+      sex: string;
+      age: number;
+    };
+    trainingPaces: {
+      E: { min: string; max: string };
+      M: string;
+      T: string;
+      I: string;
+      R: string;
+    };
+    version: string;
+    lastUpdated: string;
+  }> {
     return client.request('/api/algo/constants');
   },
 };
