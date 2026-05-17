@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Avatar, Skeleton } from '@/components/ui';
 import type { GroupDetail, GroupMember, Activity } from '@/types';
 import type { CreateChallengeParams } from '@/lib/api';
@@ -10,9 +8,9 @@ import {
   Users, Settings, Activity as ActivityIcon, Trophy,
   ChevronLeft, Copy, Trash2, Edit2, UserX, Crown, Shield, Flame, Save, Eye, Check, Sparkles, Loader2, X
 } from 'lucide-react';
-import { toast } from 'sonner';
-import { getModeInfo, getTypeInfo, CHALLENGE_MODES, SPORT_TYPES } from '../../tabs/challenge-constants';
 import ChallengeWizard from '../../modals/ChallengeWizard';
+import { getModeInfo, getTypeInfo } from '../../tabs/challenge-constants';
+import { useGroupDetail } from '@/hooks/useGroupDetail';
 
 type GroupChallenge = {
   id: number; title: string; description: string; type: string;
@@ -23,100 +21,37 @@ type GroupChallenge = {
 };
 
 export default function GroupDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const groupId = parseInt(params.id as string);
+  const {
+    group,
+    members,
+    activities,
+    challenges,
+    isLoading,
+    error,
+    editForm,
+    isAdmin,
+    showWizard,
+    setEditForm,
+    setShowWizard,
+    loadGroup,
+    handleEdit,
+    handleDelete,
+    handleKick,
+    handlePromote,
+    handleLeave,
+    copyInvite,
+    handleCreateChallenge,
+    handleJoinChallenge,
+  } = useGroupDetail();
 
-  const [group, setGroup] = useState<GroupDetail | null>(null);
-  const [members, setMembers] = useState<GroupMember[]>([]);
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [challenges, setChallenges] = useState<GroupChallenge[]>([]);
   const [activeTab, setActiveTab] = useState<'overview' | 'members' | 'activities' | 'challenges' | 'settings'>('overview');
-  const [isLoading, setIsLoading] = useState(true);
-  const [editForm, setEditForm] = useState({ name: '', description: '', isPrivate: false });
-  const [showWizard, setShowWizard] = useState(false);
 
-  const loadGroup = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const [groupData, membersData, activitiesData, challengesData] = await Promise.all([
-        api.getGroupDetail(groupId),
-        api.getGroupMembers(groupId),
-        api.getGroupActivities(groupId, 10),
-        (api as any).getGroupChallenges(groupId).catch(() => []),
-      ]);
-      setGroup(groupData);
-      setMembers(membersData || []);
-      setActivities(activitiesData || []);
-      setChallenges(challengesData || []);
-      setEditForm({ name: groupData.name, description: groupData.description || '', isPrivate: groupData.isPrivate ?? true });
-    } catch {
-      toast.error('Groupe introuvable');
-      router.push('/app/social');
-    } finally {
-      setIsLoading(false);
+  // Show errors
+  useEffect(() => {
+    if (error) {
+      // Error is already handled in the hook with toast
     }
-  }, [groupId, router]);
-
-  useEffect(() => { loadGroup(); }, [loadGroup]);
-
-  const handleEdit = async () => {
-    try { await api.editGroup(groupId, editForm); toast.success('Groupe modifié'); loadGroup(); }
-    catch { toast.error('Erreur'); }
-  };
-
-  const handleDelete = async () => {
-    if (!confirm('Supprimer ce groupe ? Action irréversible.')) return;
-    try { await api.deleteGroup(groupId); toast.success('Groupe supprimé'); router.push('/app/social'); }
-    catch { toast.error('Erreur'); }
-  };
-
-  const handleKick = async (userId: number) => {
-    if (!confirm('Exclure ce membre ?')) return;
-    try { await api.kickMember(groupId, userId); toast.success('Membre exclu'); loadGroup(); }
-    catch { toast.error('Erreur'); }
-  };
-
-  const handlePromote = async (userId: number, role: string) => {
-    try { await api.promoteMember(groupId, userId, role); toast.success('Rôle modifié'); loadGroup(); }
-    catch { toast.error('Erreur'); }
-  };
-
-  const handleLeave = async () => {
-    if (!confirm('Quitter ce groupe ?')) return;
-    try { await api.leaveGroup(groupId); toast.success('Groupe quitté'); router.push('/app/social'); }
-    catch { toast.error('Erreur'); }
-  };
-
-  const copyInvite = () => {
-    if (group?.inviteCode) { navigator.clipboard.writeText(group.inviteCode); toast.success('Code copié'); }
-  };
-
-  const handleCreateChallenge = async (form: { title: string; description: string; type: string; target_value: string; end_date: string; challenge_mode: string; weekly_target: string; weekly_increase_pct: string; streak_days: string; frequency_per_week: string; sport_type: string; badge_icon: string; is_public: boolean }) => {
-    const durationDays = form.end_date
-      ? Math.max(1, Math.ceil((new Date(form.end_date).getTime() - Date.now()) / 86400000))
-      : 30;
-    await (api as any).createGroupChallenge(groupId, {
-      title: form.title, description: form.description, type: form.type,
-      target_value: parseFloat(form.target_value) || 0, duration_days: durationDays,
-      challenge_mode: form.challenge_mode, badge_icon: form.badge_icon,
-      sport_type: form.sport_type,
-      weekly_target: form.weekly_target ? parseFloat(form.weekly_target) : undefined,
-      weekly_increase_pct: form.weekly_increase_pct ? parseFloat(form.weekly_increase_pct) : undefined,
-      streak_days: form.streak_days ? parseInt(form.streak_days) : undefined,
-      frequency_per_week: form.frequency_per_week ? parseInt(form.frequency_per_week) : undefined,
-    } as CreateChallengeParams);
-    toast.success('Défi créé ! 🏆');
-    setShowWizard(false);
-    loadGroup();
-  };
-
-  const handleJoinChallenge = async (challengeId: number) => {
-    try { await api.joinChallenge(challengeId); toast.success('Défi rejoint !'); loadGroup(); }
-    catch { toast.error('Erreur'); }
-  };
-
-  const isAdmin = group?.userRole === 'admin';
+  }, [error]);
 
   const tabs = [
     { id: 'overview',    label: 'Aperçu',                          icon: Eye },
@@ -142,7 +77,7 @@ export default function GroupDetailPage() {
     <div className="space-y-6 animate-fade-in max-w-4xl mx-auto pb-8">
       {/* ── HEADER ── */}
       <div className="flex items-start gap-4">
-        <button onClick={() => router.push('/app/social')} className="p-2 rounded-xl bg-card border border-border hover:bg-border transition-colors mt-1">
+        <button onClick={() => window.history.back()} className="p-2 rounded-xl bg-card border border-border hover:bg-border transition-colors mt-1" aria-label="Retour">
           <ChevronLeft className="w-5 h-5" />
         </button>
         <div className="flex-1 min-w-0">
@@ -162,10 +97,14 @@ export default function GroupDetailPage() {
         </div>
         <div className="flex gap-2 shrink-0">
           {group.inviteCode && (
-            <Button variant="secondary" size="sm" onClick={copyInvite} leftIcon={<Copy className="w-4 h-4" />}>Code</Button>
+            <Button variant="secondary" size="sm" onClick={copyInvite} leftIcon={<Copy className="w-4 h-4" />} aria-label="Copier le code d'invitation">
+              Code
+            </Button>
           )}
           {!isAdmin && (
-            <Button variant="ghost" size="sm" className="text-danger" onClick={handleLeave}>Quitter</Button>
+            <Button variant="ghost" size="sm" className="text-danger" onClick={handleLeave} aria-label="Quitter le groupe">
+              Quitter
+            </Button>
           )}
         </div>
       </div>
@@ -173,10 +112,14 @@ export default function GroupDetailPage() {
       {/* ── TABS ── */}
       <div className="flex gap-1 overflow-x-auto pb-2 border-b border-border">
         {tabs.map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            aria-label={`Aller à l'onglet ${tab.label}`}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
               activeTab === tab.id ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-card border border-border text-muted hover:text-foreground hover:border-primary/30'
-            }`}>
+            }`}
+          >
             <tab.icon className="w-4 h-4" />{tab.label}
           </button>
         ))}
@@ -261,11 +204,11 @@ export default function GroupDetailPage() {
                 {isAdmin && member.role !== 'admin' && (
                   <div className="flex gap-1">
                     {member.role !== 'moderator' && (
-                      <button onClick={() => handlePromote(member.userId, 'moderator')} className="p-1.5 rounded-lg hover:bg-border transition-colors" title="Promouvoir modérateur">
+                      <button onClick={() => handlePromote(member.userId, 'moderator')} className="p-1.5 rounded-lg hover:bg-border transition-colors" title="Promouvoir modérateur" aria-label="Promouvoir modérateur">
                         <Shield className="w-4 h-4 text-primary" />
                       </button>
                     )}
-                    <button onClick={() => handleKick(member.userId)} className="p-1.5 rounded-lg hover:bg-danger/10 transition-colors" title="Exclure">
+                    <button onClick={() => handleKick(member.userId)} className="p-1.5 rounded-lg hover:bg-danger/10 transition-colors" title="Exclure" aria-label="Exclure le membre">
                       <UserX className="w-4 h-4 text-danger" />
                     </button>
                   </div>
@@ -306,7 +249,7 @@ export default function GroupDetailPage() {
       {activeTab === 'challenges' && (
         <div className="space-y-4">
           {isAdmin && (
-            <Button className="w-full rounded-xl gap-2" onClick={() => setShowWizard(true)}>
+            <Button className="w-full rounded-xl gap-2" onClick={() => setShowWizard(true)} aria-label="Créer un défi de groupe">
               <Sparkles className="w-4 h-4" /> Créer un défi de groupe
             </Button>
           )}
@@ -336,7 +279,7 @@ export default function GroupDetailPage() {
                         {c.creator_name && <p className="text-xs text-muted mt-1">par {c.creator_name}</p>}
                       </div>
                     </div>
-                    <Button size="sm" variant="secondary" onClick={() => handleJoinChallenge(c.id)} className="rounded-xl shrink-0">
+                    <Button size="sm" variant="secondary" onClick={() => handleJoinChallenge(c.id)} className="rounded-xl shrink-0" aria-label="Rejoindre le défi">
                       Rejoindre
                     </Button>
                   </div>
@@ -353,26 +296,30 @@ export default function GroupDetailPage() {
           <Card>
             <CardHeader><CardTitle className="text-base flex items-center gap-2"><Edit2 className="w-4 h-4 text-primary" />Modifier le groupe</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <Input label="Nom" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} />
+              <Input label="Nom" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} aria-required="true" />
               <div>
                 <label className="text-xs font-medium text-muted uppercase tracking-wide mb-1 block">Description</label>
-                <textarea value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} rows={3} className="w-full px-3 py-2 rounded-xl bg-background border border-border text-sm focus:border-primary outline-none resize-none" />
+                <textarea value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} rows={3} aria-label="Description du groupe" className="w-full px-3 py-2 rounded-xl bg-background border border-border text-sm focus:border-primary outline-none resize-none" />
               </div>
               <div className="flex items-center justify-between p-3 rounded-xl bg-background border border-border">
                 <div><p className="text-sm font-medium">Groupe privé</p><p className="text-xs text-muted">Accès par code d&apos;invitation uniquement</p></div>
-                <button onClick={() => setEditForm(p => ({ ...p, isPrivate: !p.isPrivate }))} className={`w-12 h-6 rounded-full transition-all relative ${editForm.isPrivate ? 'bg-primary' : 'bg-border'}`}>
+                <button onClick={() => setEditForm(p => ({ ...p, isPrivate: !p.isPrivate }))} aria-label={editForm.isPrivate ? 'Passer en groupe public' : 'Passer en groupe privé'} className={`w-12 h-6 rounded-full transition-all relative ${editForm.isPrivate ? 'bg-primary' : 'bg-border'}`}>
                   <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${editForm.isPrivate ? 'left-7' : 'left-1'}`} />
                 </button>
               </div>
               {group.inviteCode && (
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-background border border-border">
                   <div className="flex-1"><p className="text-xs text-muted">Code d&apos;invitation</p><p className="font-mono font-bold text-lg tracking-widest">{group.inviteCode}</p></div>
-                  <Button size="sm" variant="secondary" onClick={copyInvite} leftIcon={<Copy className="w-4 h-4" />}>Copier</Button>
+                  <Button size="sm" variant="secondary" onClick={copyInvite} leftIcon={<Copy className="w-4 h-4" />} aria-label="Copier le code">Copier</Button>
                 </div>
               )}
               <div className="flex gap-3">
-                <Button variant="secondary" className="flex-1 rounded-xl" onClick={() => setEditForm({ name: group.name, description: group.description || '', isPrivate: group.isPrivate ?? true })}>Réinitialiser</Button>
-                <Button className="flex-1 rounded-xl" onClick={handleEdit} leftIcon={<Save className="w-4 h-4" />}>Enregistrer</Button>
+                <Button variant="secondary" className="flex-1 rounded-xl" onClick={() => setEditForm({ name: group.name, description: group.description || '', isPrivate: group.isPrivate ?? true })} aria-label="Réinitialiser le formulaire">
+                  Réinitialiser
+                </Button>
+                <Button className="flex-1 rounded-xl" onClick={handleEdit} leftIcon={<Save className="w-4 h-4" />} aria-label="Enregistrer les modifications">
+                  Enregistrer
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -380,7 +327,9 @@ export default function GroupDetailPage() {
             <CardHeader><CardTitle className="text-base flex items-center gap-2 text-danger"><Trash2 className="w-4 h-4" />Zone de danger</CardTitle></CardHeader>
             <CardContent>
               <p className="text-sm text-muted mb-4">La suppression est irréversible. Tous les membres seront retirés et les défis supprimés.</p>
-              <Button variant="ghost" className="text-danger w-full rounded-xl" onClick={handleDelete} leftIcon={<Trash2 className="w-4 h-4" />}>Supprimer le groupe</Button>
+              <Button variant="ghost" className="text-danger w-full rounded-xl" onClick={handleDelete} leftIcon={<Trash2 className="w-4 h-4" />} aria-label="Supprimer le groupe">
+                Supprimer le groupe
+              </Button>
             </CardContent>
           </Card>
         </div>
