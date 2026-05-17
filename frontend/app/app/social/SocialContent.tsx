@@ -29,11 +29,13 @@ export default function SocialContent() {
         <p className="text-muted mt-1">Connectez-vous avec d&apos;autres athlètes</p>
       </div>
 
-      <div className="flex gap-1 overflow-x-auto pb-2 border-b border-border">
+      <nav className="flex gap-1 overflow-x-auto pb-2 border-b border-border" aria-label="Onglets sociaux">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
+            aria-label={`Aller à l'onglet ${tab.label}`}
+            aria-current={activeTab === tab.id ? 'page' : undefined}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
               activeTab === tab.id
                 ? 'bg-primary text-white shadow-lg shadow-primary/20'
@@ -44,7 +46,7 @@ export default function SocialContent() {
             {tab.label}
           </button>
         ))}
-      </div>
+      </nav>
 
       <div>
         {activeTab === 'feed' && <FeedTab />}
