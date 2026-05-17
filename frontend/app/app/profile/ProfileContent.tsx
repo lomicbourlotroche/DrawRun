@@ -409,13 +409,13 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
               onClick={async () => {
                 setIsSavingConstants(true);
                 try {
-                  const payload: Record<string, any> = {};
+                  const payload: Record<string, number> = {};
                   if (constForm.fcm) payload.fcm = parseInt(constForm.fcm);
                   if (constForm.vma) payload.vma = parseFloat(constForm.vma);
                   if (constForm.vdot) payload.vdot = parseFloat(constForm.vdot);
                   if (Object.keys(payload).length > 0) {
-                    await api.updateProfile(payload as any);
-                    updateUser({ ...payload, auto_update: false } as any);
+                    await api.updateProfile(payload);
+                    updateUser({ ...payload, auto_update: false });
                     invalidate();
                     await fetchConstants();
                     toast.success('Constantes mises à jour');

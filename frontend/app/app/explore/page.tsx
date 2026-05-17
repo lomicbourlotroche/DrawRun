@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
+import type { DrawRunMap } from '@/types/leaflet';
 import { Search, X } from 'lucide-react';
 import ExplorePanel from '@/components/features/explore/ExplorePanel';
 import MapLayerSwitcher from '@/components/features/explore/MapLayerSwitcher';
@@ -122,7 +123,7 @@ export default function ExplorePage() {
   const [showCommunityTraces, setShowCommunityTraces] = useState(false);
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [heatmapData, setHeatmapData] = useState<Array<{ lat: number; lng: number; intensity: number }>>([]);
-  const [mapInstance, setMapInstance] = useState<any>(null);
+  const [mapInstance, setMapInstance] = useState<DrawRunMap | null>(null);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   // Has user been located

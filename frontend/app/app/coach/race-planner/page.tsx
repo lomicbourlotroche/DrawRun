@@ -16,6 +16,7 @@ import {
   ChevronLeft
 } from 'lucide-react';
 import { api } from '@/lib/api';
+import type { RaceStrategyResult } from '@/lib/api/coach-types';
 import { 
   Button, 
   Card, 
@@ -50,7 +51,7 @@ export default function RacePlannerPage() {
     goalTime: '', // minutes
   });
   
-  const [strategy, setStrategy] = useState<any>(null);
+  const [strategy, setStrategy] = useState<RaceStrategyResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -83,8 +84,8 @@ export default function RacePlannerPage() {
       });
       setStrategy(response);
       setStep(3);
-    } catch (err: any) {
-      setError(err.message || 'Erreur lors du calcul de la stratégie');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Erreur lors du calcul de la stratégie');
     } finally {
       setIsLoading(false);
     }
@@ -105,7 +106,7 @@ export default function RacePlannerPage() {
   const downloadCsv = () => {
     if (!strategy) return;
     const headers = ['KM', 'Distance (m)', 'Elevation Gain (m)', 'Elevation Loss (m)', 'Grade (%)', 'Target Pace', 'Target Pace (sec)', 'Cumulative Time (sec)'];
-    const rows = strategy.segments.map((s: any) => [
+    const rows = strategy.strategy.segments.map((s) => [
       s.km,
       s.distance,
       s.elevGain,
@@ -115,7 +116,7 @@ export default function RacePlannerPage() {
       s.targetPaceSec,
       s.cumulativeTime
     ]);
-    const csvContent = [headers.join(','), ...rows.map((r: any) => r.join(','))].join('\n');
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -345,7 +346,7 @@ export default function RacePlannerPage() {
                   />
                   <Tooltip 
                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                    formatter={(value: any, name: string) => {
+                    formatter={(value: number, name: string) => {
                       if (name === 'targetPaceSec') return [formatPace(`${Math.floor(value / 60)}:${String(Math.round(value % 60)).padStart(2, '0')}`), 'Allure'];
                       if (name === 'elevGain') return [`+${value}m`, 'Dénivelé'];
                       return [value, name];
@@ -367,7 +368,7 @@ export default function RacePlannerPage() {
                     fillOpacity={0.6}
                     name="Allure"
                   >
-                    {strategy.segments.map((entry: any, index: number) => (
+                    {strategy.strategy.segments.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.grade > 1 ? '#f43f5e' : entry.grade < -1 ? '#10b981' : '#f43f5e'} />
                     ))}
                   </Bar>
@@ -410,7 +411,7 @@ export default function RacePlannerPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {strategy.segments.map((s: any) => (
+                    {strategy.strategy.segments.map((s) => (
                       <tr key={s.km} className="hover:bg-muted/30 transition-colors">
                         <td className="py-3 font-bold">{s.km}</td>
                         <td className="py-3 font-mono text-primary font-bold">{s.targetPace}</td>

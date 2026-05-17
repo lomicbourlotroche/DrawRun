@@ -38,12 +38,25 @@ interface SegmentDetail {
   };
 }
 
+interface SegmentEffort {
+  id: number;
+  segment_id: number;
+  activity_id: number;
+  elapsed_time: number;
+  moving_time?: number;
+  start_date: string;
+  avg_watts?: number;
+  max_watts?: number;
+  avg_heartrate?: number;
+  max_heartrate?: number;
+}
+
 export default function SegmentDetailPage() {
   const params = useParams();
   const segmentId = parseInt(params.id as string);
   const [segment, setSegment] = useState<SegmentDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [myEfforts, setMyEfforts] = useState<any[]>([]);
+  const [myEfforts, setMyEfforts] = useState<SegmentEffort[]>([]);
 
   useEffect(() => {
     const loadSegment = async () => {

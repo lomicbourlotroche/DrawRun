@@ -149,7 +149,7 @@ export default function GroupDetailPage() {
             <Card>
               <CardHeader><CardTitle className="text-base">Activités récentes</CardTitle></CardHeader>
               <CardContent className="space-y-2">
-                {activities.slice(0, 5).map((a: any) => (
+                {activities.slice(0, 5).map((a: Activity) => (
                   <div key={a.id} className="flex items-center justify-between p-3 rounded-xl bg-background border border-border">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center"><Flame className="w-4 h-4 text-primary" /></div>
@@ -228,7 +228,7 @@ export default function GroupDetailPage() {
               <p className="text-muted text-sm">Aucune activité partagée dans ce groupe</p>
               <p className="text-xs text-muted mt-1">Les membres doivent partager leurs activités avec ce groupe</p>
             </div>
-          ) : activities.map((a: any) => (
+          ) : activities.map((a: Activity) => (
             <div key={a.id} className="p-4 bg-card border border-border rounded-2xl">
               <div className="flex items-center justify-between">
                 <div>

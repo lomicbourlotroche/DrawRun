@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Card, CardContent, Button, Badge } from '@/components/ui';
 import { PowerAnalysis, FTPCalculator } from '@/components/features/performance/PowerAnalysis';
 import { api } from '@/lib/api';
+import type { ActivityStreams } from '@/types';
 import { Zap, Gauge, Activity, Loader2, Bike, ChevronDown } from 'lucide-react';
 
 interface ActivityWithPower {
@@ -30,8 +31,8 @@ export default function PowerAnalysisPage() {
   const loadActivities = useCallback(async () => {
     setIsLoading(true);
     try {
-      const data = await api.getActivities() as any;
-      const allActivities = Array.isArray(data) ? data : (data?.activities || []);
+      const data = await api.getActivities();
+      const allActivities = Array.isArray(data) ? data : (data?.data || []);
       const withPower = allActivities.filter(
         (a: ActivityWithPower) => a.has_power_meter || a.average_watts
       );
@@ -50,7 +51,7 @@ export default function PowerAnalysisPage() {
   const loadActivityStreams = async (activityId: number) => {
     setIsLoading(true);
     try {
-      const streams = await api.getActivityStreams(activityId) as any;
+      const streams = await api.getActivityStreams(activityId);
       if (streams?.watts) {
         const wattsArr = Array.isArray(streams.watts) ? streams.watts : (streams.watts.data || []);
         if (wattsArr.length > 0) {

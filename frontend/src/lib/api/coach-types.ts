@@ -378,12 +378,19 @@ export interface RaceStrategyResult {
   strategy: {
     targetTime: number; // in seconds
     targetPace: string;
-    splits: Array<{
+    segments: Array<{
+      km: number;
       distance: number; // in meters
       time: number; // in seconds
       pace: string;
+      targetPace: string;
+      targetPaceSec: number; // in seconds
+      cumulativeTime: number; // in seconds
       elevationGain: number;
       elevationLoss: number;
+      elevGain: number;
+      elevLoss: number;
+      grade: number; // percentage
       recommendedPace: string;
       notes?: string;
     }>;

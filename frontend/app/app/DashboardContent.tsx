@@ -95,7 +95,7 @@ export default function DashboardContent() {
       if (readinessData.status === 'fulfilled' && readinessData.value) {
         const readinessResult = readinessData.value;
         // Map the API response to the Readiness type
-        const readinessWithScore: any = {
+        const readinessWithScore: Readiness = {
           score: readinessResult.readiness ?? (typeof readinessResult === 'number' ? readinessResult : 70),
           status: (readinessResult.status as 'excellent' | 'good' | 'fair' | 'poor') || 'good',
           factors: {
@@ -105,7 +105,7 @@ export default function DashboardContent() {
             stress: readinessResult.factors?.stress ?? 30
           }
         };
-        setReadiness(readinessWithScore as Readiness);
+        setReadiness(readinessWithScore);
       }
     } catch (error: unknown) {
       if (error instanceof Error && error.message) {

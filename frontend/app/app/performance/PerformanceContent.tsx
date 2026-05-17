@@ -12,6 +12,7 @@ import { PerformanceZones, PerformanceMetrics, ProgressionChart } from '@/compon
 import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent, Skeleton, Progress } from '@/components/ui';
 import { Dumbbell, Bike, Waves, Heart, Activity, TrendingUp, Gauge, Zap, BarChart3, Brain, AlertCircle, MapPin, Clock, Crown, Star } from 'lucide-react';
 import type { PmcDataPoint, Activity as ActivityType, Zones } from '@/types';
+import type { Activity } from '@/types';
 
 interface PolarizationData {
   index: number;
@@ -81,7 +82,7 @@ export default function PerformanceContent() {
       ]);
       setPmc(p);
       // acts est maintenant { data: Activity[], pagination: ... }
-      const actsArray = Array.isArray((acts as any)?.data) ? (acts as any).data : [];
+      const actsArray = Array.isArray(acts?.data) ? acts.data : [];
       setActivities(actsArray);
 
       // ── Polarisation ──────────────────────────────────────────────────────

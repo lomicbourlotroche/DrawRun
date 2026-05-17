@@ -293,11 +293,11 @@ export function RacePlanningContent() {
   };
 
   // Build chart data from splits
-  const chartData = result?.splits?.map((s: any) => ({
+  const chartData = result?.splits?.map((s: Split) => ({
     km: s.km,
     pace: s.pace,
-    elevation: s.elevChange ?? 0,
-    grade: s.grade ?? 0,
+    elevation: (s as { elevChange?: number }).elevChange ?? 0,
+    grade: (s as { grade?: number }).grade ?? 0,
     hr: s.hrRange ? parseInt(s.hrRange.split('-')[0]) : null,
   })) ?? [];
 
@@ -611,7 +611,7 @@ export function RacePlanningContent() {
                       />
                       <Tooltip
                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: 12 }}
-                        formatter={(value: any, name: string) => {
+                        formatter={(value: number, name: string) => {
                           if (name === 'pace') return [fmtPace(Number(value)) + '/km', 'Allure'];
                           if (name === 'elevation') return [`${Number(value) > 0 ? '+' : ''}${value}m`, 'Dénivelé'];
                           if (name === 'grade') return [`${value}%`, 'Pente'];
@@ -715,7 +715,7 @@ export function RacePlanningContent() {
               {/* Warnings */}
               {result.warnings.length > 0 && (
                 <div className="mt-4 space-y-2">
-                  {result.warnings.map((warning: any, idx: number) => {
+                  {result.warnings.map((warning, idx) => {
                     const severityColors: Record<string, string> = {
                       info: 'bg-info/10 border-info/30',
                       moderate: 'bg-warning/10 border-warning/30',
@@ -823,7 +823,7 @@ export function RacePlanningContent() {
                       </tr>
                     </thead>
                     <tbody>
-                      {result.taperRecommendation.plan.slice(0, 7).map((day: any) => (
+                      {result.taperRecommendation?.plan.slice(0, 7).map((day) => (
                         <tr key={day.daysOut} className={`border-b border-border/50 ${day.isCompetition ? 'bg-primary/10 font-semibold' : ''}`}>
                           <td className="py-1 px-2">{day.daysOut}</td>
                           <td className="py-1 px-2">{day.volumePercent}%</td>
@@ -861,7 +861,7 @@ export function RacePlanningContent() {
                     </tr>
                   </thead>
                   <tbody>
-                    {result.splits.map((split: any) => (
+                    {result.splits.map((split: Split) => (
                       <tr key={split.km} className="border-b border-border/50 hover:bg-muted/30">
                         <td className="py-2 px-2 font-medium">{split.km}</td>
                         <td className="py-2 px-2">{formatDuration(split.splitTime)}</td>
@@ -886,7 +886,7 @@ export function RacePlanningContent() {
                         </td>
                         <td className="py-2 px-2">
                           <div className="flex gap-1 flex-wrap">
-                            {split.nutrition?.map((nut: any, idx: number) => (
+                            {split.nutrition?.map((nut, idx) => (
                               <Badge key={idx} variant={nut.type === 'water' ? 'secondary' : nut.type === 'gel' ? 'warning' : 'outline'} size="sm">
                                 {nut.type === 'water' ? <Droplets className="w-3 h-3 mr-1" /> : <Zap className="w-3 h-3 mr-1" />}
                                 {nut.label}
