@@ -17,7 +17,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { activitiesApi } from '@/lib/api';
-import { useGroups } from '@/hooks/useGroups';
+import { useGroups } from '@/hooks/useSocial';
 import type { Group } from '@/types';
 
 interface ShareSettingsPanelProps {
