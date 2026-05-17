@@ -2,84 +2,63 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Button, Avatar, Skeleton, GlassCard } from '@/components/ui';
-import { api } from '@/lib/api';
-import type { Friend, FriendRequest, UserSearchResult } from '@/types';
 import { Users, UserPlus, Search, Check, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useFriends } from '@/hooks/useSocial';
+import { FRIENDS_CONSTANTS } from '@/constants/social';
 
 export default function FriendsTab() {
-  const [friends, setFriends] = useState<Friend[]>([]);
-  const [requests, setRequests] = useState<FriendRequest[]>([]);
+  const {
+    friends,
+    requests,
+    isLoading,
+    error,
+    searchResults,
+    isSearching,
+    handleSearch: handleSearchFromHook,
+    handleAddFriend,
+    handleAccept,
+    handleRemove,
+  } = useFriends();
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSearching, setIsSearching] = useState(false);
 
-  const loadFriends = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const [friendsData, requestsData] = await Promise.all([
-        api.getFriends(),
-        api.getPendingFriendRequests()
-      ]);
-      setFriends(friendsData || []);
-      setRequests(requestsData || []);
-    } catch {
-      /* silent */
-    } finally {
-      setIsLoading(false);
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.length >= FRIENDS_CONSTANTS.MIN_SEARCH_LENGTH) {
+        handleSearchFromHook(searchQuery);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, handleSearchFromHook]);
+
+  // Show errors
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
     }
-  }, []);
+  }, [error]);
 
-  useEffect(() => { loadFriends(); }, [loadFriends]);
-
-  const handleSearch = async () => {
-    if (searchQuery.length < 2) return;
-    setIsSearching(true);
-    try {
-      const results = await api.searchUsers(searchQuery);
-      setSearchResults(results || []);
-    } catch {
-      toast.error('Erreur');
-    } finally {
-      setIsSearching(false);
+  const handleSearch = () => {
+    if (searchQuery.length >= FRIENDS_CONSTANTS.MIN_SEARCH_LENGTH) {
+      handleSearchFromHook(searchQuery);
     }
   };
 
-  const handleAddFriend = async (userId: number) => {
-    try {
-      await api.sendFriendRequest(userId);
-      toast.success('Demande envoyée');
-      setSearchResults(searchResults.filter(u => u.id !== userId));
-    } catch {
-      toast.error('Erreur');
-    }
-  };
-
-  const handleAccept = async (userId: number) => {
-    try {
-      await api.acceptFriendRequest(userId);
-      toast.success('Accepté');
-      loadFriends();
-    } catch {
-      toast.error('Erreur');
-    }
-  };
-
-  const handleRemove = async (friendId: number) => {
-    try {
-      await api.removeFriend(friendId);
-      toast.success('Supprimé');
-      loadFriends();
-    } catch {
-      toast.error('Erreur');
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
     }
   };
 
   if (isLoading) {
     return (
       <div className="space-y-3 md:space-y-4">
-        {[1, 2, 3].map(i => <Skeleton key={i} className="h-20 rounded-2xl" />)}
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-20 rounded-2xl" />
+        ))}
       </div>
     );
   }
@@ -96,13 +75,15 @@ export default function FriendsTab() {
           placeholder="Rechercher un athlète..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+          onKeyDown={handleKeyDown}
+          aria-label="Rechercher un athlète"
           className="w-full pl-12 pr-16 py-3 rounded-2xl bg-card border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm"
         />
-        {searchQuery.length >= 2 && (
+        {searchQuery.length >= FRIENDS_CONSTANTS.MIN_SEARCH_LENGTH && (
           <button
             onClick={handleSearch}
             disabled={isSearching}
+            aria-label={isSearching ? 'Recherche en cours' : 'Lancer la recherche'}
             className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 min-w-[44px] min-h-[44px] flex items-center justify-center"
           >
             {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
@@ -115,7 +96,7 @@ export default function FriendsTab() {
         <div className="space-y-2">
           <h3 className="text-sm font-medium text-muted">Résultats</h3>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {searchResults.map((user) => (
+            {searchResults.slice(0, FRIENDS_CONSTANTS.MAX_SEARCH_RESULTS).map((user) => (
               <GlassCard key={user.id} padding="sm" hover>
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-3 min-w-0">
@@ -125,7 +106,12 @@ export default function FriendsTab() {
                       <p className="text-xs text-muted truncate">{user.email}</p>
                     </div>
                   </div>
-                  <Button size="sm" className="rounded-xl shrink-0 min-h-[36px]" onClick={() => handleAddFriend(user.id)}>
+                  <Button
+                    size="sm"
+                    className="rounded-xl shrink-0 min-h-[36px]"
+                    onClick={() => handleAddFriend(user.id)}
+                    aria-label={`Ajouter ${user.name} comme ami`}
+                  >
                     <UserPlus className="w-4 h-4 mr-1" />
                     Ajouter
                   </Button>
@@ -142,7 +128,9 @@ export default function FriendsTab() {
           <div className="flex items-center gap-2 px-1">
             <div className="w-2 h-2 bg-peak rounded-full animate-pulse" />
             <h3 className="text-sm font-semibold">Demandes en attente</h3>
-            <span className="text-xs px-1.5 py-0.5 rounded-full bg-peak/10 text-peak font-medium">{requests.length}</span>
+            <span className="text-xs px-1.5 py-0.5 rounded-full bg-peak/10 text-peak font-medium">
+              {requests.length}
+            </span>
           </div>
           <div className="grid gap-2 sm:grid-cols-2">
             {requests.map((req) => (
@@ -156,10 +144,21 @@ export default function FriendsTab() {
                     </div>
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    <Button size="sm" className="rounded-xl bg-success hover:bg-success min-h-[36px] min-w-[36px] p-0" onClick={() => handleAccept(req.userId || req.user_id || 0)}>
+                    <Button
+                      size="sm"
+                      className="rounded-xl bg-success hover:bg-success min-h-[36px] min-w-[36px] p-0"
+                      onClick={() => handleAccept(req.userId || req.user_id || 0)}
+                      aria-label={`Accepter la demande d'ami de ${req.name}`}
+                    >
                       <Check className="w-4 h-4" />
                     </Button>
-                    <Button size="sm" variant="ghost" className="rounded-xl text-muted hover:text-danger min-h-[36px] min-w-[36px] p-0" onClick={() => handleRemove(req.userId || req.user_id || 0)}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="rounded-xl text-muted hover:text-danger min-h-[36px] min-w-[36px] p-0"
+                      onClick={() => handleRemove(req.userId || req.user_id || 0)}
+                      aria-label={`Refuser la demande d'ami de ${req.name}`}
+                    >
                       <X className="w-4 h-4" />
                     </Button>
                   </div>
@@ -199,10 +198,18 @@ export default function FriendsTab() {
                     </div>
                     <div className="min-w-0">
                       <p className="font-semibold truncate">{friend.name}</p>
-                      <p className="text-xs text-muted">Amis depuis {new Date(friend.accepted_at || friend.created_at || '').toLocaleDateString('fr-FR')}</p>
+                      <p className="text-xs text-muted">
+                        Amis depuis {new Date(friend.accepted_at || friend.created_at || '').toLocaleDateString('fr-FR')}
+                      </p>
                     </div>
                   </div>
-                  <Button size="sm" variant="ghost" className="rounded-xl text-muted hover:text-danger shrink-0 min-h-[36px] min-w-[36px] p-0" onClick={() => handleRemove(friend.id || friend.friend_id || friend.user_id || 0)}>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="rounded-xl text-muted hover:text-danger shrink-0 min-h-[36px] min-w-[36px] p-0"
+                    onClick={() => handleRemove(friend.id || friend.friend_id || friend.user_id || 0)}
+                    aria-label={`Supprimer ${friend.name} de mes amis`}
+                  >
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
