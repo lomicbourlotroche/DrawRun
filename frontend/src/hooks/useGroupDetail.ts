@@ -81,7 +81,7 @@ export function useGroupDetail(): UseGroupDetailReturn {
         api.getGroupDetail(groupId),
         api.getGroupMembers(groupId),
         api.getGroupActivities(groupId, 10),
-        (api as any).getGroupChallenges(groupId).catch(() => []),
+        api.getGroupChallenges(groupId).catch(() => []),
       ]);
       setGroup(groupData);
       setMembers(membersData || []);
@@ -170,7 +170,7 @@ export function useGroupDetail(): UseGroupDetailReturn {
       const durationDays = form.end_date
         ? Math.max(1, Math.ceil((new Date(form.end_date).getTime() - Date.now()) / 86400000))
         : 30;
-      await (api as any).createGroupChallenge(groupId, {
+      await api.createGroupChallenge(groupId, {
         title: form.title,
         description: form.description,
         type: form.type,

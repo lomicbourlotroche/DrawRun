@@ -10,7 +10,37 @@
  * @module lib/api/types
  */
 
+// Explore - Segments
 // ============================================================================
+
+export interface CreateSegmentParams {
+=======
+// ============================================================================
+// Explore - Segments
+// ============================================================================
+
+/**
+ * Entry in a segment leaderboard
+ */
+export interface SegmentLeaderboardEntry {
+  id: number;
+  user_id: number;
+  user_name: string;
+  elapsed_time: number; // in seconds
+  rank: number;
+  is_kom: boolean; // King of the Mountain
+  is_qom: boolean; // Queen of the Mountain
+}
+
+/**
+ * Response for segment leaderboard
+ */
+export interface SegmentLeaderboardResponse {
+  success: boolean;
+  leaderboard: SegmentLeaderboardEntry[];
+}
+
+export interface CreateSegmentParams {============================================================================
 // Types de base
 // ============================================================================
 
@@ -215,8 +245,19 @@ export interface AlgoCriticalPowerParams {
   efforts: Array<{ duration: number; value: number }>;
 }
 
+/**
+ * Nutrition data for TSS calculation
+ */
+export interface TSSNutritionParams {
+  calories?: number;
+  carbs?: number;
+  protein?: number;
+  fat?: number;
+  hydration?: number;
+}
+
 export interface AlgoTSSParams {
-  nutrition?: any;
+  nutrition?: TSSNutritionParams;
   biomechanics?: {
     verticalOscillation: number;
     groundContactTime: number;

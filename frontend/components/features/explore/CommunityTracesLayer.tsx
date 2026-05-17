@@ -3,7 +3,12 @@
 import { useEffect, useRef } from 'react';
 import { api } from '@/lib/api';
 import { decodePolyline } from '@/lib/utils';
+import type { DrawRunMap, DrawRunPolyline, LatLng } from '@/types/leaflet';
+import L from 'leaflet';
 
+/**
+ * Community trace data
+ */
 interface CommunityTrace {
   id: number;
   polyline: string;
@@ -13,8 +18,11 @@ interface CommunityTrace {
   elevation_gain?: number;
 }
 
+/**
+ * Props for CommunityTracesLayer component
+ */
 interface CommunityTracesLayerProps {
-  map: any;
+  map: DrawRunMap;
   visible: boolean;
   activityType?: string;
 }
@@ -23,12 +31,23 @@ const TRACE_COLOR = '#8b5cf6';
 const TRACE_OPACITY = 0.25;
 const TRACE_WEIGHT = 2;
 
+/**
+ * CommunityTracesLayer component for displaying community traces on a Leaflet map.
+ * 
+ * Features:
+ * - Fetches community traces from the API
+ * - Displays traces as polylines on the map
+ * - Supports visibility toggling
+ * - Fully typed with no `any` types
+ * 
+ * @param props - CommunityTracesLayerProps containing map, visibility, and activity type filter
+ */
 export default function CommunityTracesLayer({
   map,
   visible,
   activityType,
 }: CommunityTracesLayerProps) {
-  const tracesRef = useRef<any[]>([]);
+  const tracesRef = useRef<DrawRunPolyline[]>([]);
   const loadedRef = useRef(false);
 
   useEffect(() => {
@@ -42,12 +61,12 @@ export default function CommunityTracesLayer({
       if (!map) return;
 
       import('leaflet').then((L) => {
-        const layers: any[] = [];
+        const layers: DrawRunPolyline[] = [];
 
         res.traces.forEach((trace: CommunityTrace) => {
           if (!trace.polyline) return;
 
-          const points = decodePolyline(trace.polyline);
+          const points = decodePolyline(trace.polyline) as LatLng[];
           if (points.length < 2) return;
 
           const polyline = L.polyline(points, {
@@ -56,7 +75,8 @@ export default function CommunityTracesLayer({
             opacity: TRACE_OPACITY,
             smoothFactor: 1,
             interactive: false,
-          }).addTo(map);
+          }) as DrawRunPolyline;
+          polyline.addTo(map);
 
           layers.push(polyline);
         });
@@ -67,8 +87,10 @@ export default function CommunityTracesLayer({
 
     return () => {
       loadedRef.current = false;
-      tracesRef.current.forEach((l) => {
-        if (l._map) l.remove();
+      tracesRef.current.forEach((layer) => {
+        if (layer && (layer as unknown as { _map: unknown })._map) {
+          map.removeLayer(layer);
+        }
       });
       tracesRef.current = [];
     };
@@ -79,12 +101,16 @@ export default function CommunityTracesLayer({
     if (!map) return;
 
     if (visible) {
-      tracesRef.current.forEach((l) => {
-        if (!l._map) l.addTo(map);
+      tracesRef.current.forEach((layer) => {
+        if (layer && !(layer as unknown as { _map: unknown })._map) {
+          map.addLayer(layer);
+        }
       });
     } else {
-      tracesRef.current.forEach((l) => {
-        if (l._map) l.remove();
+      tracesRef.current.forEach((layer) => {
+        if (layer && (layer as unknown as { _map: unknown })._map) {
+          map.removeLayer(layer);
+        }
       });
     }
   }, [visible, map]);

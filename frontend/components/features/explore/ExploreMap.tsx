@@ -1,44 +1,85 @@
-/* eslint-disable */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import 'leaflet/dist/leaflet.css';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { decodePolyline } from '@/lib/utils';
+import type {
+  DrawRunMap,
+  DrawRunPolyline,
+  DrawRunMarker,
+  LatLng,
+  LatLngWithIntensity,
+} from '@/types/leaflet';
+import L from 'leaflet';
 
+/**
+ * Route data for display on the map
+ */
+interface RouteData {
+  id: number;
+  polyline: string;
+  color?: string;
+  name?: string;
+  onClick?: () => void;
+}
+
+/**
+ * Segment data for display on the map
+ */
+interface SegmentData {
+  id: number;
+  startLat: number;
+  startLng: number;
+  endLat: number;
+  endLng: number;
+  polyline?: string;
+  name?: string;
+  onClick?: () => void;
+}
+
+/**
+ * Heatmap data point
+ */
+interface HeatmapDataPoint {
+  lat: number;
+  lng: number;
+  intensity: number;
+}
+
+/**
+ * Coordinate point
+ */
+interface CoordinatePoint {
+  lat: number;
+  lng: number;
+}
+
+/**
+ * Props for ExploreMap component
+ */
 interface ExploreMapProps {
-  onMapReady?: (map: any) => void;
-  onMapClick?: (latlng: { lat: number; lng: number }) => void;
-  center?: { lat: number; lng: number };
+  onMapReady?: (map: DrawRunMap) => void;
+  onMapClick?: (latlng: CoordinatePoint) => void;
+  center?: CoordinatePoint;
   zoom?: number;
   mapLayer?: string;
-  routes?: Array<{
-    id: number;
-    polyline: string;
-    color?: string;
-    name?: string;
-    onClick?: () => void;
-  }>;
-  segments?: Array<{
-    id: number;
-    startLat: number;
-    startLng: number;
-    endLat: number;
-    endLng: number;
-    polyline?: string;
-    name?: string;
-    onClick?: () => void;
-  }>;
-  userLocation?: { lat: number; lng: number } | null;
-  heatmapData?: Array<{ lat: number; lng: number; intensity: number }>;
+  routes?: RouteData[];
+  segments?: SegmentData[];
+  userLocation?: CoordinatePoint | null;
+  heatmapData?: HeatmapDataPoint[];
   showHeatmap?: boolean;
-  routeCreationPoints?: Array<{ lat: number; lng: number }>;
+  routeCreationPoints?: CoordinatePoint[];
   routeCreationActive?: boolean;
-  onWaypointAdd?: (latlng: { lat: number; lng: number }) => void;
-  onWaypointDrag?: (index: number, latlng: { lat: number; lng: number }) => void;
+  onWaypointAdd?: (latlng: CoordinatePoint) => void;
+  onWaypointDrag?: (index: number, latlng: CoordinatePoint) => void;
   currentRoutePolyline?: string;
   isLoop?: boolean;
 }
 
+/**
+ * Tile layer configuration
+ */
 const TILE_CONFIGS: Record<string, { url: string; attribution: string }> = {
   osm: {
     url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -56,6 +97,19 @@ const TILE_CONFIGS: Record<string, { url: string; attribution: string }> = {
 
 const ROUTE_COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899'];
 
+/**
+ * ExploreMap component for displaying interactive maps with routes, segments, and heatmaps.
+ * 
+ * Features:
+ * - Multiple tile layer options (OSM, Topo, Satellite)
+ * - Route and segment display with custom colors
+ * - User location marker
+ * - Heatmap overlay
+ * - Route creation with waypoints
+ * - Responsive design with resize handling
+ * 
+ * @param props - ExploreMapProps containing map configuration and data
+ */
 export default function ExploreMap({
   onMapReady,
   onMapClick,
@@ -75,13 +129,13 @@ export default function ExploreMap({
   isLoop = false,
 }: ExploreMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const tileLayerRef = useRef<any>(null);
-  const layersRef = useRef<Map<string, any>>(new Map());
-  const heatmapLayerRef = useRef<any>(null);
-  const userMarkerRef = useRef<any>(null);
-  const waypointMarkersRef = useRef<any[]>([]);
-  const creationPolylineRef = useRef<any>(null);
+  const mapInstanceRef = useRef<DrawRunMap | null>(null);
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
+  const layersRef = useRef<Map<string, L.Layer>>(new Map());
+  const heatmapLayerRef = useRef<L.HeatLayer | null>(null);
+  const userMarkerRef = useRef<DrawRunMarker | null>(null);
+  const waypointMarkersRef = useRef<DrawRunMarker[]>([]);
+  const creationPolylineRef = useRef<DrawRunPolyline | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [mapReady, setMapReady] = useState(false);
 
@@ -92,9 +146,9 @@ export default function ExploreMap({
 
     const init = async () => {
       const L = await import('leaflet');
-      // @ts-ignore
+      // @ts-ignore - Assign to window for leaflet-heat
       window.L = L;
-      // @ts-ignore
+      // @ts-ignore - Import leaflet-heat
       await import('leaflet.heat');
 
       const map = L.map(mapRef.current!, {
@@ -102,7 +156,7 @@ export default function ExploreMap({
         attributionControl: true,
         zoom,
         center: [center.lat, center.lng],
-      });
+      }) as DrawRunMap;
 
       L.control.zoom({ position: 'topright' }).addTo(map);
 
@@ -110,13 +164,14 @@ export default function ExploreMap({
       const tileLayer = L.tileLayer(tileConfig.url, {
         attribution: tileConfig.attribution,
         maxZoom: 19,
-      }).addTo(map);
+      }) as L.TileLayer;
+      tileLayer.addTo(map);
 
       tileLayerRef.current = tileLayer;
       mapInstanceRef.current = map;
 
       if (onMapClick || onWaypointAdd) {
-        map.on('click', (e: any) => {
+        map.on('click', (e: L.LeafletMouseEvent) => {
           const ll = e.latlng;
           if (routeCreationActive && onWaypointAdd) {
             onWaypointAdd({ lat: ll.lat, lng: ll.lng });
@@ -135,6 +190,7 @@ export default function ExploreMap({
       if (mapRef.current) {
         resizeObserver.observe(mapRef.current);
       }
+      resizeObserverRef.current = resizeObserver;
 
       setMapReady(true);
       onMapReady?.(map);
@@ -143,6 +199,7 @@ export default function ExploreMap({
     init();
 
     return () => {
+      resizeObserverRef.current?.disconnect();
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -164,7 +221,8 @@ export default function ExploreMap({
       const tileLayer = L.tileLayer(tileConfig.url, {
         attribution: tileConfig.attribution,
         maxZoom: 19,
-      }).addTo(map);
+      }) as L.TileLayer;
+      tileLayer.addTo(map);
       tileLayerRef.current = tileLayer;
     })();
   }, [mapLayer, mapReady]);
@@ -191,7 +249,7 @@ export default function ExploreMap({
       });
 
       routes.forEach((route, idx) => {
-        const points = decodePolyline(route.polyline);
+        const points = decodePolyline(route.polyline) as LatLng[];
         if (points.length < 2) return;
 
         const color = route.color || ROUTE_COLORS[idx % ROUTE_COLORS.length];
@@ -199,7 +257,8 @@ export default function ExploreMap({
           color,
           weight: 4,
           opacity: 0.7,
-        }).addTo(map);
+        }) as DrawRunPolyline;
+        polyline.addTo(map);
 
         if (route.onClick) {
           polyline.on('click', route.onClick);
@@ -225,9 +284,9 @@ export default function ExploreMap({
       });
 
       segments.forEach((segment) => {
-        const points: [number, number][] = [];
+        const points: LatLng[] = [];
         if (segment.polyline) {
-          const decoded = decodePolyline(segment.polyline);
+          const decoded = decodePolyline(segment.polyline) as LatLng[];
           points.push(...decoded);
         } else {
           points.push([segment.startLat, segment.startLng]);
@@ -239,7 +298,8 @@ export default function ExploreMap({
           weight: 3,
           opacity: 0.5,
           dashArray: '8 4',
-        }).addTo(map);
+        }) as DrawRunPolyline;
+        polyline.addTo(map);
 
         if (segment.onClick) {
           polyline.on('click', segment.onClick);
@@ -295,7 +355,8 @@ export default function ExploreMap({
         const marker = L.marker([userLocation.lat, userLocation.lng], {
           icon: pulseIcon,
           zIndexOffset: 1000,
-        }).addTo(map);
+        }) as DrawRunMarker;
+        marker.addTo(map);
         userMarkerRef.current = marker;
       }
     })();
@@ -311,15 +372,17 @@ export default function ExploreMap({
       heatmapLayerRef.current = null;
     }
 
-    if (showHeatmap && heatmapData.length > 0 && (window as any).L && (window as any).L.heatLayer) {
-      const points = heatmapData.map((d) => [d.lat, d.lng, d.intensity] as any);
-      const heat = (window as any).L.heatLayer(points, {
+    if (showHeatmap && heatmapData.length > 0 && (window as unknown as { L: { heatLayer: unknown } }).L?.heatLayer) {
+      const L = window.L;
+      const points = heatmapData.map((d) => [d.lat, d.lng, d.intensity] as LatLngWithIntensity);
+      const heat = L.heatLayer(points, {
         radius: 20,
         blur: 15,
         maxZoom: 17,
         max: 1.0,
         gradient: { 0.2: '#313695', 0.4: '#4575b4', 0.6: '#74add1', 0.8: '#fdae61', 1.0: '#f46d43' },
-      }).addTo(map);
+      }) as L.HeatLayer;
+      heat.addTo(map);
       heatmapLayerRef.current = heat;
     }
   }, [showHeatmap, heatmapData, mapReady]);
@@ -331,7 +394,11 @@ export default function ExploreMap({
     (async () => {
       const L = await import('leaflet');
 
-      waypointMarkersRef.current.forEach((m) => map.removeLayer(m));
+      waypointMarkersRef.current.forEach((m) => {
+        if (m && (m as unknown as { _map: unknown })._map) {
+          map.removeLayer(m);
+        }
+      });
       waypointMarkersRef.current = [];
 
       if (creationPolylineRef.current) {
@@ -364,7 +431,8 @@ export default function ExploreMap({
         const marker = L.marker([pt.lat, pt.lng], {
           icon: waypointIcon,
           draggable: true,
-        }).addTo(map);
+        }) as DrawRunMarker;
+        marker.addTo(map);
 
         marker.on('dragend', () => {
           const pos = marker.getLatLng();
@@ -376,12 +444,13 @@ export default function ExploreMap({
         waypointMarkersRef.current.push(marker);
       });
 
-      const polyPoints = routeCreationPoints.map((p) => [p.lat, p.lng] as [number, number]);
+      const polyPoints = routeCreationPoints.map((p) => [p.lat, p.lng] as LatLng);
       const polyline = L.polyline(polyPoints, {
         color: '#3b82f6',
         weight: 4,
         opacity: 0.8,
-      }).addTo(map);
+      }) as DrawRunPolyline;
+      polyline.addTo(map);
       creationPolylineRef.current = polyline;
 
       // Render loop closure as dashed line
@@ -396,7 +465,8 @@ export default function ExploreMap({
             opacity: 0.6,
             dashArray: '8 6',
           }
-        ).addTo(map);
+        ) as DrawRunPolyline;
+        loopLine.addTo(map);
         layersRef.current.set('loop_closure', loopLine);
       }
 
@@ -404,9 +474,16 @@ export default function ExploreMap({
     })();
 
     return () => {
-      waypointMarkersRef.current.forEach((m) => m._map?.removeLayer(m));
+      waypointMarkersRef.current.forEach((m) => {
+        if (m && (m as unknown as { _map: unknown })._map) {
+          (m as unknown as { _map: { removeLayer: (layer: unknown) => void } })._map.removeLayer(m);
+        }
+      });
       if (creationPolylineRef.current) {
-        creationPolylineRef.current._map?.removeLayer(creationPolylineRef.current);
+        const map = mapInstanceRef.current;
+        if (map && creationPolylineRef.current && (creationPolylineRef.current as unknown as { _map: unknown })._map) {
+          map.removeLayer(creationPolylineRef.current);
+        }
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -426,14 +503,15 @@ export default function ExploreMap({
         }
       });
 
-      const points = decodePolyline(currentRoutePolyline);
+      const points = decodePolyline(currentRoutePolyline) as LatLng[];
       if (points.length < 2) return;
 
       const polyline = L.polyline(points, {
         color: '#f59e0b',
         weight: 5,
         opacity: 0.9,
-      }).addTo(map);
+      }) as DrawRunPolyline;
+      polyline.addTo(map);
 
       layersRef.current.set('current_route_', polyline);
       map.fitBounds(L.latLngBounds(points), { padding: [20, 20], maxZoom: 17 });

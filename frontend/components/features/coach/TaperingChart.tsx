@@ -14,10 +14,39 @@ import {
 import { Card } from '@/components/ui';
 import { Zap, Calendar, TrendingDown } from 'lucide-react';
 
-interface TaperingChartProps {
-  data: any;
+/**
+ * Data point for tapering plan chart
+ */
+interface TaperingPlanPoint {
+  daysOut: number;
+  volumePercent: number;
+  intensity?: number;
+  notes?: string;
 }
 
+/**
+ * Props for TaperingChart component
+ */
+interface TaperingChartProps {
+  data: {
+    plan: TaperingPlanPoint[];
+    expectedGain: number;
+    recommendations: string[];
+    reference: string;
+  };
+}
+
+/**
+ * TaperingChart component for displaying training tapering plans.
+ * 
+ * Features:
+ * - Area chart showing volume reduction over time
+ * - Strategic recommendations
+ * - Explanation of tapering benefits
+ * - Responsive design
+ * 
+ * @param data - Tapering data including plan points, expected gain, recommendations, and reference
+ */
 export const TaperingChart: React.FC<TaperingChartProps> = ({ data }) => {
   if (!data || !data.plan) return null;
 
@@ -60,7 +89,7 @@ export const TaperingChart: React.FC<TaperingChartProps> = ({ data }) => {
             />
             <Tooltip 
               contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-              formatter={(value: any) => [`${value}%`, 'Volume']}
+              formatter={(value: number) => [`${value}%`, 'Volume']}
               labelFormatter={(label) => `Jours restants : ${label}`}
             />
             <Area 
@@ -107,3 +136,5 @@ export const TaperingChart: React.FC<TaperingChartProps> = ({ data }) => {
     </Card>
   );
 };
+
+export default TaperingChart;

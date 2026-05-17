@@ -4,21 +4,78 @@ import { useState, useEffect, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Badge } from '@/components/ui';
 import { api } from '@/lib/api';
 import { Trophy, Flame, Star, Target, Medal, Crown, Zap, Activity } from 'lucide-react';
+import type { IconType } from 'react-icons';
 
+/**
+ * Badge information for gamification
+ */
+interface GamificationBadge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  earnedAt?: string;
+}
+
+/**
+ * Streak information
+ */
+interface GamificationStreak {
+  current: number;
+  longest: number;
+  lastActiveDate: string;
+}
+
+/**
+ * Achievement information
+ */
+interface GamificationAchievement {
+  id: string;
+  name: string;
+  progress: number;
+  target: number;
+  unlocked: boolean;
+}
+
+/**
+ * Level information
+ */
+interface GamificationLevel {
+  current: number;
+  xp: number;
+  xpToNext: number;
+  title: string;
+}
+
+/**
+ * Stats information
+ */
+interface GamificationStats {
+  totalKm: number;
+  totalHours: number;
+  totalSessions: number;
+}
+
+/**
+ * Complete gamification data
+ */
 interface GamificationData {
   planId: number;
-  badges: { id: string; name: string; description: string; icon: string; earnedAt?: string }[];
-  streaks: { current: number; longest: number; lastActiveDate: string };
-  achievements: { id: string; name: string; progress: number; target: number; unlocked: boolean }[];
-  level: { current: number; xp: number; xpToNext: number; title: string };
-  stats: { totalKm: number; totalHours: number; totalSessions: number };
+  badges: GamificationBadge[];
+  streaks: GamificationStreak;
+  achievements: GamificationAchievement[];
+  level: GamificationLevel;
+  stats: GamificationStats;
 }
 
 interface GamificationWidgetProps {
   planId: number;
 }
 
-const iconMap: Record<string, any> = {
+/**
+ * Map of icon names to Lucide icon components
+ */
+const iconMap: Record<string, IconType> = {
   trophy: Trophy,
   flame: Flame,
   star: Star,
@@ -29,10 +86,25 @@ const iconMap: Record<string, any> = {
   activity: Activity,
 };
 
+/**
+ * GamificationWidget component for displaying user achievements, badges, and progress.
+ * 
+ * Features:
+ * - Level and XP progress display
+ * - Statistics (total km, hours, sessions)
+ * - Current and longest streaks
+ * - Earned badges display
+ * - Achievements progress tracking
+ * 
+ * @param planId - The ID of the training plan to display gamification data for
+ */
 export default function GamificationWidget({ planId }: GamificationWidgetProps) {
   const [data, setData] = useState<GamificationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  /**
+   * Load gamification data from the API
+   */
   const loadGamification = useCallback(async () => {
     setIsLoading(true);
     try {

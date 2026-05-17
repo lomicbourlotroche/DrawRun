@@ -154,14 +154,18 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
   useEffect(() => {
     if (user) {
       fetchConstants();
-      setAutoUpdate((user as any).auto_update !== false);
+      // Check for auto_update in user object (may be in extended profile)
+      setAutoUpdate((user as { auto_update?: boolean }).auto_update !== false);
       api.getProfile().then((profile) => {
         if (profile.name) updateUser({ name: profile.name });
         setForm({
           name: profile.name || user.name || '',
           weight: (profile.weight || user.weight)?.toString() || '',
         });
-        if ((profile as any).avatar_url) setAvatarUrl((profile as any).avatar_url);
+        // Check for avatar_url in profile object
+        if ((profile as { avatar_url?: string }).avatar_url) {
+          setAvatarUrl((profile as { avatar_url: string }).avatar_url);
+        }
       }).catch(() => {
         setForm({ name: user.name || '', weight: user.weight?.toString() || '' });
       });
@@ -199,7 +203,14 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
         const result = await api.uploadAvatar(base64);
         if (result.success) {
           setAvatarUrl(result.avatar_url);
-          updateUser({ profile_data: { ...((user as any)?.profile_data || {}), avatar_url: result.avatar_url } } as any);
+          // Update user with avatar URL in profile_data
+          const currentProfileData = (user as { profile_data?: Record<string, unknown> }).profile_data || {};
+          updateUser({ 
+            profile_data: { 
+              ...currentProfileData, 
+              avatar_url: result.avatar_url 
+            } 
+          });
           toast.success('Photo de profil mise à jour');
         }
       };
@@ -357,8 +368,8 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
                 const next = !autoUpdate;
                 setAutoUpdate(next);
                 try {
-                  await api.updateProfile({ auto_update: next } as any);
-                  updateUser({ auto_update: next } as any);
+                  await api.updateProfile({ auto_update: next });
+                  updateUser({ auto_update: next });
                   invalidate();
                 } catch { /* silencieux */ }
               }}

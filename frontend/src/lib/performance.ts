@@ -142,7 +142,7 @@ interface CacheEntry<T> {
 }
 
 class PerformanceCache {
-  private cache = new Map<string, CacheEntry<any>>();
+  private cache = new Map<string, CacheEntry<unknown>>();
   private maxSize = 100; // Max 100 entrées
 
   /**
@@ -446,12 +446,31 @@ export function isMobile(): boolean {
  * Vérifie si l'utilisateur a une connexion lente
  * @returns {boolean} True si connexion lente
  */
+/**
+ * Network connection information from the Network Information API
+ */
+interface NetworkConnection extends EventTarget {
+  effectiveType: 'slow-2g' | '2g' | '3g' | '4g';
+  saveData: boolean;
+  downlink?: number;
+  rtt?: number;
+  downlinkMax?: number;
+}
+
+/**
+ * Extended navigator with connection property
+ */
+interface NavigatorWithConnection extends Navigator {
+  connection?: NetworkConnection;
+}
+
 export function isSlowConnection(): boolean {
   if (typeof navigator === 'undefined' || !('connection' in navigator)) {
     return false;
   }
 
-  const connection = (navigator as any).connection;
+  const nav = navigator as NavigatorWithConnection;
+  const connection = nav.connection;
   return connection?.effectiveType === 'slow-2g' || 
          connection?.effectiveType === '2g' ||
          connection?.saveData === true;

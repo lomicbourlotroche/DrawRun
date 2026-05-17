@@ -168,9 +168,9 @@ export default function NewActivityPage() {
           calories: form.calories ? parseInt(form.calories) : undefined,
           total_elevation_gain: form.total_elevation_gain ? parseFloat(form.total_elevation_gain) : undefined,
           notes: form.notes || undefined,
-        } as any);
+        });
         toast.success('Activité enregistrée !');
-        router.push((result as any)?.id ? `/app/activities/${(result as any).id}` : '/app/activities');
+        router.push(result?.id ? `/app/activities/${result.id}` : '/app/activities');
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Erreur lors de l\'enregistrement';

@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
+import type { SegmentLeaderboardEntry } from '@/lib/api/types';
 import { Card, CardContent, CardHeader, CardTitle, Badge } from '@/components/ui';
 import { Trophy, MapPin, TrendingUp, Users, ChevronRight } from 'lucide-react';
 import { formatDuration } from '@/lib/utils';
@@ -134,7 +135,7 @@ interface SegmentLeaderboardProps {
 }
 
 export function SegmentLeaderboard({ segmentId }: SegmentLeaderboardProps) {
-  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [leaderboard, setLeaderboard] = useState<SegmentLeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

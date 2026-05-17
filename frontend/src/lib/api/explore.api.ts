@@ -46,8 +46,17 @@ export const exploreApi = {
       name: string;
       distance: number;
       elevation_gain: number;
+      elevation_loss?: number;
+      start_lat: number;
+      start_lng: number;
+      end_lat: number;
+      end_lng: number;
+      avg_grade?: number;
+      max_grade?: number;
+      polyline?: string;
       activity_type: string;
       effort_count: number;
+      pr_time?: number;
     }>;
   }> {
     const query = new URLSearchParams();
@@ -119,7 +128,18 @@ export const exploreApi = {
 
   getMySegmentEfforts(segmentId: number): Promise<{
     success: boolean;
-    efforts: Array<unknown>;
+    efforts: Array<{
+      id: number;
+      segment_id: number;
+      activity_id: number;
+      elapsed_time: number;
+      moving_time?: number;
+      start_date: string;
+      avg_watts?: number;
+      max_watts?: number;
+      avg_heartrate?: number;
+      max_heartrate?: number;
+    }>;
   }> {
     return client.request(`/api/explore/segments/${segmentId}/efforts/me`);
   },
@@ -194,7 +214,21 @@ export const exploreApi = {
 
   getMyRoutes(): Promise<{
     success: boolean;
-    routes: Array<unknown>;
+    routes: Array<{
+      id: number;
+      name: string;
+      description?: string;
+      polyline: string;
+      distance: number;
+      elevation_gain: number;
+      elevation_loss?: number;
+      activity_type?: string;
+      estimated_duration?: number;
+      difficulty?: string;
+      tags?: string[];
+      is_public: boolean;
+      created_at: string;
+    }>;
   }> {
     return client.request('/api/explore/routes/my');
   },

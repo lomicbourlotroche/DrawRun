@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap } from 'react-leaflet';
-import { Icon } from 'leaflet';
+import { Icon, LatLngBoundsExpression, LatLngTuple } from 'leaflet';
+import type { LatLng } from '@/types/leaflet';
 import 'leaflet/dist/leaflet.css';
 
 // Fix Leaflet default icon issue
@@ -27,7 +28,7 @@ interface MapComponentProps {
   showPopup?: boolean;
 }
 
-function MapBounds({ points }: { points: [number, number][] }) {
+function MapBounds({ points }: { points: LatLng[] }) {
   const map = useMap();
   
   useEffect(() => {
@@ -41,8 +42,8 @@ function MapBounds({ points }: { points: [number, number][] }) {
           [points[0][0], points[0][1]],
           [points[0][0], points[0][1]],
         ]
-      );
-      map.fitBounds(bounds as any, { padding: [20, 20] });
+      ) as LatLngBoundsExpression;
+      map.fitBounds(bounds, { padding: [20, 20] });
     }
   }, [map, points]);
 

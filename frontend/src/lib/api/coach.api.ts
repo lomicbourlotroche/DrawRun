@@ -30,13 +30,21 @@ import type {
   AddExternalEventParams,
   MatchActivityToSessionParams,
 } from './types';
+import type {
+  ActivePlanResponse,
+  UpcomingSession,
+  WeeklyPlanSummary,
+  PlanProgress,
+  RaceStrategyParams,
+  RaceStrategyResult,
+} from './coach-types';
 
 export const coachApi = {
   /**
    * Récupère le plan actif de l'utilisateur
    */
-  getActivePlan(): Promise<{ plan?: any; sessions?: any[]; planId?: number; fullPlan?: PlanDetail | null } | null> {
-    return client.request('/api/coach/plan').catch(() => null) as Promise<{ plan?: any; sessions?: any[]; planId?: number; fullPlan?: PlanDetail | null } | null>;
+  getActivePlan(): Promise<ActivePlanResponse | null> {
+    return client.request('/api/coach/plan').catch(() => null) as Promise<ActivePlanResponse | null>;
   },
 
   /**
@@ -215,7 +223,7 @@ export const coachApi = {
   /**
    * Récupère les sessions à venir
    */
-  getUpcomingSessions(days?: number): Promise<any[]> {
+  getUpcomingSessions(days?: number): Promise<UpcomingSession[]> {
     const query = days ? `?days=${days}` : '';
     return client.request(`/api/coach/sessions/upcoming${query}`);
   },
@@ -252,11 +260,7 @@ export const coachApi = {
   /**
    * Génère une stratégie d'allure dynamique depuis un GPX
    */
-  calculateRaceStrategy(params: { 
-    points?: Array<{ dist: number; elev: number }>; 
-    gpxData?: string;
-    params: { temp?: number; humidity?: number; goalTime?: number } 
-  }): Promise<any> {
+  calculateRaceStrategy(params: RaceStrategyParams): Promise<RaceStrategyResult> {
     return client.request('/api/race-planning/race-strategy', {
       method: 'POST',
       body: JSON.stringify(params),

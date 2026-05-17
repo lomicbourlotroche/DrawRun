@@ -10,6 +10,42 @@ import { SportPicker } from './SportPicker';
 import type { SportType } from '@/types/sports';
 import { SPORTS, getSportCategory } from '@/types/sports';
 import ActivityMap from '@/components/ui/ActivityMap';
+
+// Browser API types for battery and wake lock
+declare global {
+  interface Navigator {
+    getBattery?: () => Promise<BatteryManager>;
+    wakeLock?: WakeLock;
+  }
+}
+
+/**
+ * Battery Manager API interface
+ */
+interface BatteryManager extends EventTarget {
+  level: number;
+  charging: boolean;
+  chargingTime: number;
+  dischargingTime: number;
+  addEventListener: (type: 'levelchange' | 'chargingchange' | 'chargingtimechange' | 'dischargingtimechange', listener: () => void) => void;
+  removeEventListener: (type: 'levelchange' | 'chargingchange' | 'chargingtimechange' | 'dischargingtimechange', listener: () => void) => void;
+}
+
+/**
+ * Wake Lock API interface
+ */
+interface WakeLock {
+  request: (type: 'screen') => Promise<WakeLockSentinel>;
+}
+
+/**
+ * Wake Lock Sentinel interface
+ */
+interface WakeLockSentinel {
+  release: () => Promise<void>;
+  type: string;
+  released: boolean;
+}
 import {
   Play, Pause, Square, MapPin, Navigation, Mountain, ChevronDown, X, Save,
   Battery, BatteryMedium, BatteryLow, Target, TrendingUp, Footprints, Bike, Waves,
@@ -26,10 +62,13 @@ import {
 } from '@/lib/offlineQueue';
 import { fetchWeather, type WeatherData } from '@/lib/weather';
 
+/**
+ * Logger utility for recording activity data
+ */
 const logger = {
-  info: (msg: string, data?: any) => console.log(`[INFO] ${msg}`, data),
-  error: (msg: string, data?: any) => console.error(`[ERROR] ${msg}`, data),
-  warn: (msg: string, data?: any) => console.warn(`[WARN] ${msg}`, data),
+  info: (msg: string, data?: unknown) => console.log(`[INFO] ${msg}`, data),
+  error: (msg: string, data?: unknown) => console.error(`[ERROR] ${msg}`, data),
+  warn: (msg: string, data?: unknown) => console.warn(`[WARN] ${msg}`, data),
 };
 
 function LiveMap({ points, height = 'h-32', currentPosition, accuracy, segments }: {
@@ -402,8 +441,8 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       animationFrameRef.current = null;
     }
     try {
-      if ('getBattery' in navigator) {
-        (navigator as any).getBattery().then((battery: any) => {
+      if ('getBattery' in navigator && navigator.getBattery) {
+        navigator.getBattery().then((battery: BatteryManager) => {
           battery.removeEventListener('levelchange', updateBatteryLevel);
         });
       }
@@ -414,8 +453,8 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
 
   const requestWakeLock = async () => {
     try {
-      if ('wakeLock' in navigator) {
-        wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
+      if (navigator.wakeLock) {
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
       }
     } catch { /* silent */ }
   };
@@ -434,8 +473,8 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
 
   const getBatteryLevel = async () => {
     try {
-      if ('getBattery' in navigator) {
-        const battery = await (navigator as any).getBattery();
+      if (navigator.getBattery) {
+        const battery = await navigator.getBattery();
         setBatteryLevel(Math.round(battery.level * 100));
         battery.removeEventListener('levelchange', updateBatteryLevel);
         battery.addEventListener('levelchange', updateBatteryLevel);
@@ -445,8 +484,8 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
 
   const updateBatteryLevel = () => {
     try {
-      if ('getBattery' in navigator) {
-        (navigator as any).getBattery().then((battery: any) => {
+      if (navigator.getBattery) {
+        navigator.getBattery().then((battery: BatteryManager) => {
           setBatteryLevel(Math.round(battery.level * 100));
         });
       }
@@ -458,8 +497,8 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       if (watchIdRef.current !== null) navigator.geolocation.clearWatch(watchIdRef.current);
       try {
-        if ('getBattery' in navigator) {
-          (navigator as any).getBattery().then((battery: any) => {
+        if (navigator.getBattery) {
+          navigator.getBattery().then((battery: BatteryManager) => {
             battery.removeEventListener('levelchange', updateBatteryLevel);
           });
         }
@@ -946,8 +985,8 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           average_heartrate: stats.avgHR ?? undefined,
           max_heartrate: stats.maxHR ?? undefined,
           average_speed: stats.duration > 0 ? Math.round((stats.distance / stats.duration) * 100) / 100 : 0,
-        } as any);
-        activityId = (result as any)?.id ?? null;
+        });
+        activityId = result?.id ?? null;
       }
 
       if (activityId && photos.length > 0) {
@@ -1012,7 +1051,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       setLoadingRoutes(true);
       const result = await api.getMyRoutes();
       if (result?.routes) {
-        setUserRoutes(result.routes.map((r: any) => ({
+        setUserRoutes(result.routes.map((r) => ({
           id: String(r.id),
           name: r.name,
           description: r.description,
@@ -1033,7 +1072,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       if (currentGPS) {
         const result = await api.getNearbySegments(currentGPS.latitude, currentGPS.longitude, 50000);
         if (result?.segments) {
-          setNearbySegments(result.segments.map((s: any) => ({
+          setNearbySegments(result.segments.map((s) => ({
             id: String(s.id),
             name: s.name,
             description: s.description,
@@ -1172,7 +1211,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   const startGhostRace = async (segment: Segment) => {
     try {
       const efforts = await api.getMySegmentEfforts(parseInt(segment.id));
-      const bestEffort = (efforts?.efforts as any[])?.[0];
+      const bestEffort = efforts?.efforts?.[0];
 
       if (!bestEffort) {
         toast.error('Aucun effort enregistré sur ce segment');
