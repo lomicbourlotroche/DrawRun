@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { MetricCard } from '@/components/ui';
-import { Activity, HeartPulse, TrendingUp, Zap, Monitor, Trophy, CloudSun, Bell, Share2 } from 'lucide-react';
+import { Activity, HeartPulse, TrendingUp, Zap, Monitor, Trophy, CloudSun, Bell, Share2, Users } from 'lucide-react';
+import { useUserCounter } from '@/hooks/useUserCounter';
 
 export default function HeroSection() {
   const [isVisible, setIsVisible] = useState(false);
+  const { count, isLoading, error } = useUserCounter(); // Compteur utilisateurs en temps réel
 
   useEffect(() => {
     setIsVisible(true);
@@ -95,13 +97,40 @@ export default function HeroSection() {
           {/* Right Content - Stats Grid */}
           <div className={`transition-all duration-700 delay-200 ease-smooth ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              {/* NOUVEAU: Compteur d'utilisateurs en temps réel */}
+              <div className="col-span-2 sm:col-span-2 p-4 bg-white/60 backdrop-blur-sm border border-neutral-200 rounded-2xl">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-semibold text-neutral-600">Utilisateurs actifs</span>
+                  <span className="flex items-center gap-1.5 text-xs font-medium text-success-500">
+                    <span className="w-2 h-2 bg-success-500 rounded-full animate-pulse" />
+                    En temps réel
+                  </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
+                    <Users className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    {isLoading ? (
+                      <div className="w-20 h-8 bg-neutral-200 rounded-lg animate-pulse" />
+                    ) : error ? (
+                      <div className="text-danger-500 text-sm">{error}</div>
+                    ) : (
+                      <div className="text-4xl font-bold text-neutral-900 tabular-nums">
+                        {count.toLocaleString()}
+                      </div>
+                    )}
+                    <div className="text-sm text-neutral-500">athlètes connectés</div>
+                  </div>
+                </div>
+              </div>
+
               <MetricCard
                 label="Métriques avancées"
                 value="15+"
                 icon={<Activity className="w-5 h-5" />}
                 color="primary"
-                size="lg"
-                className="col-span-2 sm:col-span-2"
+                size="md"
               />
               <MetricCard
                 label="Précision VDOT"
@@ -128,7 +157,7 @@ export default function HeroSection() {
               />
             </div>
 
-            {/* Mini Feature Preview */}
+            {/* Mini Feature Preview (ancien aperçu BPM) */}
             <div className="mt-6 p-4 bg-white/60 backdrop-blur-sm border border-neutral-200 rounded-2xl">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-semibold text-neutral-600">Aperçu en temps réel</span>
@@ -138,7 +167,7 @@ export default function HeroSection() {
                 </span>
               </div>
               <div className="flex items-center gap-4">
-                <div className="flex-1 h-12 bg-gradient-to-r from-primary-100 via-primary-200 to-primary-100 rounded-lg animate-gradient-shift bg-[length:200%_100%]" />
+                <div className="flex-1 h-12 bg-gradient-to-r from-primary-100 via-primary-200 to-primary-100 rounded-lg animate-gradient-shift bg-[length:200%_100%]"></div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-neutral-900">142</div>
                   <div className="text-xs text-neutral-500">BPM</div>
