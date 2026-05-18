@@ -1,7 +1,7 @@
 {
   "name": "drawrun-backend",
   "version": "4.1.0",
-  "description": "DrawRun Backend v4.1 - Per-User DB Architecture | JWT Refresh | LRU Cache | Production Ready",
+  "description": "DrawRun Backend v4.1 - Per-User DB Architecture | JWT Refresh | LRU Cache | Production Ready | Social Auth (Google/Apple) | Real-time User Counter",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -29,7 +29,13 @@
     "health-connect",
     "running",
     "training",
-    "fitness"
+    "fitness",
+    "firebase",
+    "social-auth",
+    "google-auth",
+    "apple-auth",
+    "websocket",
+    "realtime"
   ],
   "author": "DrawRun Team",
   "license": "ISC",
@@ -43,6 +49,7 @@
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "express-rate-limit": "^8.4.0",
+    "firebase-admin": "^12.6.0",
     "helmet": "^8.1.0",
     "ioredis": "^5.3.2",
     "jsonwebtoken": "^9.0.3",
@@ -55,7 +62,8 @@
     "swagger-ui-express": "^5.0.0",
     "playwright": "^1.52.0",
     "web-push": "^3.6.7",
-    "winston": "^3.19.0"
+    "winston": "^3.19.0",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@fast-check/jest": "^2.2.0",

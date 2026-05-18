@@ -2,11 +2,13 @@
  * ============================================================
  * DRAWRUN BACKEND v4.1 - Point d'entrée principal (Refactorisé)
  * ============================================================
- * 
+ *
  * Architecture modulaire avec routes séparées
  * - Per-User Database
  * - Modular routes structure
- * 
+ * - NOUVEAU: Authentification sociale (Google/Apple)
+ * - NOUVEAU: Compteur utilisateurs en temps réel
+ *
  * @module index
  */
 
@@ -26,6 +28,11 @@ if (!process.env.JWT_SECRET) {
     console.error('FATAL: JWT_SECRET is required. Set it in .env or environment.');
     // eslint-disable-next-line no-process-exit
     process.exit(1);
+}
+
+// NOUVEAU: Vérifier les variables Firebase pour l'auth sociale
+if (process.env.NODE_ENV === 'production' && !process.env.FIREBASE_PROJECT_ID) {
+    console.warn('WARNING: FIREBASE_PROJECT_ID is recommended for social authentication in production.');
 }
 
 const config = {
@@ -99,6 +106,27 @@ const database = require('./src/database');
         initializeVapidKeys();
         
         // ============================================================================
+        // NOUVEAU: Initialisation Firebase Admin pour l'auth sociale
+        // ============================================================================
+        logger.info('Initializing Firebase Admin for social authentication...');
+        try {
+            const admin = require('firebase-admin');
+            if (!admin.apps.length && process.env.FIREBASE_PROJECT_ID) {
+                admin.initializeApp({
+                    credential: admin.credential.cert({
+                        projectId: process.env.FIREBASE_PROJECT_ID,
+                        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+                        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+                    }),
+                });
+                logger.info('Firebase Admin initialisé avec succès');
+            }
+        } catch (firebaseError) {
+            logger.warn('Firebase Admin non disponible:', firebaseError.message);
+            logger.warn('L\'authentification sociale (Google/Apple) sera désactivée');
+        }
+        
+        // ============================================================================
         // ROUTES MODULAIRES
         // ============================================================================
         logger.info('Loading modular routes...');
@@ -119,6 +147,12 @@ const database = require('./src/database');
         const shareRoutes = require('./src/routes/share');
         const userConstantsRoutes = require('./src/routes/user-constants');
         const gearRoutes = require('./src/routes/gear');
+        
+        // NOUVEAU: Charger les routes d'authentification sociale
+        const socialAuthRoutes = require('./src/routes/social-auth');
+        
+        // NOUVEAU: Charger les routes de statistiques (inclut le compteur utilisateurs)
+        const statsRoutes = require('./src/routes/stats');
         
         // ============================================================================
         // EXPRESS SERVER
@@ -205,7 +239,11 @@ app.use((req, res, next) => {
                 message: 'DrawRun API Server is running. 🚀',
                 timestamp: new Date().toISOString(),
                 version: '4.1.0',
-                cache: cacheHealth
+                cache: cacheHealth,
+                features: {
+                    socialAuth: process.env.FIREBASE_PROJECT_ID ? true : false,
+                    userCounter: true
+                }
             });
         });
         
@@ -238,6 +276,13 @@ app.use((req, res, next) => {
         
         // Auth & API
         app.use('/api/auth', authRouter);
+        
+        // NOUVEAU: Routes d'authentification sociale (Google/Apple)
+        app.use('/api/auth', socialAuthRoutes);
+        
+        // NOUVEAU: Routes de statistiques (compteur utilisateurs en temps réel)
+        app.use('/api/stats', statsRoutes);
+        
         app.use('/api/algo', apiRoutes);
         
         // Feature routes - using user-based rate limiting + cache
@@ -264,6 +309,19 @@ app.use((req, res, next) => {
         app.use('/api/recommendations', verifyToken, pmcRoutes);
         
         // ============================================================================
+        // NOUVEAU: Configuration WebSocket pour le compteur utilisateurs
+        // ============================================================================
+        
+        // Créer le serveur HTTP
+        const server = require('http').createServer(app);
+        
+        // Configurer WebSocket pour les statistiques
+        if (statsRoutes.setupWebSocket) {
+            statsRoutes.setupWebSocket(server);
+            logger.info('WebSocket server configured for user counter');
+        }
+        
+        // ============================================================================
         // ERROR HANDLER
         // ============================================================================
         
@@ -277,11 +335,13 @@ app.use((req, res, next) => {
         // START SERVER
         // ============================================================================
         
-        app.listen(PORT, () => {
+        server.listen(PORT, () => {
             logger.info(`DrawRun Backend v4.1.0 running on port ${PORT}`);
             logger.info(`Health check: http://localhost:${PORT}/health`);
             logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
             logger.info('Modular routes loaded');
+            logger.info('Social authentication (Google/Apple) enabled');
+            logger.info('Real-time user counter enabled');
         });
         
     } catch (err) {

@@ -2,13 +2,13 @@
  * ============================================================
  * API CLIENT - Barrel Export
  * ============================================================
- * 
+ *
  * Ce fichier exporte tous les modules API pour rétrocompatibilité
  * avec l'ancien api.ts monolithique.
- * 
+ *
  * IMPORTANT: Ce fichier maintient la compatibilité ascendante.
  * Tous les imports existants continueront de fonctionner.
- * 
+ *
  * @module lib/api
  */
 
@@ -94,6 +94,14 @@ export { racePlanningApi } from './race-planning.api';
 export { weatherApi } from './weather.api';
 export { shareApi } from './share.api';
 export { gearApi } from './gear.api';
+export { userConstantsApi } from './user-constants.api';
+// NOUVEAU: Authentification sociale
+export { socialAuthApi } from './social-auth.api';
+export type { SocialAuthResponse, SocialAuthError } from './social-auth.api';
+
+// NOUVEAU: Compteur utilisateurs en temps réel
+export { userCounterApi } from './user-counter.api';
+export type { UserCountResponse } from './user-counter.api';
 
 // ============================================================================
 // RETROCOMPATIBILITÉ - Ancien api.ts
@@ -105,7 +113,7 @@ export { gearApi } from './gear.api';
  *   import { api } from '@/lib/api';
  *   api.login(email, password);
  * continueront de fonctionner sans modification.
- * 
+ *
  * NOTE: Pour les nouveaux développements, préférez l'utilisation des
  * modules spécifiques:
  *   import { authApi } from '@/lib/api';
@@ -129,6 +137,9 @@ import { shareApi } from './share.api';
 import { userConstantsApi } from './user-constants.api';
 import { gearApi } from './gear.api';
 import { client } from './client';
+// NOUVEAU: Imports pour l'auth sociale et le compteur
+import { socialAuthApi } from './social-auth.api';
+import { userCounterApi } from './user-counter.api';
 
 // Création d'un objet api unifié pour rétrocompatibilité
 export const api = {
@@ -153,6 +164,18 @@ export const api = {
   deleteAccount: authApi.deleteAccount,
   connectGarmin: authApi.connectGarmin,
   disconnectGarmin: () => authApi.disconnectService('garmin'),
+
+  // NOUVEAU: Authentification sociale
+  loginWithGoogle: socialAuthApi.loginWithGoogle,
+  loginWithApple: socialAuthApi.loginWithApple,
+  logoutSocial: socialAuthApi.logoutSocial,
+  linkSocialAccount: socialAuthApi.linkSocialAccount,
+  unlinkSocialAccount: socialAuthApi.unlinkSocialAccount,
+  getLinkedSocialAccounts: socialAuthApi.getLinkedSocialAccounts,
+
+  // NOUVEAU: Compteur utilisateurs
+  getUserCount: userCounterApi.getUserCount,
+  subscribeToUserCount: userCounterApi.subscribeToUserCount,
 
   // Profile endpoints
   getProfile: profileApi.getProfile,
@@ -181,29 +204,28 @@ export const api = {
   sync: syncApi.sync,
   getSyncStatus: syncApi.getSyncStatus,
 
-
   // Algorithm endpoints
   getZones: algoApi.getZones,
-  getAlgoZones: algoApi.getZones, // alias
+  getAlgoZones: algoApi.getZones,
   getVdot: algoApi.getVdot,
-  getAlgoVdot: algoApi.getVdot, // alias
-  getAlgoPmc: algoApi.getPmc, // algo version with params
+  getAlgoVdot: algoApi.getVdot,
+  getAlgoPmc: algoApi.getPmc,
   getRecommendations: algoApi.getRecommendations,
-  getAlgoRecommendations: algoApi.getRecommendations, // alias
+  getAlgoRecommendations: algoApi.getRecommendations,
   getAlgoReadiness: algoApi.getReadiness,
   getPolarization: algoApi.getPolarization,
-  getAlgoPolarization: algoApi.getPolarization, // alias
+  getAlgoPolarization: algoApi.getPolarization,
   getHRV: algoApi.getHRV,
-  getAlgoHRV: algoApi.getHRV, // alias
+  getAlgoHRV: algoApi.getHRV,
   getTaper: algoApi.getTaper,
-  getAlgoTaper: algoApi.getTaper, // alias
+  getAlgoTaper: algoApi.getTaper,
   getOvertraining: algoApi.getOvertraining,
-  getAlgoOvertraining: algoApi.getOvertraining, // alias
+  getAlgoOvertraining: algoApi.getOvertraining,
   getCriticalPower: algoApi.getCriticalPower,
-  getAlgoCriticalPower: algoApi.getCriticalPower, // alias
-  getAlgoTSS: algoApi.getTSS, // alias
+  getAlgoCriticalPower: algoApi.getCriticalPower,
+  getAlgoTSS: algoApi.getTSS,
   getHealth: algoApi.getHealth,
-  getAlgoHealth: algoApi.getHealth, // alias
+  getAlgoHealth: algoApi.getHealth,
   getAlgoConstants: algoApi.getConstants,
 
   // Coach endpoints
@@ -329,8 +351,8 @@ export const api = {
   getElevationProfile: exploreApi.getElevationProfile,
 
   // Metrics endpoints
-  getPmc: metricsApi.getPmc, // Simple version without params - returns PmcDataPoint[]
-  getTSS: metricsApi.calculateTSS, // Convenience alias
+  getPmc: metricsApi.getPmc,
+  getTSS: metricsApi.calculateTSS,
   recalculateMetrics: metricsApi.recalculateMetrics,
   getMetrics: metricsApi.getMetrics,
   checkOvertraining: metricsApi.checkOvertraining,
@@ -383,28 +405,3 @@ export const api = {
 // ============================================================================
 
 export default api;
-
-// ============================================================================
-// TODO: Migration Guide
-// ============================================================================
-
-/**
- * GUIDE DE MIGRATION vers la nouvelle architecture modulaire:
- * 
- * AVANT (ancien api.ts):
- *   import { api } from '@/lib/api';
- *   api.login(email, password);
- * 
- * APRÈS (nouvelle architecture):
- *   import { authApi } from '@/lib/api';
- *   authApi.login(email, password);
- * 
- * AVANTAGES de la nouvelle architecture:
- * 1. Tree-shaking: seul le code utilisé est chargé
- * 2. Meilleure organisation: un fichier = un domaine
- * 3. Tests plus faciles: mocking par module
- * 4. Maintenabilité: modifications locales
- * 
- * La rétrocompatibilité est maintenue via l'objet 'api' ci-dessus,
- * donc pas d'urgence à migrer le code existant.
- */
