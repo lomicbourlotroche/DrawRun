@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Menu, X, Users } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import Image from 'next/image';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
-import { UserCounter } from '@/components/features/UserCounter';
 
 const navLinks = [
   { label: 'Race Planning', href: '#race-planning' },
@@ -65,22 +64,6 @@ export default function Navbar() {
           
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
-            {/* NOUVEAU: Compteur d'utilisateurs en temps réel */}
-            <div className={`px-3 py-1.5 rounded-full transition-colors ${
-              scrolled 
-                ? 'bg-neutral-100 text-neutral-700' 
-                : 'bg-white/10 text-white/90'
-            }`}>
-              <UserCounter showLabel={false} />
-            </div>
-            <span
-              className={`text-xs font-medium hidden lg:inline transition-colors ${
-                scrolled ? 'text-neutral-500' : 'text-white/70'
-              }`}
-            >
-              utilisateurs en ligne
-            </span>
-            
             <LanguageToggle variant={scrolled ? 'scrolled' : 'default'} />
             <div className={`w-px h-6 ${scrolled ? 'bg-neutral-200' : 'bg-white/20'}`} />
             <a
@@ -124,12 +107,6 @@ export default function Navbar() {
           mobileMenuOpen ? 'max-h-[500px] mt-4' : 'max-h-0'
         }`}>
           <div className="bg-white rounded-2xl border border-neutral-200 shadow-lg p-4 space-y-2">
-            {/* NOUVEAU: Compteur utilisateurs dans le menu mobile */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-neutral-50 rounded-xl">
-              <Users className="w-4 h-4 text-neutral-500" />
-              <UserCounter showLabel={true} label="en ligne" />
-            </div>
-            
             {navLinks.map((link, index) => (
               <a
                 key={index}
