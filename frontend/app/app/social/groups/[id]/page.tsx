@@ -341,7 +341,7 @@ export default function GroupDetailPage() {
           showPresets={false}
           showPublicToggle={false}
           onClose={() => setShowWizard(false)}
-          onCreate={handleCreateChallenge as (form: import('@/app/app/social/tabs/challenge-constants').ChallengeForm) => Promise<void>}
+          onCreate={handleCreateChallenge as unknown as (form: import('../../tabs/challenge-constants').ChallengeForm) => Promise<void>}
         />
       )}
     </div>

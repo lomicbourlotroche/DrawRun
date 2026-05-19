@@ -37,7 +37,7 @@ interface RouteItem {
   tags?: string[];
   avg_rating?: number;
   rating_count?: number;
-  usage_count: number;
+  usage_count?: number;
   creator_name?: string;
   is_favorited?: boolean;
   polyline: string;

@@ -373,15 +373,15 @@ export default function ExploreMap({
     }
 
     if (showHeatmap && heatmapData.length > 0 && (window as unknown as { L: { heatLayer: unknown } }).L?.heatLayer) {
-      const L = window.L;
+      const wL = (window as unknown as { L: { heatLayer: (points: [number, number, number][], opts?: Record<string, unknown>) => L.Layer } }).L;
       const points = heatmapData.map((d) => [d.lat, d.lng, d.intensity] as LatLngWithIntensity);
-      const heat = L.heatLayer(points, {
+      const heat = wL.heatLayer(points, {
         radius: 20,
         blur: 15,
         maxZoom: 17,
         max: 1.0,
         gradient: { 0.2: '#313695', 0.4: '#4575b4', 0.6: '#74add1', 0.8: '#fdae61', 1.0: '#f46d43' },
-      }) as unknown as L.Layer;
+      });
       heat.addTo(map);
       heatmapLayerRef.current = heat as unknown as L.HeatLayer;
     }

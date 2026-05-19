@@ -5,6 +5,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Badge, Modal } from '@/components/ui';
 import { api, racePlanningApi } from '@/lib/api';
 import type { RacePlanningResponse, RacePlanningRequest, GpxProfile, Split, NutritionStrategy } from '@/types';
+import type { SavedRacePlan, RaceSplit } from '@/lib/api/race-planning.api';
 import {
   Trophy, Download, AlertTriangle, MapPin, Heart, Zap, Droplets, Save, Upload,
   Printer, Mountain, TrendingUp, TrendingDown, Minus, Info,
@@ -222,7 +223,7 @@ export function RacePlanningContent() {
         totalTime: r.summary.totalTime,
         elevationProfile: r.summary.elevationProfile ?? form.elevationProfile,
         fatigue: form.fatigue,
-        splits: r.splits as RaceSplit[],
+        splits: r.splits as unknown as RaceSplit[],
         nutritionStrategy: r.nutritionStrategy as import('@/lib/api/race-planning.api').NutritionStrategy,
       });
       toast.success('Plan de course enregistré !');
@@ -1013,14 +1014,14 @@ export function RacePlanningContent() {
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
-                        {plan.created_at
-                          ? new Date(plan.created_at as string).toLocaleDateString('fr-FR')
+                        {plan.createdAt
+                          ? new Date(plan.createdAt).toLocaleDateString('fr-FR')
                           : '-'}
                       </span>
                     </div>
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
-                    <Button variant="primary" size="sm" onClick={() => handleLoadPlan(plan)}>
+                    <Button variant="primary" size="sm" onClick={() => handleLoadPlan(plan as unknown as Record<string, unknown>)}>
                       Charger
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => handleDeletePlan(plan.id as number)}>

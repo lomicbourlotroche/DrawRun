@@ -196,7 +196,7 @@ export function SegmentLeaderboard({ segmentId }: SegmentLeaderboardProps) {
               <div className="flex-1">
                 <p className="font-medium">{effort.user_name || 'Anonymous'}</p>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(effort.activity_date).toLocaleDateString()}
+                  {effort.activity_date ? new Date(effort.activity_date).toLocaleDateString() : ''}
                 </p>
               </div>
 

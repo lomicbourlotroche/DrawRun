@@ -983,7 +983,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           average_heartrate: stats.avgHR ?? undefined,
           max_heartrate: stats.maxHR ?? undefined,
           avgSpeed: stats.duration > 0 ? Math.round((stats.distance / stats.duration) * 100) / 100 : 0,
-        } as Partial<import('@/types').ActivityDetail>);
+        } as any);
         activityId = result?.id ?? null;
       }
 
@@ -1070,17 +1070,17 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       if (currentGPS) {
         const result = await api.getNearbySegments(currentGPS.latitude, currentGPS.longitude, 50000);
         if (result?.segments) {
-          setNearbySegments(result.segments.map((s) => ({
+          setNearbySegments((result.segments as Array<Record<string, unknown>>).map((s: Record<string, unknown>) => ({
             id: String(s.id),
-            name: s.name,
-            description: s.description,
-            startLat: s.start_lat || 0,
-            startLng: s.start_lng || 0,
-            endLat: s.end_lat || 0,
-            endLng: s.end_lng || 0,
-            distance: s.distance || 0,
-            elevationGain: s.elevation_gain || 0,
-            personalRecord: s.pr_time || undefined,
+            name: String(s.name || ''),
+            description: s.description as string | undefined,
+            startLat: Number(s.start_lat) || 0,
+            startLng: Number(s.start_lng) || 0,
+            endLat: Number(s.end_lat) || 0,
+            endLng: Number(s.end_lng) || 0,
+            distance: Number(s.distance) || 0,
+            elevationGain: Number(s.elevation_gain) || 0,
+            personalRecord: s.pr_time ? Number(s.pr_time) : undefined,
           })));
         }
       }
@@ -1091,7 +1091,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     try {
       const plan = await api.getActivePlan();
       if (plan?.sessions && plan.sessions.length > 0) {
-        const session = plan.sessions[0] as Record<string, unknown>;
+        const session = plan.sessions[0] as unknown as Record<string, unknown>;
         setActiveCoachSession({
           id: String((session.id as number) || plan.planId || ''),
           name: (session.name as string) || (plan.plan?.name as string) || 'Séance',
