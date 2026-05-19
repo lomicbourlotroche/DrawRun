@@ -2,7 +2,7 @@
 'use client';
 
 import 'leaflet/dist/leaflet.css';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { decodePolyline } from '@/lib/utils';
 import type {
   DrawRunMap,
@@ -213,7 +213,7 @@ export default function ExploreMap({
     if (!mapInstanceRef.current || !mapReady) return;
     (async () => {
       const L = await import('leaflet');
-      const map = mapInstanceRef.current;
+      const map = mapInstanceRef.current!;
       if (tileLayerRef.current) {
         map.removeLayer(tileLayerRef.current);
       }
@@ -334,7 +334,7 @@ export default function ExploreMap({
     if (!mapInstanceRef.current || !mapReady) return;
     (async () => {
       const L = await import('leaflet');
-      const map = mapInstanceRef.current;
+      const map = mapInstanceRef.current!;
 
       if (userMarkerRef.current) {
         map.removeLayer(userMarkerRef.current);
@@ -365,10 +365,10 @@ export default function ExploreMap({
   // Heatmap layer
   useEffect(() => {
     if (!mapInstanceRef.current || !mapReady) return;
-    const map = mapInstanceRef.current;
+    const map = mapInstanceRef.current!;
 
     if (heatmapLayerRef.current) {
-      map.removeLayer(heatmapLayerRef.current);
+      map.removeLayer(heatmapLayerRef.current as unknown as L.Layer);
       heatmapLayerRef.current = null;
     }
 
@@ -381,9 +381,9 @@ export default function ExploreMap({
         maxZoom: 17,
         max: 1.0,
         gradient: { 0.2: '#313695', 0.4: '#4575b4', 0.6: '#74add1', 0.8: '#fdae61', 1.0: '#f46d43' },
-      }) as L.HeatLayer;
+      }) as unknown as L.Layer;
       heat.addTo(map);
-      heatmapLayerRef.current = heat;
+      heatmapLayerRef.current = heat as unknown as L.HeatLayer;
     }
   }, [showHeatmap, heatmapData, mapReady]);
 
@@ -494,7 +494,7 @@ export default function ExploreMap({
     if (!mapInstanceRef.current || !mapReady || !currentRoutePolyline) return;
     (async () => {
       const L = await import('leaflet');
-      const map = mapInstanceRef.current;
+      const map = mapInstanceRef.current!;
 
       layersRef.current.forEach((layer, key) => {
         if (key.startsWith('current_route_')) {

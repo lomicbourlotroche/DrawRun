@@ -1,12 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Skeleton, GlassCard } from '@/components/ui';
-import { Trophy } from 'lucide-react';
+import { Trophy, MapPin, Clock, Activity } from 'lucide-react';
 import { Avatar } from '@/components/ui';
 import { useLeaderboard } from '@/hooks/useSocial';
-import { LEADERBOARD_CATEGORIES, LEADERBOARD_PERIODS, PODIUM_STYLES, SOCIAL_ERRORS } from '@/constants/social';
+import { LEADERBOARD_CATEGORIES, LEADERBOARD_PERIODS, PODIUM_STYLES } from '@/constants/social';
 import { toast } from 'sonner';
+
+const ICON_MAP: Record<string, React.FC<{ className?: string }>> = {
+  MapPin, Clock, Activity, Trophy,
+};
 
 export default function LeaderboardTab() {
   const {
@@ -73,7 +77,7 @@ export default function LeaderboardTab() {
                   : 'bg-card border border-border text-muted hover:border-primary/30'
               }`}
             >
-              <c.icon className="w-4 h-4" />
+              {(() => { const Icon = ICON_MAP[c.icon]; return Icon ? <Icon className="w-4 h-4" /> : null; })()}
               {c.label}
             </button>
           ))}

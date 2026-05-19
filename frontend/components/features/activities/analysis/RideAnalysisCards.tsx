@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
-import { Heart, Zap, Gauge, Timer, Wind, Mountain, Cpu, BarChart3, Bike, Weight } from 'lucide-react';
+import { Heart, Zap, Timer, Wind, Cpu, BarChart3, Bike } from 'lucide-react';
 import type { RideAnalysis, PowerCurvePoint } from '@/types';
 
 function toNum(val: unknown): number {
@@ -240,7 +240,7 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
               {analysis.estimatedWPrime && (
                 <div className="text-center p-3 rounded-lg bg-background border border-border">
                   <p className="text-lg font-bold text-foreground">{Math.round(analysis.estimatedWPrime)} kJ</p>
-                  <p className="text-xs text-muted">W' (Réserve anaérobie)</p>
+                  <p className="text-xs text-muted">W&apos; (Réserve anaérobie)</p>
                 </div>
               )}
             </div>

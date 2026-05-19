@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { api } from '@/lib/api';
 import type { SyncResult } from '@/lib/api';
 import { useSyncStore } from '@/stores';

@@ -16,7 +16,6 @@ import type {
   AdaptivePlanResult,
   PlanFeedbackResult,
   PlanDetail,
-  TrainingPlan,
   MissedSessionResult,
   SubmitTestResult,
   PendingSessions,
@@ -33,8 +32,6 @@ import type {
 import type {
   ActivePlanResponse,
   UpcomingSession,
-  WeeklyPlanSummary,
-  PlanProgress,
   RaceStrategyParams,
   RaceStrategyResult,
   CoachProfile,

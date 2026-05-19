@@ -452,8 +452,8 @@ export function useChallenges() {
         api.getPublicChallenges().catch(() => []),
         api.getUserChallenges().catch(() => []),
       ]);
-      setPublicChallenges(pub || []);
-      setMyChallenges(mine || []);
+      setPublicChallenges((pub || []) as typeof publicChallenges);
+      setMyChallenges((mine || []) as typeof myChallenges);
     } catch {
       setError(SOCIAL_ERRORS.FETCH_CHALLENGES);
       setPublicChallenges([]);
@@ -528,7 +528,7 @@ export function getSportGradient(type: string): string {
  * Récupère les informations sur le mode de défi.
  */
 export function getModeInfo(mode: string) {
-  const modes = {
+  const modes: Record<string, { icon: string; label: string }> = {
     quota: { icon: '🎯', label: 'Objectif' },
     streak: { icon: '🔥', label: 'Série' },
     weekly: { icon: '📅', label: 'Hebdomadaire' },
@@ -541,7 +541,7 @@ export function getModeInfo(mode: string) {
  * Récupère les informations sur le type de défi.
  */
 export function getTypeInfo(type: string) {
-  const types = {
+  const types: Record<string, { icon: string; label: string; unit: string }> = {
     distance: { icon: '📏', label: 'Distance', unit: 'km' },
     duration: { icon: '⏱️', label: 'Durée', unit: 'min' },
     elevation: { icon: '⛰️', label: 'Dénivelé', unit: 'm' },

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Avatar } from '@/components/ui';
+import { Avatar } from '@/components/ui';
 import { api } from '@/lib/api';
 import { MessageCircle, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';

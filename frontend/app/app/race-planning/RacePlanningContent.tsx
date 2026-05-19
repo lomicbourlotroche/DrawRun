@@ -111,7 +111,7 @@ export function RacePlanningContent() {
   const [altitude, setAltitude] = useState(0);
   const [windSpeed, setWindSpeed] = useState(0);
 
-  const [savedPlans, setSavedPlans] = useState<Array<Record<string, unknown>>>([]);
+  const [savedPlans, setSavedPlans] = useState<SavedRacePlan[]>([]);
   const [showPlansModal, setShowPlansModal] = useState(false);
   const [isLoadingPlans, setIsLoadingPlans] = useState(false);
 
@@ -222,8 +222,8 @@ export function RacePlanningContent() {
         totalTime: r.summary.totalTime,
         elevationProfile: r.summary.elevationProfile ?? form.elevationProfile,
         fatigue: form.fatigue,
-        splits: r.splits,
-        nutritionStrategy: r.nutritionStrategy,
+        splits: r.splits as RaceSplit[],
+        nutritionStrategy: r.nutritionStrategy as import('@/lib/api/race-planning.api').NutritionStrategy,
       });
       toast.success('Plan de course enregistré !');
     } catch {

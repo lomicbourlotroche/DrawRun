@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Avatar, Skeleton } from '@/components/ui';
-import type { GroupDetail, GroupMember, Activity } from '@/types';
-import type { CreateChallengeParams } from '@/lib/api';
+import type { Activity } from '@/types';
 import {
   Users, Settings, Activity as ActivityIcon, Trophy,
-  ChevronLeft, Copy, Trash2, Edit2, UserX, Crown, Shield, Flame, Save, Eye, Check, Sparkles, Loader2, X
+  ChevronLeft, Copy, Trash2, Edit2, UserX, Crown, Shield, Flame, Save, Eye, Sparkles
 } from 'lucide-react';
 import ChallengeWizard from '../../modals/ChallengeWizard';
 import { getModeInfo, getTypeInfo } from '../../tabs/challenge-constants';
@@ -153,7 +152,7 @@ export default function GroupDetailPage() {
                   <div key={a.id} className="flex items-center justify-between p-3 rounded-xl bg-background border border-border">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center"><Flame className="w-4 h-4 text-primary" /></div>
-                      <div><p className="font-medium text-sm">{a.name || a.type}</p><p className="text-xs text-muted">{new Date(a.start_date).toLocaleDateString('fr-FR')}</p></div>
+                      <div><p className="font-medium text-sm">{a.name || a.type}</p><p className="text-xs text-muted">{a.start_date ? new Date(a.start_date).toLocaleDateString('fr-FR') : ''}</p></div>
                     </div>
                     <div className="text-right"><p className="text-sm font-medium">{((a.distance || 0) / 1000).toFixed(1)} km</p><p className="text-xs text-muted">{Math.floor((a.moving_time || 0) / 60)} min</p></div>
                   </div>
@@ -233,7 +232,7 @@ export default function GroupDetailPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-semibold text-sm">{a.name || a.type}</p>
-                  <p className="text-xs text-muted">{a.type} · {new Date(a.start_date).toLocaleDateString('fr-FR')}</p>
+                  <p className="text-xs text-muted">{a.type} · {a.start_date ? new Date(a.start_date).toLocaleDateString('fr-FR') : ''}</p>
                 </div>
                 <div className="text-right">
                   <p className="font-medium text-sm">{((a.distance || 0) / 1000).toFixed(1)} km</p>
@@ -303,7 +302,7 @@ export default function GroupDetailPage() {
               </div>
               <div className="flex items-center justify-between p-3 rounded-xl bg-background border border-border">
                 <div><p className="text-sm font-medium">Groupe privé</p><p className="text-xs text-muted">Accès par code d&apos;invitation uniquement</p></div>
-                <button onClick={() => setEditForm(p => ({ ...p, isPrivate: !p.isPrivate }))} aria-label={editForm.isPrivate ? 'Passer en groupe public' : 'Passer en groupe privé'} className={`w-12 h-6 rounded-full transition-all relative ${editForm.isPrivate ? 'bg-primary' : 'bg-border'}`}>
+                <button onClick={() => setEditForm({ ...editForm, isPrivate: !editForm.isPrivate })} aria-label={editForm.isPrivate ? 'Passer en groupe public' : 'Passer en groupe privé'} className={`w-12 h-6 rounded-full transition-all relative ${editForm.isPrivate ? 'bg-primary' : 'bg-border'}`}>
                   <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${editForm.isPrivate ? 'left-7' : 'left-1'}`} />
                 </button>
               </div>
@@ -342,7 +341,7 @@ export default function GroupDetailPage() {
           showPresets={false}
           showPublicToggle={false}
           onClose={() => setShowWizard(false)}
-          onCreate={handleCreateChallenge}
+          onCreate={handleCreateChallenge as (form: import('@/app/app/social/tabs/challenge-constants').ChallengeForm) => Promise<void>}
         />
       )}
     </div>

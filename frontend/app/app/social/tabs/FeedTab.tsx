@@ -7,7 +7,7 @@ import CommentModal from '../modals/CommentModal';
 import { Flame, MapPin, Clock, TrendingUp, Heart, MessageCircle, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useFeed, getSportGradient, formatPace } from '@/hooks/useSocial';
-import { SOCIAL_FEED_CONSTANTS, SOCIAL_ERRORS } from '@/constants/social';
+import { SOCIAL_FEED_CONSTANTS } from '@/constants/social';
 
 export default function FeedTab() {
   const {

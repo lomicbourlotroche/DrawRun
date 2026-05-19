@@ -299,7 +299,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
             <div className="h-6 bg-muted rounded w-1/2 mx-auto" aria-hidden="true" />
             <div className="h-4 bg-muted rounded w-3/4 mx-auto" aria-hidden="true" />
           </div>
-          <span className="sr-only">Chargement du formulaire d'onboarding...</span>
+          <span className="sr-only">Chargement du formulaire d&apos;onboarding...</span>
         </CardContent>
       </Card>
     );

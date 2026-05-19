@@ -30,11 +30,11 @@
     "running",
     "training",
     "fitness",
-    "firebase",
-    "social-auth",
-    "google-auth",
-    "apple-auth",
-    "websocket",
+    
+    
+    
+    
+    
     "realtime"
   ],
   "author": "DrawRun Team",
@@ -81,3 +81,4 @@
     "npm": ">=8.0.0"
   }
 }
+

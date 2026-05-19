@@ -14,7 +14,6 @@ import {
 } from './challenge-constants';
 import ChallengeWizard from '../modals/ChallengeWizard';
 import { useChallenges } from '@/hooks/useSocial';
-import { SOCIAL_ERRORS } from '@/constants/social';
 
 export default function ChallengesTab() {
   const {
@@ -76,15 +75,16 @@ export default function ChallengesTab() {
     [loadChallenges]
   );
 
-  if (isLoading)
-    return (
+  if (isLoading) {
+
+        return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
           <Skeleton key={i} className="h-28 rounded-2xl" />
         ))}
       </div>
     );
-
+  }
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

@@ -71,7 +71,7 @@ interface PresetChallenge {
   target_value: number;
   duration_days: number;
   challenge_mode: ChallengeMode;
-  badge_icon: BadgeIcon;
+  badge_icon: string;
   sport_type: SportType;
   weekly_target?: number;
   weekly_increase_pct?: number;
@@ -135,12 +135,15 @@ export function getTypeInfo(type: string): typeof CHALLENGE_TYPES[number] {
  * @returns Tableau de milestones avec pct, label, et icon
  */
 export function getMilestones(c: { milestones?: string }): Array<{ pct: number; label: string; icon: string }> {
-  if (!c.milestones) return [
+  if (!c.milestones) {
+    return [
     { pct: 25, label: 'Bronze', icon: '🥉' },
     { pct: 50, label: 'Argent', icon: '🥈' },
     { pct: 75, label: 'Or', icon: '🥇' },
     { pct: 100, label: 'Légendaire', icon: '💎' },
   ];
+
+  }
   try { 
     return JSON.parse(c.milestones); 
   } catch { 

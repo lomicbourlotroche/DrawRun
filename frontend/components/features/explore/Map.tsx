@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap } from 'react-leaflet';
-import { Icon, LatLngBoundsExpression, LatLngTuple } from 'leaflet';
+import { Icon, LatLngBoundsExpression } from 'leaflet';
 import type { LatLng } from '@/types/leaflet';
 import 'leaflet/dist/leaflet.css';
 

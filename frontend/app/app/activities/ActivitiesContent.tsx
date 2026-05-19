@@ -6,12 +6,11 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuthStore, useActivitiesStore, useSyncStore } from '@/stores';
 import { api } from '@/lib/api';
 import { ActivityList, MobileActivityRecorder } from '@/components/features/activities';
 import { Button, Modal, Input, Select } from '@/components/ui';
-import { RefreshCw, Plus, FileUp, Play, Smartphone } from 'lucide-react';
+import { RefreshCw, Plus, FileUp, Play } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { toast } from 'sonner';

@@ -188,7 +188,7 @@ class PerformanceCache {
       return null;
     }
 
-    return entry.data;
+    return entry.data as T;
   }
 
   /**

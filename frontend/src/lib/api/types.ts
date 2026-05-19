@@ -11,13 +11,11 @@
  */
 
 // Explore - Segments
-// ============================================================================
+// 
 
-export interface CreateSegmentParams {
-=======
-// ============================================================================
+// 
 // Explore - Segments
-// ============================================================================
+// 
 
 /**
  * Entry in a segment leaderboard
@@ -30,6 +28,8 @@ export interface SegmentLeaderboardEntry {
   rank: number;
   is_kom: boolean; // King of the Mountain
   is_qom: boolean; // Queen of the Mountain
+  activity_date?: string;
+  avg_watts?: number;
 }
 
 /**
@@ -40,7 +40,22 @@ export interface SegmentLeaderboardResponse {
   leaderboard: SegmentLeaderboardEntry[];
 }
 
-export interface CreateSegmentParams {============================================================================
+export interface CreateSegmentParams {
+  name: string;
+  description?: string;
+  start_lat: number;
+  start_lng: number;
+  end_lat: number;
+  end_lng: number;
+  distance: number;
+  elevation_gain?: number;
+  elevation_loss?: number;
+  avg_grade?: number;
+  max_grade?: number;
+  polyline?: string;
+  activity_type?: string;
+}
+
 // Types de base
 // ============================================================================
 
@@ -65,9 +80,9 @@ export interface SyncStatus {
   garmin_last_sync?: string | null;
 }
 
-// ============================================================================
+// 
 // Gestion des erreurs
-// ============================================================================
+// 
 
 export class ApiError extends Error {
   status: number;
@@ -79,9 +94,9 @@ export class ApiError extends Error {
   }
 }
 
-// ============================================================================
+// 
 // Algorithmes - Paramètres et Réponses
-// ============================================================================
+// 
 
 export interface AlgoZonesParams {
   age?: number;
@@ -286,9 +301,9 @@ export interface AlgoHealthParams {
   hrv?: { rmssd: number; baseline?: number };
 }
 
-// ============================================================================
+// 
 // Coach - Plan et Sessions
-// ============================================================================
+// 
 
 export interface StartAdaptivePlanParams {
   targetDistance: number;
@@ -359,9 +374,9 @@ export interface MatchActivityToSessionParams {
   sessionId: number;
 }
 
-// ============================================================================
+// 
 // Social - Core
-// ============================================================================
+// 
 
 export interface CreateGroupParams {
   name: string;
@@ -400,9 +415,9 @@ export interface LeaderboardParams {
   period?: string;
 }
 
-// ============================================================================
+// 
 // Social - Chat & Messaging
-// ============================================================================
+// 
 
 export interface CreateConversationParams {
   otherUserId?: number;
@@ -416,9 +431,9 @@ export interface SendMessageParams {
   attachmentUrl?: string;
 }
 
-// ============================================================================
+// 
 // Social - Challenges
-// ============================================================================
+// 
 
 export interface CreateChallengeParams {
   title: string;
@@ -427,6 +442,7 @@ export interface CreateChallengeParams {
   target_value: number;
   target_unit?: string;
   duration_days: number;
+  end_date?: string;
   is_public?: boolean;
   max_participants?: number;
   is_team?: boolean;
@@ -448,9 +464,9 @@ export interface UpdateChallengeProgressParams {
   progress: number;
 }
 
-// ============================================================================
+// 
 // Social - Events
-// ============================================================================
+// 
 
 export interface CreateEventParams {
   group_id?: number;
@@ -463,9 +479,9 @@ export interface CreateEventParams {
   max_attendees?: number;
 }
 
-// ============================================================================
+// 
 // Social - Badges & XP
-// ============================================================================
+// 
 
 export interface CreateBadgeParams {
   name: string;
@@ -475,9 +491,9 @@ export interface CreateBadgeParams {
   criteria?: string;
 }
 
-// ============================================================================
+// 
 // Explore - Segments
-// ============================================================================
+// 
 
 export interface CreateSegmentParams {
   name: string;
@@ -516,9 +532,9 @@ export interface CreateSegmentEffortParams {
   };
 }
 
-// ============================================================================
+// 
 // Explore - Routes
-// ============================================================================
+// 
 
 export interface CreateRouteParams {
   name: string;
@@ -539,9 +555,9 @@ export interface GetPublicRoutesParams {
   difficulty?: string;
 }
 
-// ============================================================================
+// 
 // Explore - Heatmap
-// ============================================================================
+// 
 
 export interface GetHeatmapParams {
   lat: number;
@@ -555,9 +571,9 @@ export interface GetPopularLocationsParams {
   limit?: number;
 }
 
-// ============================================================================
+// 
 // Activity Photos
-// ============================================================================
+// 
 
 export interface AddActivityPhotoParams {
   activityId: number;
@@ -569,9 +585,9 @@ export interface AddActivityPhotoParams {
   };
 }
 
-// ============================================================================
+// 
 // TSS / Overtraining
-// ============================================================================
+// 
 
 export interface CalculateTSSParams {
   durationSeconds: number;
@@ -582,9 +598,9 @@ export interface CalculateTSSParams {
   sex?: 'M' | 'F';
 }
 
-// ============================================================================
+// 
 // Preferences & Onboarding
-// ============================================================================
+// 
 
 export interface UpdatePreferencesParams {
   dashboard_widgets?: unknown[];
@@ -599,9 +615,9 @@ export interface CompleteOnboardingStepParams {
   step: string;
 }
 
-// ============================================================================
+// 
 // Manual Activity
-// ============================================================================
+// 
 
 export interface AddManualActivityParams {
   name: string;
@@ -616,18 +632,18 @@ export interface AddManualActivityParams {
   calories?: number;
 }
 
-// ============================================================================
+// 
 // Connection Services
-// ============================================================================
+// 
 
 export interface ConnectServiceParams {
   email: string;
   password: string;
 }
 
-// ============================================================================
+// 
 // Comments & Reactions
-// ============================================================================
+// 
 
 export interface AddCommentParams {
   activityId: number;
@@ -644,9 +660,9 @@ export interface RemoveReactionParams {
   reactionType: string;
 }
 
-// ============================================================================
+// 
 // Notifications Pagination
-// ============================================================================
+// 
 
 export interface PaginationParams {
   limit?: number;

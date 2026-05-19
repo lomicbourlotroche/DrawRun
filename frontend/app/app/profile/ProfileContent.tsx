@@ -155,7 +155,7 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
     if (user) {
       fetchConstants();
       // Check for auto_update in user object (may be in extended profile)
-      setAutoUpdate((user as { auto_update?: boolean }).auto_update !== false);
+      setAutoUpdate(user.auto_update !== false);
       api.getProfile().then((profile) => {
         if (profile.name) updateUser({ name: profile.name });
         setForm({
@@ -164,7 +164,7 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
         });
         // Check for avatar_url in profile object
         if ((profile as { avatar_url?: string }).avatar_url) {
-          setAvatarUrl((profile as { avatar_url: string }).avatar_url);
+          setAvatarUrl((profile as unknown as { avatar_url: string }).avatar_url);
         }
       }).catch(() => {
         setForm({ name: user.name || '', weight: user.weight?.toString() || '' });
@@ -204,10 +204,9 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
         if (result.success) {
           setAvatarUrl(result.avatar_url);
           // Update user with avatar URL in profile_data
-          const currentProfileData = (user as { profile_data?: Record<string, unknown> }).profile_data || {};
           updateUser({ 
             profile_data: { 
-              ...currentProfileData, 
+              ...(user?.profile_data || {}), 
               avatar_url: result.avatar_url 
             } 
           });
@@ -368,7 +367,7 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
                 const next = !autoUpdate;
                 setAutoUpdate(next);
                 try {
-                  await api.updateProfile({ auto_update: next });
+                  await api.updateProfile({ auto_update: next } as Record<string, unknown>);
                   updateUser({ auto_update: next });
                   invalidate();
                 } catch { /* silencieux */ }
@@ -414,7 +413,7 @@ function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
                   if (constForm.vma) payload.vma = parseFloat(constForm.vma);
                   if (constForm.vdot) payload.vdot = parseFloat(constForm.vdot);
                   if (Object.keys(payload).length > 0) {
-                    await api.updateProfile(payload);
+                    await api.updateProfile({ ...payload, auto_update: false } as Record<string, unknown>);
                     updateUser({ ...payload, auto_update: false });
                     invalidate();
                     await fetchConstants();

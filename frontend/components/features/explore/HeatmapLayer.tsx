@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from 'react';
 import { api } from '@/lib/api';
 import type {
   HeatmapLayerProps,
-  DrawRunMap,
   HeatmapPoint,
   LatLngWithIntensity,
 } from '@/types/leaflet';
@@ -62,14 +61,14 @@ export default function HeatmapLayer({
 
     // Cleanup existing layer
     if (layerRef.current) {
-      map.removeLayer(layerRef.current);
+      map.removeLayer(layerRef.current as unknown as L.Layer);
       layerRef.current = null;
     }
 
     // Create heatmap layer if visible and data is available
-    if (visible && L?.heatLayer) {
+    if (visible && (L as unknown as { heatLayer: unknown }).heatLayer) {
       const points = data.map((d) => [d.lat, d.lng, d.intensity] as LatLngWithIntensity);
-      const heat = L.heatLayer(points, {
+      const heat = (L as unknown as { heatLayer: (points: [number, number, number][], options?: Record<string, unknown>) => L.Layer }).heatLayer(points, {
         radius: 18,
         blur: 12,
         maxZoom: 16,
@@ -81,14 +80,14 @@ export default function HeatmapLayer({
           0.8: '#fdae61',
           1.0: '#f46d43',
         },
-      }) as L.HeatLayer;
+      });
       heat.addTo(map);
-      layerRef.current = heat;
+      layerRef.current = heat as unknown as L.HeatLayer;
     }
 
     return () => {
       if (layerRef.current && map) {
-        map.removeLayer(layerRef.current);
+        map.removeLayer(layerRef.current as unknown as L.Layer);
         layerRef.current = null;
       }
     };
@@ -99,9 +98,9 @@ export default function HeatmapLayer({
     if (!map) return;
 
     if (visible && layerRef.current) {
-      map.addLayer(layerRef.current);
+      map.addLayer(layerRef.current as unknown as L.Layer);
     } else if (!visible && layerRef.current) {
-      map.removeLayer(layerRef.current);
+      map.removeLayer(layerRef.current as unknown as L.Layer);
     }
 
     prevVisible.current = visible;

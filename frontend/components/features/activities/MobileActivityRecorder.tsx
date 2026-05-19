@@ -3,7 +3,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { SportPicker } from './SportPicker';
@@ -15,7 +14,6 @@ import ActivityMap from '@/components/ui/ActivityMap';
 declare global {
   interface Navigator {
     getBattery?: () => Promise<BatteryManager>;
-    wakeLock?: WakeLock;
   }
 }
 
@@ -47,10 +45,10 @@ interface WakeLockSentinel {
   released: boolean;
 }
 import {
-  Play, Pause, Square, MapPin, Navigation, Mountain, ChevronDown, X, Save,
+  Play, Pause, Square, MapPin, Navigation, Mountain, X, Save,
   Battery, BatteryMedium, BatteryLow, Target, TrendingUp, Footprints, Bike, Waves,
   Heart, Lock, Camera, Sun, CloudSun, Cloud, CloudDrizzle, CloudRain, CloudSnow,
-  CloudLightning, Flag, Clock, Zap, BluetoothConnected,
+  CloudLightning, Flag, Zap, BluetoothConnected,
   AlertTriangle, Eye, EyeOff, Gauge, ChevronRight, Upload, Ghost, Plus,
 } from 'lucide-react';
 import { createGPSFilter, isSpuriousJump, type FilteredGPSPoint } from '@/lib/gpsFilter';
@@ -984,8 +982,8 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           total_elevation_gain: Math.round(stats.elevationGain),
           average_heartrate: stats.avgHR ?? undefined,
           max_heartrate: stats.maxHR ?? undefined,
-          average_speed: stats.duration > 0 ? Math.round((stats.distance / stats.duration) * 100) / 100 : 0,
-        });
+          avgSpeed: stats.duration > 0 ? Math.round((stats.distance / stats.duration) * 100) / 100 : 0,
+        } as Partial<import('@/types').ActivityDetail>);
         activityId = result?.id ?? null;
       }
 
@@ -1093,16 +1091,16 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     try {
       const plan = await api.getActivePlan();
       if (plan?.sessions && plan.sessions.length > 0) {
-        const session = plan.sessions[0];
+        const session = plan.sessions[0] as Record<string, unknown>;
         setActiveCoachSession({
-          id: String(session.id || plan.planId || ''),
-          name: session.name || plan.plan?.name || 'Séance',
-          type: session.type || 'run',
-          duration: session.estimated_duration || session.duration || 3600,
-          distance: session.distance,
-          targetPace: session.target_pace,
-          targetHeartRateZone: session.target_hr_zone ? { min: session.target_hr_zone.min, max: session.target_hr_zone.max } : undefined,
-          intervalStructure: session.interval_structure,
+          id: String((session.id as number) || plan.planId || ''),
+          name: (session.name as string) || (plan.plan?.name as string) || 'Séance',
+          type: (session.type as string) || 'run',
+          duration: (session.estimated_duration as number) || (session.duration as number) || 3600,
+          distance: session.distance as number | undefined,
+          targetPace: session.target_pace as number | undefined,
+          targetHeartRateZone: session.target_hr_zone ? { min: (session.target_hr_zone as { min: number }).min, max: (session.target_hr_zone as { max: number }).max } : undefined,
+          intervalStructure: session.interval_structure as Array<{ work: number; rest: number; repeats: number }> | undefined,
         });
       }
     } catch { /* silent */ }

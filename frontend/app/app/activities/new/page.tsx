@@ -162,13 +162,13 @@ export default function NewActivityPage() {
           start_date: form.start_date,
           distance: form.distance ? parseFloat(form.distance) * 1000 : undefined, // km → m
           moving_time: form.moving_time ? parseInt(form.moving_time) * 60 : undefined,
-          average_speed: speedValue ? parseFloat(speedValue) / 3.6 : undefined, // km/h → m/s
+          avgSpeed: speedValue ? parseFloat(speedValue) / 3.6 : undefined, // km/h → m/s
           average_heartrate: form.average_heartrate ? parseInt(form.average_heartrate) : undefined,
           max_heartrate: form.max_heartrate ? parseInt(form.max_heartrate) : undefined,
           calories: form.calories ? parseInt(form.calories) : undefined,
           total_elevation_gain: form.total_elevation_gain ? parseFloat(form.total_elevation_gain) : undefined,
           notes: form.notes || undefined,
-        });
+        } as any);
         toast.success('Activité enregistrée !');
         router.push(result?.id ? `/app/activities/${result.id}` : '/app/activities');
       }

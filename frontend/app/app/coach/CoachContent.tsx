@@ -34,7 +34,7 @@ function TodayTab() {
       api.getCoachProfile().catch(() => null),
     ]).then(([recData, profileData]) => {
       if (recData) setRec(recData);
-      if (profileData) setProfile(profileData);
+      if (profileData) setProfile(profileData as unknown as Record<string, unknown>);
     }).finally(() => setIsLoading(false));
   }, []);
 
@@ -202,7 +202,7 @@ export default function CoachContent() {
     try {
       // GET /api/coach/plan now returns { plan, sessions, planId, fullPlan }
       const data = await api.getActivePlan();
-      setActivePlan(data?.fullPlan?.plan ?? null);
+      setActivePlan((data?.fullPlan ?? null) as TrainingPlan | null);
     } catch {
       setActivePlan(null);
     } finally {

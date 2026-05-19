@@ -4,7 +4,6 @@ import { useEffect, useRef } from 'react';
 import { api } from '@/lib/api';
 import { decodePolyline } from '@/lib/utils';
 import type { DrawRunMap, DrawRunPolyline, LatLng } from '@/types/leaflet';
-import L from 'leaflet';
 
 /**
  * Community trace data

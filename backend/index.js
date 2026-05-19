@@ -30,11 +30,6 @@ if (!process.env.JWT_SECRET) {
     process.exit(1);
 }
 
-// NOUVEAU: Vérifier les variables Firebase pour l'auth sociale
-if (process.env.NODE_ENV === 'production' && !process.env.FIREBASE_PROJECT_ID) {
-    console.warn('WARNING: FIREBASE_PROJECT_ID is recommended for social authentication in production.');
-}
-
 const config = {
     PORT: process.env.PORT || 3000,
     JWT_SECRET: process.env.JWT_SECRET,
@@ -105,26 +100,6 @@ const database = require('./src/database');
         const { initializeVapidKeys } = require('./src/services/notifications/push.service');
         initializeVapidKeys();
         
-        // ============================================================================
-        // NOUVEAU: Initialisation Firebase Admin pour l'auth sociale
-        // ============================================================================
-        logger.info('Initializing Firebase Admin for social authentication...');
-        try {
-            const admin = require('firebase-admin');
-            if (!admin.apps.length && process.env.FIREBASE_PROJECT_ID) {
-                admin.initializeApp({
-                    credential: admin.credential.cert({
-                        projectId: process.env.FIREBASE_PROJECT_ID,
-                        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-                    }),
-                });
-                logger.info('Firebase Admin initialisé avec succès');
-            }
-        } catch (firebaseError) {
-            logger.warn('Firebase Admin non disponible:', firebaseError.message);
-            logger.warn('L\'authentification sociale (Google/Apple) sera désactivée');
-        }
         
         // ============================================================================
         // ROUTES MODULAIRES
@@ -147,9 +122,6 @@ const database = require('./src/database');
         const shareRoutes = require('./src/routes/share');
         const userConstantsRoutes = require('./src/routes/user-constants');
         const gearRoutes = require('./src/routes/gear');
-        
-        // NOUVEAU: Charger les routes d'authentification sociale
-        const socialAuthRoutes = require('./src/routes/social-auth');
         
         // NOUVEAU: Charger les routes de statistiques (inclut le compteur utilisateurs)
         const statsRoutes = require('./src/routes/stats');
@@ -276,9 +248,6 @@ app.use((req, res, next) => {
         
         // Auth & API
         app.use('/api/auth', authRouter);
-        
-        // NOUVEAU: Routes d'authentification sociale (Google/Apple)
-        app.use('/api/auth', socialAuthRoutes);
         
         // NOUVEAU: Routes de statistiques (compteur utilisateurs en temps réel)
         app.use('/api/stats', statsRoutes);

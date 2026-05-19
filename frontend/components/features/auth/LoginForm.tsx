@@ -7,7 +7,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Activity, ArrowLeft, Eye, EyeOff, Zap, TrendingUp, Heart, Target } from 'lucide-react';
 import { api } from '@/lib/api';
-import { SocialAuthButtons } from './SocialAuthButtons';
 
 type AuthMode = 'login' | 'register' | 'forgot' | 'reset';
 
@@ -628,7 +627,6 @@ export default function LoginForm() {
                 </div>
 
                 {/* NOUVEAU: Boutons d'authentification sociale */}
-                <SocialAuthButtons showDividers={false} />
 
                 {/* Switch mode */}
                 <p className="text-center text-sm text-neutral-500">

@@ -6,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Card, CardContent, Button, Badge } from '@/components/ui';
 import { PowerAnalysis, FTPCalculator } from '@/components/features/performance/PowerAnalysis';
 import { api } from '@/lib/api';
-import type { ActivityStreams } from '@/types';
 import { Zap, Gauge, Activity, Loader2, Bike, ChevronDown } from 'lucide-react';
 
 interface ActivityWithPower {

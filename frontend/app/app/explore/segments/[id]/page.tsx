@@ -49,6 +49,7 @@ interface SegmentEffort {
   max_watts?: number;
   avg_heartrate?: number;
   max_heartrate?: number;
+  activity_name?: string;
 }
 
 export default function SegmentDetailPage() {

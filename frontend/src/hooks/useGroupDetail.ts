@@ -50,7 +50,7 @@ interface UseGroupDetailReturn {
   handlePromote: (userId: number, role: string) => Promise<void>;
   handleLeave: () => Promise<void>;
   copyInvite: () => void;
-  handleCreateChallenge: (form: Omit<CreateChallengeParams, 'groupId'> & { is_public?: boolean }) => Promise<void>;
+  handleCreateChallenge: (form: Omit<CreateChallengeParams, 'groupId'> & { is_public?: boolean; end_date?: string }) => Promise<void>;
   handleJoinChallenge: (challengeId: number) => Promise<void>;
   setEditForm: (form: { name: string; description: string; isPrivate: boolean }) => void;
   setShowWizard: (show: boolean) => void;
@@ -166,7 +166,7 @@ export function useGroupDetail(): UseGroupDetailReturn {
   }, [group?.inviteCode]);
 
   const handleCreateChallenge = useCallback(
-    async (form: Omit<CreateChallengeParams, 'groupId'> & { is_public?: boolean }) => {
+    async (form: Omit<CreateChallengeParams, 'groupId'> & { is_public?: boolean; end_date?: string }) => {
       const durationDays = form.end_date
         ? Math.max(1, Math.ceil((new Date(form.end_date).getTime() - Date.now()) / 86400000))
         : 30;
@@ -174,15 +174,15 @@ export function useGroupDetail(): UseGroupDetailReturn {
         title: form.title,
         description: form.description,
         type: form.type,
-        target_value: parseFloat(form.target_value) || 0,
+        target_value: Number(form.target_value) || 0,
         duration_days: durationDays,
         challenge_mode: form.challenge_mode,
         badge_icon: form.badge_icon,
         sport_type: form.sport_type,
-        weekly_target: form.weekly_target ? parseFloat(form.weekly_target) : undefined,
-        weekly_increase_pct: form.weekly_increase_pct ? parseFloat(form.weekly_increase_pct) : undefined,
-        streak_days: form.streak_days ? parseInt(form.streak_days) : undefined,
-        frequency_per_week: form.frequency_per_week ? parseInt(form.frequency_per_week) : undefined,
+        weekly_target: form.weekly_target ? Number(form.weekly_target) : undefined,
+        weekly_increase_pct: form.weekly_increase_pct ? Number(form.weekly_increase_pct) : undefined,
+        streak_days: form.streak_days ? Number(form.streak_days) : undefined,
+        frequency_per_week: form.frequency_per_week ? Number(form.frequency_per_week) : undefined,
       } as CreateChallengeParams);
       toast.success('Défi créé ! 🏆');
       setShowWizard(false);

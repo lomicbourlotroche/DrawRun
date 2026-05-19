@@ -96,8 +96,6 @@ export { shareApi } from './share.api';
 export { gearApi } from './gear.api';
 export { userConstantsApi } from './user-constants.api';
 // NOUVEAU: Authentification sociale
-export { socialAuthApi } from './social-auth.api';
-export type { SocialAuthResponse, SocialAuthError } from './social-auth.api';
 
 // NOUVEAU: Compteur utilisateurs en temps réel
 export { userCounterApi } from './user-counter.api';
@@ -138,7 +136,6 @@ import { userConstantsApi } from './user-constants.api';
 import { gearApi } from './gear.api';
 import { client } from './client';
 // NOUVEAU: Imports pour l'auth sociale et le compteur
-import { socialAuthApi } from './social-auth.api';
 import { userCounterApi } from './user-counter.api';
 
 // Création d'un objet api unifié pour rétrocompatibilité
@@ -165,15 +162,6 @@ export const api = {
   connectGarmin: authApi.connectGarmin,
   disconnectGarmin: () => authApi.disconnectService('garmin'),
 
-  // NOUVEAU: Authentification sociale
-  loginWithGoogle: socialAuthApi.loginWithGoogle,
-  loginWithApple: socialAuthApi.loginWithApple,
-  logoutSocial: socialAuthApi.logoutSocial,
-  linkSocialAccount: socialAuthApi.linkSocialAccount,
-  unlinkSocialAccount: socialAuthApi.unlinkSocialAccount,
-  getLinkedSocialAccounts: socialAuthApi.getLinkedSocialAccounts,
-
-  // NOUVEAU: Compteur utilisateurs
   getUserCount: userCounterApi.getUserCount,
   subscribeToUserCount: userCounterApi.subscribeToUserCount,
 

@@ -41,6 +41,9 @@ export interface User {
   restingHR?: number | null;
   weeklyKm?: number | null;
   goal?: string | null;
+  profile_data?: Record<string, unknown>;
+  auto_update?: boolean;
+  avatar_url?: string;
 }
 
 export interface Activity {
@@ -990,6 +993,9 @@ export interface Split {
   hrRange: string;
   cardiacDrift?: number;
   elevationFactor?: number;
+  elevationGain?: number;
+  elevationLoss?: number;
+  grade?: number;
   nutrition: Array<{
     type: 'water' | 'gel' | 'sodium' | 'solid';
     label: string;
@@ -1052,6 +1058,10 @@ export interface NutritionStrategy {
   totalCarbs?: number;
   totalFluid?: number;
   caffeineDose?: number;
+  totalCalories?: number;
+  totalLiquids?: number;
+  perHour?: { calories: number; carbs: number; liquids: number };
+  schedule?: Array<{ time: number; type: string; quantity: string; notes?: string }>;
   preRace: string | { meal: NutritionMeal; topUp: NutritionMeal };
   duringRace: string | NutritionItem[];
   postRace: string | { within30min: PostRaceRecovery; within2hours: PostRaceRecovery };

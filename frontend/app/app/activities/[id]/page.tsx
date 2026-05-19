@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Skeleton } fro
 import { StreamChart } from '@/components/ui/Charts';
 import ActivityMap from '@/components/ui/ActivityMap';
 import { api } from '@/lib/api';
-import type { ActivityDetail as ActivityDetailType, ActivityStreams, ActivityAnalysisResponse, RunAnalysis, RideAnalysis, SwimAnalysis, TrailRunAnalysis, SimpleAnalysis } from '@/types';
+import type { ActivityDetail as ActivityDetailType, ActivityStreams, ActivityAnalysisResponse } from '@/types';
 import { isRunAnalysis, isRideAnalysis, isSwimAnalysis, isTrailRunAnalysis } from '@/types';
 import type { SplitData, SplitSummary } from '@/types';
 import { ArrowLeft, Heart, Timer, Gauge, Mountain, Activity as ActivityIcon, Zap, Wind, MapPin, Clock, Pencil, Check, X, Cpu } from 'lucide-react';

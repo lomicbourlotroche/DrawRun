@@ -21,101 +21,6 @@ export interface ActivePlanResponse {
   planId?: number;
   fullPlan?: PlanDetail | null;
 }
-=======
-// ============================================================================
-// Coach - Active Plan Response
-// ============================================================================
-
-/**
- * Response from getActivePlan endpoint
- */
-export interface ActivePlanResponse {
-  plan?: PlanDetail | null;
-  sessions?: TrainingSession[] | null;
-  planId?: number;
-  fullPlan?: PlanDetail | null;
-}
-
-// ============================================================================
-// Coach - Profile Types
-// ============================================================================
-
-/**
- * Coach profile information
- */
-export interface CoachProfile {
-  id: string;
-  userId: string;
-  experienceLevel: 'beginner' | 'intermediate' | 'advanced' | 'elite';
-  primaryGoal: 'general_fitness' | 'weight_loss' | '5k' | '10k' | 'half_marathon' | 'marathon' | 'ultra' | 'speed' | 'endurance';
-  currentWeeklyKm: number;
-  targetWeeklyKm?: number;
-  availableDays: number[];
-  preferredTrainingTime?: 'morning' | 'afternoon' | 'evening' | 'any';
-  equipment: string[];
-  injuryHistory?: string[];
-  medicalConditions?: string[];
-  nutritionPreferences?: {
-    dietType?: 'omnivore' | 'vegetarian' | 'vegan' | 'keto' | 'other';
-    allergies?: string[];
-    hydrationStrategy?: string;
-  };
-  sleepPattern?: {
-    averageHours: number;
-    quality: 'poor' | 'fair' | 'good' | 'excellent';
-    consistency: 'irregular' | 'regular' | 'very_regular';
-  };
-  stressLevel?: 'low' | 'moderate' | 'high' | 'very_high';
-  createdAt: string;
-  updatedAt: string;
-}
-
-/**
- * Parameters for generating a training plan
- */
-export interface GeneratePlanParams {
-  target: string;
-  vdot: number;
-  weeklyKm: number;
-  includePPG?: boolean;
-}
-
-/**
- * Result from generating a training plan
- */
-export interface GeneratePlanResult {
-  success: boolean;
-  planId: number;
-  message: string;
-  plan?: TrainingPlan;
-  sessions?: TrainingSession[];
-}
-
-// ============================================================================
-// Coach - Feedback Types
-// ============================================================================
-
-/**
- * Feedback for plan adaptation
- */
-export interface PlanFeedback {
-  sessionId: number;
-  planId: number;
-  feedback: {
-    difficulty?: 'easy' | 'normal' | 'hard' | 'very_hard';
-    rpe?: number;
-    pain?: boolean;
-    fatigue?: number;
-    motivation?: number;
-    sleepQuality?: 'poor' | 'fair' | 'good' | 'excellent';
-    stressLevel?: 'low' | 'moderate' | 'high' | 'very_high';
-    notes?: string;
-    completed?: boolean;
-    actualDuration?: number;
-    actualDistance?: number;
-    actualRpe?: number;
-  };
-}============================================================================
 // Coach - Plan Types
 // ============================================================================
 
@@ -531,6 +436,44 @@ export interface ExternalEvent {
 /**
  * Default values for the plan wizard
  */
+// ============================================================================
+// Coach - Missing exports used by coach.api.ts
+// ============================================================================
+
+export interface CoachProfile {
+  user: { id: number; email: string; name: string };
+  profile: {
+    vdot?: number; vma?: number; fcm?: number; resting_hr?: number;
+    age?: number; sex?: string; weight?: number; weeklyKm?: number | null; pace?: string | null;
+  };
+  activePlan: { plan: Record<string, unknown>; sessions: Record<string, unknown>[]; planId: number } | null;
+  hasActivePlan: boolean;
+}
+
+export interface GeneratePlanParams {
+  planName?: string;
+  targetDistance?: number;
+  weeks?: number;
+  sessionsPerWeek?: number;
+  [key: string]: unknown;
+}
+
+export interface GeneratePlanResult {
+  success: boolean;
+  planId?: number;
+  message?: string;
+  [key: string]: unknown;
+}
+
+export interface PlanFeedback {
+  sessionId: number;
+  difficulty?: 'easy' | 'normal' | 'hard';
+  rpe?: number;
+  pain?: boolean;
+  notes?: string;
+  [key: string]: unknown;
+}
+
 export interface WizardDefaults {
   defaults: {
     currentWeeklyKm?: number;
@@ -549,16 +492,3 @@ export interface WizardDefaults {
   activitiesAnalyzed: number;
 }
 
-// ============================================================================
-// Coach - Active Plan Response
-// ============================================================================
-
-/**
- * Response from getActivePlan endpoint
- */
-export interface ActivePlanResponse {
-  plan?: PlanDetail | null;
-  sessions?: TrainingSession[] | null;
-  planId?: number;
-  fullPlan?: PlanDetail | null;
-}
