@@ -158,7 +158,7 @@ export function FilterChip({ label, isActive, onClick, count }: FilterChipProps)
       className={cn(
         'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200',
         isActive
-          ? 'bg-primary text-white'
+          ? 'bg-primary text-primary-foreground'
           : 'bg-surface text-muted hover:text-foreground border border-border'
       )}
     >
@@ -204,3 +204,14 @@ export function FilterChipGroup({
     </div>
   );
 }
+
+export {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+  LegacyTabs,
+  TabPanel,
+  FilterChip,
+  FilterChipGroup,
+};

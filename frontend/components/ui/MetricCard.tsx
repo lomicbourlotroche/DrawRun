@@ -32,37 +32,37 @@ const MetricCard = forwardRef<HTMLDivElement, MetricCardProps>(
       primary: {
         icon: 'bg-primary-100 text-primary-600',
         glow: 'shadow-glow-primary',
-        trend: { up: 'text-primary-600', down: 'text-danger-500', neutral: 'text-neutral-500' }
+        trend: { up: 'text-primary-600', down: 'text-danger-500', neutral: 'text-muted' }
       },
       success: {
         icon: 'bg-success-100 text-success-600',
         glow: 'shadow-glow-success',
-        trend: { up: 'text-success-500', down: 'text-danger-500', neutral: 'text-neutral-500' }
+        trend: { up: 'text-success-500', down: 'text-danger-500', neutral: 'text-muted' }
       },
       recovery: {
         icon: 'bg-recovery-100 text-recovery-600',
         glow: 'shadow-glow-recovery',
-        trend: { up: 'text-recovery-500', down: 'text-danger-500', neutral: 'text-neutral-500' }
+        trend: { up: 'text-recovery-500', down: 'text-danger-500', neutral: 'text-muted' }
       },
       warning: {
         icon: 'bg-warning-100 text-warning-600',
         glow: '',
-        trend: { up: 'text-warning-500', down: 'text-danger-500', neutral: 'text-neutral-500' }
+        trend: { up: 'text-warning-500', down: 'text-danger-500', neutral: 'text-muted' }
       },
       danger: {
         icon: 'bg-danger-100 text-danger-600',
         glow: '',
-        trend: { up: 'text-danger-500', down: 'text-success-500', neutral: 'text-neutral-500' }
+        trend: { up: 'text-danger-500', down: 'text-success-500', neutral: 'text-muted' }
       },
       peak: {
         icon: 'bg-peak-100 text-peak-600',
         glow: 'shadow-glow-peak',
-        trend: { up: 'text-peak-500', down: 'text-danger-500', neutral: 'text-neutral-500' }
+        trend: { up: 'text-peak-500', down: 'text-danger-500', neutral: 'text-muted' }
       },
       neutral: {
         icon: 'bg-neutral-100 text-neutral-600',
         glow: '',
-        trend: { up: 'text-neutral-600', down: 'text-neutral-600', neutral: 'text-neutral-500' }
+        trend: { up: 'text-neutral-600', down: 'text-neutral-600', neutral: 'text-muted' }
       },
     };
 
@@ -107,9 +107,9 @@ const MetricCard = forwardRef<HTMLDivElement, MetricCardProps>(
         ref={ref}
         className={cn(
           'rounded-2xl transition-all duration-200',
-          variant === 'default' && 'bg-white border border-neutral-200 shadow-card hover:shadow-card-hover',
+          variant === 'default' && 'bg-surface border border-border shadow-card hover:shadow-card-hover',
           variant === 'glass' && 'bg-white/80 backdrop-blur-xl border border-white/40',
-          variant === 'bordered' && 'bg-transparent border-2 border-neutral-200',
+          variant === 'bordered' && 'bg-transparent border-2 border-border',
           sizeStyles.card,
           styles.glow,
           'hover:-translate-y-0.5',
@@ -120,20 +120,20 @@ const MetricCard = forwardRef<HTMLDivElement, MetricCardProps>(
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <span className={cn(
-              'font-semibold text-neutral-400 uppercase tracking-wider',
+              'font-semibold text-muted uppercase tracking-wider',
               sizeStyles.label
             )}>
               {label}
             </span>
             <div className="flex items-baseline gap-1.5 mt-1">
               <span className={cn(
-                'font-bold text-neutral-900 tabular-nums tracking-tight',
+                'font-bold text-foreground tabular-nums tracking-tight',
                 sizeStyles.value
               )}>
                 {value}
               </span>
               {unit && (
-                <span className={cn('font-medium text-neutral-500', sizeStyles.unit)}>
+                <span className={cn('font-medium text-muted', sizeStyles.unit)}>
                   {unit}
                 </span>
               )}

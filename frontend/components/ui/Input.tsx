@@ -1,6 +1,6 @@
-import { forwardRef, cloneElement, isValidElement, type InputHTMLAttributes, type ReactNode } from 'react';
+import { forwardRef, cloneElement, isValidElement, useState, useEffect, type InputHTMLAttributes, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, X } from 'lucide-react';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -8,11 +8,25 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   hint?: string;
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
+  clearable?: boolean;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, label, error, hint, leftIcon, rightIcon, id, ...props }, ref) => {
+  ({ className, type, label, error, hint, leftIcon, rightIcon, id, clearable = false, ...props }, ref) => {
     const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
+    const [value, setValue] = useState(props.value || '');
+
+    const handleClear = () => {
+      setValue('');
+      if (props.onChange) {
+        const event = { target: { value: '', name: props.name } } as React.ChangeEvent<HTMLInputElement>;
+        props.onChange(event);
+      }
+    };
+
+    useEffect(() => {
+      setValue(props.value || '');
+    }, [props.value]);
 
     return (
       <div className="w-full">
@@ -33,24 +47,40 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             type={type}
             id={inputId}
             ref={ref}
+            value={value}
+            onChange={(e) => {
+              setValue(e.target.value);
+              props.onChange?.(e);
+            }}
             className={cn(
               'w-full bg-background border rounded-lg px-4 py-2.5 text-foreground',
               'placeholder:text-muted',
               'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary',
               'transition-all duration-200',
               leftIcon && 'pl-10',
-              rightIcon && 'pr-10',
+              rightIcon && !clearable && 'pr-10',
+              rightIcon && clearable && 'pr-16',
               error ? 'border-danger' : 'border-border',
               className
             )}
             {...props}
           />
-          {rightIcon && (
+          {rightIcon && !clearable && (
             isValidElement(rightIcon)
               ? cloneElement(rightIcon as React.ReactElement<{ className?: string }>, {
                   className: cn((rightIcon as React.ReactElement<{ className?: string }>).props?.className, 'absolute right-3 top-1/2 -translate-y-1/2 text-muted'),
                 })
               : <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted">{rightIcon}</div>
+          )}
+          {clearable && value && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors"
+              aria-label="Clear"
+            >
+              <X className="w-4 h-4" />
+            </button>
           )}
         </div>
         {error && (

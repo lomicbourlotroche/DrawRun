@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger' | 'destructive' | 'success' | 'glass' | 'outline' | 'default';
+  variant?: 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger' | 'success' | 'glass' | 'outline' | 'link' | 'default';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
@@ -32,14 +32,14 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     
     const variants = {
       primary: cn(
-        'bg-primary-600 text-white',
+        'bg-primary-600 text-primary-foreground',
         'hover:bg-primary-700 hover:-translate-y-0.5',
         'active:translate-y-0 active:scale-[0.98]',
         'shadow-button-primary hover:shadow-button-primary-hover',
         'disabled:shadow-none disabled:hover:translate-y-0'
       ),
       secondary: cn(
-        'bg-white border-2 border-primary-200 text-primary-600',
+        'bg-surface border-2 border-primary-200 text-primary-600',
         'hover:bg-primary-50 hover:border-primary-300',
         'active:scale-[0.98]',
         'disabled:opacity-50'
@@ -55,19 +55,14 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         'active:scale-[0.98]'
       ),
       danger: cn(
-        'bg-danger-500 text-white',
+        'bg-danger-500 text-danger-foreground',
         'hover:bg-danger-600 hover:-translate-y-0.5',
         'active:translate-y-0 active:scale-[0.98]',
         'shadow-[0_4px_12px_rgba(255,82,82,0.3)]'
       ),
-      destructive: cn(
-        'bg-danger-500 text-white',
-        'hover:bg-danger-600 hover:-translate-y-0.5',
-        'active:translate-y-0 active:scale-[0.98]',
-        'shadow-[0_4px_12px_rgba(255,82,82,0.3)]'
-      ),
+      // Note: 'destructive' a été supprimé car doublon avec 'danger'
       success: cn(
-        'bg-success-500 text-white',
+        'bg-success-500 text-success-foreground',
         'hover:bg-success-600 hover:-translate-y-0.5',
         'active:translate-y-0 active:scale-[0.98]',
         'shadow-[0_4px_12px_rgba(0,200,83,0.3)]'
@@ -81,6 +76,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         'bg-transparent border-2 border-primary-600 text-primary-600',
         'hover:bg-primary-50',
         'active:scale-[0.98]'
+      ),
+      link: cn(
+        'bg-transparent text-primary-600 underline-offset-4',
+        'hover:underline hover:text-primary-700',
+        'active:scale-[0.98]',
+        'p-0 min-h-0'
       ),
       default: cn(
         'bg-white border-2 border-primary-200 text-primary-600',

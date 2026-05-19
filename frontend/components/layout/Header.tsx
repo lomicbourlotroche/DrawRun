@@ -69,13 +69,13 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-neutral-200/60 shadow-sm">
+    <header className="sticky top-0 z-sticky bg-surface/95 backdrop-blur-xl border-b border-border/60 shadow-sm">
       <div className="flex items-center justify-between h-16 px-4 lg:px-6">
         {/* Left: spacer for mobile hamburger + page title */}
         <div className="flex items-center gap-3 min-w-0">
           {/* Spacer for mobile hamburger button rendered by Sidebar */}
           <div className="lg:hidden w-10 flex-shrink-0" />
-          <h1 className="text-base lg:text-lg font-semibold text-neutral-900 tracking-tight truncate">
+          <h1 className="text-base lg:text-lg font-semibold text-foreground tracking-tight truncate">
             {pageTitle}
           </h1>
         </div>
@@ -88,7 +88,7 @@ export default function Header() {
             disabled={isSyncing}
             className={cn(
               'inline-flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] rounded-xl text-sm font-medium transition-all duration-200',
-              'bg-white/80 border border-neutral-200 text-neutral-600',
+              'bg-surface/80 border border-border text-muted',
               'hover:bg-primary-50 hover:border-primary-200 hover:text-primary-700',
               'disabled:opacity-50 disabled:cursor-not-allowed',
               'hover:-translate-y-0.5'
@@ -104,7 +104,7 @@ export default function Header() {
               onClick={() => setIsNotifOpen(!isNotifOpen)}
               className={cn(
                 'inline-flex items-center justify-center w-10 h-10 min-h-[44px] rounded-xl transition-all duration-200',
-                'bg-white/80 border border-neutral-200 text-neutral-600',
+                'bg-surface/80 border border-border text-muted',
                 'hover:bg-primary-50 hover:border-primary-200 hover:text-primary-700',
                 isNotifOpen && 'bg-primary-50 border-primary-200 text-primary-700'
               )}
@@ -126,8 +126,8 @@ export default function Header() {
                   onClick={() => setIsNotifOpen(false)}
                 />
                 {/* Dropdown */}
-                <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white/95 backdrop-blur-xl border border-neutral-200/60 rounded-2xl shadow-lg z-50 py-2 animate-slide-down overflow-hidden max-h-[70vh] overflow-y-auto">
-                  <div className="flex items-center justify-between px-4 py-2 border-b border-neutral-100">
+                <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-surface/95 backdrop-blur-xl border border-border/60 rounded-2xl shadow-lg z-dropdown py-2 animate-slide-down overflow-hidden max-h-[70vh] overflow-y-auto">
+                  <div className="flex items-center justify-between px-4 py-2 border-b border-border">
                     <h3 className="font-semibold text-sm">Notifications</h3>
                     {unreadCount > 0 && (
                       <button
@@ -139,11 +139,11 @@ export default function Header() {
                     )}
                   </div>
                   {notifications.length === 0 ? (
-                    <div className="px-4 py-8 text-center text-sm text-neutral-500">
+                    <div className="px-4 py-8 text-center text-sm text-muted">
                       Aucune notification
                     </div>
                   ) : (
-                    <div className="divide-y divide-neutral-100">
+                    <div className="divide-y divide-border">
                       {notifications.slice(0, 10).map((n) => (
                         <button
                           key={n.id}
@@ -153,13 +153,13 @@ export default function Header() {
                           }}
                           className={cn(
                             'w-full px-4 py-3 text-left transition-colors hover:bg-primary-50/50',
-                            n.unread ? 'bg-primary-50/30' : 'bg-white'
+                            n.unread ? 'bg-primary-50/30' : 'bg-surface'
                           )}
                         >
                           <p className={cn('text-sm', n.unread ? 'font-medium' : 'text-neutral-600')}>
                             {n.message}
                           </p>
-                          <p className="text-xs text-neutral-400 mt-1">
+                          <p className="text-xs text-muted mt-1">
                             {new Date(n.created_at || Date.now()).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
                           </p>
                         </button>
@@ -179,7 +179,7 @@ export default function Header() {
           <div className="relative">
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-slate-50 transition-colors"
+              className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-neutral-50 transition-colors"
               aria-label="Menu utilisateur"
             >
               {/* Avatar */}
@@ -188,7 +188,7 @@ export default function Header() {
               </div>
               <ChevronDown
                 className={cn(
-                  'w-4 h-4 text-slate-400 hidden sm:block transition-transform duration-150',
+                  'w-4 h-4 text-muted hidden sm:block transition-transform duration-150',
                   isUserMenuOpen && 'rotate-180'
                 )}
               />
@@ -202,37 +202,37 @@ export default function Header() {
                   onClick={() => setIsUserMenuOpen(false)}
                 />
                 {/* Dropdown */}
-                <div className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-xl border border-neutral-200/60 rounded-2xl shadow-lg z-50 py-1 animate-slide-down overflow-hidden max-h-[70vh] overflow-y-auto">
+                <div className="absolute right-0 mt-2 w-56 bg-surface/95 backdrop-blur-xl border border-border/60 rounded-2xl shadow-lg z-dropdown py-1 animate-slide-down overflow-hidden max-h-[70vh] overflow-y-auto">
                   {/* User info */}
-                  <div className="px-4 py-3 border-b border-neutral-100">
-                    <p className="text-sm font-semibold text-neutral-900 truncate">{user?.name}</p>
-                    <p className="text-xs text-neutral-400 truncate">{user?.email}</p>
+                  <div className="px-4 py-3 border-b border-border">
+                    <p className="text-sm font-semibold text-foreground truncate">{user?.name}</p>
+                    <p className="text-xs text-muted truncate">{user?.email}</p>
                   </div>
 
                   <Link
-                     href="/app/profile"
-                     onClick={() => setIsUserMenuOpen(false)}
-                     className="flex items-center gap-2.5 px-4 py-3 min-h-[44px] text-sm text-neutral-600 hover:text-neutral-900 hover:bg-primary-50/50 transition-colors"
-                   >
-                     <User className="w-4 h-4 text-neutral-400" />
-                     Mon profil
-                   </Link>
-                   <Link
-                     href="/app/settings"
-                     onClick={() => setIsUserMenuOpen(false)}
-                     className="flex items-center gap-2.5 px-4 py-3 min-h-[44px] text-sm text-neutral-600 hover:text-neutral-900 hover:bg-primary-50/50 transition-colors"
-                   >
-                     <Settings className="w-4 h-4 text-neutral-400" />
-                     Paramètres
-                   </Link>
+                    href="/app/profile"
+                    onClick={() => setIsUserMenuOpen(false)}
+                    className="flex items-center gap-2.5 px-4 py-3 min-h-[44px] text-sm text-muted hover:text-foreground hover:bg-primary-50/50 transition-colors"
+                  >
+                    <User className="w-4 h-4 text-muted" />
+                    Mon profil
+                  </Link>
+                  <Link
+                    href="/app/settings"
+                    onClick={() => setIsUserMenuOpen(false)}
+                    className="flex items-center gap-2.5 px-4 py-3 min-h-[44px] text-sm text-muted hover:text-foreground hover:bg-primary-50/50 transition-colors"
+                  >
+                    <Settings className="w-4 h-4 text-muted" />
+                    Paramètres
+                  </Link>
 
-                   <div className="border-t border-slate-100 mt-1 pt-1">
-                     <button
-                       onClick={handleLogout}
-                       className="flex items-center gap-2.5 w-full px-4 py-3 min-h-[44px] text-sm text-danger hover:text-danger hover:bg-red-50 transition-colors"
-                     >
-                      <LogOut className="w-4 h-4" />
-                      Déconnexion
+                  <div className="border-t border-border mt-1 pt-1">
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-2.5 w-full px-4 py-3 min-h-[44px] text-sm text-danger hover:text-danger hover:bg-danger-50 transition-colors"
+                    >
+                     <LogOut className="w-4 h-4" />
+                     Déconnexion
                     </button>
                   </div>
                 </div>

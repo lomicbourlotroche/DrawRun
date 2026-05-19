@@ -26,7 +26,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   // Pendant la réhydratation, afficher le spinner sans rediriger
   if (!isHydrated || !isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 flex items-center justify-center relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-bg via-neutral-50 to-primary-50/30 flex items-center justify-center relative overflow-hidden">
         {/* Background Effects */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-20 left-10 w-72 h-72 bg-primary-400/10 rounded-full blur-3xl animate-pulse" />
@@ -41,7 +41,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 relative">
+    <div className="min-h-screen bg-gradient-to-br from-bg via-neutral-50 to-primary-50/30 relative">
       {/* Background Effects - Fixed position */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         {/* Gradient Orbs */}
@@ -62,9 +62,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       */}
       <div className="md:pl-16 lg:pl-64 min-h-screen transition-all duration-300 relative z-0 overflow-y-auto">
         <Header />
-        <main className="p-4 lg:p-6">
-          {children}
-        </main>
+        <main className="p-4 lg:p-6">{children}</main>
       </div>
     </div>
   );

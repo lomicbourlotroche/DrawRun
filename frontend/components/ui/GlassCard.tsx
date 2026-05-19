@@ -17,8 +17,8 @@ const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
   ({ className, hover = true, padding = 'md', variant = 'default', children, ...props }, ref) => {
     const baseStyles = cn(
       'rounded-2xl transition-all duration-300 ease-smooth',
-      // Glassmorphism base
-      'bg-white/90 backdrop-blur-sm',
+      // Glassmorphism base - backdrop-blur-md pour plus de profondeur
+      'bg-white/90 backdrop-blur-md',
       // Border subtile
       'border border-neutral-200/60',
       // Shadow doux
@@ -80,7 +80,7 @@ const GlassCardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeading
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn('text-lg font-semibold tracking-tight text-neutral-900', className)}
+      className={cn('text-lg font-semibold tracking-tight text-foreground', className)}
       {...props}
     />
   )
@@ -95,7 +95,7 @@ const GlassCardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<HTM
   ({ className, ...props }, ref) => (
     <p
       ref={ref}
-      className={cn('text-sm text-neutral-500 leading-relaxed', className)}
+      className={cn('text-sm text-muted leading-relaxed', className)}
       {...props}
     />
   )

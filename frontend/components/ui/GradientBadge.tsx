@@ -27,7 +27,7 @@ const GradientBadge = forwardRef<HTMLSpanElement, GradientBadgeProps>(
       success: 'bg-success-100/80 text-success-700 border-success-200',
       warning: 'bg-warning-100/80 text-warning-700 border-warning-200',
       danger: 'bg-danger-100/80 text-danger-700 border-danger-200',
-      info: 'bg-info-100/80 text-info-700 border-info-200',
+      info: 'bg-primary-100/80 text-primary-700 border-primary-200',
       neutral: 'bg-neutral-100/80 text-neutral-700 border-neutral-200',
     };
 

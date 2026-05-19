@@ -47,14 +47,14 @@ const PrimaryButton = forwardRef<HTMLButtonElement, PrimaryButtonProps>(
     const variantStyles = {
       primary: cn(
         'bg-gradient-to-r from-primary-600 to-primary-500',
-        'text-white shadow-button-primary',
+        'text-primary-foreground shadow-button-primary',
         'hover:shadow-button-primary-hover',
         'focus:ring-primary-500',
         'active:translate-y-0 active:shadow-none'
       ),
       secondary: cn(
-        'bg-white border-2 border-neutral-200',
-        'text-neutral-700',
+        'bg-surface border-2 border-border',
+        'text-foreground',
         'hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700',
         'focus:ring-primary-500',
         'active:bg-neutral-100'
@@ -68,14 +68,14 @@ const PrimaryButton = forwardRef<HTMLButtonElement, PrimaryButtonProps>(
       ),
       ghost: cn(
         'bg-transparent',
-        'text-neutral-600',
-        'hover:bg-neutral-100 hover:text-neutral-900',
+        'text-muted',
+        'hover:bg-neutral-100 hover:text-foreground',
         'focus:ring-neutral-500',
         'active:bg-neutral-200'
       ),
       danger: cn(
         'bg-gradient-to-r from-danger-600 to-danger-500',
-        'text-white shadow-md',
+        'text-danger-foreground shadow-md',
         'hover:shadow-lg',
         'focus:ring-danger-500',
         'active:translate-y-0 active:shadow-none'

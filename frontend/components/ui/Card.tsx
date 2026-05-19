@@ -11,11 +11,11 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = 'default', padding = 'md', hover = false, children, ...props }, ref) => {
     const variants = {
       default: cn(
-        'bg-white border border-neutral-200',
+        'bg-surface border border-border',
         'shadow-card'
       ),
       elevated: cn(
-        'bg-white border border-neutral-200',
+        'bg-surface border border-border',
         'shadow-elevated',
         hover && 'hover:shadow-card-hover hover:-translate-y-1'
       ),
@@ -25,17 +25,17 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
         'shadow-lg'
       ),
       highlight: cn(
-        'bg-white border-2 border-primary-400',
+        'bg-surface border-2 border-primary-400',
         'shadow-card',
-        'ring-4 ring-primary-100'
+        'ring-2 ring-primary-100'  // Réduit de ring-4 à ring-2
       ),
       bordered: cn(
-        'bg-transparent border-2 border-neutral-300',
-        hover && 'hover:border-primary-300 hover:bg-neutral-50'
+        'bg-transparent border-2 border-border',
+        hover && 'hover:border-primary-300 hover:bg-surface'
       ),
       ghost: cn(
         'bg-transparent border border-transparent',
-        hover && 'hover:bg-neutral-50 hover:border-neutral-200'
+        hover && 'hover:bg-surface hover:border-border'
       ),
     };
 
@@ -83,7 +83,7 @@ const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingEleme
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn('text-lg font-bold text-neutral-900 tracking-tight', className)}
+      className={cn('text-lg font-bold text-foreground tracking-tight', className)}
       {...props}
     />
   )
@@ -95,7 +95,7 @@ const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLPara
   ({ className, ...props }, ref) => (
     <p
       ref={ref}
-      className={cn('text-sm text-neutral-500 leading-relaxed', className)}
+      className={cn('text-sm text-muted leading-relaxed', className)}
       {...props}
     />
   )
@@ -123,7 +123,7 @@ const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
 
 CardFooter.displayName = 'CardFooter';
 
-// New: CardStat for displaying metrics
+// CardStat for displaying metrics
 interface CardStatProps extends HTMLAttributes<HTMLDivElement> {
   label: string;
   value: string | number;
@@ -148,15 +148,15 @@ const CardStat = forwardRef<HTMLDivElement, CardStatProps>(
 
     return (
       <div ref={ref} className={cn('flex flex-col', className)} {...props}>
-        <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+        <span className="text-xs font-semibold text-muted uppercase tracking-wider">
           {label}
         </span>
         <div className="flex items-baseline gap-1 mt-1">
-          <span className="text-2xl font-bold text-neutral-900 tabular-nums">
+          <span className="text-2xl font-bold text-foreground tabular-nums">
             {value}
           </span>
           {unit && (
-            <span className="text-sm font-medium text-neutral-500">{unit}</span>
+            <span className="text-sm font-medium text-muted">{unit}</span>
           )}
         </div>
         {trend && (

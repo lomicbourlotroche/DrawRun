@@ -3,18 +3,21 @@ module.exports = {
   content: [
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/**/*.{js,ts,jsx,tsx,mdx}',  // Ajout pour scanner src/
   ],
   darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        background: 'var(--background)',
+        // Tokens semantiques
+        background: 'var(--bg)',
         surface: 'var(--surface)',
         border: { DEFAULT: 'var(--border)' },
         muted: 'var(--muted)',
         'text-secondary': 'var(--text-secondary)',
         foreground: 'var(--foreground)',
-        // Nouvelle palette Primary (Blue Performance)
+        
+        // Palette Primary (Blue Performance) - Alignée avec globals.css
         primary: {
           DEFAULT: '#0066FF',
           50: '#E6F2FF',
@@ -29,6 +32,7 @@ module.exports = {
           900: '#001A4D',
           foreground: '#FFFFFF',
         },
+        
         // Secondary (Violet)
         secondary: {
           DEFAULT: '#5856D6',
@@ -44,7 +48,8 @@ module.exports = {
           900: '#12112B',
           foreground: '#FFFFFF',
         },
-        // Palette Success/Récupération
+        
+        // Success/Récupération
         success: {
           DEFAULT: '#00C853',
           50: '#E8F9EE',
@@ -59,6 +64,7 @@ module.exports = {
           900: '#002810',
           foreground: '#FFFFFF',
         },
+        
         recovery: {
           DEFAULT: '#00BCD4',
           50: '#E0F7FA',
@@ -73,7 +79,8 @@ module.exports = {
           900: '#002030',
           foreground: '#FFFFFF',
         },
-        // Palette d'alerte
+        
+        // Warning
         warning: {
           DEFAULT: '#FFAB00',
           50: '#FFF8E1',
@@ -88,6 +95,8 @@ module.exports = {
           900: '#994300',
           foreground: '#0F172A',
         },
+        
+        // Danger
         danger: {
           DEFAULT: '#FF5252',
           50: '#FFEBEE',
@@ -102,6 +111,8 @@ module.exports = {
           900: '#5C0A0A',
           foreground: '#FFFFFF',
         },
+        
+        // Peak (Orange vif - pic de performance)
         peak: {
           DEFAULT: '#FF6D00',
           50: '#FFF3E0',
@@ -116,6 +127,7 @@ module.exports = {
           900: '#5C1800',
           foreground: '#FFFFFF',
         },
+        
         // Neutres élargis
         neutral: {
           50: '#F8FAFC',
@@ -129,17 +141,34 @@ module.exports = {
           800: '#1E293B',
           900: '#0F172A',
         },
+        
+        // Couleurs d'activités
+        activity: {
+          run: '#FF3B30',
+          ride: '#FF9500',
+          swim: '#007AFF',
+          hike: '#34C759',
+          walk: '#8E8E93',
+          ski: '#007AFF',
+          other: '#8E8E93',
+        },
       },
+      
       fontFamily: {
         sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-        mono: ['SF Mono', 'SF Pro Mono', 'monospace'],
+        mono: ['SF Mono', 'SF Pro Mono', 'JetBrains Mono', 'IBM Plex Mono', 'ui-monospace', 'monospace'],
       },
+      
       fontSize: {
         'hero': ['72px', { lineHeight: '80px', letterSpacing: '-0.02em', fontWeight: '800' }],
         'hero-mobile': ['40px', { lineHeight: '48px', letterSpacing: '-0.02em', fontWeight: '800' }],
         'data': ['24px', { lineHeight: '32px', fontWeight: '600', fontVariantNumeric: 'tabular-nums' }],
         'data-sm': ['20px', { lineHeight: '28px', fontWeight: '600', fontVariantNumeric: 'tabular-nums' }],
+        'stat': ['28px', { lineHeight: '36px', fontWeight: '700', fontVariantNumeric: 'tabular-nums' }],
+        'stat-sm': ['20px', { lineHeight: '28px', fontWeight: '600', fontVariantNumeric: 'tabular-nums' }],
+        'stat-label': ['14px', { lineHeight: '20px', fontWeight: '500' }],
       },
+      
       boxShadow: {
         'card': '0 2px 8px rgba(0, 0, 0, 0.08)',
         'card-hover': '0 8px 24px rgba(0, 0, 0, 0.12)',
@@ -151,16 +180,18 @@ module.exports = {
         'button-primary': '0 4px 12px rgba(0, 102, 255, 0.3)',
         'button-primary-hover': '0 8px 20px rgba(0, 102, 255, 0.4)',
       },
+      
       animation: {
         'fade-in': 'fadeIn 0.3s ease-out',
         'slide-up': 'slideUp 0.3s ease-out',
-        'slide-down': 'slideDown 0.3s ease-out',
+        'slide-down': 'slideDown 0.2s ease-out',
         'count-up': 'countUp 0.5s ease-out',
         'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
         'shimmer': 'shimmer 2s linear infinite',
         'float': 'float 3s ease-in-out infinite',
         'gradient-shift': 'gradientShift 8s ease infinite',
       },
+      
       keyframes: {
         fadeIn: {
           '0%': { opacity: '0' },
@@ -190,18 +221,40 @@ module.exports = {
           '0%, 100%': { backgroundPosition: '0% 50%' },
           '50%': { backgroundPosition: '100% 50%' },
         },
+        countUp: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
       },
+      
       transitionTimingFunction: {
         'spring': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
         'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',
         'bounce': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
       },
+      
       spacing: {
         '18': '4.5rem',
         '22': '5.5rem',
+        '44': '11rem',  // Pour les hit targets mobiles
       },
+      
       borderRadius: {
         '4xl': '2rem',
+      },
+      
+      // Z-Index scale
+      zIndex: {
+        'base': '0',
+        'raised': '10',
+        'content': '20',
+        'sticky': '30',
+        'dropdown': '40',
+        'modal-backdrop': '45',
+        'modal': '50',
+        'toast': '60',
+        'tooltip': '70',
+        'max': '9999',
       },
     },
   },

@@ -45,8 +45,8 @@ export function LanguageToggle({ variant = 'default' }: { variant?: 'default' | 
         className={cn(
           "flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200",
           variant === 'scrolled'
-            ? 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
-            : 'text-white/80 hover:text-white hover:bg-white/10'
+            ? 'text-muted hover:text-foreground hover:bg-neutral-50'
+            : 'text-foreground/80 hover:text-foreground hover:bg-surface/80'
         )}
         title="Changer de langue"
       >
@@ -56,7 +56,7 @@ export function LanguageToggle({ variant = 'default' }: { variant?: 'default' | 
 
       {/* Dropdown */}
       <div className={cn(
-        "absolute right-0 mt-2 w-48 bg-white border border-neutral-200 rounded-xl shadow-xl z-50 overflow-hidden transition-all duration-200 origin-top-right",
+        "absolute right-0 mt-2 w-48 bg-surface border border-border rounded-xl shadow-xl z-dropdown overflow-hidden transition-all duration-200 origin-top-right",
         isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
       )}>
         <div className="py-2">
@@ -68,7 +68,7 @@ export function LanguageToggle({ variant = 'default' }: { variant?: 'default' | 
                 "w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors",
                 language === lang.code
                   ? 'bg-primary-50 text-primary-700'
-                  : 'text-neutral-700 hover:bg-neutral-50'
+                  : 'text-foreground hover:bg-neutral-50'
               )}
             >
               <div className="flex items-center gap-3">

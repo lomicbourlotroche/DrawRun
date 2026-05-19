@@ -48,36 +48,36 @@ export function Modal({
 
   if (!isOpen) return null;
 
-   const sizes = {
-     sm: 'max-w-[calc(100vw-2rem)] sm:max-w-sm',
-     md: 'max-w-[calc(100vw-2rem)] sm:max-w-md',
-     lg: 'max-w-[calc(100vw-2rem)] lg:max-w-lg',
-     xl: 'max-w-[calc(100vw-2rem)] lg:max-w-xl',
-   };
+  const sizes = {
+    sm: 'max-w-[90vw] sm:max-w-sm',
+    md: 'max-w-[90vw] sm:max-w-md',
+    lg: 'max-w-[90vw] lg:max-w-lg',
+    xl: 'max-w-[90vw] lg:max-w-xl',
+  };
 
   const modalContent = (
-    <div role="generic" className="fixed inset-0 z-50 flex items-center justify-center p-4" aria-label="fixed inset-0 z-50">
+    <div role="dialog" aria-modal="true" aria-labelledby={title ? 'modal-title' : undefined} className="fixed inset-0 z-modal flex items-center justify-center p-4">
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
-        aria-label="bg-black/60 backdrop"
         onClick={onClose}
+        aria-hidden="true"
       />
       <div
         className={cn(
-          'relative w-full bg-surface border border-border rounded-lg shadow-lg animate-slide-up max-h-[90vh] flex flex-col',
+          'relative w-full bg-surface border border-border rounded-lg shadow-xl animate-slide-up max-h-[90vh] flex flex-col',
           sizes[size]
         )}
-        aria-label="max-w-[calc(100vw-2rem)] relative w-full modal content"
       >
         {(title || showClose) && (
           <div className="flex items-start justify-between p-4 border-b border-border flex-shrink-0">
             <div>
-              {title && <h2 className="text-lg font-semibold text-foreground">{title}</h2>}
+              {title && <h2 id="modal-title" className="text-lg font-semibold text-foreground">{title}</h2>}
               {description && <p className="text-sm text-muted mt-1">{description}</p>}
             </div>
             {showClose && (
               <Button variant="ghost" size="sm" onClick={onClose} className="p-2 min-h-[44px] min-w-[44px] -mr-2">
                 <X className="w-5 h-5" />
+                <span className="sr-only">Fermer</span>
               </Button>
             )}
           </div>
