@@ -62,13 +62,13 @@ describe('GlassCard component', () => {
     const paddings = ['none', 'xs', 'sm', 'md', 'lg', 'xl'] as const;
     
     paddings.forEach(padding => {
-      render(<GlassCard padding={padding}>Content</GlassCard>);
+      const { container, unmount } = render(<GlassCard padding={padding}>Content</GlassCard>);
       
-      const card = screen.getByText('Content');
+      const card = container.querySelector('div') as HTMLElement;
       
       switch (padding) {
         case 'none':
-          expect(card.className).not.toContain('p-');
+          expect(card.className).not.toMatch(/p-[0-9]/);
           break;
         case 'xs':
           expect(card.className).toContain('p-2');
@@ -89,6 +89,7 @@ describe('GlassCard component', () => {
           expect(card.className).toContain('md:p-8');
           break;
       }
+      unmount();
     });
   });
 
@@ -96,9 +97,9 @@ describe('GlassCard component', () => {
     const variants = ['default', 'elevated', 'subtle'] as const;
     
     variants.forEach(variant => {
-      render(<GlassCard variant={variant}>Content</GlassCard>);
+      const { container } = render(<GlassCard variant={variant}>Content</GlassCard>);
       
-      const card = screen.getByText('Content');
+      const card = container.firstChild as HTMLElement;
       
       switch (variant) {
         case 'default':

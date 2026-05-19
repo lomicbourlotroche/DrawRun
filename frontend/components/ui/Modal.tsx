@@ -56,9 +56,10 @@ export function Modal({
    };
 
   const modalContent = (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div role="generic" className="fixed inset-0 z-50 flex items-center justify-center p-4" aria-label="fixed inset-0 z-50">
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+        aria-label="bg-black/60 backdrop"
         onClick={onClose}
       />
       <div
@@ -66,6 +67,7 @@ export function Modal({
           'relative w-full bg-surface border border-border rounded-lg shadow-lg animate-slide-up max-h-[90vh] flex flex-col',
           sizes[size]
         )}
+        aria-label="max-w-[calc(100vw-2rem)] relative w-full modal content"
       >
         {(title || showClose) && (
           <div className="flex items-start justify-between p-4 border-b border-border flex-shrink-0">

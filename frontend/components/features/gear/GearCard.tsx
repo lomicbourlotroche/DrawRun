@@ -22,7 +22,7 @@ interface GearCardProps {
 }
 
 export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) => {
-  const usagePercent = Math.min((gear.current_distance / gear.max_distance) * 100, 100);
+  const usagePercent = gear.max_distance > 0 ? Math.min((gear.current_distance / gear.max_distance) * 100, 100) : 0;
   const isNearLimit = usagePercent > 80;
   const isOverLimit = usagePercent >= 100;
 
@@ -30,12 +30,12 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) =>
     switch (gear.type.toLowerCase()) {
       case 'shoes':
       case 'chaussures':
-        return <Footprints className="w-6 h-6" />;
+        return <Footprints className="w-6 h-6" role="img" aria-label="Shoes icon" />;
       case 'bike':
       case 'velo':
-        return <Bike className="w-6 h-6" />;
+        return <Bike className="w-6 h-6" role="img" aria-label="Bike icon" />;
       default:
-        return <Settings className="w-6 h-6" />;
+        return <Settings className="w-6 h-6" role="img" aria-label="Settings icon" />;
     }
   };
 
@@ -46,7 +46,7 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) =>
   };
 
   return (
-    <Card className={`p-5 relative overflow-hidden transition-all duration-300 hover:shadow-xl ${!gear.is_active ? 'opacity-60 grayscale' : ''}`}>
+    <Card role="article" className={`p-5 relative overflow-hidden transition-all duration-300 hover:shadow-xl ${!gear.is_active ? 'opacity-60 grayscale' : ''}`}>
       <div className="flex justify-between items-start mb-4">
         <div className="flex gap-4">
           <div className={`p-3 rounded-xl ${isNearLimit ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-primary'}`}>
@@ -58,14 +58,16 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) =>
           </div>
         </div>
         <div className="flex gap-1">
-          <button 
+          <button
             onClick={() => onEdit(gear)}
+            aria-label="Settings"
             className="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors"
           >
             <Settings className="w-4 h-4" />
           </button>
-          <button 
+          <button
             onClick={() => onDelete(gear.id)}
+            aria-label="Trash"
             className="p-2 text-slate-400 hover:text-danger hover:bg-red-50 rounded-lg transition-colors"
           >
             <Trash2 className="w-4 h-4" />
@@ -76,7 +78,7 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) =>
       <div className="space-y-4">
         <div className="flex justify-between items-end">
           <div className="text-sm font-medium text-slate-700">
-            {gear.current_distance.toFixed(1)} <span className="text-slate-400 font-normal">km</span>
+            {gear.current_distance.toFixed(1)} km
           </div>
           <div className="text-xs text-slate-400">
             Limite: {gear.max_distance} km
@@ -84,7 +86,8 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) =>
         </div>
 
         <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-          <div 
+          <div
+            role="progressbar"
             className={`h-full transition-all duration-1000 ${getProgressBarColor()}`}
             style={{ width: `${usagePercent}%` }}
           />

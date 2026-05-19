@@ -50,6 +50,8 @@ export function Avatar({ src, name, size = 'md', className }: AvatarProps) {
         sizes[size],
         className
       )}
+      role="img"
+      aria-label={name || 'Avatar'}
     >
       {initials}
     </div>

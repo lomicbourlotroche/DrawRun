@@ -37,6 +37,7 @@ export function Badge({ children, variant = 'default', zone, size = 'sm', classN
         sizes[size],
         className
       )}
+      role="status"
       style={bgColor ? { backgroundColor: `${bgColor}20`, borderColor: `${bgColor}50`, color: bgColor } : undefined}
     >
       {children}

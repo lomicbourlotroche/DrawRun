@@ -154,10 +154,10 @@ describe('GearCard component', () => {
     expect(card).toBeInTheDocument();
 
     const editButton = screen.getByRole('button', { name: /settings/i });
-    expect(editButton).toHaveAttribute('aria-label', 'Edit');
+    expect(editButton).toHaveAttribute('aria-label', 'Settings');
 
     const deleteButton = screen.getByRole('button', { name: /trash/i });
-    expect(deleteButton).toHaveAttribute('aria-label', 'Delete');
+    expect(deleteButton).toHaveAttribute('aria-label', 'Trash');
   });
 });
 

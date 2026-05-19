@@ -7,46 +7,46 @@
  * @module tests/hooks/useSocial
  */
 
-import { renderHook, act } from '@testing-library/react';
-import { useFriends, useGroups, useLeaderboard, useFeed, useChallenges } from '@/hooks/useSocial';
+import { renderHook, act, waitFor } from '@testing-library/react';
+import { useFriends, useGroups, useLeaderboard, useFeed, useChallenges, formatPace, getSportGradient } from '@/hooks/useSocial';
 import { SOCIAL_ERRORS } from '@/constants/social';
 
 // Mock de l'API
-const mockApi = {
-  getFriends: jest.fn(),
-  getPendingFriendRequests: jest.fn(),
-  searchUsers: jest.fn(),
-  sendFriendRequest: jest.fn(),
-  acceptFriendRequest: jest.fn(),
-  removeFriend: jest.fn(),
-  getGroups: jest.fn(),
-  getPublicGroups: jest.fn(),
-  leaveGroup: jest.fn(),
-  getLeaderboard: jest.fn(),
-  getSocialFeed: jest.fn(),
-  likeActivity: jest.fn(),
-  unlikeActivity: jest.fn(),
-  getPublicChallenges: jest.fn(),
-  getUserChallenges: jest.fn(),
-  joinChallenge: jest.fn(),
-};
+const mockApi = vi.hoisted(() => ({
+  getFriends: vi.fn(),
+  getPendingFriendRequests: vi.fn(),
+  searchUsers: vi.fn(),
+  sendFriendRequest: vi.fn(),
+  acceptFriendRequest: vi.fn(),
+  removeFriend: vi.fn(),
+  getGroups: vi.fn(),
+  getPublicGroups: vi.fn(),
+  leaveGroup: vi.fn(),
+  getLeaderboard: vi.fn(),
+  getSocialFeed: vi.fn(),
+  likeActivity: vi.fn(),
+  unlikeActivity: vi.fn(),
+  getPublicChallenges: vi.fn(),
+  getUserChallenges: vi.fn(),
+  joinChallenge: vi.fn(),
+}));
 
 // Mock des modules
-jest.mock('@/lib/api', () => ({
+vi.mock('@/lib/api', () => ({
   api: mockApi,
 }));
 
 // Mock de toast
-jest.mock('sonner', () => ({
+vi.mock('sonner', () => ({
   toast: {
-    error: jest.fn(),
-    success: jest.fn(),
+    error: vi.fn(),
+    success: vi.fn(),
   },
 }));
 
 describe('useSocial hooks', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('useFriends', () => {
@@ -68,9 +68,9 @@ describe('useSocial hooks', () => {
       mockApi.getFriends.mockResolvedValue(mockFriends);
       mockApi.getPendingFriendRequests.mockResolvedValue(mockRequests);
 
-      const { result, waitForNextUpdate } = renderHook(() => useFriends());
+      const { result } = renderHook(() => useFriends());
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(result.current.isLoading).toBe(false);
       expect(result.current.friends).toEqual(mockFriends);
@@ -83,19 +83,14 @@ describe('useSocial hooks', () => {
       const mockResults = [{ id: 1, name: 'Search Result', email: 'result@test.com' }];
       mockApi.searchUsers.mockResolvedValue(mockResults);
 
-      const { result, waitForNextUpdate } = renderHook(() => useFriends());
+      const { result } = renderHook(() => useFriends());
 
       // Wait for initial load
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
-      // Simulate search
-      act(() => {
-        result.current.setSearchQuery('test');
-      });
-
-      // Wait for debounced search
+      // Trigger search
       await act(async () => {
-        await new Promise(resolve => setTimeout(resolve, 350));
+        await result.current.handleSearch('test');
       });
 
       expect(mockApi.searchUsers).toHaveBeenCalledWith('test');
@@ -105,9 +100,9 @@ describe('useSocial hooks', () => {
     it('should handle add friend', async () => {
       mockApi.sendFriendRequest.mockResolvedValue({});
 
-      const { result, waitForNextUpdate } = renderHook(() => useFriends());
+      const { result } = renderHook(() => useFriends());
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Add initial search results
       act(() => {
@@ -132,9 +127,9 @@ describe('useSocial hooks', () => {
     it('should handle accept friend request', async () => {
       mockApi.acceptFriendRequest.mockResolvedValue({});
 
-      const { result, waitForNextUpdate } = renderHook(() => useFriends());
+      const { result } = renderHook(() => useFriends());
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       await act(async () => {
         await result.current.handleAccept(1);
@@ -147,9 +142,9 @@ describe('useSocial hooks', () => {
     it('should handle remove friend', async () => {
       mockApi.removeFriend.mockResolvedValue({});
 
-      const { result, waitForNextUpdate } = renderHook(() => useFriends());
+      const { result } = renderHook(() => useFriends());
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       await act(async () => {
         await result.current.handleRemove(1);
@@ -163,9 +158,9 @@ describe('useSocial hooks', () => {
       mockApi.getFriends.mockRejectedValue(new Error('Failed'));
       mockApi.getPendingFriendRequests.mockRejectedValue(new Error('Failed'));
 
-      const { result, waitForNextUpdate } = renderHook(() => useFriends());
+      const { result } = renderHook(() => useFriends());
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(result.current.error).toBe(SOCIAL_ERRORS.FETCH_FRIENDS);
       expect(result.current.friends).toEqual([]);
@@ -192,9 +187,9 @@ describe('useSocial hooks', () => {
       mockApi.getGroups.mockResolvedValue(mockGroups);
       mockApi.getPublicGroups.mockResolvedValue(mockPublicGroups);
 
-      const { result, waitForNextUpdate } = renderHook(() => useGroups());
+      const { result } = renderHook(() => useGroups());
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(result.current.isLoading).toBe(false);
       expect(result.current.groups).toEqual(mockGroups);
@@ -204,9 +199,9 @@ describe('useSocial hooks', () => {
     it('should handle leave group', async () => {
       mockApi.leaveGroup.mockResolvedValue({});
 
-      const { result, waitForNextUpdate } = renderHook(() => useGroups());
+      const { result } = renderHook(() => useGroups());
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       await act(async () => {
         await result.current.handleLeave(1);
@@ -220,9 +215,9 @@ describe('useSocial hooks', () => {
       const mockResults = [{ id: 1, name: 'Public Group', member_count: 5 }];
       mockApi.getPublicGroups.mockResolvedValue(mockResults);
 
-      const { result, waitForNextUpdate } = renderHook(() => useGroups());
+      const { result } = renderHook(() => useGroups());
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       await act(async () => {
         await result.current.handleSearch('test');
@@ -251,9 +246,9 @@ describe('useSocial hooks', () => {
 
       mockApi.getLeaderboard.mockResolvedValue(mockEntries);
 
-      const { result, waitForNextUpdate } = renderHook(() => useLeaderboard());
+      const { result } = renderHook(() => useLeaderboard());
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(result.current.isLoading).toBe(false);
       expect(result.current.entries).toEqual(mockEntries);
@@ -269,13 +264,13 @@ describe('useSocial hooks', () => {
 
       const { result, waitForNextUpdate, rerender } = renderHook(() => useLeaderboard());
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       act(() => {
         result.current.setCategory('duration');
       });
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(mockApi.getLeaderboard).toHaveBeenCalledWith({ category: 'duration', period: 'week' });
     });
@@ -285,15 +280,15 @@ describe('useSocial hooks', () => {
 
       mockApi.getLeaderboard.mockResolvedValue(mockEntries);
 
-      const { result, waitForNextUpdate } = renderHook(() => useLeaderboard());
+      const { result } = renderHook(() => useLeaderboard());
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       act(() => {
         result.current.setPeriod('month');
       });
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(mockApi.getLeaderboard).toHaveBeenCalledWith({ category: 'distance', period: 'month' });
     });
@@ -317,9 +312,9 @@ describe('useSocial hooks', () => {
 
       mockApi.getSocialFeed.mockResolvedValue(mockActivities);
 
-      const { result, waitForNextUpdate } = renderHook(() => useFeed());
+      const { result } = renderHook(() => useFeed());
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(result.current.isLoading).toBe(false);
       expect(result.current.activities).toEqual(mockActivities);
@@ -331,9 +326,9 @@ describe('useSocial hooks', () => {
       mockApi.getSocialFeed.mockResolvedValue(mockActivities);
       mockApi.likeActivity.mockResolvedValue({});
 
-      const { result, waitForNextUpdate } = renderHook(() => useFeed());
+      const { result } = renderHook(() => useFeed());
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       await act(async () => {
         await result.current.handleLike(1, false);
@@ -350,9 +345,9 @@ describe('useSocial hooks', () => {
       mockApi.getSocialFeed.mockResolvedValue(mockActivities);
       mockApi.unlikeActivity.mockResolvedValue({});
 
-      const { result, waitForNextUpdate } = renderHook(() => useFeed());
+      const { result } = renderHook(() => useFeed());
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       await act(async () => {
         await result.current.handleLike(1, true);
@@ -368,9 +363,9 @@ describe('useSocial hooks', () => {
 
       mockApi.getSocialFeed.mockResolvedValue(mockActivities);
 
-      const { result, waitForNextUpdate } = renderHook(() => useFeed());
+      const { result } = renderHook(() => useFeed());
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       act(() => {
         result.current.loadFeed(true);
@@ -378,7 +373,7 @@ describe('useSocial hooks', () => {
 
       expect(result.current.isRefreshing).toBe(true);
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(result.current.isRefreshing).toBe(false);
       expect(mockApi.getSocialFeed).toHaveBeenCalledTimes(2);
@@ -404,9 +399,9 @@ describe('useSocial hooks', () => {
       mockApi.getPublicChallenges.mockResolvedValue(mockPublicChallenges);
       mockApi.getUserChallenges.mockResolvedValue(mockMyChallenges);
 
-      const { result, waitForNextUpdate } = renderHook(() => useChallenges());
+      const { result } = renderHook(() => useChallenges());
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       expect(result.current.isLoading).toBe(false);
       expect(result.current.publicChallenges).toEqual(mockPublicChallenges);
@@ -416,9 +411,9 @@ describe('useSocial hooks', () => {
     it('should handle join challenge', async () => {
       mockApi.joinChallenge.mockResolvedValue({ success: true });
 
-      const { result, waitForNextUpdate } = renderHook(() => useChallenges());
+      const { result } = renderHook(() => useChallenges());
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       await act(async () => {
         await result.current.handleJoin(1);
@@ -431,9 +426,9 @@ describe('useSocial hooks', () => {
     it('should handle join challenge error', async () => {
       mockApi.joinChallenge.mockResolvedValue({ success: false, error: 'Error' });
 
-      const { result, waitForNextUpdate } = renderHook(() => useChallenges());
+      const { result } = renderHook(() => useChallenges());
 
-      await waitForNextUpdate();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       await act(async () => {
         await result.current.handleJoin(1);
@@ -447,16 +442,16 @@ describe('useSocial hooks', () => {
 describe('Utility functions', () => {
   describe('formatPace', () => {
     it('should return "--" for invalid speed', () => {
-      const { formatPace } = require('@/hooks/useSocial');
+      
       expect(formatPace(0)).toBe('--');
       expect(formatPace(-1)).toBe('--');
       expect(formatPace(NaN)).toBe('--');
     });
 
     it('should format pace correctly', () => {
-      const { formatPace } = require('@/hooks/useSocial');
-      // 5 m/s = 3:00/km (1000/(5*60) = 3.333... min/km)
-      expect(formatPace(5)).toBe('3:00');
+      
+      // 5 m/s = 3:20/km (1000/(5*60) = 3.333... min/km)
+      expect(formatPace(5)).toBe('3:20');
       // 3.333 m/s = 5:00/km (1000/(3.333*60) = 5 min/km)
       expect(formatPace(3.333)).toBe('5:00');
     });
@@ -464,14 +459,14 @@ describe('Utility functions', () => {
 
   describe('getSportGradient', () => {
     it('should return gradient for known sports', () => {
-      const { getSportGradient } = require('@/hooks/useSocial');
+      
       expect(getSportGradient('Running')).toBe('from-orange-500 to-red-500');
       expect(getSportGradient('Cycling')).toBe('from-blue-500 to-cyan-500');
       expect(getSportGradient('Swimming')).toBe('from-cyan-500 to-blue-400');
     });
 
     it('should return default gradient for unknown sports', () => {
-      const { getSportGradient } = require('@/hooks/useSocial');
+      
       expect(getSportGradient('Unknown')).toBe('from-primary to-blue-500');
     });
   });

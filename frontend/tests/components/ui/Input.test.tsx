@@ -92,7 +92,7 @@ describe('Input component', () => {
   it('supports different input types', () => {
     render(<Input type="password" />);
     
-    const input = screen.getByRole('textbox');
+    const input = document.querySelector('input') as HTMLInputElement;
     expect(input).toHaveAttribute('type', 'password');
   });
 

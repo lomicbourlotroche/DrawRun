@@ -7,50 +7,50 @@
  * @module tests/hooks/useGroupDetail
  */
 
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useGroupDetail } from '@/hooks/useGroupDetail';
 import { SOCIAL_ERRORS } from '@/constants/social';
 
 // Mock de useParams et useRouter
-const mockUseParams = jest.fn();
-const mockUseRouter = jest.fn();
+const mockUseParams = vi.fn();
+const mockUseRouter = vi.fn();
 
-jest.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({
   useParams: () => mockUseParams(),
   useRouter: () => mockUseRouter(),
 }));
 
 // Mock de l'API
-const mockApi = {
-  getGroupDetail: jest.fn(),
-  getGroupMembers: jest.fn(),
-  getGroupActivities: jest.fn(),
-  getGroupChallenges: jest.fn(),
-  editGroup: jest.fn(),
-  deleteGroup: jest.fn(),
-  kickMember: jest.fn(),
-  promoteMember: jest.fn(),
-  leaveGroup: jest.fn(),
-  createGroupChallenge: jest.fn(),
-  joinChallenge: jest.fn(),
-};
+const mockApi = vi.hoisted(() => ({
+  getGroupDetail: vi.fn(),
+  getGroupMembers: vi.fn(),
+  getGroupActivities: vi.fn(),
+  getGroupChallenges: vi.fn(),
+  editGroup: vi.fn(),
+  deleteGroup: vi.fn(),
+  kickMember: vi.fn(),
+  promoteMember: vi.fn(),
+  leaveGroup: vi.fn(),
+  createGroupChallenge: vi.fn(),
+  joinChallenge: vi.fn(),
+}));
 
-jest.mock('@/lib/api', () => ({
+vi.mock('@/lib/api', () => ({
   api: mockApi,
 }));
 
 // Mock de toast
-jest.mock('sonner', () => ({
+vi.mock('sonner', () => ({
   toast: {
-    error: jest.fn(),
-    success: jest.fn(),
+    error: vi.fn(),
+    success: vi.fn(),
   },
 }));
 
 // Mock de navigator.clipboard
 Object.assign(navigator, {
   clipboard: {
-    writeText: jest.fn().mockResolvedValue(undefined),
+    writeText: vi.fn().mockResolvedValue(undefined),
   },
 });
 
@@ -79,10 +79,10 @@ describe('useGroupDetail hook', () => {
   ];
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockUseParams.mockReturnValue({ id: String(mockGroupId) });
     mockUseRouter.mockReturnValue({
-      push: jest.fn(),
+      push: vi.fn(),
     });
   });
 
@@ -107,9 +107,9 @@ describe('useGroupDetail hook', () => {
     mockApi.getGroupActivities.mockResolvedValue(mockActivities);
     mockApi.getGroupChallenges.mockResolvedValue(mockChallenges);
 
-    const { result, waitForNextUpdate } = renderHook(() => useGroupDetail());
+    const { result } = renderHook(() => useGroupDetail());
 
-    await waitForNextUpdate();
+    await waitFor(() => {});
 
     expect(result.current.isLoading).toBe(false);
     expect(result.current.group).toEqual(mockGroup);
@@ -127,12 +127,12 @@ describe('useGroupDetail hook', () => {
   it('should handle errors on load', async () => {
     mockApi.getGroupDetail.mockRejectedValue(new Error('Failed'));
 
-    const mockPush = jest.fn();
+    const mockPush = vi.fn();
     mockUseRouter.mockReturnValue({ push: mockPush });
 
-    const { result, waitForNextUpdate } = renderHook(() => useGroupDetail());
+    const { result } = renderHook(() => useGroupDetail());
 
-    await waitForNextUpdate();
+    await waitFor(() => {});
 
     expect(result.current.error).toBe(SOCIAL_ERRORS.FETCH_GROUPS);
     expect(mockPush).toHaveBeenCalledWith('/app/social');
@@ -145,9 +145,9 @@ describe('useGroupDetail hook', () => {
     mockApi.getGroupChallenges.mockResolvedValue(mockChallenges);
     mockApi.editGroup.mockResolvedValue({});
 
-    const { result, waitForNextUpdate } = renderHook(() => useGroupDetail());
+    const { result } = renderHook(() => useGroupDetail());
 
-    await waitForNextUpdate();
+    await waitFor(() => {});
 
     // Update edit form
     act(() => {
@@ -179,15 +179,15 @@ describe('useGroupDetail hook', () => {
     // Mock window.confirm
     Object.defineProperty(window, 'confirm', {
       writable: true,
-      value: jest.fn().mockReturnValue(true),
+      value: vi.fn().mockReturnValue(true),
     });
 
-    const mockPush = jest.fn();
+    const mockPush = vi.fn();
     mockUseRouter.mockReturnValue({ push: mockPush });
 
-    const { result, waitForNextUpdate } = renderHook(() => useGroupDetail());
+    const { result } = renderHook(() => useGroupDetail());
 
-    await waitForNextUpdate();
+    await waitFor(() => {});
 
     await act(async () => {
       await result.current.handleDelete();
@@ -207,12 +207,12 @@ describe('useGroupDetail hook', () => {
     // Mock window.confirm to return false
     Object.defineProperty(window, 'confirm', {
       writable: true,
-      value: jest.fn().mockReturnValue(false),
+      value: vi.fn().mockReturnValue(false),
     });
 
-    const { result, waitForNextUpdate } = renderHook(() => useGroupDetail());
+    const { result } = renderHook(() => useGroupDetail());
 
-    await waitForNextUpdate();
+    await waitFor(() => {});
 
     await act(async () => {
       await result.current.handleDelete();
@@ -232,12 +232,12 @@ describe('useGroupDetail hook', () => {
     // Mock window.confirm
     Object.defineProperty(window, 'confirm', {
       writable: true,
-      value: jest.fn().mockReturnValue(true),
+      value: vi.fn().mockReturnValue(true),
     });
 
-    const { result, waitForNextUpdate } = renderHook(() => useGroupDetail());
+    const { result } = renderHook(() => useGroupDetail());
 
-    await waitForNextUpdate();
+    await waitFor(() => {});
 
     await act(async () => {
       await result.current.handleKick(1);
@@ -254,9 +254,9 @@ describe('useGroupDetail hook', () => {
     mockApi.getGroupChallenges.mockResolvedValue(mockChallenges);
     mockApi.promoteMember.mockResolvedValue({});
 
-    const { result, waitForNextUpdate } = renderHook(() => useGroupDetail());
+    const { result } = renderHook(() => useGroupDetail());
 
-    await waitForNextUpdate();
+    await waitFor(() => {});
 
     await act(async () => {
       await result.current.handlePromote(1, 'moderator');
@@ -276,15 +276,15 @@ describe('useGroupDetail hook', () => {
     // Mock window.confirm
     Object.defineProperty(window, 'confirm', {
       writable: true,
-      value: jest.fn().mockReturnValue(true),
+      value: vi.fn().mockReturnValue(true),
     });
 
-    const mockPush = jest.fn();
+    const mockPush = vi.fn();
     mockUseRouter.mockReturnValue({ push: mockPush });
 
-    const { result, waitForNextUpdate } = renderHook(() => useGroupDetail());
+    const { result } = renderHook(() => useGroupDetail());
 
-    await waitForNextUpdate();
+    await waitFor(() => {});
 
     expect(result.current.isAdmin).toBe(false);
 
@@ -303,9 +303,9 @@ describe('useGroupDetail hook', () => {
     mockApi.getGroupActivities.mockResolvedValue(mockActivities);
     mockApi.getGroupChallenges.mockResolvedValue(mockChallenges);
 
-    const { result, waitForNextUpdate } = renderHook(() => useGroupDetail());
+    const { result } = renderHook(() => useGroupDetail());
 
-    await waitForNextUpdate();
+    await waitFor(() => {});
 
     act(() => {
       result.current.copyInvite();
@@ -321,9 +321,9 @@ describe('useGroupDetail hook', () => {
     mockApi.getGroupChallenges.mockResolvedValue(mockChallenges);
     mockApi.createGroupChallenge.mockResolvedValue({});
 
-    const { result, waitForNextUpdate } = renderHook(() => useGroupDetail());
+    const { result } = renderHook(() => useGroupDetail());
 
-    await waitForNextUpdate();
+    await waitFor(() => {});
 
     const form = {
       title: 'New Challenge',
@@ -359,9 +359,9 @@ describe('useGroupDetail hook', () => {
     mockApi.getGroupChallenges.mockResolvedValue(mockChallenges);
     mockApi.joinChallenge.mockResolvedValue({});
 
-    const { result, waitForNextUpdate } = renderHook(() => useGroupDetail());
+    const { result } = renderHook(() => useGroupDetail());
 
-    await waitForNextUpdate();
+    await waitFor(() => {});
 
     await act(async () => {
       await result.current.handleJoinChallenge(1);
@@ -376,7 +376,7 @@ describe('useGroupDetail hook', () => {
     mockApi.getGroupActivities.mockResolvedValue(mockActivities);
     mockApi.getGroupChallenges.mockResolvedValue(mockChallenges);
 
-    const { result, waitForNextUpdate } = renderHook(() => useGroupDetail());
+    const { result } = renderHook(() => useGroupDetail());
 
     expect(result.current.showWizard).toBe(false);
 

@@ -142,16 +142,19 @@ describe('Modal component', () => {
 
   it('applies size classes correctly', () => {
     const sizes = ['sm', 'md', 'lg', 'xl'] as const;
+    const expectedClasses = ['sm:max-w-sm', 'sm:max-w-md', 'lg:max-w-lg', 'lg:max-w-xl'];
     
-    sizes.forEach(size => {
-      render(
+    sizes.forEach((size, index) => {
+      const { unmount } = render(
         <Modal isOpen={true} onClose={() => {}} size={size}>
           <div>Modal Content</div>
         </Modal>
       );
       
-      const modal = screen.getByRole('generic', { name: /max-w-\[calc/ });
-      expect(modal.className).toContain(`sm:max-w-${size}`);
+      const modal = document.querySelector(`[class*="${expectedClasses[index]}"]`) as HTMLElement;
+      expect(modal).not.toBeNull();
+      expect(modal.className).toContain(expectedClasses[index]);
+      unmount();
     });
   });
 
@@ -190,7 +193,7 @@ describe('Modal component', () => {
       </Modal>
     );
     
-    const modal = screen.getByRole('generic', { name: /fixed inset-0/ });
+    const modal = document.querySelector('[aria-label="fixed inset-0 z-50"]') as HTMLElement;
     expect(modal).toHaveAttribute('role', 'generic');
     
     const title = screen.getByRole('heading');
@@ -204,7 +207,7 @@ describe('Modal component', () => {
       </Modal>
     );
     
-    const modal = screen.getByRole('generic', { name: /fixed inset-0 z-50/ });
+    const modal = document.querySelector('[aria-label="fixed inset-0 z-50"]') as HTMLElement;
     expect(modal.className).toContain('z-50');
   });
 
@@ -215,7 +218,7 @@ describe('Modal component', () => {
       </Modal>
     );
     
-    const backdrop = screen.getByRole('generic', { name: /bg-black\/60/ });
+    const backdrop = document.querySelector('[aria-label="bg-black/60 backdrop"]') as HTMLElement;
     expect(backdrop.className).toContain('backdrop-blur-sm');
   });
 
@@ -226,10 +229,10 @@ describe('Modal component', () => {
       </Modal>
     );
     
-    const backdrop = screen.getByRole('generic', { name: /bg-black/ });
+    const backdrop = document.querySelector('[aria-label="bg-black/60 backdrop"]') as HTMLElement;
     expect(backdrop.className).toContain('animate-fade-in');
     
-    const content = screen.getByRole('generic', { name: /relative w-full/ });
+    const content = document.querySelector('[aria-label*="relative w-full"]') as HTMLElement;
     expect(content.className).toContain('animate-slide-up');
   });
 });

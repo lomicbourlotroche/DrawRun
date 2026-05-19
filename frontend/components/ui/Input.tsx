@@ -1,4 +1,4 @@
-import { forwardRef, type InputHTMLAttributes, type ReactNode } from 'react';
+import { forwardRef, cloneElement, isValidElement, type InputHTMLAttributes, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { AlertCircle } from 'lucide-react';
 
@@ -23,9 +23,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
         <div className="relative">
           {leftIcon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">
-              {leftIcon}
-            </div>
+            isValidElement(leftIcon)
+              ? cloneElement(leftIcon as React.ReactElement<{ className?: string }>, {
+                  className: cn((leftIcon as React.ReactElement<{ className?: string }>).props?.className, 'absolute left-3 top-1/2 -translate-y-1/2 text-muted'),
+                })
+              : <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">{leftIcon}</div>
           )}
           <input
             type={type}
@@ -44,9 +46,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             {...props}
           />
           {rightIcon && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted">
-              {rightIcon}
-            </div>
+            isValidElement(rightIcon)
+              ? cloneElement(rightIcon as React.ReactElement<{ className?: string }>, {
+                  className: cn((rightIcon as React.ReactElement<{ className?: string }>).props?.className, 'absolute right-3 top-1/2 -translate-y-1/2 text-muted'),
+                })
+              : <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted">{rightIcon}</div>
           )}
         </div>
         {error && (
