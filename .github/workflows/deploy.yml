@@ -1,0 +1,64 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main, master]
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main, master]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.KNOWN_HOSTS }}
+
+      - name: Deploy to VPS
+        run: |
+          # Copy files to VPS
+          scp -r -o StrictHostKeyChecking=no -P 20708 ./* drawrun@37.69.94.253:/home/drawrun/app-new/
+          
+          # Run deployment script on VPS
+          ssh -o StrictHostKeyChecking=no -p 20708 drawrun@37.69.94.253 << 'EOF'
+          cd /home/drawrun
+          
+          # Backup current app
+          mv app app-backup-$(date +%Y%m%d-%H%M%S)
+          mv app-new app
+          
+          # Install dependencies
+          cd /home/drawrun/app/backend
+          npm install --omit=dev --production
+          cd ../frontend
+          npm install --omit=dev
+          npm run build
+          
+          # Restart services
+          cd /home/drawrun/app
+          pm2 restart all
+          
+          # Verify
+          pm2 list
+          sleep 5
+          curl -f http://localhost:3000/health || true
+          
+          # Cleanup old backups (keep last 5)
+          cd /home/drawrun
+          ls -td app-backup-* | tail -n +6 | xargs rm -rf
+          EOF
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
