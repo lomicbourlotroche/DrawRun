@@ -300,7 +300,7 @@ export function useSimplePolylineMap(
 
     // Add new polyline
     polylineRef.current = addPolyline(coordinates, {
-      color: options?.color || '#FF3B30',
+      color: options?.color || 'var(--danger)',
       weight: options?.weight || 4,
       opacity: 0.8,
     });
@@ -313,3 +313,4 @@ export function useSimplePolylineMap(
 }
 
 export default useLeafletMap;
+

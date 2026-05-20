@@ -86,10 +86,10 @@ export function ReadinessCard({ readiness, isLoading }: ReadinessCardProps) {
   };
 
   const factors = [
-    { label: 'HRV', value: readiness.factors.hrv, icon: Heart, color: '#FF3B30' },
-    { label: 'Sommeil', value: readiness.factors.sleep, icon: Moon, color: '#5856D6' },
-    { label: 'FC Repos', value: readiness.factors.restingHR, icon: Activity, color: '#007AFF' },
-    { label: 'Stress', value: readiness.factors.stress, icon: Brain, color: '#FF9500' },
+    { label: 'HRV', value: readiness.factors.hrv, icon: Heart, color: 'var(--danger)' },
+    { label: 'Sommeil', value: readiness.factors.sleep, icon: Moon, color: 'var(--secondary)' },
+    { label: 'FC Repos', value: readiness.factors.restingHR, icon: Activity, color: 'var(--primary)' },
+    { label: 'Stress', value: readiness.factors.stress, icon: Brain, color: 'var(--peak)' },
   ];
 
   return (
@@ -138,7 +138,7 @@ export function ReadinessCard({ readiness, isLoading }: ReadinessCardProps) {
           title="Enregistrer vos constantes"
         >
           <form onSubmit={handleLogData} className="space-y-4 pt-4">
-            <p className="text-sm text-slate-500 mb-2">
+            <p className="text-sm text-muted mb-2">
               Entrez vos mesures du matin pour affiner votre score de readiness.
             </p>
             <div className="grid grid-cols-2 gap-4">

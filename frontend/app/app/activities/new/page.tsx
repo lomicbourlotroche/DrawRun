@@ -190,14 +190,14 @@ export default function NewActivityPage() {
           <button
             type="button"
             onClick={() => { setGpxMode(false); setGpxPreview(null); }}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-all ${!gpxMode ? 'bg-white text-primary shadow-sm' : 'text-muted'}`}
+            className={`px-3 py-1.5 rounded-lg font-medium transition-all ${!gpxMode ? 'bg-surface text-primary shadow-sm' : 'text-muted'}`}
           >
             Manuel
           </button>
           <button
             type="button"
             onClick={() => setGpxMode(true)}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1 ${gpxMode ? 'bg-white text-primary shadow-sm' : 'text-muted'}`}
+            className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1 ${gpxMode ? 'bg-surface text-primary shadow-sm' : 'text-muted'}`}
           >
             <Upload className="w-3.5 h-3.5" />
             Import GPX
@@ -236,14 +236,14 @@ export default function NewActivityPage() {
                 </button>
               </div>
               <div className="grid grid-cols-3 gap-2 text-xs text-center">
-                <div className="bg-white dark:bg-slate-800 rounded-lg p-2"><p className="font-bold text-lg">{gpxPreview.distanceKm}</p><p className="text-muted">km</p></div>
-                <div className="bg-white dark:bg-slate-800 rounded-lg p-2"><p className="font-bold text-lg">{gpxPreview.durationMin}</p><p className="text-muted">min</p></div>
-                <div className="bg-white dark:bg-slate-800 rounded-lg p-2"><p className="font-bold text-lg text-success dark:text-success/80">+{gpxPreview.elevGain}m</p><p className="text-muted">D+</p></div>
+                <div className="bg-surface dark:bg-surface rounded-lg p-2"><p className="font-bold text-lg">{gpxPreview.distanceKm}</p><p className="text-muted">km</p></div>
+                <div className="bg-surface dark:bg-surface rounded-lg p-2"><p className="font-bold text-lg">{gpxPreview.durationMin}</p><p className="text-muted">min</p></div>
+                <div className="bg-surface dark:bg-surface rounded-lg p-2"><p className="font-bold text-lg text-success dark:text-success/80">+{gpxPreview.elevGain}m</p><p className="text-muted">D+</p></div>
               </div>
               {/* Map preview */}
               {gpxPreview.latlng.length > 0 && (
                 <div className="rounded-lg overflow-hidden border border-border">
-                  <ActivityMap latlng={gpxPreview.latlng} className="h-48" color="#3B82F6" />
+                  <ActivityMap latlng={gpxPreview.latlng} className="h-48" color="var(--primary)" />
                 </div>
               )}
             </div>

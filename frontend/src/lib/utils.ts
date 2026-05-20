@@ -58,31 +58,31 @@ export function getSportIcon(sport: string): string {
 
 export function getSportColor(sport: string): string {
   const colors: Record<string, string> = {
-    run: '#007AFF',
-    bike: '#FF9500',
-    swim: '#5856D6',
+    run: 'var(--primary)',
+    bike: 'var(--warning)',
+    swim: 'var(--secondary)',
   };
-  return colors[sport] || '#007AFF';
+  return colors[sport] || 'var(--primary)';
 }
 
 export function getZoneColor(zone: number): string {
   const colors = [
-    '#64748B', // Zone 1 - Recovery
-    '#34C759', // Zone 2 - Endurance
-    '#007AFF', // Zone 3 - Tempo
-    '#FF9500', // Zone 4 - Threshold
-    '#FF3B30', // Zone 5 - VO2max
-    '#FF2D55', // Zone 6 - Anaerobic
-    '#AF52DE', // Zone 7 - Neuromuscular
+    'var(--muted)', // Zone 1 - Recovery
+    'var(--success)', // Zone 2 - Endurance
+    'var(--primary)', // Zone 3 - Tempo
+    'var(--warning)', // Zone 4 - Threshold
+    'var(--danger)', // Zone 5 - VO2max
+    'var(--danger)', // Zone 6 - Anaerobic
+    'var(--secondary)', // Zone 7 - Neuromuscular
   ];
-  return colors[zone - 1] || '#64748B';
+  return colors[zone - 1] || 'var(--muted)';
 }
 
 export function calculateReadinessColor(score: number): string {
-  if (score >= 80) return '#34C759';
-  if (score >= 60) return '#007AFF';
-  if (score >= 40) return '#FF9500';
-  return '#FF3B30';
+  if (score >= 80) return 'var(--success)';
+  if (score >= 60) return 'var(--primary)';
+  if (score >= 40) return 'var(--warning)';
+  return 'var(--danger)';
 }
 
 export function debounce<T extends (...args: unknown[]) => unknown>(
@@ -170,3 +170,11 @@ export function encodePolyline(
 
   return result;
 }
+
+
+
+
+
+
+
+

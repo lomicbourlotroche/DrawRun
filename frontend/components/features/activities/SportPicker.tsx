@@ -54,14 +54,14 @@ export function SportPicker({ selectedSport, onSelect, onClose }: SportPickerPro
               onClick={() => setActiveCategory(cat)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
                 activeCategory === cat
-                  ? 'bg-peak text-white'
-                  : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                  ? 'bg-peak text-foreground'
+                  : 'bg-surface text-muted hover:bg-surface/80'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
               {CATEGORY_LABELS[cat]}
               <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${
-                activeCategory === cat ? 'bg-white/20' : 'bg-slate-700'
+                activeCategory === cat ? 'bg-surface/20' : 'bg-background'
               }`}>
                 {count}
               </span>
@@ -83,18 +83,18 @@ export function SportPicker({ selectedSport, onSelect, onClose }: SportPickerPro
               }}
               className={`flex items-center gap-2 p-3 rounded-lg text-left transition-all ${
                 isSelected
-                  ? 'bg-slate-800 border border-peak/30'
-                  : 'bg-slate-800/50 border border-transparent hover:bg-slate-800'
+                  ? 'bg-surface border border-peak/30'
+                  : 'bg-background border border-transparent hover:bg-surface'
               }`}
             >
               <div className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${
-                isSelected ? 'bg-peak text-white' : 'bg-slate-700 text-slate-400'
+                isSelected ? 'bg-peak text-foreground' : 'bg-surface text-muted'
               }`}>
                 {isSelected ? <Check className="w-4 h-4" /> : <SportIcon sport={sport.id} />}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-medium text-white truncate">{sport.nameFr}</p>
-                <p className="text-xs text-slate-500 truncate">{sport.name}</p>
+                <p className="text-sm font-medium text-foreground truncate">{sport.nameFr}</p>
+                <p className="text-xs text-muted truncate">{sport.name}</p>
               </div>
             </button>
           );

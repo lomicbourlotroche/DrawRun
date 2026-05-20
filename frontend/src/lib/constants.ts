@@ -42,20 +42,20 @@ export const API_ENDPOINTS = {
 } as const;
 
 export const SPORTS = {
-  run: { label: 'Course', icon: 'Run', color: '#007AFF' },
-  bike: { label: 'Vélo', icon: 'Bike', color: '#FF9500' },
-  swim: { label: 'Natation', icon: 'Swim', color: '#5856D6' },
+  run: { label: 'Course', icon: 'Run', color: 'var(--primary)' },
+  bike: { label: 'Vélo', icon: 'Bike', color: 'var(--warning)' },
+  swim: { label: 'Natation', icon: 'Swim', color: 'var(--secondary)' },
 } as const;
 
 export const TRAINING_TYPES = {
-  E: { label: 'Endurance', color: '#34C759', icon: 'Heart' },
-  T: { label: 'Seuil/Tempo', color: '#007AFF', icon: 'Gauge' },
-  I: { label: 'Intervalles', color: '#FF9500', icon: 'Zap' },
-  R: { label: 'Récupération', color: '#64748B', icon: 'Coffee' },
-  L: { label: 'Sortie longue', color: '#5856D6', icon: 'Mountain' },
-  M: { label: 'Allure marathon', color: '#FF2D55', icon: 'Flag' },
-  S: { label: 'Short', color: '#FF9500', icon: 'Timer' },
-  REST: { label: 'Repos', color: '#334155', icon: 'Moon' },
+  E: { label: 'Endurance', color: 'var(--success)', icon: 'Heart' },
+  T: { label: 'Seuil/Tempo', color: 'var(--primary)', icon: 'Gauge' },
+  I: { label: 'Intervalles', color: 'var(--warning)', icon: 'Zap' },
+  R: { label: 'Récupération', color: 'var(--muted)', icon: 'Coffee' },
+  L: { label: 'Sortie longue', color: 'var(--secondary)', icon: 'Mountain' },
+  M: { label: 'Allure marathon', color: 'var(--danger)', icon: 'Flag' },
+  S: { label: 'Short', color: 'var(--warning)', icon: 'Timer' },
+  REST: { label: 'Repos', color: 'var(--neutral-800)', icon: 'Moon' },
 } as const;
 
 export const ZONE_NAMES = {
@@ -67,3 +67,10 @@ export const ZONE_NAMES = {
   6: 'Anaérobie',
   7: 'Neuromusculaire',
 } as const;
+
+
+
+
+
+
+

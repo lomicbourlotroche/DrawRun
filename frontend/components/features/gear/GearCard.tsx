@@ -41,34 +41,34 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) =>
 
   const getProgressBarColor = () => {
     if (isOverLimit) return 'bg-danger';
-    if (isNearLimit) return 'bg-amber-500';
-    return 'bg-emerald-500';
+    if (isNearLimit) return 'bg-warning';
+    return 'bg-success';
   };
 
   return (
     <Card role="article" className={`p-5 relative overflow-hidden transition-all duration-300 hover:shadow-xl ${!gear.is_active ? 'opacity-60 grayscale' : ''}`}>
       <div className="flex justify-between items-start mb-4">
         <div className="flex gap-4">
-          <div className={`p-3 rounded-xl ${isNearLimit ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-primary'}`}>
+          <div className={`p-3 rounded-xl ${isNearLimit ? 'bg-warning/5 text-warning' : 'bg-primary/5 text-primary'}`}>
             {getIcon()}
           </div>
           <div>
-            <h3 className="font-bold text-slate-900">{gear.name}</h3>
-            <p className="text-sm text-slate-500">{gear.brand} {gear.model}</p>
+            <h3 className="font-bold text-foreground">{gear.name}</h3>
+            <p className="text-sm text-muted">{gear.brand} {gear.model}</p>
           </div>
         </div>
         <div className="flex gap-1">
           <button
             onClick={() => onEdit(gear)}
             aria-label="Settings"
-            className="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors"
+            className="p-2 text-muted hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
           >
             <Settings className="w-4 h-4" />
           </button>
           <button
             onClick={() => onDelete(gear.id)}
             aria-label="Trash"
-            className="p-2 text-slate-400 hover:text-danger hover:bg-red-50 rounded-lg transition-colors"
+            className="p-2 text-muted hover:text-danger hover:bg-danger/5 rounded-lg transition-colors"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -77,15 +77,15 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) =>
 
       <div className="space-y-4">
         <div className="flex justify-between items-end">
-          <div className="text-sm font-medium text-slate-700">
+          <div className="text-sm font-medium text-foreground">
             {gear.current_distance.toFixed(1)} km
           </div>
-          <div className="text-xs text-slate-400">
+          <div className="text-xs text-muted">
             Limite: {gear.max_distance} km
           </div>
         </div>
 
-        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div className="h-2 bg-background rounded-full overflow-hidden">
           <div
             role="progressbar"
             className={`h-full transition-all duration-1000 ${getProgressBarColor()}`}
@@ -94,7 +94,7 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) =>
         </div>
 
         {isNearLimit && (
-          <div className={`flex items-center gap-2 text-xs font-medium ${isOverLimit ? 'text-danger' : 'text-amber-600'}`}>
+          <div className={`flex items-center gap-2 text-xs font-medium ${isOverLimit ? 'text-danger' : 'text-warning'}`}>
             <AlertCircle className="w-4 h-4" />
             {isOverLimit ? 'Matériel à remplacer impérativement !' : 'Pensez à renouveler bientôt.'}
           </div>
@@ -102,7 +102,7 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) =>
       </div>
 
       {!gear.is_active && (
-        <div className="absolute top-2 right-12 bg-slate-200 text-slate-600 text-[10px] font-bold uppercase px-2 py-0.5 rounded">
+        <div className="absolute top-2 right-12 bg-background text-muted text-[10px] font-bold uppercase px-2 py-0.5 rounded">
           Archivé
         </div>
       )}

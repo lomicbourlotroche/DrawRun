@@ -59,24 +59,24 @@ export function PerformanceMetrics({ sport, metrics, readiness, isLoading }: Per
     switch (sport) {
       case 'run':
         return [
-          { label: 'VMA', value: safeToFixed(metrics.vma), unit: 'km/h', icon: Zap, color: '#007AFF' },
-          { label: 'VDOT', value: safeToFixed(metrics.vdot), unit: '', icon: Activity, color: '#34C759' },
-          { label: 'VO2 Max', value: safeToFixed(metrics.vo2max, 0), unit: 'ml/kg/min', icon: Heart, color: '#FF3B30' },
-          { label: 'Endurance', value: safeToFixed(metrics.endurance, 0), unit: '%', icon: TrendingUp, color: '#5856D6' },
+          { label: 'VMA', value: safeToFixed(metrics.vma), unit: 'km/h', icon: Zap, color: 'var(--primary)' },
+          { label: 'VDOT', value: safeToFixed(metrics.vdot), unit: '', icon: Activity, color: 'var(--success)' },
+          { label: 'VO2 Max', value: safeToFixed(metrics.vo2max, 0), unit: 'ml/kg/min', icon: Heart, color: 'var(--danger)' },
+          { label: 'Endurance', value: safeToFixed(metrics.endurance, 0), unit: '%', icon: TrendingUp, color: 'var(--secondary)' },
         ];
       case 'bike':
         return [
-          { label: 'FTP', value: metrics.ftp ? String(metrics.ftp) : '-', unit: 'W', icon: Zap, color: '#FF9500' },
-          { label: 'W/Kg', value: safeToFixed(metrics.wkg), unit: 'W/kg', icon: Activity, color: '#34C759' },
-          { label: 'VO2 Max', value: safeToFixed(metrics.vo2max, 0), unit: 'ml/kg/min', icon: Heart, color: '#FF3B30' },
-          { label: 'Endurance', value: safeToFixed(metrics.endurance, 0), unit: '%', icon: TrendingUp, color: '#5856D6' },
+          { label: 'FTP', value: metrics.ftp ? String(metrics.ftp) : '-', unit: 'W', icon: Zap, color: 'var(--peak)' },
+          { label: 'W/Kg', value: safeToFixed(metrics.wkg), unit: 'W/kg', icon: Activity, color: 'var(--success)' },
+          { label: 'VO2 Max', value: safeToFixed(metrics.vo2max, 0), unit: 'ml/kg/min', icon: Heart, color: 'var(--danger)' },
+          { label: 'Endurance', value: safeToFixed(metrics.endurance, 0), unit: '%', icon: TrendingUp, color: 'var(--secondary)' },
         ];
       case 'swim':
         return [
-          { label: 'CSS', value: safeToFixed(metrics.css, 0), unit: 'min/km', icon: Activity, color: '#5856D6' },
-          { label: 'VO2 Aqua', value: safeToFixed(metrics.vo2max, 0), unit: 'ml/kg/min', icon: Heart, color: '#FF3B30' },
-          { label: 'SWOLF', value: '-', unit: '', icon: Activity, color: '#34C759' },
-          { label: 'Endurance', value: safeToFixed(metrics.endurance, 0), unit: '%', icon: TrendingUp, color: '#007AFF' },
+          { label: 'CSS', value: safeToFixed(metrics.css, 0), unit: 'min/km', icon: Activity, color: 'var(--secondary)' },
+          { label: 'VO2 Aqua', value: safeToFixed(metrics.vo2max, 0), unit: 'ml/kg/min', icon: Heart, color: 'var(--danger)' },
+          { label: 'SWOLF', value: '-', unit: '', icon: Activity, color: 'var(--success)' },
+          { label: 'Endurance', value: safeToFixed(metrics.endurance, 0), unit: '%', icon: TrendingUp, color: 'var(--primary)' },
         ];
       default:
         return [];

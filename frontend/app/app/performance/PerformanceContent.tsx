@@ -210,7 +210,7 @@ export default function PerformanceContent() {
             key={t.id}
             onClick={() => setSport(t.id as typeof sport)}
             className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-              sport === t.id ? 'bg-primary text-white' : 'text-muted hover:text-foreground hover:bg-muted'
+              sport === t.id ? 'bg-primary text-foreground' : 'text-muted hover:text-foreground hover:bg-muted'
             }`}
           >
             {t.icon}
@@ -235,7 +235,7 @@ export default function PerformanceContent() {
                 key={t.id}
                 onClick={() => setActiveTab(t.id as typeof activeTab)}
                 className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                  activeTab === t.id ? 'bg-primary text-white' : 'text-muted hover:text-foreground hover:bg-muted'
+                  activeTab === t.id ? 'bg-primary text-foreground' : 'text-muted hover:text-foreground hover:bg-muted'
                 }`}
               >
                 {t.icon}
@@ -422,7 +422,7 @@ function EliteAnalyticsSection({ activities }: { activities: ActivityType[] }) {
                                                 className="flex-1 bg-primary/20 hover:bg-primary/40 rounded-t-sm transition-all group relative"
                                                 style={{ height: `${h}%` }}
                                             >
-                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-neutral-900 text-white text-[10px] py-0.5 px-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none z-10">
+                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-surface text-foreground text-[10px] py-0.5 px-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none z-10">
                                                     {d.ef}
                                                 </div>
                                             </div>
@@ -498,7 +498,7 @@ function EliteAnalyticsSection({ activities }: { activities: ActivityType[] }) {
                     <GlassCardContent className="space-y-4">
                         <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
                             <h4 className="text-sm font-semibold text-amber-600 mb-1">Concept Elite</h4>
-                            <p className="text-xs text-slate-500 leading-relaxed">
+                            <p className="text-xs text-muted leading-relaxed">
                                 Un coureur efficace maintient son allure sans que sa fréquence cardiaque ne dérive de manière excessive. 
                                 Si votre EF augmente au fil des mois pour une même intensité, vous devenez une machine plus efficace.
                             </p>
@@ -624,7 +624,7 @@ function IntensityDistributionSection({ polarization, error }: IntensityDistribu
                   />
                   {/* Target marker */}
                   <div
-                    className="absolute top-0 bottom-0 w-0.5 bg-white/60"
+                    className="absolute top-0 bottom-0 w-0.5 bg-surface/60"
                     style={{ left: `${Math.min(target, 100)}%` }}
                   />
                 </div>

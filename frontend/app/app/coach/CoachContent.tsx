@@ -43,7 +43,7 @@ function TodayTab() {
     blue: { bg: 'bg-primary/20', border: 'border-l-primary', icon: 'text-primary/80' },
     orange: { bg: 'bg-peak/20', border: 'border-l-peak', icon: 'text-peak/80' },
     red: { bg: 'bg-danger/20', border: 'border-l-danger', icon: 'text-danger/80' },
-    gray: { bg: 'bg-neutral-500/20', border: 'border-l-neutral-500', icon: 'text-neutral-400' },
+    gray: { bg: 'bg-border/20', border: 'border-l-border', icon: 'text-muted' },
   };
 
   const style = intensityStyles[rec?.intensityColor || 'blue'];

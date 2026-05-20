@@ -58,7 +58,7 @@ export function Modal({
   const modalContent = (
     <div role="dialog" aria-modal="true" aria-labelledby={title ? 'modal-title' : undefined} className="fixed inset-0 z-modal flex items-center justify-center p-4">
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+        className="fixed inset-0 bg-foreground/60 backdrop-blur-sm animate-fade-in"
         onClick={onClose}
         aria-hidden="true"
       />

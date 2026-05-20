@@ -60,9 +60,9 @@ const MetricCard = forwardRef<HTMLDivElement, MetricCardProps>(
         trend: { up: 'text-peak-500', down: 'text-danger-500', neutral: 'text-muted' }
       },
       neutral: {
-        icon: 'bg-neutral-100 text-neutral-600',
+        icon: 'bg-background text-muted',
         glow: '',
-        trend: { up: 'text-neutral-600', down: 'text-neutral-600', neutral: 'text-muted' }
+        trend: { up: 'text-muted', down: 'text-muted', neutral: 'text-muted' }
       },
     };
 
@@ -108,7 +108,7 @@ const MetricCard = forwardRef<HTMLDivElement, MetricCardProps>(
         className={cn(
           'rounded-2xl transition-all duration-200',
           variant === 'default' && 'bg-surface border border-border shadow-card hover:shadow-card-hover',
-          variant === 'glass' && 'bg-white/80 backdrop-blur-xl border border-white/40',
+          variant === 'glass' && 'bg-surface/80 backdrop-blur-xl border border-surface/40',
           variant === 'bordered' && 'bg-transparent border-2 border-border',
           sizeStyles.card,
           styles.glow,

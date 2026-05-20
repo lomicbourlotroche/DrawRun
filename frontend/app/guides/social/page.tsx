@@ -9,9 +9,9 @@ export default function SocialGuide() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-indigo-50/30">
-      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-neutral-200">
+      <div className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-surface">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
-          <button onClick={() => router.push('/')} className="p-2 rounded-xl hover:bg-neutral-100 transition-colors">
+          <button onClick={() => router.push('/')} className="p-2 rounded-xl hover:bg-surface transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-3">
@@ -28,25 +28,25 @@ export default function SocialGuide() {
 
       <div className="max-w-4xl mx-auto px-4 py-12 space-y-12">
         <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-neutral-900 mb-4">
+          <h2 className="text-4xl font-extrabold text-foreground mb-4">
             La motivation{' '}
             <span className="bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
               collective
             </span>
           </h2>
-          <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
+          <p className="text-lg text-muted max-w-2xl mx-auto">
             DrawRun intègre des fonctionnalités sociales pour vous connecter avec d'autres athlètes,
             partager vos progrès et vous motiver mutuellement.
           </p>
         </div>
 
         {/* Friends */}
-        <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
+        <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
             <UserPlus className="w-6 h-6 text-indigo-500" />
             Amis & Connaissances
           </h3>
-          <p className="text-neutral-600 mb-4 leading-relaxed">
+          <p className="text-muted mb-4 leading-relaxed">
             Ajoutez des amis pour suivre leurs activités en temps réel. Recevez des notifications quand ils :
           </p>
           <ul className="space-y-2">
@@ -56,7 +56,7 @@ export default function SocialGuide() {
               'Complètent une semaine d\'entraînement',
               'Participent à un challenge',
             ].map((item, i) => (
-              <li key={i} className="flex items-center gap-2 text-sm text-neutral-600">
+              <li key={i} className="flex items-center gap-2 text-sm text-muted">
                 <Check className="w-4 h-4 text-success flex-shrink-0" />
                 {item}
               </li>
@@ -65,12 +65,12 @@ export default function SocialGuide() {
         </div>
 
         {/* Groups */}
-        <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
+        <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
             <Shield className="w-6 h-6 text-indigo-500" />
             Groupes d'entraînement
           </h3>
-          <p className="text-neutral-600 mb-4 leading-relaxed">
+          <p className="text-muted mb-4 leading-relaxed">
             Créez ou rejoignez des groupes privés avec votre club, vos collègues ou votre communauté :
           </p>
           <div className="grid md:grid-cols-2 gap-4">
@@ -80,18 +80,18 @@ export default function SocialGuide() {
             </div>
             <div className="p-4 bg-purple-50 rounded-xl">
               <h4 className="font-semibold text-purple-700 mb-2">Planning de groupe</h4>
-              <p className="text-sm text-purple-600">Partagez vos séances et coordonnez les entraînements collectifs.</p>
+              <p className="text-sm text-secondary">Partagez vos séances et coordonnez les entraînements collectifs.</p>
             </div>
           </div>
         </div>
 
         {/* Leaderboards */}
-        <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
+        <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
             <Trophy className="w-6 h-6 text-amber-500" />
             Classements
           </h3>
-          <p className="text-neutral-600 mb-4 leading-relaxed">
+          <p className="text-muted mb-4 leading-relaxed">
             Comparez vos statistiques avec vos amis ou votre groupe selon plusieurs catégories :
           </p>
           <div className="space-y-3">
@@ -102,11 +102,11 @@ export default function SocialGuide() {
               { label: 'Nombre d\'activités', icon: '🏃', desc: 'Sessions complétées' },
               { label: 'Série en cours', icon: '🔥', desc: 'Jours consécutifs d\'activité' },
             ].map((item, i) => (
-              <div key={i} className="flex items-center gap-3 p-3 bg-neutral-50 rounded-xl">
+              <div key={i} className="flex items-center gap-3 p-3 bg-background rounded-xl">
                 <span className="text-xl">{item.icon}</span>
                 <div>
                   <p className="font-semibold text-sm">{item.label}</p>
-                  <p className="text-xs text-neutral-500">{item.desc}</p>
+                  <p className="text-xs text-muted">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -114,12 +114,12 @@ export default function SocialGuide() {
         </div>
 
         {/* Draws & comments */}
-        <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
+        <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
             <Heart className="w-6 h-6 text-danger" />
             Draws & Commentaires
           </h3>
-          <p className="text-neutral-600 leading-relaxed">
+          <p className="text-muted leading-relaxed">
             Comme un « like » sur vos activités, les <strong>draws</strong> (tracés) permettent d'encourager
             les autres membres. Ajoutez un commentaire pour féliciter un PR ou donner un conseil.
           </p>
@@ -132,7 +132,7 @@ export default function SocialGuide() {
           <p className="text-white/80 mb-6">Connectez-vous avec d'autres athlètes et motivez-vous mutuellement.</p>
           <button
             onClick={() => router.push('/login?mode=register')}
-            className="px-8 py-3 bg-white text-indigo-600 font-semibold rounded-xl hover:bg-neutral-100 transition-colors"
+            className="px-8 py-3 bg-surface text-indigo-600 font-semibold rounded-xl hover:bg-surface transition-colors"
           >
             Créer un compte gratuit
           </button>

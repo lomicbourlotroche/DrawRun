@@ -88,7 +88,7 @@ export default function TestScheduler({ planId, onTestScheduled }: TestScheduler
                         <div className={`w-4 h-4 rounded-full border-2 ${
                           testType === type.value ? 'border-primary bg-primary' : 'border-border'
                         }`}>
-                          {testType === type.value && <CheckCircle2 className="w-3 h-3 text-white" />}
+                          {testType === type.value && <CheckCircle2 className="w-3 h-3 text-foreground" />}
                         </div>
                         <span className="font-medium text-foreground">{type.label}</span>
                       </div>

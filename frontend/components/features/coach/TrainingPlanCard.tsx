@@ -18,11 +18,11 @@ export function TrainingPlanCard({ plan, onDelete }: TrainingPlanCardProps) {
   const [selectedSession, setSelectedSession] = useState<typeof plan.weeks[0]['sessions'][0] | null>(null);
 
   const phases = {
-    'Foundation': { color: '#34C759', label: 'Phase I - Fondation' },
-    'Development': { color: '#007AFF', label: 'Phase II - Développement' },
-    'Intensity': { color: '#FF9500', label: 'Phase III - Intensité' },
-    'Peak': { color: '#FF3B30', label: 'Phase IV - Affûtage' },
-    'Recovery': { color: '#64748B', label: 'Semaine de récupération' },
+    'Foundation': { color: 'var(--success)', label: 'Phase I - Fondation' },
+    'Development': { color: 'var(--primary)', label: 'Phase II - Développement' },
+    'Intensity': { color: 'var(--peak)', label: 'Phase III - Intensité' },
+    'Peak': { color: 'var(--danger)', label: 'Phase IV - Affûtage' },
+    'Recovery': { color: 'var(--muted)', label: 'Semaine de récupération' },
   };
 
   const weekPhase = phases[plan.weeks[expandedWeek - 1]?.phase as keyof typeof phases];
@@ -130,7 +130,7 @@ export function TrainingPlanCard({ plan, onDelete }: TrainingPlanCardProps) {
               </span>
             </div>
 
-            <p className="text-text-secondary">{selectedSession.description}</p>
+            <p className="text-muted">{selectedSession.description}</p>
 
             <div className="space-y-3">
               <h4 className="font-medium text-foreground">Structure de la séance</h4>

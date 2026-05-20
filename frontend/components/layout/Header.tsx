@@ -112,7 +112,7 @@ export default function Header() {
             >
               <Bell className="w-5 h-5" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-danger text-white text-xs font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-danger text-foreground text-xs font-bold rounded-full flex items-center justify-center">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
@@ -156,7 +156,7 @@ export default function Header() {
                             n.unread ? 'bg-primary-50/30' : 'bg-surface'
                           )}
                         >
-                          <p className={cn('text-sm', n.unread ? 'font-medium' : 'text-neutral-600')}>
+                          <p className={cn('text-sm', n.unread ? 'font-medium' : 'text-muted')}>
                             {n.message}
                           </p>
                           <p className="text-xs text-muted mt-1">
@@ -179,7 +179,7 @@ export default function Header() {
           <div className="relative">
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-neutral-50 transition-colors"
+              className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-background transition-colors"
               aria-label="Menu utilisateur"
             >
               {/* Avatar */}

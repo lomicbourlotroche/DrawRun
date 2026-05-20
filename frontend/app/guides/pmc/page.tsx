@@ -9,9 +9,9 @@ export default function PMCGuide() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-purple-50/30">
-      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-neutral-200">
+      <div className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-surface">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
-          <button onClick={() => router.push('/')} className="p-2 rounded-xl hover:bg-neutral-100 transition-colors">
+          <button onClick={() => router.push('/')} className="p-2 rounded-xl hover:bg-surface transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-3">
@@ -28,20 +28,20 @@ export default function PMCGuide() {
 
       <div className="max-w-4xl mx-auto px-4 py-12 space-y-12">
         <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-neutral-900 mb-4">
+          <h2 className="text-4xl font-extrabold text-foreground mb-4">
             Modéliser votre{' '}
             <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
               forme physique
             </span>
           </h2>
-          <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
+          <p className="text-lg text-muted max-w-2xl mx-auto">
             Le PMC (Performance Management Chart) est le modèle mathématique le plus utilisé pour suivre
             la forme, la fatigue et la fraîcheur d'un athlète à partir de la charge d'entraînement.
           </p>
         </div>
 
         {/* Three components */}
-        <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
+        <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-8 flex items-center gap-3">
             <BarChart3 className="w-6 h-6 text-purple-500" />
             Les 3 composantes du PMC
@@ -56,7 +56,7 @@ export default function PMCGuide() {
                 <h4 className="text-lg font-bold text-blue-700">CTL — Chronic Training Load</h4>
               </div>
               <p className="text-sm text-primary mb-3">Votre <strong>forme physique</strong> à long terme. C'est une moyenne exponentielle pondérée des TSS des 42 derniers jours (tau = 42).</p>
-              <div className="p-3 bg-white rounded-lg">
+              <div className="p-3 bg-surface rounded-lg">
                 <code className="text-xs font-mono text-primary">CTL(t) = CTL(t-1) × e^(-1/42) + TSS × (1 - e^(-1/42))</code>
               </div>
               <ul className="mt-3 space-y-1 text-sm text-primary">
@@ -74,7 +74,7 @@ export default function PMCGuide() {
                 <h4 className="text-lg font-bold text-red-700">ATL — Acute Training Load</h4>
               </div>
               <p className="text-sm text-danger mb-3">Votre <strong>fatigue</strong> récente. Moyenne exponentielle pondérée des TSS des 7 derniers jours (tau = 7).</p>
-              <div className="p-3 bg-white rounded-lg">
+              <div className="p-3 bg-surface rounded-lg">
                 <code className="text-xs font-mono text-danger">ATL(t) = ATL(t-1) × e^(-1/7) + TSS × (1 - e^(-1/7))</code>
               </div>
               <ul className="mt-3 space-y-1 text-sm text-danger">
@@ -92,7 +92,7 @@ export default function PMCGuide() {
                 <h4 className="text-lg font-bold text-green-700">TSB — Training Stress Balance</h4>
               </div>
               <p className="text-sm text-success mb-3">Votre <strong>fraîcheur</strong>. C'est la différence entre forme et fatigue : TSB = CTL - ATL.</p>
-              <div className="p-3 bg-white rounded-lg">
+              <div className="p-3 bg-surface rounded-lg">
                 <code className="text-xs font-mono text-success">TSB(t) = CTL(t) - ATL(t)</code>
               </div>
               <ul className="mt-3 space-y-1 text-sm text-success">
@@ -107,55 +107,55 @@ export default function PMCGuide() {
         </div>
 
         {/* How to use */}
-        <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
+        <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
             <Clock className="w-6 h-6 text-purple-500" />
             Comment utiliser le PMC
           </h3>
 
           <div className="space-y-4">
-            <div className="flex items-start gap-4 p-4 bg-neutral-50 rounded-xl">
+            <div className="flex items-start gap-4 p-4 bg-background rounded-xl">
               <CheckCircle className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold mb-1">Planifier le tapering</h4>
-                <p className="text-sm text-neutral-600">Réduisez progressivement la charge 7-14 jours avant la compétition pour amener le TSB dans la zone +10 à +25.</p>
+                <p className="text-sm text-muted">Réduisez progressivement la charge 7-14 jours avant la compétition pour amener le TSB dans la zone +10 à +25.</p>
               </div>
             </div>
-            <div className="flex items-start gap-4 p-4 bg-neutral-50 rounded-xl">
+            <div className="flex items-start gap-4 p-4 bg-background rounded-xl">
               <CheckCircle className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold mb-1">Éviter le surentraînement</h4>
-                <p className="text-sm text-neutral-600">Si le TSB descend sous -30 pendant plus de 3 jours, insérez une semaine de récupération.</p>
+                <p className="text-sm text-muted">Si le TSB descend sous -30 pendant plus de 3 jours, insérez une semaine de récupération.</p>
               </div>
             </div>
-            <div className="flex items-start gap-4 p-4 bg-neutral-50 rounded-xl">
+            <div className="flex items-start gap-4 p-4 bg-background rounded-xl">
               <CheckCircle className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold mb-1">Suivre la progression</h4>
-                <p className="text-sm text-neutral-600">Un CTL qui monte régulièrement sur 8-12 semaines indique une base aérobie en construction.</p>
+                <p className="text-sm text-muted">Un CTL qui monte régulièrement sur 8-12 semaines indique une base aérobie en construction.</p>
               </div>
             </div>
-            <div className="flex items-start gap-4 p-4 bg-neutral-50 rounded-xl">
+            <div className="flex items-start gap-4 p-4 bg-background rounded-xl">
               <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold mb-1">Attention au CTL trop haut</h4>
-                <p className="text-sm text-neutral-600">Un CTL &gt; 120 sans période de récupération augmente le risque de blessure et de surentraînement.</p>
+                <p className="text-sm text-muted">Un CTL &gt; 120 sans période de récupération augmente le risque de blessure et de surentraînement.</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* References */}
-        <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
+        <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-4">Références scientifiques</h3>
-          <ul className="space-y-3 text-sm text-neutral-600">
-            <li className="p-3 bg-neutral-50 rounded-lg">
+          <ul className="space-y-3 text-sm text-muted">
+            <li className="p-3 bg-background rounded-lg">
               <strong>Impellizzeri, F.M. et al. (2004).</strong> — Use of RPE-based training load in soccer. <em>Medicine & Science in Sports & Exercise</em>, 36(6), 1042-1047.
             </li>
-            <li className="p-3 bg-neutral-50 rounded-lg">
+            <li className="p-3 bg-background rounded-lg">
               <strong>Charkoudian, N. et al. (1999).</strong> — Influence of training status on maximal accumulated oxygen deficit. <em>Journal of Applied Physiology</em>.
             </li>
-            <li className="p-3 bg-neutral-50 rounded-lg">
+            <li className="p-3 bg-background rounded-lg">
               <strong>Busso, T. (2003).</strong> — Variable dose-response relationship and long-term performance. <em>European Journal of Applied Physiology</em>, 89(2), 166-173.
             </li>
           </ul>
@@ -168,7 +168,7 @@ export default function PMCGuide() {
           <p className="text-white/80 mb-6">Importez vos activités et suivez votre forme, fatigue et fraîcheur en temps réel.</p>
           <button
             onClick={() => router.push('/login?mode=register')}
-            className="px-8 py-3 bg-white text-purple-600 font-semibold rounded-xl hover:bg-neutral-100 transition-colors"
+            className="px-8 py-3 bg-surface text-secondary font-semibold rounded-xl hover:bg-surface transition-colors"
           >
             Créer un compte gratuit
           </button>

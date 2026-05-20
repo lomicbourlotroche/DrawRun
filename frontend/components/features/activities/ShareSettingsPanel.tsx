@@ -152,12 +152,12 @@ export function ShareSettingsPanel({ activityId, onSave }: ShareSettingsPanelPro
     return (
       <Card className="p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-          <div className="h-10 bg-gray-200 rounded"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          <div className="h-4 bg-background rounded w-1/3"></div>
+          <div className="h-10 bg-background rounded"></div>
+          <div className="h-4 bg-background rounded w-1/2"></div>
           <div className="grid grid-cols-2 gap-2">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-12 bg-gray-200 rounded"></div>
+              <div key={i} className="h-12 bg-background rounded"></div>
             ))}
           </div>
         </div>
@@ -173,7 +173,7 @@ export function ShareSettingsPanel({ activityId, onSave }: ShareSettingsPanelPro
       <h3 className="text-lg font-semibold mb-4">Paramètres de partage</h3>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-danger text-sm">
+        <div className="mb-4 p-3 bg-danger/5 border border-danger/20 rounded-md text-danger text-sm">
           {error}
         </div>
       )}
@@ -185,11 +185,11 @@ export function ShareSettingsPanel({ activityId, onSave }: ShareSettingsPanelPro
             type="checkbox"
             checked={settings.share_to_friends}
             onChange={handleToggleFriends}
-            className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-blue-500"
+            className="w-5 h-5 rounded border-border text-primary focus:ring-primary/50"
           />
           <div>
             <span className="font-medium">Partager avec mes amis</span>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted">
               Visible dans le fil d&apos;actualité de vos amis
             </p>
           </div>
@@ -238,9 +238,9 @@ export function ShareSettingsPanel({ activityId, onSave }: ShareSettingsPanelPro
         {shareToSpecificGroups && (
           <div className="ml-6 mt-2 space-y-2 max-h-32 overflow-y-auto border rounded-md p-2">
             {groupsLoading ? (
-              <div className="text-sm text-gray-500">Chargement...</div>
+              <div className="text-sm text-muted">Chargement...</div>
             ) : groups.length === 0 ? (
-              <div className="text-sm text-gray-500">Vous n&apos;êtes membre d&apos;aucun groupe</div>
+              <div className="text-sm text-muted">Vous n&apos;êtes membre d&apos;aucun groupe</div>
             ) : (
               groups.map((group: Group) => (
                 <label key={group.id} className="flex items-center gap-2 cursor-pointer">
@@ -261,7 +261,7 @@ export function ShareSettingsPanel({ activityId, onSave }: ShareSettingsPanelPro
       {/* Champs partagés */}
       <div className="mb-6">
         <h4 className="font-medium mb-3">Données visibles par les autres</h4>
-        <p className="text-sm text-gray-500 mb-3">
+        <p className="text-sm text-muted mb-3">
           Sélectionnez les informations que vos amis pourront voir
         </p>
 
@@ -271,8 +271,8 @@ export function ShareSettingsPanel({ activityId, onSave }: ShareSettingsPanelPro
               key={field.id}
               className={`flex items-center gap-2 p-2 rounded-md border cursor-pointer transition-colors ${
                 settings.shared_data_fields.includes(field.id)
-                  ? 'bg-blue-50 border-blue-200'
-                  : 'bg-gray-50 border-gray-200'
+                  ? 'bg-primary/5 border-primary/20'
+                  : 'bg-surface border-border'
               }`}
             >
               <input

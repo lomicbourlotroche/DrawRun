@@ -83,14 +83,14 @@ export default function GarminAppSection() {
             <Watch className="w-4 h-4" />
             App Connect IQ
           </span>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-neutral-900 tracking-tight mb-6">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight mb-6">
             Votre Plan d&apos;Entraînement
             <br />
             <span className="bg-gradient-to-r from-peak-500 to-warning-500 bg-clip-text text-transparent">
               Sur Votre Montre Garmin
             </span>
           </h2>
-          <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
+          <p className="text-lg text-muted max-w-2xl mx-auto">
             L&apos;application DrawRun Training pour montres Garmin vous permet d&apos;accéder à votre séance du jour,
             votre plan d&apos;entraînement et vos zones cibles directement depuis votre poignet.
           </p>
@@ -117,8 +117,8 @@ export default function GarminAppSection() {
                     <Icon className="w-7 h-7" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-neutral-900 mb-2">{feature.title}</h3>
-                    <p className="text-neutral-600 leading-relaxed">{feature.description}</p>
+                    <h3 className="text-xl font-bold text-foreground mb-2">{feature.title}</h3>
+                    <p className="text-muted leading-relaxed">{feature.description}</p>
                   </div>
                 </div>
               </Card>
@@ -128,12 +128,12 @@ export default function GarminAppSection() {
 
         {/* Compatible Devices */}
         <div className={`mb-12 transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <h3 className="text-center text-lg font-semibold text-neutral-900 mb-6">Compatible avec</h3>
+          <h3 className="text-center text-lg font-semibold text-foreground mb-6">Compatible avec</h3>
           <div className="flex flex-wrap justify-center gap-3">
             {compatibleDevices.map((device, index) => (
               <div
                 key={index}
-                className="flex items-center gap-2 px-4 py-2 bg-neutral-100 border border-neutral-200 rounded-full text-sm font-medium text-neutral-700"
+                className="flex items-center gap-2 px-4 py-2 bg-surface border border-surface rounded-full text-sm font-medium text-muted"
               >
                 <CheckCircle className="w-4 h-4 text-success-500" />
                 {device}

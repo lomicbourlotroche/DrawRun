@@ -599,16 +599,16 @@ export function RacePlanningContent() {
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
-                      <XAxis dataKey="km" stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} label={{ value: 'km', position: 'insideBottomRight', offset: -5, fontSize: 11 }} />
+                      <XAxis dataKey="km" stroke="var(--muted)" fontSize={11} tickLine={false} axisLine={false} label={{ value: 'km', position: 'insideBottomRight', offset: -5, fontSize: 11 }} />
                       {/* Left axis: pace in sec/km (reversed so faster = higher) */}
-                      <YAxis yAxisId="pace" orientation="left" reversed stroke="#818cf8" fontSize={11} tickLine={false} axisLine={false}
+                      <YAxis yAxisId="pace" orientation="left" reversed stroke="var(--primary)" fontSize={11} tickLine={false} axisLine={false}
                         tickFormatter={v => fmtPace(v)}
-                        label={{ value: 'Allure', angle: -90, position: 'insideLeft', fill: '#818cf8', fontSize: 10 }}
+                        label={{ value: 'Allure', angle: -90, position: 'insideLeft', fill: 'var(--primary)', fontSize: 10 }}
                       />
                       {/* Right axis: elevation change */}
-                      <YAxis yAxisId="elev" orientation="right" stroke="#3b82f6" fontSize={11} tickLine={false} axisLine={false}
+                      <YAxis yAxisId="elev" orientation="right" stroke="var(--primary)" fontSize={11} tickLine={false} axisLine={false}
                         tickFormatter={v => `${v > 0 ? '+' : ''}${v}m`}
-                        label={{ value: 'Dénivelé', angle: 90, position: 'insideRight', fill: '#3b82f6', fontSize: 10 }}
+                        label={{ value: 'Dénivelé', angle: 90, position: 'insideRight', fill: 'var(--primary)', fontSize: 10 }}
                       />
                       <Tooltip
                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: 12 }}
@@ -621,11 +621,11 @@ export function RacePlanningContent() {
                       />
                       <Legend formatter={(v) => v === 'pace' ? 'Allure' : v === 'elevation' ? 'Dénivelé' : 'Pente'} />
                       {/* Zero reference line for elevation */}
-                      <ReferenceLine yAxisId="elev" y={0} stroke="#64748b" strokeDasharray="3 3" />
+                      <ReferenceLine yAxisId="elev" y={0} stroke="var(--muted)" strokeDasharray="3 3" />
                       {/* Elevation bars */}
-                      <Area yAxisId="elev" type="monotone" dataKey="elevation" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.15} strokeWidth={1.5} name="elevation" />
+                      <Area yAxisId="elev" type="monotone" dataKey="elevation" stroke="var(--primary)" fill="var(--primary)" fillOpacity={0.15} strokeWidth={1.5} name="elevation" />
                       {/* Pace line — the strategy curve */}
-                      <Line yAxisId="pace" type="monotone" dataKey="pace" stroke="#818cf8" strokeWidth={3} dot={false} name="pace" />
+                      <Line yAxisId="pace" type="monotone" dataKey="pace" stroke="var(--primary)" strokeWidth={3} dot={false} name="pace" />
                     </ComposedChart>
                   </ResponsiveContainer>
                 </div>

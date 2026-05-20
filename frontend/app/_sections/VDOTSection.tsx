@@ -36,11 +36,11 @@ const vdotFeatures = [
 ];
 
 const zones = [
-  { name: 'EASY (E)', range: '4:45 - 5:15', color: '#22C55E', description: 'Récupération & endurance' },
-  { name: 'MARATHON (M)', range: '4:15', color: '#3B82F6', description: 'Allure marathon' },
-  { name: 'THRESHOLD (T)', range: '3:58', color: '#A855F7', description: 'Seuil lactique' },
-  { name: 'INTERVAL (I)', range: '3:42', color: '#EF4444', description: 'VO2max' },
-  { name: 'REPETITION (R)', range: '3:25', color: '#F59E0B', description: 'Vitesse pure' },
+  { name: 'EASY (E)', range: '4:45 - 5:15', color: 'var(--success)', description: 'Récupération & endurance' },
+  { name: 'MARATHON (M)', range: '4:15', color: 'var(--primary)', description: 'Allure marathon' },
+  { name: 'THRESHOLD (T)', range: '3:58', color: 'var(--secondary)', description: 'Seuil lactique' },
+  { name: 'INTERVAL (I)', range: '3:42', color: 'var(--danger)', description: 'VO2max' },
+  { name: 'REPETITION (R)', range: '3:25', color: 'var(--warning)', description: 'Vitesse pure' },
 ];
 
 export default function VDOTSection() {
@@ -66,7 +66,7 @@ export default function VDOTSection() {
   }, []);
 
   return (
-    <section id="vdot" className="py-20 lg:py-32 bg-white overflow-hidden">
+    <section id="vdot" className="py-20 lg:py-32 bg-surface overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left Content */}
@@ -76,7 +76,7 @@ export default function VDOTSection() {
               Jack Daniels VDOT V6.4
             </span>
             
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-neutral-900 tracking-tight mb-6">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight mb-6">
               LA SCIENCE
               <br />
               DERRIÈRE LA{' '}
@@ -85,7 +85,7 @@ export default function VDOTSection() {
               </span>
             </h2>
             
-            <p className="text-lg text-neutral-600 leading-relaxed mb-8 max-w-xl">
+            <p className="text-lg text-muted leading-relaxed mb-8 max-w-xl">
               Le VDOT n&apos;est pas qu&apos;un chiffre. C&apos;est l&apos;essence de votre efficacité running.
               DrawRun analyse chaque foulée pour affiner votre profil physiologique.
             </p>
@@ -97,14 +97,14 @@ export default function VDOTSection() {
                 return (
                   <div 
                     key={index}
-                    className="flex items-start gap-4 p-4 bg-neutral-50 border border-neutral-100 rounded-xl hover:bg-neutral-100 transition-colors"
+                    className="flex items-start gap-4 p-4 bg-background border border-surface rounded-xl hover:bg-surface transition-colors"
                   >
                     <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center shrink-0">
                       <Icon className="w-5 h-5 text-primary-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-neutral-900 mb-1">{feature.title}</h3>
-                      <p className="text-sm text-neutral-600">{feature.description}</p>
+                      <h3 className="font-semibold text-foreground mb-1">{feature.title}</h3>
+                      <p className="text-sm text-muted">{feature.description}</p>
                     </div>
                   </div>
                 );
@@ -121,8 +121,8 @@ export default function VDOTSection() {
                   <Activity className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-neutral-900">ZONES VDOT</h3>
-                  <p className="text-sm text-neutral-500">Basé sur 10km en 39:00</p>
+                  <h3 className="text-xl font-bold text-foreground">ZONES VDOT</h3>
+                  <p className="text-sm text-muted">Basé sur 10km en 39:00</p>
                 </div>
               </div>
 
@@ -131,7 +131,7 @@ export default function VDOTSection() {
                 {zones.map((zone, index) => (
                   <div 
                     key={index}
-                    className="flex items-center justify-between gap-2 p-3 bg-white/50 rounded-xl border border-neutral-100 hover:border-neutral-200 transition-colors"
+                    className="flex items-center justify-between gap-2 p-3 bg-surface/50 rounded-xl border border-surface hover:border-surface transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <span 
@@ -139,13 +139,13 @@ export default function VDOTSection() {
                         style={{ backgroundColor: zone.color }}
                       />
                       <div className="min-w-0">
-                        <div className="font-semibold text-neutral-900 text-sm truncate">{zone.name}</div>
-                        <div className="text-xs text-neutral-500 truncate">{zone.description}</div>
+                        <div className="font-semibold text-foreground text-sm truncate">{zone.name}</div>
+                        <div className="text-xs text-muted truncate">{zone.description}</div>
                       </div>
                     </div>
                     <div className="text-right shrink-0 whitespace-nowrap">
-                      <div className="font-bold text-neutral-900 font-mono">{zone.range}</div>
-                      <div className="text-xs text-neutral-400">min/km</div>
+                      <div className="font-bold text-foreground font-mono">{zone.range}</div>
+                      <div className="text-xs text-muted">min/km</div>
                     </div>
                   </div>
                 ))}
@@ -154,10 +154,10 @@ export default function VDOTSection() {
               {/* Calculator Preview */}
               <div className="mt-6 p-4 bg-gradient-to-r from-primary-50 to-secondary/10 rounded-xl border border-primary-100">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-semibold text-neutral-700">VDOT Calculator</span>
+                  <span className="text-sm font-semibold text-muted">VDOT Calculator</span>
                   <span className="text-xs text-primary-600 font-medium">VDOT: 52.4</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-neutral-600">
+                <div className="flex items-center gap-2 text-sm text-muted">
                   <Clock className="w-4 h-4" />
                   <span>10km → Marathon: 3:12:00</span>
                 </div>
@@ -177,3 +177,8 @@ export default function VDOTSection() {
     </section>
   );
 }
+
+
+
+
+

@@ -324,11 +324,11 @@ export default function RacePlannerPage() {
                 <AreaChart data={strategy.segments}>
                   <defs>
                     <linearGradient id="colorElev" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="var(--primary-400)" stopOpacity={0.1}/>
+                      <stop offset="95%" stopColor="var(--primary-400)" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                   <XAxis 
                     dataKey="km" 
                     label={{ value: 'Kilomètre', position: 'insideBottomRight', offset: -5 }} 
@@ -358,7 +358,7 @@ export default function RacePlannerPage() {
                     yAxisId="left"
                     type="monotone" 
                     dataKey="elevGain" 
-                    stroke="#3b82f6" 
+                    stroke="var(--primary-400)" 
                     fillOpacity={1} 
                     fill="url(#colorElev)" 
                     name="Elevation"
@@ -366,12 +366,12 @@ export default function RacePlannerPage() {
                   <Bar 
                     yAxisId="right"
                     dataKey="targetPaceSec" 
-                    fill="#f43f5e" 
+                    fill="var(--danger)" 
                     fillOpacity={0.6}
                     name="Allure"
                   >
                     {(strategy.strategy.segments as Array<{ grade: number }>).map((entry: { grade: number }, index: number) => (
-                      <Cell key={`cell-${index}`} fill={entry.grade > 1 ? '#f43f5e' : entry.grade < -1 ? '#10b981' : '#f43f5e'} />
+                      <Cell key={`cell-${index}`} fill={entry.grade > 1 ? 'var(--danger)' : entry.grade < -1 ? 'var(--success)' : 'var(--danger)'} />
                     ))}
                   </Bar>
                 </AreaChart>
@@ -489,3 +489,7 @@ export default function RacePlannerPage() {
     </div>
   );
 }
+
+
+
+

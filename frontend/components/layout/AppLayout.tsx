@@ -34,7 +34,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
         <div className="flex flex-col items-center gap-3 relative z-10">
           <div className="animate-spin w-10 h-10 border-4 border-primary-600 border-t-transparent rounded-full" />
-          <p className="text-sm text-neutral-500">Chargement…</p>
+          <p className="text-sm text-muted">Chargement…</p>
         </div>
       </div>
     );
@@ -50,7 +50,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-primary-100/30 to-transparent rounded-full" />
         
         {/* Subtle Grid Pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,102,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,102,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(color-mix(in srgb, var(--primary), transparent 98%)_1px,transparent_1px),linear-gradient(90deg,color-mix(in srgb, var(--primary), transparent 98%)_1px,transparent_1px)] bg-[size:60px_60px]" />
       </div>
 
       <Sidebar />
@@ -67,3 +67,4 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+

@@ -68,12 +68,12 @@ export default function IOSAppSection() {
   }, []);
 
   return (
-    <section id="ios" className="py-20 lg:py-32 bg-neutral-900 overflow-hidden">
+    <section id="ios" className="py-20 lg:py-32 bg-background overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left Content */}
           <div className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
-            <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-full text-sm font-semibold text-white mb-6">
+            <span className="inline-flex items-center gap-2 px-4 py-2 bg-surface/10 border border-white/20 rounded-full text-sm font-semibold text-white mb-6">
               <Smartphone className="w-4 h-4" />
               iOS App - NOUVEAU
             </span>
@@ -86,7 +86,7 @@ export default function IOSAppSection() {
               </span>
             </h2>
             
-            <p className="text-lg text-neutral-300 leading-relaxed mb-8 max-w-xl">
+            <p className="text-lg text-foreground leading-relaxed mb-8 max-w-xl">
               L&apos;application iOS DrawRun est maintenant disponible ! Profitez de toutes les fonctionnalités
               directement sur votre iPhone : suivi GPS, analyses scientifiques, coaching adaptatif et
               <span className="text-white font-semibold"> fonctionnalités sociales complètes</span>.
@@ -97,7 +97,7 @@ export default function IOSAppSection() {
               {['SwiftUI', 'HealthKit', 'Combine', 'CoreLocation'].map((tech, index) => (
                 <span
                   key={index}
-                  className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-xs font-medium text-neutral-400"
+                  className="px-3 py-1.5 bg-surface/5 border border-white/10 rounded-full text-xs font-medium text-muted"
                 >
                   {tech}
                 </span>
@@ -110,7 +110,7 @@ export default function IOSAppSection() {
                 size="lg"
                 glow
                 rightIcon={<ArrowRight className="w-5 h-5" />}
-                className="bg-white text-neutral-900 hover:bg-neutral-100"
+                className="bg-surface text-foreground hover:bg-surface"
               >
                 <Smartphone className="w-5 h-5" />
                 Bientôt sur l&apos;App Store
@@ -144,28 +144,28 @@ export default function IOSAppSection() {
                       <Icon className="w-6 h-6" />
                     </div>
                     <h3 className="text-lg font-bold text-white mb-2">{feature.title}</h3>
-                    <p className="text-sm text-neutral-400 leading-relaxed">{feature.description}</p>
+                    <p className="text-sm text-muted leading-relaxed">{feature.description}</p>
                   </Card>
                 );
               })}
             </div>
 
             {/* HealthKit Integration Preview */}
-            <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-2xl">
+            <div className="mt-6 p-4 bg-surface/5 border border-white/10 rounded-2xl">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-danger-500/20 rounded-lg flex items-center justify-center">
                   <Heart className="w-5 h-5 text-danger-400" />
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-white">HealthKit Intégré</div>
-                  <div className="text-xs text-neutral-400">Synchronisation automatique</div>
+                  <div className="text-xs text-muted">Synchronisation automatique</div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="flex-1 h-2 bg-surface/10 rounded-full overflow-hidden">
                   <div className="h-full w-3/4 bg-gradient-to-r from-danger-500 to-primary-500 rounded-full" />
                 </div>
-                <span className="text-xs text-neutral-400">75% objectif quotidien</span>
+                <span className="text-xs text-muted">75% objectif quotidien</span>
               </div>
             </div>
           </div>

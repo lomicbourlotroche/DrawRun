@@ -77,7 +77,7 @@ export const UserCounter = ({
     return (
       <div className={`flex items-center gap-2 ${className}`}>
         <div className="w-4 h-4 rounded-full bg-primary-200 animate-pulse" />
-        <span className="text-sm text-neutral-600">Chargement...</span>
+        <span className="text-sm text-muted">Chargement...</span>
       </div>
     );
   }
@@ -94,7 +94,7 @@ export const UserCounter = ({
     <div className={`flex items-center gap-2 ${className}`}>
       <span className="text-lg font-bold text-primary-600 tabular-nums">{count.toLocaleString()}</span>
       {showLabel && (
-        <span className="text-xs text-neutral-500 hidden sm:inline">{label}</span>
+        <span className="text-xs text-muted hidden sm:inline">{label}</span>
       )}
     </div>
   );

@@ -167,7 +167,7 @@ export function FilterChip({ label, isActive, onClick, count }: FilterChipProps)
         <span
           className={cn(
             'px-1.5 py-0.5 rounded-full text-xs',
-            isActive ? 'bg-white/20' : 'bg-background'
+            isActive ? 'bg-surface/20' : 'bg-background'
           )}
         >
           {count}

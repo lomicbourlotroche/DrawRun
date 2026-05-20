@@ -80,11 +80,11 @@ export function CircularProgress({
   const offset = circumference - (percentage / 100) * circumference;
 
   const colors = {
-    default: '#007AFF',
-    primary: '#007AFF',
-    success: '#34C759',
-    warning: '#FF9500',
-    danger: '#FF3B30',
+    default: 'var(--primary)',
+    primary: 'var(--primary)',
+    success: 'var(--success)',
+    warning: 'var(--warning)',
+    danger: 'var(--danger)',
   };
 
   const strokeColor = color || colors[variant];
@@ -97,7 +97,7 @@ export function CircularProgress({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#1E293B"
+          stroke="var(--muted)"
           strokeWidth={strokeWidth}
         />
         <circle

@@ -57,7 +57,7 @@ export const TaperingChart: React.FC<TaperingChartProps> = ({ data }) => {
     <Card className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold flex items-center gap-2">
-          <TrendingDown className="w-5 h-5 text-primary" />
+          <TrendingDown className="w-5 h-5" style={{ color: 'var(--primary)' }} />
           Plan d&apos;Affûtage (Phase J-14)
         </h3>
         <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full text-primary text-xs font-bold">
@@ -71,11 +71,11 @@ export const TaperingChart: React.FC<TaperingChartProps> = ({ data }) => {
           <AreaChart data={chartData}>
             <defs>
               <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.2}/>
+                <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
             <XAxis 
               dataKey="daysOut" 
               reversed
@@ -95,26 +95,26 @@ export const TaperingChart: React.FC<TaperingChartProps> = ({ data }) => {
             <Area 
               type="monotone" 
               dataKey="volumePercent" 
-              stroke="#3b82f6" 
+              stroke="var(--primary)" 
               strokeWidth={3}
               fillOpacity={1} 
               fill="url(#colorVolume)" 
               name="Volume"
             />
-            <ReferenceLine x={0} stroke="#f43f5e" strokeDasharray="3 3" label="Jour J" />
+            <ReferenceLine x={0} stroke="var(--danger)" strokeDasharray="3 3" label="Jour J" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
-          <h4 className="text-sm font-bold flex items-center gap-2 text-muted-foreground">
+          <h4 className="text-sm font-bold flex items-center gap-2 text-muted">
             <Calendar className="w-4 h-4" />
             Conseils stratégiques
           </h4>
           <ul className="space-y-2">
             {data.recommendations.map((rec: string, i: number) => (
-              <li key={i} className="text-xs flex items-start gap-2 text-muted-foreground">
+              <li key={i} className="text-xs flex items-start gap-2 text-muted">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1 shrink-0" />
                 {rec}
               </li>
@@ -122,13 +122,13 @@ export const TaperingChart: React.FC<TaperingChartProps> = ({ data }) => {
           </ul>
         </div>
 
-        <div className="bg-muted/30 p-4 rounded-2xl space-y-3">
+        <div className="bg-surface p-4 rounded-2xl space-y-3">
           <h4 className="text-sm font-bold">Pourquoi l&apos;affûtage ?</h4>
-          <p className="text-[10px] text-muted-foreground leading-relaxed">
+          <p className="text-[10px] text-muted leading-relaxed">
             L&apos;affûtage (tapering) permet de dissiper la fatigue accumulée tout en maintenant les adaptations physiologiques. 
             Le modèle de Mujika utilisé ici privilégie une réduction **exponentielle** du volume pour une fraîcheur maximale le jour J.
           </p>
-          <div className="pt-2 border-t border-muted text-[10px] font-mono text-primary/70">
+          <div className="pt-2 border-t border-border text-[10px] font-mono text-primary/70">
             Source : {data.reference}
           </div>
         </div>

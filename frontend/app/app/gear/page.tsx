@@ -102,8 +102,8 @@ export default function GearPage() {
       <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Mon Matériel</h1>
-            <p className="text-slate-500 mt-1">Suivez l&apos;usure de vos chaussures et équipements pour prévenir les blessures.</p>
+            <h1 className="text-3xl font-bold text-foreground tracking-tight">Mon Matériel</h1>
+            <p className="text-muted mt-1">Suivez l&apos;usure de vos chaussures et équipements pour prévenir les blessures.</p>
           </div>
           <PrimaryButton 
             variant="primary" 
@@ -121,16 +121,16 @@ export default function GearPage() {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-48 bg-slate-100 rounded-2xl animate-pulse" />
+              <div key={i} className="h-48 bg-surface rounded-2xl animate-pulse" />
             ))}
           </div>
         ) : gearList.length === 0 ? (
-          <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-12 text-center">
-            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Package className="w-8 h-8 text-slate-300" />
+          <div className="bg-surface border-2 border-dashed border rounded-3xl p-12 text-center">
+            <div className="w-16 h-16 bg-background rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Package className="w-8 h-8 text-foreground" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900">Aucun matériel enregistré</h3>
-            <p className="text-slate-500 mb-6 max-w-sm mx-auto">
+            <h3 className="text-lg font-bold text-foreground">Aucun matériel enregistré</h3>
+            <p className="text-muted mb-6 max-w-sm mx-auto">
               Commencez par ajouter vos chaussures de running ou votre vélo pour suivre leur kilométrage.
             </p>
             <PrimaryButton variant="outline" onClick={() => setIsModalOpen(true)}>
@@ -147,7 +147,7 @@ export default function GearPage() {
 
             {archivedGear.length > 0 && (
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-slate-400">
+                <div className="flex items-center gap-2 text-muted">
                   <History className="w-4 h-4" />
                   <h2 className="text-sm font-bold uppercase tracking-wider">Matériel Archivé</h2>
                 </div>
@@ -190,9 +190,9 @@ export default function GearPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-500 ml-1">Type</label>
+                <label className="text-xs font-semibold text-muted ml-1">Type</label>
                 <select 
-                  className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full h-11 bg-background border border rounded-xl px-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                   value={formData.type}
                   onChange={(e) => setFormData({...formData, type: e.target.value})}
                 >

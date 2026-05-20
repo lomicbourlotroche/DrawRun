@@ -21,13 +21,13 @@ interface PowerZone {
 }
 
 const POWER_ZONES: PowerZone[] = [
-  { name: 'Récupération active', range: '< 55%', minPercent: 0, maxPercent: 55, color: '#22c55e', description: 'Récupération et endurance de base' },
-  { name: 'Endurance', range: '56-75%', minPercent: 56, maxPercent: 75, color: '#3b82f6', description: 'Endurance aérobie' },
-  { name: 'Tempo', range: '76-90%', minPercent: 76, maxPercent: 90, color: '#eab308', description: 'Tempo et endurance lactique' },
-  { name: 'Seuil', range: '91-105%', minPercent: 91, maxPercent: 105, color: '#f97316', description: 'Seuil anaérobie' },
-  { name: 'VO2 Max', range: '106-120%', minPercent: 106, maxPercent: 120, color: '#ef4444', description: 'VO2 Max et capacité aérobie' },
-  { name: 'Anaérobie', range: '121-150%', minPercent: 121, maxPercent: 150, color: '#a855f7', description: 'Capacité anaérobie' },
-  { name: 'Neuromusculaire', range: '> 150%', minPercent: 150, maxPercent: 999, color: '#ec4899', description: 'Puissance neuromusculaire' },
+  { name: 'Récupération active', range: '< 55%', minPercent: 0, maxPercent: 55, color: 'var(--success)', description: 'Récupération et endurance de base' },
+  { name: 'Endurance', range: '56-75%', minPercent: 56, maxPercent: 75, color: 'var(--primary)', description: 'Endurance aérobie' },
+  { name: 'Tempo', range: '76-90%', minPercent: 76, maxPercent: 90, color: 'var(--peak)', description: 'Tempo et endurance lactique' },
+  { name: 'Seuil', range: '91-105%', minPercent: 91, maxPercent: 105, color: 'var(--peak)', description: 'Seuil anaérobie' },
+  { name: 'VO2 Max', range: '106-120%', minPercent: 106, maxPercent: 120, color: 'var(--danger)', description: 'VO2 Max et capacité aérobie' },
+  { name: 'Anaérobie', range: '121-150%', minPercent: 121, maxPercent: 150, color: 'var(--secondary)', description: 'Capacité anaérobie' },
+  { name: 'Neuromusculaire', range: '> 150%', minPercent: 150, maxPercent: 999, color: 'var(--danger)', description: 'Puissance neuromusculaire' },
 ];
 
 export function PowerAnalysis({ activityId, wattsData, duration }: PowerAnalysisProps) {
@@ -98,7 +98,7 @@ export function PowerAnalysis({ activityId, wattsData, duration }: PowerAnalysis
   if (!wattsData || wattsData.length === 0) {
     return (
       <Card>
-        <CardContent className="p-6 text-center text-muted-foreground">
+        <CardContent className="p-6 text-center text-muted">
           <Zap className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p>Aucune donnée de puissance disponible</p>
           <p className="text-sm mt-2">Connectez un capteur de puissance pour voir l'analyse</p>
@@ -112,7 +112,7 @@ export function PowerAnalysis({ activityId, wattsData, duration }: PowerAnalysis
       {/* FTP Input */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2">
             <Gauge className="w-5 h-5" />
             FTP (Functional Threshold Power)
           </CardTitle>
@@ -139,7 +139,7 @@ export function PowerAnalysis({ activityId, wattsData, duration }: PowerAnalysis
             )}
           </div>
           {ftp && (
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="text-sm text-muted mt-2">
               FTP actuelle: <span className="font-bold text-foreground">{ftp}W</span>
             </p>
           )}
@@ -191,7 +191,7 @@ export function PowerAnalysis({ activityId, wattsData, duration }: PowerAnalysis
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-lg">
+              <CardTitle className="flex items-center gap-2">
                 <Activity className="w-5 h-5" />
                 Distribution par zones
               </CardTitle>
@@ -212,14 +212,14 @@ export function PowerAnalysis({ activityId, wattsData, duration }: PowerAnalysis
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-sm">{zone.name}</span>
-                        <span className="text-xs text-muted-foreground">({zone.range})</span>
+                        <span className="text-xs text-muted">({zone.range})</span>
                       </div>
-                      <p className="text-xs text-muted-foreground truncate">
+                      <p className="text-xs text-muted truncate">
                         {zone.description}
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-32 h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="w-32 h-2 bg-border rounded-full overflow-hidden">
                         <div 
                           className="h-full rounded-full"
                           style={{ 
@@ -243,18 +243,18 @@ export function PowerAnalysis({ activityId, wattsData, duration }: PowerAnalysis
       {/* Power Zones Reference */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Zones de puissance</CardTitle>
+          <CardTitle>Zones de puissance</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {POWER_ZONES.map((zone) => (
               <div 
                 key={zone.name}
-                className="p-3 rounded-lg border"
+                className="p-3 rounded-lg border border-border"
                 style={{ borderLeftColor: zone.color, borderLeftWidth: '4px' }}
               >
                 <div className="font-medium text-sm">{zone.name}</div>
-                <div className="text-xs text-muted-foreground">{zone.range} FTP</div>
+                <div className="text-xs text-muted">{zone.range} FTP</div>
                 {ftp && (
                   <div className="text-xs mt-1">
                     {Math.round(ftp * (zone.minPercent / 100))} - {Math.round(ftp * (zone.maxPercent / 100))}W
@@ -273,11 +273,11 @@ function MetricCard({ icon, label, value }: { icon: React.ReactNode; label: stri
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+        <div className="flex items-center gap-2 text-muted mb-1">
           {icon}
           <span className="text-xs">{label}</span>
         </div>
-        <div className="text-xl font-bold">{value}</div>
+        <div className="text-xl font-bold text-foreground">{value}</div>
       </CardContent>
     </Card>
   );
@@ -346,9 +346,9 @@ export function FTPCalculator() {
           </Button>
           {calculatedFTP && (
             <div className="p-4 bg-primary/10 rounded-lg text-center">
-              <div className="text-sm text-muted-foreground">Votre FTP estimée</div>
+              <div className="text-sm text-muted">Votre FTP estimée</div>
               <div className="text-3xl font-bold text-primary">{calculatedFTP}W</div>
-              <div className="text-xs text-muted-foreground mt-1">
+              <div className="text-xs text-muted mt-1">
                 Basé sur {testPower}W pendant {testDuration} minutes
               </div>
             </div>

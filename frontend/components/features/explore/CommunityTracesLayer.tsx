@@ -26,7 +26,7 @@ interface CommunityTracesLayerProps {
   activityType?: string;
 }
 
-const TRACE_COLOR = '#8b5cf6';
+const TRACE_COLOR = 'var(--secondary)';
 const TRACE_OPACITY = 0.25;
 const TRACE_WEIGHT = 2;
 

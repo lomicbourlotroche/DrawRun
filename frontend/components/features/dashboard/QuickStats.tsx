@@ -49,14 +49,14 @@ export function QuickStats({ stats, isLoading }: QuickStatsProps) {
         label="CTL (Fitness)"
         value={stats.ctl?.toFixed(1) || '-'}
         icon={<TrendingUp className="w-5 h-5" />}
-        color="#007AFF"
+        color="var(--primary)"
       />
       
       <StatCard
         label="ATL (Fatigue)"
         value={stats.atl?.toFixed(1) || '-'}
         icon={<Activity className="w-5 h-5" />}
-        color="#FF3B30"
+        color="var(--danger)"
       />
       
       <StatCard
@@ -64,14 +64,14 @@ export function QuickStats({ stats, isLoading }: QuickStatsProps) {
         value={stats.tsb?.toFixed(1) || '-'}
         trend={getTsbTrend()}
         icon={stats.tsb && stats.tsb >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
-        color={stats.tsb && stats.tsb >= 0 ? '#34C759' : '#FF3B30'}
+        color={stats.tsb && stats.tsb >= 0 ? 'var(--success)' : 'var(--danger)'}
       />
       
       <StatCard
         label="ACWR"
         value={stats.acwr?.toFixed(2) || '-'}
         icon={<Target className="w-5 h-5" />}
-        color={acwrStatus === 'optimal' ? '#34C759' : acwrStatus === 'low' ? '#FF9500' : '#FF3B30'}
+        color={acwrStatus === 'optimal' ? 'var(--success)' : acwrStatus === 'low' ? 'var(--peak)' : 'var(--danger)'}
       />
     </div>
   );

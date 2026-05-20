@@ -24,7 +24,7 @@ export default function HeroSection() {
       </div>
 
       {/* Grid Pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,102,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,102,255,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
+      <div className="absolute inset-0 bg-[linear-gradient(color-mix(in srgb, var(--primary), transparent 97%)_1px,transparent_1px),linear-gradient(90deg,color-mix(in srgb, var(--primary), transparent 97%)_1px,transparent_1px)] bg-[size:60px_60px]" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -39,7 +39,7 @@ export default function HeroSection() {
             </div>
 
             {/* Title */}
-            <h1 className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-neutral-900 leading-[1.1] mb-6 break-words">
+            <h1 className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-foreground leading-[1.1] mb-6 break-words">
               VOTRE PERFORMANCE
               <br />
               <span className="bg-gradient-to-r from-primary-600 via-primary-500 to-secondary bg-clip-text text-transparent">
@@ -48,12 +48,12 @@ export default function HeroSection() {
             </h1>
 
             {/* Subtitle */}
-            <p className="text-lg sm:text-xl text-neutral-600 leading-relaxed mb-8 max-w-xl">
+            <p className="text-lg sm:text-xl text-muted leading-relaxed mb-8 max-w-xl">
               Coaching sportif propulsé par le moteur
-              <span className="font-semibold text-neutral-900"> Jack Daniels VDOT</span>,
+              <span className="font-semibold text-foreground"> Jack Daniels VDOT</span>,
               des plans d&apos;entraînement adaptatifs,
-              <span className="font-semibold text-neutral-900"> la météo en temps réel</span> et
-              <span className="font-semibold text-neutral-900"> des stratégies de course</span> personnalisées.
+              <span className="font-semibold text-foreground"> la météo en temps réel</span> et
+              <span className="font-semibold text-foreground"> des stratégies de course</span> personnalisées.
               15+ métriques avancées pour optimiser chaque séance.
             </p>
 
@@ -61,14 +61,14 @@ export default function HeroSection() {
             <div className="flex flex-col sm:flex-row gap-3 mb-12">
               <a
                 href="/login?mode=register"
-                className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-primary-600 text-white font-semibold rounded-xl shadow-button-primary hover:shadow-button-primary-hover hover:-translate-y-0.5 transition-all duration-200 text-base"
+                className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-primary-600 text-foreground font-semibold rounded-xl shadow-button-primary hover:shadow-button-primary-hover hover:-translate-y-0.5 transition-all duration-200 text-base"
               >
                 <TrendingUp className="w-5 h-5 flex-shrink-0" />
                 Commencer gratuitement
               </a>
               <a
                 href="/login"
-                className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-white border-2 border-neutral-200 text-neutral-700 font-semibold rounded-xl hover:border-primary-300 hover:bg-primary-50 transition-all duration-200 text-base"
+                className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-surface border-2 border-surface text-muted font-semibold rounded-xl hover:border-primary/30 hover:bg-primary-50 transition-all duration-200 text-base"
               >
                 <Monitor className="w-5 h-5 flex-shrink-0" />
                 Se connecter
@@ -98,9 +98,9 @@ export default function HeroSection() {
           <div className={`transition-all duration-700 delay-200 ease-smooth ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               {/* NOUVEAU: Compteur d'utilisateurs en temps réel */}
-              <div className="col-span-2 sm:col-span-2 p-4 bg-white/60 backdrop-blur-sm border border-neutral-200 rounded-2xl">
+              <div className="col-span-2 sm:col-span-2 p-4 bg-surface/60 backdrop-blur-sm border border-surface rounded-2xl">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-semibold text-neutral-600">Utilisateurs actifs</span>
+                  <span className="text-sm font-semibold text-muted">Utilisateurs actifs</span>
                   <span className="flex items-center gap-1.5 text-xs font-medium text-success-500">
                     <span className="w-2 h-2 bg-success-500 rounded-full animate-pulse" />
                     En temps réel
@@ -108,19 +108,19 @@ export default function HeroSection() {
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
-                    <Users className="w-6 h-6 text-white" />
+                    <Users className="w-6 h-6 text-foreground" />
                   </div>
                   <div>
                     {isLoading ? (
-                      <div className="w-20 h-8 bg-neutral-200 rounded-lg animate-pulse" />
+                      <div className="w-20 h-8 bg-border rounded-lg animate-pulse" />
                     ) : error ? (
                       <div className="text-danger-500 text-sm">{error}</div>
                     ) : (
-                      <div className="text-4xl font-bold text-neutral-900 tabular-nums">
+                      <div className="text-4xl font-bold text-foreground tabular-nums">
                         {count.toLocaleString()}
                       </div>
                     )}
-                    <div className="text-sm text-neutral-500">athlètes connectés</div>
+                    <div className="text-sm text-muted">athlètes connectés</div>
                   </div>
                 </div>
               </div>
@@ -158,9 +158,9 @@ export default function HeroSection() {
             </div>
 
             {/* Mini Feature Preview (ancien aperçu BPM) */}
-            <div className="mt-6 p-4 bg-white/60 backdrop-blur-sm border border-neutral-200 rounded-2xl">
+            <div className="mt-6 p-4 bg-surface/60 backdrop-blur-sm border border-surface rounded-2xl">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-semibold text-neutral-600">Aperçu en temps réel</span>
+                <span className="text-sm font-semibold text-muted">Aperçu en temps réel</span>
                 <span className="flex items-center gap-1.5 text-xs font-medium text-success-500">
                   <span className="w-2 h-2 bg-success-500 rounded-full animate-pulse" />
                   Connecté
@@ -169,8 +169,8 @@ export default function HeroSection() {
               <div className="flex items-center gap-4">
                 <div className="flex-1 h-12 bg-gradient-to-r from-primary-100 via-primary-200 to-primary-100 rounded-lg animate-gradient-shift bg-[length:200%_100%]"></div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-neutral-900">142</div>
-                  <div className="text-xs text-neutral-500">BPM</div>
+                  <div className="text-2xl font-bold text-foreground">142</div>
+                  <div className="text-xs text-muted">BPM</div>
                 </div>
               </div>
             </div>
@@ -187,10 +187,10 @@ export default function HeroSection() {
               { value: '100%', label: 'Open source' },
             ].map((stat, index) => (
               <div key={index} className="text-center lg:text-left">
-                <div className="text-3xl lg:text-4xl font-bold text-neutral-900 tabular-nums">
+                <div className="text-3xl lg:text-4xl font-bold text-foreground tabular-nums">
                   {stat.value}
                 </div>
-                <div className="text-sm text-neutral-500 mt-1">{stat.label}</div>
+                <div className="text-sm text-muted mt-1">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -199,3 +199,4 @@ export default function HeroSection() {
     </section>
   );
 }
+

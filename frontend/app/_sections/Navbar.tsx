@@ -29,8 +29,8 @@ export default function Navbar() {
     <nav 
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
         scrolled 
-          ? 'bg-white/95 backdrop-blur-xl border-b border-neutral-200 shadow-sm py-3' 
-          : 'bg-neutral-900/80 backdrop-blur-md py-3'
+          ? 'bg-surface/95 backdrop-blur-xl border-b border-surface shadow-sm py-3' 
+          : 'bg-background/80 backdrop-blur-md py-3'
       }`}
     >
       <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
@@ -39,7 +39,7 @@ export default function Navbar() {
           <a href="#" className="flex items-center gap-2.5">
             <Image src="/logo-icon.svg" alt="DrawRun" width={36} height={36} className="rounded-lg" />
             <span className={`text-lg font-bold tracking-tight transition-colors ${
-              scrolled ? 'text-neutral-900' : 'text-white'
+              scrolled ? 'text-foreground' : 'text-white'
             }`}>
               DRAW<span className={scrolled ? 'text-primary-600' : 'text-primary-400'}>RUN</span>
             </span>
@@ -53,7 +53,7 @@ export default function Navbar() {
                 href={link.href}
                 className={`text-sm font-medium transition-colors ${
                   scrolled 
-                    ? 'text-neutral-600 hover:text-neutral-900' 
+                    ? 'text-muted hover:text-foreground' 
                     : 'text-white/90 hover:text-white'
                 }`}
               >
@@ -65,13 +65,13 @@ export default function Navbar() {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
             <LanguageToggle variant={scrolled ? 'scrolled' : 'default'} />
-            <div className={`w-px h-6 ${scrolled ? 'bg-neutral-200' : 'bg-white/20'}`} />
+            <div className={`w-px h-6 ${scrolled ? 'bg-border' : 'bg-surface/20'}`} />
             <a
               href="/login"
               className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
                 scrolled 
-                  ? 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100' 
-                  : 'text-white/90 hover:text-white hover:bg-white/10'
+                  ? 'text-muted hover:text-foreground hover:bg-surface' 
+                  : 'text-white/90 hover:text-white hover:bg-surface/10'
               }`}
             >
               Connexion
@@ -81,7 +81,7 @@ export default function Navbar() {
               className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                 scrolled
                   ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-button-primary'
-                  : 'bg-white text-neutral-900 hover:bg-neutral-100'
+                  : 'bg-surface text-foreground hover:bg-surface'
               }`}
             >
               S&apos;inscrire
@@ -92,8 +92,8 @@ export default function Navbar() {
           <button 
             className={`md:hidden p-2 rounded-lg transition-colors ${
               scrolled 
-                ? 'text-neutral-600 hover:bg-neutral-100' 
-                : 'text-white hover:bg-white/10'
+                ? 'text-muted hover:bg-surface' 
+                : 'text-white hover:bg-surface/10'
             }`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Menu"
@@ -106,18 +106,18 @@ export default function Navbar() {
         <div className={`md:hidden overflow-hidden transition-all duration-300 ${
           mobileMenuOpen ? 'max-h-[500px] mt-4' : 'max-h-0'
         }`}>
-          <div className="bg-white rounded-2xl border border-neutral-200 shadow-lg p-4 space-y-2">
+          <div className="bg-surface rounded-2xl border border-surface shadow-lg p-4 space-y-2">
             {navLinks.map((link, index) => (
               <a
                 key={index}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-4 py-3 text-neutral-700 font-medium hover:bg-neutral-50 rounded-xl transition-colors"
+                className="block px-4 py-3 text-muted font-medium hover:bg-background rounded-xl transition-colors"
               >
                 {link.label}
               </a>
             ))}
-            <div className="border-t border-neutral-100 pt-2 mt-2">
+            <div className="border-t border-surface pt-2 mt-2">
               {/* Mobile Language Toggle */}
               <div className="px-4 py-3">
                 <LanguageToggle variant="scrolled" />
@@ -125,7 +125,7 @@ export default function Navbar() {
               <a
                 href="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-4 py-3 text-neutral-700 font-medium hover:bg-neutral-50 rounded-xl transition-colors"
+                className="block px-4 py-3 text-muted font-medium hover:bg-background rounded-xl transition-colors"
               >
                 Connexion
               </a>

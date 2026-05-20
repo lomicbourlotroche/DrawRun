@@ -199,10 +199,9 @@ export default function RoutePlanner({
   };
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-[600] bg-white/95 backdrop-blur-md border-t border-border
-                    rounded-t-xl shadow-xl overflow-y-auto pb-[env(safe-area-inset-bottom,0px)]"
+    <div className="absolute bottom-0 left-0 right-0 z-[600] bg-surface/95 backdrop-blur-md border-t border-border rounded-t-xl shadow-xl overflow-y-auto pb-[env(safe-area-inset-bottom,0px)]"
          style={{ maxHeight: 'min(60dvh, 50vh)' }}>
-      <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-white/95 z-10">
+      <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-surface/95 z-10">
         <h3 className="font-bold flex items-center gap-2">
           <Map className="w-5 h-5 text-primary" />
           Créer un parcours

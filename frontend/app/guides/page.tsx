@@ -42,7 +42,7 @@ const guides = [
     href: '/guides/pmc',
     gradient: 'from-purple-500 to-pink-500',
     bgLight: 'bg-purple-50',
-    textColor: 'text-purple-600',
+    textColor: 'text-secondary',
   },
   {
     icon: Heart,
@@ -81,9 +81,9 @@ export default function GuidesIndex() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-neutral-50">
-      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-neutral-200">
+      <div className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-surface">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
-          <button onClick={() => router.push('/')} className="p-2 rounded-xl hover:bg-neutral-100 transition-colors">
+          <button onClick={() => router.push('/')} className="p-2 rounded-xl hover:bg-surface transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
@@ -95,13 +95,13 @@ export default function GuidesIndex() {
 
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-extrabold text-neutral-900 mb-4">
+          <h2 className="text-4xl font-extrabold text-foreground mb-4">
             Guides &{' '}
             <span className="bg-gradient-to-r from-blue-600 to-purple-500 bg-clip-text text-transparent">
               Documentation
             </span>
           </h2>
-          <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
+          <p className="text-lg text-muted max-w-2xl mx-auto">
             Explorez les algorithmes, formules et méthodologies qui alimentent chaque fonctionnalité de DrawRun.
           </p>
         </div>
@@ -111,11 +111,11 @@ export default function GuidesIndex() {
             <button
               key={index}
               onClick={() => router.push(guide.href)}
-              className="text-left bg-white rounded-2xl border border-neutral-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group"
+              className="text-left bg-surface rounded-2xl border border-surface shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group"
             >
               <div className={`bg-gradient-to-r ${guide.gradient} p-4 text-white`}>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-surface/20 rounded-xl flex items-center justify-center">
                     <guide.icon className="w-5 h-5" />
                   </div>
                   <div>
@@ -125,7 +125,7 @@ export default function GuidesIndex() {
                 </div>
               </div>
               <div className="p-4">
-                <p className="text-sm text-neutral-600 mb-3">{guide.description}</p>
+                <p className="text-sm text-muted mb-3">{guide.description}</p>
                 <div className={`inline-flex items-center gap-1 text-sm font-semibold ${guide.textColor} group-hover:gap-2 transition-all`}>
                   Lire le guide
                   <ArrowRight className="w-4 h-4" />

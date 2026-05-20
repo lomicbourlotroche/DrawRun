@@ -57,7 +57,7 @@ const PrimaryButton = forwardRef<HTMLButtonElement, PrimaryButtonProps>(
         'text-foreground',
         'hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700',
         'focus:ring-primary-500',
-        'active:bg-neutral-100'
+        'active:bg-background'
       ),
       outline: cn(
         'bg-transparent border-2 border-primary-500',
@@ -69,9 +69,9 @@ const PrimaryButton = forwardRef<HTMLButtonElement, PrimaryButtonProps>(
       ghost: cn(
         'bg-transparent',
         'text-muted',
-        'hover:bg-neutral-100 hover:text-foreground',
+        'hover:bg-background hover:text-foreground',
         'focus:ring-neutral-500',
-        'active:bg-neutral-200'
+        'active:bg-surface'
       ),
       danger: cn(
         'bg-gradient-to-r from-danger-600 to-danger-500',

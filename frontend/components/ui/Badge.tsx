@@ -14,11 +14,11 @@ export function Badge({ children, variant = 'default', zone, size = 'sm', classN
   const variants = {
     default: 'bg-surface border border-border text-text-secondary',
     primary: 'bg-primary/20 text-primary border border-primary/30',
-    secondary: 'bg-neutral-100 border border-neutral-200 text-neutral-700',
+    secondary: 'bg-background border border-surface text-muted',
     success: 'bg-success/20 text-success border border-success/30',
     warning: 'bg-warning/20 text-warning border border-warning/30',
     danger: 'bg-danger/20 text-danger border border-danger/30',
-    zone: 'text-white border',
+    zone: 'text-foreground border',
     outline: 'bg-transparent border border-primary text-primary',
   };
 

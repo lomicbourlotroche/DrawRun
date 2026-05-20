@@ -435,7 +435,7 @@ export default function AdaptivePlanWizard({ onComplete }: { onComplete: (plan: 
                     onClick={() => handleMultiSelect(field.name, opt.value)}
                     className={`p-2 rounded-lg border text-sm transition-all ${
                       active
-                        ? 'bg-primary text-white border-primary shadow-sm'
+                        ? 'bg-primary text-foreground border-primary shadow-sm'
                         : 'bg-background text-foreground border-border hover:border-primary/50'
                     }`}
                   >

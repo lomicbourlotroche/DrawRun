@@ -97,8 +97,7 @@ export default function ExplorePanel({
       {/* Toggle button */}
       <button
         onClick={onToggle}
-        className="absolute top-4 left-4 z-[500] flex items-center gap-2 px-3 min-h-[44px] bg-white/90 backdrop-blur-sm
-                   rounded-lg shadow-md border border-border text-sm font-medium hover:bg-white transition-colors"
+        className="absolute top-4 left-4 z-[500] flex items-center gap-2 px-3 min-h-[44px] bg-surface/90 backdrop-blur-sm rounded-lg shadow-md border border-border text-sm font-medium hover:bg-surface transition-colors"
       >
         {isOpen ? <X className="w-4 h-4" /> : <Compass className="w-4 h-4" />}
         <span className="hidden sm:inline">{isOpen ? 'Fermer' : 'Explorer'}</span>
@@ -106,7 +105,7 @@ export default function ExplorePanel({
 
       {/* Panel */}
       <div
-        className={`absolute top-0 left-0 z-[400] h-full bg-white/95 backdrop-blur-md border-r border-border
+        className={`absolute top-0 left-0 z-[400] h-full bg-surface/95 backdrop-blur-md border-r border-border
                     shadow-lg transition-all duration-300 flex flex-col
                     ${isOpen ? 'w-full sm:w-96 translate-x-0' : 'w-96 -translate-x-full'}`}
       >
@@ -200,8 +199,7 @@ export default function ExplorePanel({
         <div className="p-4 pb-[env(safe-area-inset-bottom,16px)] border-t border-border">
           <button
             onClick={onOpenRoutePlanner}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white
-                       rounded-lg font-medium text-sm hover:bg-primary/90 transition-colors shadow-sm"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-foreground rounded-lg font-medium text-sm hover:bg-primary/90 transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4" />
             Créer un parcours

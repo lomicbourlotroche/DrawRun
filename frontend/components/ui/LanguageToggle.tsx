@@ -45,7 +45,7 @@ export function LanguageToggle({ variant = 'default' }: { variant?: 'default' | 
         className={cn(
           "flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200",
           variant === 'scrolled'
-            ? 'text-muted hover:text-foreground hover:bg-neutral-50'
+            ? 'text-muted hover:text-foreground hover:bg-background'
             : 'text-foreground/80 hover:text-foreground hover:bg-surface/80'
         )}
         title="Changer de langue"
@@ -68,7 +68,7 @@ export function LanguageToggle({ variant = 'default' }: { variant?: 'default' | 
                 "w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors",
                 language === lang.code
                   ? 'bg-primary-50 text-primary-700'
-                  : 'text-foreground hover:bg-neutral-50'
+                  : 'text-foreground hover:bg-background'
               )}
             >
               <div className="flex items-center gap-3">

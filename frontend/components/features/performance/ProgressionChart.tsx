@@ -203,10 +203,10 @@ export function ProgressionChart({ activities, sport }: ProgressionChartProps) {
   }, [chartData, metric]);
 
   const metricConfig = {
-    distance: { label: 'Distance (km)', color: '#3b82f6', unit: 'km' },
-    pace: { label: 'Rythme (min/km)', color: '#10b981', unit: 'min/km' },
-    duration: { label: 'Durée (h)', color: '#f59e0b', unit: 'h' },
-    elevation: { label: 'Dénivelé (m)', color: '#8b5cf6', unit: 'm' }
+    distance: { label: 'Distance (km)', color: 'var(--primary)', unit: 'km' },
+    pace: { label: 'Rythme (min/km)', color: 'var(--success)', unit: 'min/km' },
+    duration: { label: 'Durée (h)', color: 'var(--peak)', unit: 'h' },
+    elevation: { label: 'Dénivelé (m)', color: 'var(--secondary)', unit: 'm' }
   };
 
   const currentConfig = metricConfig[metric];
@@ -321,7 +321,7 @@ export function ProgressionChart({ activities, sport }: ProgressionChartProps) {
                       date: new Date(item.date).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' }),
                       [metric]: Number(item[metric].toFixed(1))
                     }))}
-                    stroke="#94a3b8"
+                    stroke="var(--muted)"
                     strokeWidth={2}
                     strokeDasharray="5 5"
                     dot={{ r: 2 }}

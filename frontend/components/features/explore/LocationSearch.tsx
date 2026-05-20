@@ -69,8 +69,7 @@ export default function LocationSearch({
           onChange={(e) => handleInputChange(e.target.value)}
           onFocus={() => results.length > 0 && setShowResults(true)}
           placeholder={placeholder}
-          className="w-full pl-9 pr-9 py-2.5 rounded-lg bg-white/90 backdrop-blur-sm border border-border
-                     text-sm shadow-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+          className="w-full pl-9 pr-9 py-2.5 rounded-lg bg-surface/90 backdrop-blur-sm border border-border text-sm shadow-md focus:outline-none focus:ring-2 focus:ring-primary/50"
         />
         {isSearching && (
           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
@@ -78,7 +77,7 @@ export default function LocationSearch({
       </div>
 
       {showResults && results.length > 0 && (
-        <div className="absolute top-full mt-1 w-full bg-white rounded-lg shadow-lg border border-border z-[1000] max-h-60 overflow-y-auto">
+        <div className="absolute top-full mt-1 w-full bg-surface rounded-lg shadow-lg border border-border z-[1000] max-h-60 overflow-y-auto">
           {results.map((result, idx) => (
             <button
               key={idx}

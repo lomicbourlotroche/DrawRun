@@ -81,7 +81,7 @@ interface MapSegment {
 
 type Waypoint = { lat: number; lng: number };
 
-const ROUTE_COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+const ROUTE_COLORS = ['var(--danger)', 'var(--primary)', 'var(--success)', 'var(--peak)', 'var(--secondary)', 'var(--danger)', 'var(--recovery)', 'var(--peak)'];
 
 export default function ExplorePage() {
   const router = useRouter();
@@ -371,8 +371,7 @@ export default function ExplorePage() {
         {/* Mobile search toggle */}
         <button
           onClick={() => setShowMobileSearch(true)}
-          className="sm:hidden flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg shadow-md border
-                     bg-white/90 backdrop-blur-sm border-border hover:bg-white transition-colors text-muted-foreground"
+          className="sm:hidden flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg shadow-md border bg-white/90 backdrop-blur-sm border-border hover:bg-white transition-colors text-muted-foreground"
           title="Rechercher"
         >
           <Search className="w-4 h-4" />
@@ -411,9 +410,7 @@ export default function ExplorePage() {
       {/* Geolocate button */}
       <button
         onClick={handleLocateMe}
-        className="absolute max-sm:bottom-4 max-sm:right-4 sm:top-4 sm:right-16 z-[500] flex items-center justify-center
-                   min-w-[44px] min-h-[44px] bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-border
-                   hover:bg-white transition-colors"
+        className="absolute max-sm:bottom-4 max-sm:right-4 sm:top-4 sm:right-16 z-[500] flex items-center justify-center min-w-[44px] min-h-[44px] bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-border hover:bg-white transition-colors"
         title="Me localiser"
       >
         <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">

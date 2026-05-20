@@ -17,15 +17,15 @@ const preview: Preview = {
       values: [
         {
           name: 'light',
-          value: '#F8FAFC',
+          value: 'var(--bg)',
         },
         {
           name: 'dark',
-          value: '#0F172A',
+          value: 'var(--neutral-900)',
         },
         {
           name: 'white',
-          value: '#FFFFFF',
+          value: 'var(--surface)',
         },
       ],
     },
@@ -40,3 +40,6 @@ const preview: Preview = {
 };
 
 export default preview;
+
+
+

@@ -132,8 +132,8 @@ export default function DashboardContent() {
         {/* Header avec badge */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">{t.dashboard.title}</h1>
-            <p className="text-neutral-500 mt-1">{t.dashboard.subtitle}</p>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">{t.dashboard.title}</h1>
+            <p className="text-muted mt-1">{t.dashboard.subtitle}</p>
           </div>
           <GradientBadge variant="primary" icon={Zap} dot>
             Prêt à commencer
@@ -146,8 +146,8 @@ export default function DashboardContent() {
             <Activity className="w-10 h-10 text-primary-600" />
           </div>
           
-          <h2 className="text-xl font-bold text-neutral-900 mb-2 tracking-tight">Aucune activité</h2>
-          <p className="text-neutral-500 mb-8 max-w-md mx-auto leading-relaxed">
+          <h2 className="text-xl font-bold text-foreground mb-2 tracking-tight">Aucune activité</h2>
+          <p className="text-muted mb-8 max-w-md mx-auto leading-relaxed">
             Connectez Strava ou Garmin pour importer vos activités et voir vos statistiques. 
             Vos données seront automatiquement synchronisées.
           </p>
@@ -174,8 +174,8 @@ export default function DashboardContent() {
             { title: 'Coaching adaptatif', desc: 'Plans personnalisés selon vos objectifs' },
           ].map((tip, i) => (
             <GlassCard key={i} padding="md" variant="subtle">
-              <h3 className="font-semibold text-neutral-900 text-sm mb-1">{tip.title}</h3>
-              <p className="text-xs text-neutral-500">{tip.desc}</p>
+              <h3 className="font-semibold text-foreground text-sm mb-1">{tip.title}</h3>
+              <p className="text-xs text-muted">{tip.desc}</p>
             </GlassCard>
           ))}
         </div>
@@ -187,7 +187,7 @@ export default function DashboardContent() {
     <div className="animate-fade-in">
       {/* Background Effects */}
       <div className="fixed inset-0 bg-gradient-to-b from-neutral-50 to-white" />
-      <div className="fixed inset-0 bg-[linear-gradient(rgba(0,102,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,102,255,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
+      <div className="fixed inset-0 bg-[linear-gradient(color-mix(in srgb, var(--primary), transparent 97%)_1px,transparent_1px),linear-gradient(90deg,color-mix(in srgb, var(--primary), transparent 97%)_1px,transparent_1px)] bg-[size:60px_60px]" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Onboarding wizard — affiché par-dessus le dashboard si nécessaire */}
@@ -200,3 +200,4 @@ export default function DashboardContent() {
     </div>
   );
 }
+

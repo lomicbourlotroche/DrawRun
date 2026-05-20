@@ -7,13 +7,13 @@ import type { Zones, HRZone, SpeedZone } from '@/types';
 import { Activity, Timer, TrendingUp } from 'lucide-react';
 
 const ZONE_COLORS = [
-  '#64748B', // Zone 1 - Gray
-  '#22C55E', // Zone 2 - Green
-  '#3B82F6', // Zone 3 - Blue
-  '#F59E0B', // Zone 4 - Orange
-  '#EF4444', // Zone 5 - Red
-  '#8B5CF6', // Zone 6 - Purple
-  '#EC4899', // Zone 7 - Pink
+  'var(--muted)', // Zone 1 - Gray
+  'var(--success)', // Zone 2 - Green
+  'var(--primary)', // Zone 3 - Blue
+  'var(--peak)', // Zone 4 - Orange
+  'var(--danger)', // Zone 5 - Red
+  'var(--secondary)', // Zone 6 - Purple
+  'var(--danger)', // Zone 7 - Pink
 ];
 
 interface PerformanceZonesProps {
@@ -65,7 +65,7 @@ export function PerformanceZones({ zones, isLoading }: PerformanceZonesProps) {
             className={cn(
               'px-3 py-1 rounded-full text-xs font-medium transition-colors',
               isProMode
-                ? 'bg-primary text-white'
+                ? 'bg-primary text-foreground'
                 : 'bg-surface text-muted hover:text-foreground'
             )}
           >
@@ -83,7 +83,7 @@ export function PerformanceZones({ zones, isLoading }: PerformanceZonesProps) {
                 className="flex items-center gap-4 p-3 rounded-lg bg-background"
               >
                 <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold"
+                  className="w-10 h-10 rounded-lg flex items-center justify-center text-foreground font-bold"
                   style={{ backgroundColor: ZONE_COLORS[(zone.zone - 1) % ZONE_COLORS.length] }}
                 >
                   {zone.zone}
@@ -115,7 +115,7 @@ export function PerformanceZones({ zones, isLoading }: PerformanceZonesProps) {
                 className="flex items-center gap-4 p-3 rounded-lg bg-background"
               >
                 <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold"
+                  className="w-10 h-10 rounded-lg flex items-center justify-center text-foreground font-bold"
                   style={{ backgroundColor: ZONE_COLORS[(zone.zone - 1) % ZONE_COLORS.length] }}
                 >
                   {zone.zone}

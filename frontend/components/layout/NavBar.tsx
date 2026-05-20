@@ -16,8 +16,8 @@ export default function Navbar() {
             />
           </div>
           <div className="hidden md:flex items-center space-x-8">
-            <a href="/" className="text-white/80 hover:text-white transition-colors">Accueil</a>
-            <a href="/garmin" className="text-white/80 hover:text-white transition-colors">Garmin</a>
+            <a href="/" className="text-foreground/80 hover:text-foreground transition-colors">Accueil</a>
+            <a href="/garmin" className="text-foreground/80 hover:text-foreground transition-colors">Garmin</a>
           </div>
         </div>
       </div>

@@ -18,9 +18,9 @@ const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
     const baseStyles = cn(
       'rounded-2xl transition-all duration-300 ease-smooth',
       // Glassmorphism base - backdrop-blur-md pour plus de profondeur
-      'bg-white/90 backdrop-blur-md',
+      'bg-surface/90 backdrop-blur-md',
       // Border subtile
-      'border border-neutral-200/60',
+      'border border-surface/60',
       // Shadow doux
       'shadow-sm'
     );
@@ -28,7 +28,7 @@ const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
     const variantStyles = {
       default: '',
       elevated: 'shadow-md',
-      subtle: 'bg-white/70 border-neutral-200/40',
+      subtle: 'bg-surface/70 border-surface/40',
     };
 
     const hoverStyles = hover
@@ -65,7 +65,7 @@ const GlassCardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('flex flex-col space-y-1.5 pb-4 border-b border-neutral-100/50', className)}
+      className={cn('flex flex-col space-y-1.5 pb-4 border-b border-surface/50', className)}
       {...props}
     />
   )
@@ -121,7 +121,7 @@ const GlassCardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('flex items-center justify-between pt-4 mt-4 border-t border-neutral-100/50', className)}
+      className={cn('flex items-center justify-between pt-4 mt-4 border-t border-surface/50', className)}
       {...props}
     />
   )

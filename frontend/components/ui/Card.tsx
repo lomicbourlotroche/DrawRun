@@ -20,8 +20,8 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
         hover && 'hover:shadow-card-hover hover:-translate-y-1'
       ),
       glass: cn(
-        'bg-white/80 backdrop-blur-xl',
-        'border border-white/40',
+        'bg-surface/80 backdrop-blur-xl',
+        'border border-surface/40',
         'shadow-lg'
       ),
       highlight: cn(
@@ -137,7 +137,7 @@ const CardStat = forwardRef<HTMLDivElement, CardStatProps>(
     const trendColors = {
       up: 'text-success-500',
       down: 'text-danger-500',
-      neutral: 'text-neutral-500',
+      neutral: 'text-muted',
     };
 
     const trendIcons = {

@@ -34,7 +34,7 @@ export default function WebAppSection() {
   }, []);
 
   return (
-    <section id="webapp" className="relative py-20 lg:py-32 bg-neutral-900 overflow-hidden">
+    <section id="webapp" className="relative py-20 lg:py-32 bg-background overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-600/20 rounded-full blur-3xl" />
@@ -45,12 +45,12 @@ export default function WebAppSection() {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left Content */}
           <div className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
-            <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-full text-sm font-semibold text-white mb-8">
+            <span className="inline-flex items-center gap-2 px-4 py-2 bg-surface/10 border border-white/20 rounded-full text-sm font-semibold text-foreground mb-8">
               <Zap className="w-4 h-4" />
               Disponible maintenant
             </span>
             
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight mb-6">
               Votre Performance,
               <br />
               <span className="bg-gradient-to-r from-primary-400 to-secondary bg-clip-text text-transparent">
@@ -58,10 +58,10 @@ export default function WebAppSection() {
               </span>
             </h2>
             
-            <p className="text-lg text-neutral-300 leading-relaxed mb-8 max-w-xl">
+            <p className="text-lg text-foreground leading-relaxed mb-8 max-w-xl">
               Analysez vos activités, suivez votre PMC, visualisez vos zones d&apos;entraînement,
               planifiez vos courses et suivez la météo — tout depuis votre navigateur.
-              <span className="text-white font-semibold"> Accessible partout, installable en un clic.</span>
+              <span className="text-foreground font-semibold"> Accessible partout, installable en un clic.</span>
             </p>
 
             {/* Features List */}
@@ -75,12 +75,12 @@ export default function WebAppSection() {
                 return (
                   <div 
                     key={index}
-                    className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-xl"
+                    className="flex items-center gap-3 p-3 bg-surface/5 border border-white/10 rounded-xl"
                   >
                     <div className="w-10 h-10 bg-primary-500/20 rounded-lg flex items-center justify-center">
                       <Icon className="w-5 h-5 text-primary-400" />
                     </div>
-                    <span className="text-sm font-medium text-white">{item.label}</span>
+                    <span className="text-sm font-medium text-foreground">{item.label}</span>
                   </div>
                 );
               })}
@@ -92,7 +92,7 @@ export default function WebAppSection() {
                 size="lg" 
                 glow
                 rightIcon={<ArrowRight className="w-5 h-5" />}
-                className="bg-white text-neutral-900 hover:bg-neutral-100"
+                className="bg-surface text-foreground hover:bg-surface"
               >
                 Créer un compte
               </Button>
@@ -109,38 +109,38 @@ export default function WebAppSection() {
           <div className={`transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
             <div className="relative">
               {/* Glass Card */}
-              <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl">
+              <div className="bg-surface/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl">
                 {/* Window Controls */}
                 <div className="flex items-center gap-2 mb-6">
                   <div className="w-3 h-3 rounded-full bg-danger-500" />
                   <div className="w-3 h-3 rounded-full bg-warning-500" />
                   <div className="w-3 h-3 rounded-full bg-success-500" />
-                  <div className="ml-4 text-sm text-neutral-400">drawrun.app/dashboard</div>
+                  <div className="ml-4 text-sm text-muted">drawrun.app/dashboard</div>
                 </div>
 
                 {/* Metrics Grid */}
                 <div className="grid grid-cols-3 gap-3 mb-4">
-                  <div className="bg-neutral-800/50 rounded-xl p-4">
-                    <div className="text-xs text-neutral-400 mb-1">CTL</div>
+                  <div className="bg-surface/50 rounded-xl p-4">
+                    <div className="text-xs text-muted mb-1">CTL</div>
                     <div className="text-2xl font-bold text-primary-400">45</div>
                     <div className="text-xs text-success-400 mt-1">↑ +3</div>
                   </div>
-                  <div className="bg-neutral-800/50 rounded-xl p-4">
-                    <div className="text-xs text-neutral-400 mb-1">ATL</div>
+                  <div className="bg-surface/50 rounded-xl p-4">
+                    <div className="text-xs text-muted mb-1">ATL</div>
                     <div className="text-2xl font-bold text-warning-400">38</div>
-                    <div className="text-xs text-neutral-400 mt-1">→ stable</div>
+                    <div className="text-xs text-muted mt-1">→ stable</div>
                   </div>
-                  <div className="bg-neutral-800/50 rounded-xl p-4">
-                    <div className="text-xs text-neutral-400 mb-1">TSB</div>
+                  <div className="bg-surface/50 rounded-xl p-4">
+                    <div className="text-xs text-muted mb-1">TSB</div>
                     <div className="text-2xl font-bold text-success-400">+7</div>
                     <div className="text-xs text-success-400 mt-1">✓ Optimal</div>
                   </div>
                 </div>
 
                 {/* Chart Area */}
-                <div className="bg-neutral-800/30 rounded-xl p-4 mb-4">
+                <div className="bg-surface/30 rounded-xl p-4 mb-4">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-white">PMC 30 jours</span>
+                    <span className="text-sm font-medium text-foreground">PMC 30 jours</span>
                     <div className="flex items-center gap-3 text-xs">
                       <span className="flex items-center gap-1 text-primary-400">
                         <span className="w-2 h-2 rounded-full bg-primary-400" />
@@ -155,14 +155,14 @@ export default function WebAppSection() {
                   <svg viewBox="0 0 300 80" className="w-full h-20">
                     <defs>
                       <linearGradient id="fitnessGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#0066FF" stopOpacity="0.3" />
-                        <stop offset="100%" stopColor="#0066FF" stopOpacity="0" />
+                        <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.3" />
+                        <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
                       </linearGradient>
                     </defs>
                     <path 
                       d="M0,60 Q30,55 60,50 T120,45 T180,35 T240,30 T300,25" 
                       fill="none" 
-                      stroke="#0066FF" 
+                      stroke="var(--primary)" 
                       strokeWidth="2"
                     />
                     <path 
@@ -172,7 +172,7 @@ export default function WebAppSection() {
                     <path 
                       d="M0,65 Q30,62 60,60 T120,58 T180,55 T240,52 T300,50" 
                       fill="none" 
-                      stroke="#FFAB00" 
+                      stroke="var(--warning)" 
                       strokeWidth="2"
                       strokeDasharray="4 4"
                     />
@@ -184,7 +184,7 @@ export default function WebAppSection() {
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                       <Target className="w-4 h-4 text-success-400" />
-                      <span className="text-sm text-neutral-300">Objectif: Marathon</span>
+                      <span className="text-sm text-foreground">Objectif: Marathon</span>
                     </div>
                   </div>
                   <span className="text-sm text-primary-400 font-medium">Voir tout →</span>
@@ -192,10 +192,10 @@ export default function WebAppSection() {
               </div>
 
               {/* Floating Elements */}
-              <div className="absolute -top-4 -right-4 bg-success-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-float">
+              <div className="absolute -top-4 -right-4 bg-success-500 text-foreground text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-float">
                 En forme!
               </div>
-              <div className="absolute -bottom-4 -left-4 bg-white text-neutral-900 text-xs font-semibold px-4 py-2 rounded-xl shadow-lg">
+              <div className="absolute -bottom-4 -left-4 bg-surface text-foreground text-xs font-semibold px-4 py-2 rounded-xl shadow-lg">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-success-500" />
                   <span>+12% cette semaine</span>
@@ -208,3 +208,5 @@ export default function WebAppSection() {
     </section>
   );
 }
+
+

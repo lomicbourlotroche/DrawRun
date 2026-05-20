@@ -20,10 +20,10 @@ describe('GlassCard component', () => {
     const card = screen.getByText('Content');
     expect(card).toBeInTheDocument();
     expect(card).toHaveClass('rounded-2xl');
-    expect(card).toHaveClass('bg-white/90');
+    expect(card).toHaveClass('bg-surface/90');
     expect(card).toHaveClass('backdrop-blur-sm');
     expect(card).toHaveClass('border');
-    expect(card).toHaveClass('border-neutral-200/60');
+    expect(card).toHaveClass('border-surface/60');
     expect(card).toHaveClass('shadow-sm');
   });
 
@@ -103,15 +103,15 @@ describe('GlassCard component', () => {
       
       switch (variant) {
         case 'default':
-          expect(card.className).toContain('bg-white/90');
-          expect(card.className).toContain('border-neutral-200/60');
+          expect(card.className).toContain('bg-surface/90');
+          expect(card.className).toContain('border-surface/60');
           break;
         case 'elevated':
           expect(card.className).toContain('shadow-md');
           break;
         case 'subtle':
-          expect(card.className).toContain('bg-white/70');
-          expect(card.className).toContain('border-neutral-200/40');
+          expect(card.className).toContain('bg-surface/70');
+          expect(card.className).toContain('border-surface/40');
           break;
       }
     });
@@ -156,7 +156,7 @@ describe('GlassCardHeader component', () => {
     expect(header).toHaveClass('space-y-1.5');
     expect(header).toHaveClass('pb-4');
     expect(header).toHaveClass('border-b');
-    expect(header).toHaveClass('border-neutral-100/50');
+    expect(header).toHaveClass('border-surface/50');
   });
 
   it('applies custom className', () => {
@@ -192,7 +192,7 @@ describe('GlassCardTitle component', () => {
     expect(title).toHaveClass('text-lg');
     expect(title).toHaveClass('font-semibold');
     expect(title).toHaveClass('tracking-tight');
-    expect(title).toHaveClass('text-neutral-900');
+    expect(title).toHaveClass('text-foreground');
   });
 
   it('applies custom className', () => {
@@ -226,7 +226,7 @@ describe('GlassCardDescription component', () => {
     
     const description = screen.getByText('Description');
     expect(description).toHaveClass('text-sm');
-    expect(description).toHaveClass('text-neutral-500');
+    expect(description).toHaveClass('text-muted');
     expect(description).toHaveClass('leading-relaxed');
   });
 
@@ -285,7 +285,7 @@ describe('GlassCardFooter component', () => {
     expect(footer).toHaveClass('pt-4');
     expect(footer).toHaveClass('mt-4');
     expect(footer).toHaveClass('border-t');
-    expect(footer).toHaveClass('border-neutral-100/50');
+    expect(footer).toHaveClass('border-surface/50');
   });
 
   it('applies custom className', () => {

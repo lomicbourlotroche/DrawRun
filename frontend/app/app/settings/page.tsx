@@ -163,12 +163,12 @@ export default function SettingsPage() {
             <label className="text-sm font-medium mb-3 block text-foreground">Thème</label>
             <div className="grid grid-cols-3 gap-3">
               {([
-                { id: 'light', label: 'Clair',  Icon: Sun,     ic: 'text-warning/80', pb: 'bg-white', pbd: 'border-neutral-200' },
-                { id: 'dark',  label: 'Sombre', Icon: Moon,    ic: 'text-primary/80',   pb: 'bg-[#080C14]', pbd: 'border-[#1E2D45]' },
-                { id: 'auto',  label: 'Auto',   Icon: Monitor, ic: 'text-muted',      pb: 'bg-gradient-to-br from-white to-[#080C14]', pbd: 'border-border' },
+                { id: 'light', label: 'Clair',  Icon: Sun,     ic: 'text-peak/80', pb: 'bg-surface', pbd: 'border-surface' },
+                { id: 'dark',  label: 'Sombre', Icon: Moon,    ic: 'text-primary/80',   pb: 'bg-[var(--bg)]', pbd: 'border-[var(--border)]' },
+                { id: 'auto',  label: 'Auto',   Icon: Monitor, ic: 'text-muted',      pb: 'bg-gradient-to-br from-white to-[var(--bg)]', pbd: 'border-border' },
               ] as const).map(t => (
                 <button key={t.id} onClick={() => handleThemeChange(t.id)} className={`relative p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${theme === t.id ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/40'}`}>
-                  {theme === t.id && <div className="absolute top-2 right-2 w-4 h-4 bg-primary rounded-full flex items-center justify-center"><Check className="w-2.5 h-2.5 text-white" /></div>}
+                  {theme === t.id && <div className="absolute top-2 right-2 w-4 h-4 bg-primary rounded-full flex items-center justify-center"><Check className="w-2.5 h-2.5 text-foreground" /></div>}
                   <div className={`w-full h-8 rounded-md border ${t.pb} ${t.pbd} mb-1`} />
                   <t.Icon className={`w-4 h-4 ${t.ic}`} />
                   <p className="text-xs font-medium">{t.label}</p>
@@ -218,7 +218,7 @@ export default function SettingsPage() {
               <div><p className="font-medium text-sm">Notifications push</p><p className="text-xs text-muted">{pushEnabled ? 'Actives sur cet appareil' : 'Désactivées'}</p></div>
             </div>
             <button onClick={pushEnabled ? disablePushNotifications : enablePushNotifications} disabled={isLoadingPush} className={`w-12 h-6 rounded-full transition-all relative disabled:opacity-50 ${pushEnabled ? 'bg-success' : 'bg-border'}`}>
-              <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${pushEnabled ? 'left-7' : 'left-1'}`} />
+              <div className={`absolute top-1 w-4 h-4 bg-surface rounded-full shadow transition-all ${pushEnabled ? 'left-7' : 'left-1'}`} />
             </button>
           </div>
           <p className="text-xs text-muted mt-3">Recevez des alertes en temps réel pour les demandes d&apos;ami, draws et commentaires.</p>
@@ -262,7 +262,7 @@ export default function SettingsPage() {
         <div className="space-y-4">
           {twoFAStep === 'verify' && (<>
             <p className="text-sm text-muted">Scannez ce QR code avec Google Authenticator ou Authy.</p>
-            {twoFAQrUri && <div className="p-4 bg-white rounded-xl text-center"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(twoFAQrUri)}`} alt="QR 2FA" className="mx-auto w-44 h-44" /></div>}
+            {twoFAQrUri && <div className="p-4 bg-surface rounded-xl text-center"><img src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(twoFAQrUri)}`} alt="QR 2FA" className="mx-auto w-44 h-44" /></div>}
             <div className="p-3 rounded-xl bg-background border border-border"><p className="text-xs text-muted mb-1">Clé secrète</p><p className="text-xs font-mono text-foreground break-all">{twoFASecret}</p></div>
             <Input label="Code (6 chiffres)" type="text" inputMode="numeric" maxLength={6} value={twoFACode} onChange={e => setTwoFACode(e.target.value.replace(/\D/g, ''))} placeholder="123456" leftIcon={<Shield className="w-4 h-4" />} />
             <div className="flex gap-3"><Button variant="secondary" onClick={() => setShow2FAModal(false)} className="flex-1">Annuler</Button><Button onClick={handleEnable2FA} isLoading={is2FALoading} disabled={twoFACode.length !== 6} className="flex-1">Activer</Button></div>
@@ -295,3 +295,5 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+

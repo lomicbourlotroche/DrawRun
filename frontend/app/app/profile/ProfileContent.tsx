@@ -1055,7 +1055,7 @@ function SettingsTab() {
             <>
               <p className="text-sm text-muted">Scannez ce QR code avec votre application d&apos;authentification (Google Authenticator, Authy...).</p>
               <div className="p-4 bg-white rounded-lg text-center">
-                <p className="text-xs text-neutral-500 break-all font-mono">{twoFASecret}</p>
+                <p className="text-xs text-muted break-all font-mono">{twoFASecret}</p>
                 <p className="text-xs text-muted mt-2">Clé secrète (si vous ne pouvez pas scanner)</p>
               </div>
               <Input label="Code de vérification" type="text" inputMode="numeric" value={twoFACode} onChange={(e) => setTwoFACode(e.target.value)} placeholder="123456" leftIcon={<Shield className="w-4 h-4" />} />

@@ -31,7 +31,7 @@ export function MiniChart({
   data,
   width = 300,
   height = 80,
-  color = '#007AFF',
+  color = 'var(--primary)',
   fillColor,
   showArea = true,
   min: propMin,
@@ -67,7 +67,7 @@ export function StreamChart({
   data,
   width = 800,
   height = 150,
-  color = '#007AFF',
+  color = 'var(--primary)',
   fillColor,
   unit = '',
   showGrid = true,
@@ -102,8 +102,8 @@ export function StreamChart({
     const fmt = formatValue ? formatValue(val) : Math.round(val).toString();
     return (
       <g key={pct}>
-        <line x1={padding.left} y1={y} x2={padding.left + chartW} y2={y} stroke="#334155" strokeWidth={0.5} strokeDasharray="4,4" />
-        <text x={padding.left - 8} y={y + 4} fill="#94A3B8" fontSize={10} textAnchor="end">{fmt}</text>
+        <line x1={padding.left} y1={y} x2={padding.left + chartW} y2={y} stroke="var(--muted)" strokeWidth={0.5} strokeDasharray="4,4" />
+        <text x={padding.left - 8} y={y + 4} fill="var(--muted)" fontSize={10} textAnchor="end">{fmt}</text>
       </g>
     );
   }) : null;
@@ -122,7 +122,7 @@ export function StreamChart({
         {fillColor && <path d={areaPath} fill={fillColor} />}
         <path d={linePath} fill="none" stroke={color} strokeWidth={1.5} strokeLinejoin="round" />
         {timeLabels.map(t => (
-          <text key={t.label} x={t.x} y={padding.top + chartH + 18} fill="#94A3B8" fontSize={10} textAnchor="middle">{t.label}</text>
+          <text key={t.label} x={t.x} y={padding.top + chartH + 18} fill="var(--muted)" fontSize={10} textAnchor="middle">{t.label}</text>
         ))}
       </svg>
       {unit && <p className="text-xs text-muted text-right mt-1">{unit}</p>}
@@ -135,7 +135,7 @@ export function BarChart({
   labels,
   width = 800,
   height = 150,
-  color = '#007AFF',
+  color = 'var(--primary)',
 }: {
   data: number[];
   labels?: string[];
@@ -160,7 +160,7 @@ export function BarChart({
           <g key={i}>
             <rect x={x} y={y} width={barWidth} height={barH} fill={color} rx={2} />
             {labels && labels[i] && (
-              <text x={x + barWidth / 2} y={padding.top + chartH + 14} fill="#94A3B8" fontSize={9} textAnchor="middle">{labels[i]}</text>
+              <text x={x + barWidth / 2} y={padding.top + chartH + 14} fill="var(--muted)" fontSize={9} textAnchor="middle">{labels[i]}</text>
             )}
           </g>
         );

@@ -75,14 +75,14 @@ export default function RacePlanningSection() {
             <Trophy className="w-4 h-4" />
             NOUVEAU — Race Planning
           </span>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-neutral-900 tracking-tight mb-6">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight mb-6">
             Préparez votre
             <br />
             <span className="bg-gradient-to-r from-warning-500 to-primary-500 bg-clip-text text-transparent">
               stratégie de course
             </span>
           </h2>
-          <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
+          <p className="text-lg text-muted max-w-2xl mx-auto">
             Du 5K au marathon, planifiez chaque kilomètre avec des splits détaillés,
             des zones de fréquence cardiaque et une stratégie de nutrition personnalisée.
           </p>
@@ -109,8 +109,8 @@ export default function RacePlanningSection() {
                     <Icon className="w-7 h-7" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-neutral-900 mb-2">{feature.title}</h3>
-                    <p className="text-neutral-600 leading-relaxed">{feature.description}</p>
+                    <h3 className="text-xl font-bold text-foreground mb-2">{feature.title}</h3>
+                    <p className="text-muted leading-relaxed">{feature.description}</p>
                   </div>
                 </div>
               </Card>
@@ -121,12 +121,12 @@ export default function RacePlanningSection() {
         {/* Preview */}
         <div className={`mb-12 transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <Card variant="elevated" className="max-w-3xl mx-auto overflow-hidden">
-            <div className="bg-neutral-900 text-white p-4">
+            <div className="bg-background text-white p-4">
               <div className="flex items-center gap-2 mb-1">
                 <Trophy className="w-4 h-4 text-warning-400" />
                 <span className="text-sm font-semibold">Plan de course — Semi-marathon</span>
               </div>
-              <div className="flex items-center gap-6 text-xs text-neutral-400">
+              <div className="flex items-center gap-6 text-xs text-muted">
                 <span>21.1 km</span>
                 <span>1h35:00</span>
                 <span>4:30/km</span>
@@ -137,11 +137,11 @@ export default function RacePlanningSection() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-neutral-200">
-                      <th className="text-left py-2 text-xs text-neutral-500 font-medium">KM</th>
-                      <th className="text-left py-2 text-xs text-neutral-500 font-medium">Allure</th>
-                      <th className="text-left py-2 text-xs text-neutral-500 font-medium">Zone FC</th>
-                      <th className="text-left py-2 text-xs text-neutral-500 font-medium">Ravitaillement</th>
+                    <tr className="border-b border-surface">
+                      <th className="text-left py-2 text-xs text-muted font-medium">KM</th>
+                      <th className="text-left py-2 text-xs text-muted font-medium">Allure</th>
+                      <th className="text-left py-2 text-xs text-muted font-medium">Zone FC</th>
+                      <th className="text-left py-2 text-xs text-muted font-medium">Ravitaillement</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -154,13 +154,13 @@ export default function RacePlanningSection() {
                       { km: 15, pace: '4:30', hr: 'Zone 4 (Seuil)', nut: 'Eau 200ml' },
                       { km: 21, pace: '4:22', hr: 'Zone 5 (Anaérobie)', nut: null },
                     ].map((row, i) => (
-                      <tr key={i} className="border-b border-neutral-100">
+                      <tr key={i} className="border-b border-surface">
                         <td className="py-2 font-medium">{row.km}</td>
                         <td className="py-2">{row.pace}/km</td>
                         <td className="py-2">
-                          <span className="px-2 py-0.5 bg-neutral-100 rounded-full text-xs">{row.hr}</span>
+                          <span className="px-2 py-0.5 bg-surface rounded-full text-xs">{row.hr}</span>
                         </td>
-                        <td className="py-2 text-neutral-500">{row.nut || '—'}</td>
+                        <td className="py-2 text-muted">{row.nut || '—'}</td>
                       </tr>
                     ))}
                   </tbody>

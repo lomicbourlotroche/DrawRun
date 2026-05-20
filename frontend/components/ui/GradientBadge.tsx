@@ -28,7 +28,7 @@ const GradientBadge = forwardRef<HTMLSpanElement, GradientBadgeProps>(
       warning: 'bg-warning-100/80 text-warning-700 border-warning-200',
       danger: 'bg-danger-100/80 text-danger-700 border-danger-200',
       info: 'bg-primary-100/80 text-primary-700 border-primary-200',
-      neutral: 'bg-neutral-100/80 text-neutral-700 border-neutral-200',
+      neutral: 'bg-background/80 text-muted border-surface',
     };
 
     const sizeStyles = {
@@ -85,11 +85,11 @@ const StatusBadge = forwardRef<HTMLSpanElement, StatusBadgeProps>(
   ({ className, status, children, size = 'md', ...props }, ref) => {
     const statusConfig = {
       online: { variant: 'success' as const, dotColor: 'bg-success-500' },
-      offline: { variant: 'neutral' as const, dotColor: 'bg-neutral-400' },
+      offline: { variant: 'neutral' as const, dotColor: 'bg-border' },
       busy: { variant: 'danger' as const, dotColor: 'bg-danger-500' },
       away: { variant: 'warning' as const, dotColor: 'bg-warning-500' },
       active: { variant: 'success' as const, dotColor: 'bg-success-500' },
-      inactive: { variant: 'neutral' as const, dotColor: 'bg-neutral-400' },
+      inactive: { variant: 'neutral' as const, dotColor: 'bg-border' },
     };
 
     const config = statusConfig[status];

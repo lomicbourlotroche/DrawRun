@@ -9,9 +9,9 @@ export default function RacePlanningGuide() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-amber-50/30">
-      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-neutral-200">
+      <div className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-surface">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
-          <button onClick={() => router.push('/')} className="p-2 rounded-xl hover:bg-neutral-100 transition-colors">
+          <button onClick={() => router.push('/')} className="p-2 rounded-xl hover:bg-surface transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-3">
@@ -28,25 +28,25 @@ export default function RacePlanningGuide() {
 
       <div className="max-w-4xl mx-auto px-4 py-12 space-y-12">
         <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-neutral-900 mb-4">
+          <h2 className="text-4xl font-extrabold text-foreground mb-4">
             Chaque kilomètre{' '}
             <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">
               planifié
             </span>
           </h2>
-          <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
+          <p className="text-lg text-muted max-w-2xl mx-auto">
             Le Race Planning de DrawRun génère une stratégie de course complète : allure cible par kilomètre,
             zones de fréquence cardiaque, ravitaillements et ajustements selon le profil du terrain.
           </p>
         </div>
 
         {/* Splits */}
-        <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
+        <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
             <MapPin className="w-6 h-6 text-amber-500" />
             Splits kilométriques
           </h3>
-          <p className="text-neutral-600 mb-6 leading-relaxed">
+          <p className="text-muted mb-6 leading-relaxed">
             Pour chaque kilomètre de votre course, l'algorithme calcule l'allure cible optimale en fonction de votre VDOT,
             du profil du terrain et de la stratégie de course choisie (even pace, negative split, positive split).
           </p>
@@ -59,12 +59,12 @@ export default function RacePlanningGuide() {
         </div>
 
         {/* HR zones */}
-        <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
+        <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
             <Heart className="w-6 h-6 text-danger" />
             Zones de fréquence cardiaque adaptatives
           </h3>
-          <p className="text-neutral-600 mb-6 leading-relaxed">
+          <p className="text-muted mb-6 leading-relaxed">
             Votre FC cible n'est pas constante pendant une course. Le système adapte les zones selon la phase :
           </p>
           <div className="space-y-3">
@@ -73,13 +73,13 @@ export default function RacePlanningGuide() {
               { phase: 'Croisière (km 4-80%)', zone: 'Zone 3-4 (80-90% FCM)', desc: 'Allure cible, effort soutenu' },
               { phase: 'Fin de course (derniers 20%)', zone: 'Zone 4-5 (90-100% FCM)', desc: 'Push final si la réserve le permet' },
             ].map((item, i) => (
-              <div key={i} className="flex items-center gap-4 p-3 bg-neutral-50 rounded-xl">
+              <div key={i} className="flex items-center gap-4 p-3 bg-background rounded-xl">
                 <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                   {i + 1}
                 </div>
                 <div>
                   <p className="font-semibold text-sm">{item.phase}</p>
-                  <p className="text-xs text-neutral-500">{item.zone} — {item.desc}</p>
+                  <p className="text-xs text-muted">{item.zone} — {item.desc}</p>
                 </div>
               </div>
             ))}
@@ -87,12 +87,12 @@ export default function RacePlanningGuide() {
         </div>
 
         {/* Nutrition */}
-        <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
+        <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
             <Droplets className="w-6 h-6 text-primary" />
             Stratégie nutritionnelle
           </h3>
-          <p className="text-neutral-600 mb-6 leading-relaxed">
+          <p className="text-muted mb-6 leading-relaxed">
             Les ravitaillements sont planifiés automatiquement selon la durée estimée de la course :
           </p>
           <div className="grid md:grid-cols-2 gap-4">
@@ -108,7 +108,7 @@ export default function RacePlanningGuide() {
         </div>
 
         {/* Terrain */}
-        <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
+        <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
             <TrendingUp className="w-6 h-6 text-success" />
             Ajustement selon le profil
@@ -119,24 +119,24 @@ export default function RacePlanningGuide() {
               { profile: 'Vallonné', factor: '×1.05', desc: '+5% sur les montées, -5% sur les descentes' },
               { profile: 'Montagneux', factor: '×1.15', desc: '+15% montées, attention aux descentes (impact musculaire)' },
             ].map((item, i) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-neutral-50 rounded-xl">
+              <div key={i} className="flex items-center justify-between p-3 bg-background rounded-xl">
                 <div>
                   <p className="font-semibold">{item.profile}</p>
-                  <p className="text-xs text-neutral-500">{item.desc}</p>
+                  <p className="text-xs text-muted">{item.desc}</p>
                 </div>
-                <code className="text-sm font-mono bg-white px-3 py-1 rounded-lg">{item.factor}</code>
+                <code className="text-sm font-mono bg-surface px-3 py-1 rounded-lg">{item.factor}</code>
               </div>
             ))}
           </div>
         </div>
 
         {/* Warnings */}
-        <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
+        <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
             <AlertTriangle className="w-6 h-6 text-amber-500" />
             Alertes automatiques
           </h3>
-          <ul className="space-y-2 text-sm text-neutral-600">
+          <ul className="space-y-2 text-sm text-muted">
             <li className="flex items-start gap-2">
               <span className="text-danger mt-1">•</span>
               <span><strong>Fatigue élevée (TSB &lt; -30) :</strong> le plan recommande de réduire l'objectif de temps</span>
@@ -159,7 +159,7 @@ export default function RacePlanningGuide() {
           <p className="text-white/80 mb-6">Obtenez une stratégie personnalisée basée sur votre niveau et votre objectif.</p>
           <button
             onClick={() => router.push('/login?mode=register')}
-            className="px-8 py-3 bg-white text-amber-600 font-semibold rounded-xl hover:bg-neutral-100 transition-colors"
+            className="px-8 py-3 bg-surface text-amber-600 font-semibold rounded-xl hover:bg-surface transition-colors"
           >
             Créer un compte gratuit
           </button>

@@ -16,11 +16,11 @@ const RACE_PRESETS = [
 ];
 
 const TRAINING_ZONES = [
-  { name: 'EASY (E)', key: 'E', color: '#22C55E', description: 'Récupération & endurance fondamentale' },
-  { name: 'MARATHON (M)', key: 'M', color: '#3B82F6', description: 'Allure marathon' },
-  { name: 'THRESHOLD (T)', key: 'T', color: '#A855F7', description: 'Seuil lactique' },
-  { name: 'INTERVAL (I)', key: 'I', color: '#EF4444', description: 'VO2max' },
-  { name: 'REPETITION (R)', key: 'R', color: '#F59E0B', description: 'Vitesse pure & technique' },
+  { name: 'EASY (E)', key: 'E', color: 'var(--success)', description: 'Récupération & endurance fondamentale' },
+  { name: 'MARATHON (M)', key: 'M', color: 'var(--primary)', description: 'Allure marathon' },
+  { name: 'THRESHOLD (T)', key: 'T', color: 'var(--secondary)', description: 'Seuil lactique' },
+  { name: 'INTERVAL (I)', key: 'I', color: 'var(--danger)', description: 'VO2max' },
+  { name: 'REPETITION (R)', key: 'R', color: 'var(--peak)', description: 'Vitesse pure & technique' },
 ];
 
 interface VDOTResult {
@@ -121,11 +121,11 @@ export default function VDOTCalculatorPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/20">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-neutral-200">
+      <div className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-surface">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
           <button
             onClick={() => router.push('/')}
-            className="p-2 rounded-xl hover:bg-neutral-100 transition-colors"
+            className="p-2 rounded-xl hover:bg-surface transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -143,7 +143,7 @@ export default function VDOTCalculatorPage() {
 
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
         {/* Input Section */}
-        <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-6">
+        <div className="bg-surface rounded-3xl border border-surface shadow-sm p-6">
           <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
             <Target className="w-5 h-5 text-primary" />
             Entrez votre performance
@@ -151,7 +151,7 @@ export default function VDOTCalculatorPage() {
 
           {/* Distance Selection */}
           <div className="mb-6">
-            <label className="text-sm font-medium text-neutral-700 mb-3 block">Distance</label>
+            <label className="text-sm font-medium text-muted mb-3 block">Distance</label>
             <div className="grid grid-cols-4 gap-2">
               {RACE_PRESETS.map((preset) => (
                 <button
@@ -160,7 +160,7 @@ export default function VDOTCalculatorPage() {
                   className={`p-3 rounded-xl border-2 text-center transition-all ${
                     distance === preset.distance
                       ? 'border-primary bg-primary/5 shadow-sm'
-                      : 'border-neutral-200 hover:border-primary/30'
+                      : 'border-surface hover:border-primary/30'
                   }`}
                 >
                   <span className="text-xl">{preset.icon}</span>
@@ -169,12 +169,12 @@ export default function VDOTCalculatorPage() {
               ))}
             </div>
             <div className="mt-3">
-              <label className="text-xs text-neutral-500 mb-1 block">Distance personnalisée (mètres)</label>
+              <label className="text-xs text-muted mb-1 block">Distance personnalisée (mètres)</label>
               <input
                 type="number"
                 value={distance}
                 onChange={(e) => setDistance(parseInt(e.target.value) || 0)}
-                className="w-full px-4 py-2 rounded-xl border border-neutral-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm"
+                className="w-full px-4 py-2 rounded-xl border border-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm"
                 placeholder="Ex: 5000"
               />
             </div>
@@ -182,7 +182,7 @@ export default function VDOTCalculatorPage() {
 
           {/* Time Input */}
           <div className="mb-6">
-            <label className="text-sm font-medium text-neutral-700 mb-3 block">Temps réalisé</label>
+            <label className="text-sm font-medium text-muted mb-3 block">Temps réalisé</label>
             <div className="flex items-center justify-center gap-3">
               {/* Hours */}
               <div className="flex flex-col items-center">
@@ -192,11 +192,11 @@ export default function VDOTCalculatorPage() {
                   max="23"
                   value={hours}
                   onChange={(e) => setHours(e.target.value.replace(/\D/g, ''))}
-                  className="w-20 h-20 text-center text-3xl font-bold rounded-2xl border-2 border-neutral-200 focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none bg-white"
+                  className="w-20 h-20 text-center text-3xl font-bold rounded-2xl border-2 border-surface focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none bg-surface"
                 />
-                <span className="text-xs text-neutral-500 mt-2 font-medium">Heures</span>
+                <span className="text-xs text-muted mt-2 font-medium">Heures</span>
               </div>
-              <span className="text-3xl font-bold text-neutral-300 mt-[-20px]">:</span>
+              <span className="text-3xl font-bold text-muted mt-[-20px]">:</span>
               {/* Minutes */}
               <div className="flex flex-col items-center">
                 <input
@@ -205,11 +205,11 @@ export default function VDOTCalculatorPage() {
                   max="59"
                   value={minutes}
                   onChange={(e) => setMinutes(e.target.value.replace(/\D/g, ''))}
-                  className="w-20 h-20 text-center text-3xl font-bold rounded-2xl border-2 border-neutral-200 focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none bg-white"
+                  className="w-20 h-20 text-center text-3xl font-bold rounded-2xl border-2 border-surface focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none bg-surface"
                 />
-                <span className="text-xs text-neutral-500 mt-2 font-medium">Minutes</span>
+                <span className="text-xs text-muted mt-2 font-medium">Minutes</span>
               </div>
-              <span className="text-3xl font-bold text-neutral-300 mt-[-20px]">:</span>
+              <span className="text-3xl font-bold text-muted mt-[-20px]">:</span>
               {/* Seconds */}
               <div className="flex flex-col items-center">
                 <input
@@ -218,12 +218,12 @@ export default function VDOTCalculatorPage() {
                   max="59"
                   value={seconds}
                   onChange={(e) => setSeconds(e.target.value.replace(/\D/g, ''))}
-                  className="w-20 h-20 text-center text-3xl font-bold rounded-2xl border-2 border-neutral-200 focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none bg-white"
+                  className="w-20 h-20 text-center text-3xl font-bold rounded-2xl border-2 border-surface focus:border-primary focus:ring-4 focus:ring-primary/20 outline-none bg-surface"
                 />
-                <span className="text-xs text-neutral-500 mt-2 font-medium">Secondes</span>
+                <span className="text-xs text-muted mt-2 font-medium">Secondes</span>
               </div>
             </div>
-            <p className="text-xs text-neutral-500 mt-3 text-center">Ex: 0h 39min 00s pour un 10km en 39 minutes</p>
+            <p className="text-xs text-muted mt-3 text-center">Ex: 0h 39min 00s pour un 10km en 39 minutes</p>
           </div>
 
           {/* Calculate Button */}
@@ -271,16 +271,16 @@ export default function VDOTCalculatorPage() {
                 </div>
               </div>
               {/* Progress bar */}
-              <div className="mt-4 bg-white/20 rounded-full h-2">
+              <div className="mt-4 bg-surface/20 rounded-full h-2">
                 <div
-                  className="bg-white rounded-full h-2 transition-all duration-1000"
+                  className="bg-surface rounded-full h-2 transition-all duration-1000"
                   style={{ width: `${Math.min(result.level.percent, 100)}%` }}
                 />
               </div>
             </div>
 
             {/* Training Zones */}
-            <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-6">
+            <div className="bg-surface rounded-3xl border border-surface shadow-sm p-6">
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <Activity className="w-5 h-5 text-primary" />
                 Vos zones d'entraînement
@@ -294,15 +294,15 @@ export default function VDOTCalculatorPage() {
                       : ('pace' in zoneData ? zoneData.pace : '--:--'))
                     : '--:--';
                   return (
-                    <div key={zone.key} className="flex items-center justify-between p-3 bg-neutral-50 rounded-xl">
+                    <div key={zone.key} className="flex items-center justify-between p-3 bg-background rounded-xl">
                       <div className="flex items-center gap-3">
                         <span className="w-3 h-3 rounded-full" style={{ backgroundColor: zone.color }} />
                         <div>
                           <p className="font-semibold text-sm">{zone.name}</p>
-                          <p className="text-xs text-neutral-500">{zone.description}</p>
+                          <p className="text-xs text-muted">{zone.description}</p>
                         </div>
                       </div>
-                      <p className="font-mono font-bold">{paceDisplay} <span className="text-xs text-neutral-400 font-normal">min/km</span></p>
+                      <p className="font-mono font-bold">{paceDisplay} <span className="text-xs text-muted font-normal">min/km</span></p>
                     </div>
                   );
                 })}
@@ -310,20 +310,20 @@ export default function VDOTCalculatorPage() {
             </div>
 
             {/* Race Predictions */}
-            <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-6">
+            <div className="bg-surface rounded-3xl border border-surface shadow-sm p-6">
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-warning" />
                 Prédictions de courses
               </h3>
               <div className="grid grid-cols-2 gap-3">
                 {result.predictions.classicRaces.map((race) => (
-                  <div key={race.distance} className="p-4 bg-gradient-to-br from-neutral-50 to-white border border-neutral-100 rounded-xl">
+                  <div key={race.distance} className="p-4 bg-gradient-to-br from-neutral-50 to-white border border-surface rounded-xl">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold">{race.distance}</span>
                       <TrendingUp className="w-4 h-4 text-primary" />
                     </div>
                     <p className="text-2xl font-bold font-mono">{race.time}</p>
-                    <p className="text-xs text-neutral-500 mt-1">Allure: {race.pace} /km</p>
+                    <p className="text-xs text-muted mt-1">Allure: {race.pace} /km</p>
                   </div>
                 ))}
               </div>
@@ -336,7 +336,7 @@ export default function VDOTCalculatorPage() {
               <p className="text-white/80 text-sm mb-4">Créez un compte pour un suivi personnalisé, un coaching adaptatif et des analyses avancées.</p>
               <button
                 onClick={() => router.push('/login?mode=register')}
-                className="px-6 py-3 bg-white text-primary-600 font-semibold rounded-xl hover:bg-neutral-100 transition-colors inline-flex items-center gap-2"
+                className="px-6 py-3 bg-surface text-primary-600 font-semibold rounded-xl hover:bg-surface transition-colors inline-flex items-center gap-2"
               >
                 Créer un compte gratuit
                 <ChevronRight className="w-4 h-4" />

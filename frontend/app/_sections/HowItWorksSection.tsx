@@ -64,7 +64,7 @@ export default function HowItWorksSection() {
   }, []);
 
   return (
-    <section id="comment-ca-marche" className="py-20 lg:py-32 bg-white overflow-hidden">
+    <section id="comment-ca-marche" className="py-20 lg:py-32 bg-surface overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
@@ -72,14 +72,14 @@ export default function HowItWorksSection() {
             <Sparkles className="w-4 h-4" />
             Simple et rapide
           </span>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-neutral-900 tracking-tight mb-6">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight mb-6">
             Comment ça
             <br />
             <span className="bg-gradient-to-r from-recovery-500 to-primary-500 bg-clip-text text-transparent">
               Marche ?
             </span>
           </h2>
-          <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
+          <p className="text-lg text-muted max-w-2xl mx-auto">
             Commencez à utiliser DrawRun en 3 étapes simples. 
             Pas de configuration complexe, juste vos données et votre motivation.
           </p>
@@ -99,16 +99,16 @@ export default function HowItWorksSection() {
                   <div className="flex flex-col h-full">
                     {/* Step Number & Icon */}
                     <div className="flex items-center justify-between mb-6">
-                      <span className="text-5xl font-black text-neutral-100">{step.number}</span>
+                      <span className="text-5xl font-black text-muted">{step.number}</span>
                       <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${iconColors[step.color]}`}>
                         <Icon className="w-7 h-7" />
                       </div>
                     </div>
                     
-                    <h3 className="text-xl font-bold text-neutral-900 mb-3">
+                    <h3 className="text-xl font-bold text-foreground mb-3">
                       {step.title}
                     </h3>
-                    <p className="text-neutral-600 leading-relaxed flex-1">
+                    <p className="text-muted leading-relaxed flex-1">
                       {step.description}
                     </p>
                   </div>
@@ -117,7 +117,7 @@ export default function HowItWorksSection() {
                 {/* Connector Arrow (hidden on mobile and last item) */}
                 {index < steps.length - 1 && (
                   <div className="hidden md:block absolute top-1/2 -right-6 lg:-right-8 transform -translate-y-1/2 z-0">
-                    <ArrowRight className="w-6 h-6 lg:w-8 lg:h-8 text-neutral-300" />
+                    <ArrowRight className="w-6 h-6 lg:w-8 lg:h-8 text-foreground" />
                   </div>
                 )}
               </div>
@@ -136,11 +136,11 @@ export default function HowItWorksSection() {
           </Button>
           
           <div className="flex items-center justify-center gap-6 mt-6">
-            <div className="flex items-center gap-2 text-sm text-neutral-500">
+            <div className="flex items-center gap-2 text-sm text-muted">
               <Shield className="w-4 h-4" />
               Données sécurisées
             </div>
-            <div className="flex items-center gap-2 text-sm text-neutral-500">
+            <div className="flex items-center gap-2 text-sm text-muted">
               <Lock className="w-4 h-4" />
               Aucun engagement
             </div>

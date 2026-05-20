@@ -40,10 +40,10 @@ class Logger {
     // In development, log to console with formatting
     if (this.isDevelopment) {
       const styles = {
-        debug: 'color: #64748B',
-        info: 'color: #007AFF',
-        warn: 'color: #FF9500',
-        error: 'color: #FF3B30; font-weight: bold',
+        debug: 'color: var(--muted)',
+        info: 'color: var(--primary)',
+        warn: 'color: var(--warning)',
+        error: 'color: var(--danger); font-weight: bold',
       };
 
       console.log(
@@ -77,3 +77,7 @@ class Logger {
 }
 
 export const logger = Logger.getInstance();
+
+
+
+

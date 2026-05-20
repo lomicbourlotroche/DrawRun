@@ -16,21 +16,21 @@ import L from 'leaflet';
 
 /**
  * ActivityMap component for displaying GPS tracks and current position on a Leaflet map.
- * 
+ *
  * Features:
  * - Displays polyline tracks from encoded strings or coordinate arrays
  * - Shows current position with pulsing marker and accuracy circle
  * - Supports trail animation for live tracking
  * - Displays segments with custom colors
  * - Fully accessible with ARIA attributes
- * 
+ *
  * @param props - ActivityMapProps containing polyline, coordinates, position, and display options
  */
 export default function ActivityMap({
   polyline,
   latlng,
   className = '',
-  color = '#FF3B30',
+  color = 'var(--danger)',
   currentPosition,
   accuracy,
   showTrailAnimation = false,
@@ -140,8 +140,8 @@ export default function ActivityMap({
         if (coordinates.length > 0) {
           L.circleMarker(coordinates[0], {
             radius: 8,
-            fillColor: '#22c55e',
-            color: '#fff',
+            fillColor: 'var(--success)',
+            color: 'var(--surface)',
             weight: 2,
             fillOpacity: 1,
           }).addTo(map);
@@ -151,8 +151,8 @@ export default function ActivityMap({
         if (coordinates.length > 1) {
           L.circleMarker(coordinates[coordinates.length - 1], {
             radius: 8,
-            fillColor: '#ef4444',
-            color: '#fff',
+            fillColor: 'var(--danger)',
+            color: 'var(--surface)',
             weight: 2,
             fillOpacity: 1,
           }).addTo(map);
@@ -165,10 +165,10 @@ export default function ActivityMap({
           className: 'gps-pulse-marker',
           html: `<div style="
             width: 18px; height: 18px;
-            background: #3B82F6;
-            border: 3px solid white;
+            background: var(--primary);
+            border: 3px solid var(--surface);
             border-radius: 50%;
-            box-shadow: 0 0 0 4px rgba(59,130,246,0.3), 0 0 0 8px rgba(59,130,246,0.15);
+            box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary), transparent 70%), 0 0 0 8px color-mix(in srgb, var(--primary), transparent 85%);
             animation: gps-pulse 2s ease-in-out infinite;
           "></div>`,
           iconSize: [18, 18],
@@ -186,8 +186,8 @@ export default function ActivityMap({
         if (accuracy && accuracy > 0 && accuracy < 200) {
           const circle = L.circle(currentPosition, {
             radius: accuracy,
-            color: '#3B82F6',
-            fillColor: '#3B82F6',
+            color: 'var(--primary)',
+            fillColor: 'var(--primary)',
             fillOpacity: 0.1,
             weight: 1,
             opacity: 0.3,
@@ -200,7 +200,7 @@ export default function ActivityMap({
       // Segment overlays
       if (segments && segments.length > 0) {
         segments.forEach((seg) => {
-          const segColor = seg.color || '#8B5CF6';
+          const segColor = seg.color || 'var(--secondary)';
           const segLine = L.polyline(
             [[seg.startLat, seg.startLng], [seg.endLat, seg.endLng]],
             {
@@ -287,9 +287,9 @@ export default function ActivityMap({
     >
       <style jsx>{`
         @keyframes gps-pulse {
-          0% { box-shadow: 0 0 0 4px rgba(59,130,246,0.3); }
-          50% { box-shadow: 0 0 0 4px rgba(59,130,246,0.3), 0 0 0 12px rgba(59,130,246,0.1); }
-          100% { box-shadow: 0 0 0 4px rgba(59,130,246,0.3); }
+          0% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary), transparent 70%); }
+          50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary), transparent 70%), 0 0 0 12px color-mix(in srgb, var(--primary), transparent 90%); }
+          100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary), transparent 70%); }
         }
       `}</style>
       <div
@@ -301,3 +301,6 @@ export default function ActivityMap({
     </div>
   );
 }
+
+
+

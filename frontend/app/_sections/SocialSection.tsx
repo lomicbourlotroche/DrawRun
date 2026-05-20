@@ -69,14 +69,14 @@ export default function SocialSection() {
             <Users className="w-4 h-4" />
             Fonctionnalité Communauté
           </span>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-neutral-900 tracking-tight mb-6">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight mb-6">
             Entraînez-vous
             <br />
             <span className="bg-gradient-to-r from-primary-600 to-secondary bg-clip-text text-transparent">
               Ensemble
             </span>
           </h2>
-          <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
+          <p className="text-lg text-muted max-w-2xl mx-auto">
             Rejoignez une communauté de coureurs passionnés. Partagez vos progrès, 
             comparez vos performances et motivez-vous mutuellement.
           </p>
@@ -103,17 +103,17 @@ export default function SocialSection() {
                     <Icon className="w-7 h-7" />
                   </div>
                   
-                  <h3 className="text-xl font-bold text-neutral-900 mb-3">
+                  <h3 className="text-xl font-bold text-foreground mb-3">
                     {feature.title}
                   </h3>
                   
-                  <p className="text-neutral-600 leading-relaxed mb-6 flex-1">
+                  <p className="text-muted leading-relaxed mb-6 flex-1">
                     {feature.description}
                   </p>
                   
                   <ul className="space-y-2">
                     {feature.features.map((item, i) => (
-                      <li key={i} className="flex items-center gap-2 text-sm text-neutral-600">
+                      <li key={i} className="flex items-center gap-2 text-sm text-muted">
                         <Check className="w-4 h-4 text-success-500 shrink-0" />
                         {item}
                       </li>
@@ -137,10 +137,10 @@ export default function SocialSection() {
                   Rejoignez une communauté active qui partage la même passion pour la course et la performance.
                 </p>
                 <div className="flex flex-wrap gap-3">
-                  <span className="px-4 py-2 bg-white/20 rounded-full text-sm font-medium">
+                  <span className="px-4 py-2 bg-surface/20 rounded-full text-sm font-medium">
                     50K+ activités partagées
                   </span>
-                  <span className="px-4 py-2 bg-white/20 rounded-full text-sm font-medium">
+                  <span className="px-4 py-2 bg-surface/20 rounded-full text-sm font-medium">
                     1,200+ groupes créés
                   </span>
                 </div>
@@ -150,12 +150,12 @@ export default function SocialSection() {
                   {[1, 2, 3, 4, 5].map((i) => (
                     <div
                       key={i}
-                      className="w-12 h-12 rounded-full bg-white border-2 border-primary-500 flex items-center justify-center text-primary-600 font-bold text-sm"
+                      className="w-12 h-12 rounded-full bg-surface border-2 border-primary-500 flex items-center justify-center text-primary-600 font-bold text-sm"
                     >
                       {String.fromCharCode(64 + i)}
                     </div>
                   ))}
-                  <div className="w-12 h-12 rounded-full bg-white/30 border-2 border-white flex items-center justify-center text-white font-bold text-sm">
+                  <div className="w-12 h-12 rounded-full bg-surface/30 border-2 border-white flex items-center justify-center text-white font-bold text-sm">
                     +2k
                   </div>
                 </div>
@@ -164,8 +164,8 @@ export default function SocialSection() {
             
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full blur-3xl" />
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-white rounded-full blur-3xl" />
+              <div className="absolute top-0 right-0 w-64 h-64 bg-surface rounded-full blur-3xl" />
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-surface rounded-full blur-3xl" />
             </div>
           </Card>
         </div>

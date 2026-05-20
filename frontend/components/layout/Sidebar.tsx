@@ -82,13 +82,13 @@ export default function Sidebar() {
         className="lg:hidden fixed top-4 left-4 z-50 p-3 min-h-[44px] min-w-[44px] bg-surface/95 backdrop-blur-xl rounded-xl border border-border/60 shadow-sm active:scale-95 transition-transform"
         aria-label="Ouvrir le menu"
       >
-        <Menu className="w-5 h-5 text-neutral-700" />
+        <Menu className="w-5 h-5 text-muted" />
       </button>
 
       {/* Mobile overlay */}
       {isMobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/40 z-40"
+          className="lg:hidden fixed inset-0 bg-foreground/40 z-40"
           onClick={() => setIsMobileOpen(false)}
         />
       )}
@@ -109,7 +109,7 @@ export default function Sidebar() {
         >
           <Link href="/app" className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-              <span className="text-white font-bold text-sm">DR</span>
+              <span className="text-foreground font-bold text-sm">DR</span>
             </div>
             {!isCollapsed && (
               <span className="text-base font-bold text-foreground tracking-tight truncate">DrawRun</span>
@@ -117,10 +117,10 @@ export default function Sidebar() {
           </Link>
           <button
             onClick={() => setIsMobileOpen(false)}
-            className="lg:hidden ml-auto p-1 hover:bg-neutral-100 rounded-lg transition-colors"
+            className="lg:hidden ml-auto p-1 hover:bg-background rounded-lg transition-colors"
             aria-label="Fermer le menu"
           >
-            <X className="w-5 h-5 text-neutral-500" />
+            <X className="w-5 h-5 text-muted" />
           </button>
         </div>
 
@@ -140,18 +140,18 @@ export default function Sidebar() {
                   isCollapsed && 'justify-center px-0',
                   active
                     ? 'bg-primary-50 text-primary-700 border border-primary-100'
-                    : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 border border-transparent'
+                    : 'text-muted hover:bg-background hover:text-foreground border border-transparent'
                 )}
               >
                 <div className="relative flex-shrink-0">
                   <item.icon
                     className={cn(
                       'w-5 h-5',
-                      active ? 'text-primary-600' : 'text-neutral-500 group-hover:text-neutral-700'
+                      active ? 'text-primary-600' : 'text-muted group-hover:text-muted'
                     )}
                   />
                   {hasNotifications && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-danger rounded-full flex items-center justify-center text-[9px] font-bold text-white leading-none">
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-danger rounded-full flex items-center justify-center text-[9px] font-bold text-foreground leading-none">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
@@ -179,7 +179,7 @@ export default function Sidebar() {
         <div className="lg:hidden px-3 py-2 border-t border-border/60">
           <Link
             href="/app/record"
-            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl bg-gradient-to-r from-primary to-info text-white font-medium text-sm shadow-lg shadow-primary/20 active:scale-95 transition-transform"
+            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl bg-gradient-to-r from-primary to-info text-foreground font-medium text-sm shadow-lg shadow-primary/20 active:scale-95 transition-transform"
           >
             <Plus className="w-5 h-5" />
             {!isCollapsed && <span>Enregistrer une activité</span>}
@@ -204,7 +204,7 @@ export default function Sidebar() {
             onClick={handleLogout}
             title={isCollapsed ? 'Déconnexion' : undefined}
             className={cn(
-              'flex items-center gap-3 w-full px-3 py-3 min-h-[44px] rounded-xl text-neutral-500 hover:text-danger-600 hover:bg-danger-50 transition-all duration-150',
+              'flex items-center gap-3 w-full px-3 py-3 min-h-[44px] rounded-xl text-muted hover:text-danger-600 hover:bg-danger-50 transition-all duration-150',
               isCollapsed && 'justify-center px-0'
             )}
           >
@@ -216,7 +216,7 @@ export default function Sidebar() {
         {/* Collapse toggle (desktop only) */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden lg:flex absolute -right-3 top-20 w-6 h-6 bg-surface border border-border rounded-full items-center justify-center hover:bg-neutral-50 shadow-sm transition-colors"
+          className="hidden lg:flex absolute -right-3 top-20 w-6 h-6 bg-surface border border-border rounded-full items-center justify-center hover:bg-background shadow-sm transition-colors"
           aria-label={isCollapsed ? 'Développer la sidebar' : 'Réduire la sidebar'}
         >
           <ChevronLeft

@@ -67,11 +67,10 @@ interface StatCardProps {
     direction: 'up' | 'down';
   };
   icon?: React.ReactNode;
-  color?: string;
   className?: string;
 }
 
-export function StatCard({ label, value, unit, trend, icon, color = '#007AFF', className }: StatCardProps) {
+export function StatCard({ label, value, unit, trend, icon, className }: StatCardProps) {
   return (
     <div className={cn('bg-surface border border-border rounded-lg p-4', className)}>
       <div className="flex items-start justify-between">
@@ -95,7 +94,7 @@ export function StatCard({ label, value, unit, trend, icon, color = '#007AFF', c
         {icon && (
           <div
             className="p-2 rounded-lg"
-            style={{ backgroundColor: `${color}20`, color }}
+            style={{ backgroundColor: 'var(--primary)/20', color: 'var(--primary)' }}
           >
             {icon}
           </div>

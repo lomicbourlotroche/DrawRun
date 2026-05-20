@@ -49,11 +49,11 @@ export class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
       return (
-        <div style={{ 
+        <div style={{
           padding: '20px', 
           textAlign: 'center', 
-          background: '#1a1a1a', 
-          color: '#fff',
+          background: 'var(--bg)', 
+          color: 'var(--foreground)',
           minHeight: '100vh',
           display: 'flex',
           alignItems: 'center',
@@ -62,11 +62,11 @@ export class ErrorBoundary extends Component<Props, State> {
           <div>
             <h1 style={{ fontSize: '24px', marginBottom: '16px' }}>Une erreur est survenue</h1>
             {process.env.NODE_ENV !== 'production' ? (
-              <p style={{ color: '#f87171', marginBottom: '16px' }}>
+              <p style={{ color: 'var(--danger)', marginBottom: '16px' }}>
                 {this.state.error?.message}
               </p>
             ) : (
-              <p style={{ color: '#888', marginBottom: '16px' }}>
+              <p style={{ color: 'var(--mutable)', marginBottom: '16px' }}>
                 Une erreur inattendue est survenue. Veuillez réessayer.
               </p>
             )}
@@ -74,8 +74,8 @@ export class ErrorBoundary extends Component<Props, State> {
               onClick={this.handleRetry}
               style={{
                 padding: '8px 16px',
-                background: '#3b82f6',
-                color: '#fff',
+                background: 'var(--primary)',
+                color: 'var(--surface)',
                 border: 'none',
                 borderRadius: '4px',
                 cursor: 'pointer',

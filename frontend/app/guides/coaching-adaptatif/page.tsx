@@ -9,9 +9,9 @@ export default function CoachingAdaptatifGuide() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-green-50/30">
-      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-neutral-200">
+      <div className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-surface">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
-          <button onClick={() => router.push('/')} className="p-2 rounded-xl hover:bg-neutral-100 transition-colors">
+          <button onClick={() => router.push('/')} className="p-2 rounded-xl hover:bg-surface transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-3">
@@ -28,20 +28,20 @@ export default function CoachingAdaptatifGuide() {
 
       <div className="max-w-4xl mx-auto px-4 py-12 space-y-12">
         <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-neutral-900 mb-4">
+          <h2 className="text-4xl font-extrabold text-foreground mb-4">
             Un plan qui s'adapte à{' '}
             <span className="bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">
               votre forme
             </span>
           </h2>
-          <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
+          <p className="text-lg text-muted max-w-2xl mx-auto">
             Contrairement aux plans statiques, le coaching adaptatif de DrawRun ajuste chaque semaine
             en fonction de votre fatigue, de vos performances réelles et de votre récupération.
           </p>
         </div>
 
         {/* How it works */}
-        <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
+        <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-8 flex items-center gap-3">
             <Brain className="w-6 h-6 text-success" />
             Comment fonctionne l'adaptation
@@ -85,7 +85,7 @@ export default function CoachingAdaptatifGuide() {
                     <item.icon className="w-5 h-5 text-success" />
                     {item.title}
                   </h4>
-                  <p className="text-neutral-600 leading-relaxed">{item.content}</p>
+                  <p className="text-muted leading-relaxed">{item.content}</p>
                 </div>
               </div>
             ))}
@@ -93,7 +93,7 @@ export default function CoachingAdaptatifGuide() {
         </div>
 
         {/* Algorithm details */}
-        <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
+        <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
             <BarChart3 className="w-6 h-6 text-success" />
             Logique d'adaptation
@@ -124,8 +124,8 @@ export default function CoachingAdaptatifGuide() {
             </div>
           </div>
 
-          <div className="mt-6 p-4 bg-neutral-50 rounded-xl">
-            <p className="text-sm text-neutral-600">
+          <div className="mt-6 p-4 bg-background rounded-xl">
+            <p className="text-sm text-muted">
               <strong>Phases typiques :</strong> Base (endurance) → Développement (seuil) → Spécifique (allure course) → Tapering (fraîcheur) → Compétition.
               Chaque phase dure 3-6 semaines selon l'objectif et le niveau.
             </p>
@@ -133,16 +133,16 @@ export default function CoachingAdaptatifGuide() {
         </div>
 
         {/* Scientific basis */}
-        <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
+        <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-4">Références scientifiques</h3>
-          <ul className="space-y-3 text-sm text-neutral-600">
-            <li className="p-3 bg-neutral-50 rounded-lg">
+          <ul className="space-y-3 text-sm text-muted">
+            <li className="p-3 bg-background rounded-lg">
               <strong>McNamara, B.P. & Stearne, J. (2010).</strong> — The effects of a training program on running performance. <em>Journal of Strength and Conditioning Research</em>.
             </li>
-            <li className="p-3 bg-neutral-50 rounded-lg">
+            <li className="p-3 bg-background rounded-lg">
               <strong>Seiler, S. (2010).</strong> — What is best practice for training intensity and duration distribution in endurance athletes? <em>International Journal of Sports Physiology and Performance</em>, 5(3), 276-291.
             </li>
-            <li className="p-3 bg-neutral-50 rounded-lg">
+            <li className="p-3 bg-background rounded-lg">
               <strong>Bourdon, P.C. et al. (2017).</strong> — Monitoring athlete training loads: consensus statement. <em>International Journal of Sports Physiology and Performance</em>, 12(S2), S2-161.
             </li>
           </ul>
@@ -155,7 +155,7 @@ export default function CoachingAdaptatifGuide() {
           <p className="text-white/80 mb-6">Répondez à quelques questions et recevez un plan personnalisé en quelques secondes.</p>
           <button
             onClick={() => router.push('/login?mode=register')}
-            className="px-8 py-3 bg-white text-success font-semibold rounded-xl hover:bg-neutral-100 transition-colors"
+            className="px-8 py-3 bg-surface text-success font-semibold rounded-xl hover:bg-surface transition-colors"
           >
             Créer un compte gratuit
           </button>

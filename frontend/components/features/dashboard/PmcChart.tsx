@@ -23,10 +23,10 @@ interface PmcChartProps {
 }
 
 const getACWRColor = (acwr: number) => {
-  if (acwr < 0.8) return { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Sous-entrainement' };
-  if (acwr < 1.3) return { bg: 'bg-green-100', text: 'text-green-700', label: 'Optimal' };
-  if (acwr < 1.5) return { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Surveillance' };
-  return { bg: 'bg-red-100', text: 'text-red-700', label: 'Risque' };
+  if (acwr < 0.8) return { bg: 'bg-primary/10', text: 'text-primary', label: 'Sous-entrainement' };
+  if (acwr < 1.3) return { bg: 'bg-success/10', text: 'text-success', label: 'Optimal' };
+  if (acwr < 1.5) return { bg: 'bg-warning/10', text: 'text-warning', label: 'Surveillance' };
+  return { bg: 'bg-danger/10', text: 'text-danger', label: 'Risque' };
 };
 
 export function PmcChart({ data, isLoading }: PmcChartProps) {
@@ -36,7 +36,7 @@ export function PmcChart({ data, isLoading }: PmcChartProps) {
     return data.map((point) => ({
       ...point,
       dateLabel: formatDateShort(point.date),
-      tsbColor: point.tsb >= 0 ? '#34C759' : '#FF3B30',
+      tsbColor: point.tsb >= 0 ? 'var(--success)' : 'var(--danger)',
     }));
   }, [data]);
 
@@ -59,7 +59,7 @@ export function PmcChart({ data, isLoading }: PmcChartProps) {
   const getFormStatus = (tsb: number) => {
     if (tsb < -15) return { label: 'Surentrainement', color: 'text-danger' };
     if (tsb < -5) return { label: 'Fatigué', color: 'text-peak' };
-    if (tsb < 5) return { label: 'Neutre', color: 'text-gray-500' };
+    if (tsb < 5) return { label: 'Neutre', color: 'text-muted' };
     if (tsb < 25) return { label: 'Bonne forme', color: 'text-success' };
     return { label: 'Optimale', color: 'text-primary' };
   };
@@ -77,7 +77,7 @@ export function PmcChart({ data, isLoading }: PmcChartProps) {
               className={cn(
                 'px-3 py-1 rounded-full text-xs font-medium transition-colors',
                 showAdvanced
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary text-foreground'
                   : 'bg-surface text-muted hover:text-foreground'
               )}
             >
@@ -148,42 +148,46 @@ export function PmcChart({ data, isLoading }: PmcChartProps) {
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="ctlGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#007AFF" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#007AFF" stopOpacity={0} />
+                  <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="atlGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#FF3B30" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#FF3B30" stopOpacity={0} />
+                  <stop offset="5%" stopColor="var(--danger)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="var(--danger)" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="tsbGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--success)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="var(--success)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--muted)" />
               <XAxis
                 dataKey="dateLabel"
-                stroke="#64748B"
+                stroke="var(--mutable)"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
-                stroke="#64748B"
+                stroke="var(--mutable)"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
               />
-              <ReferenceLine y={0} stroke="#64748B" strokeDasharray="3 3" />
+              <ReferenceLine y={0} stroke="var(--mutable)" strokeDasharray="3 3" />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#1E293B',
-                  border: '1px solid #334155',
+                  backgroundColor: 'var(--bg)',
+                  border: '1px solid var(--border)',
                   borderRadius: '8px',
                 }}
-                labelStyle={{ color: '#F1F5F9' }}
+                labelStyle={{ color: 'var(--foreground)' }}
                 formatter={(value: number, name: string) => [value.toFixed(1), name]}
               />
               <Area
                 type="monotone"
                 dataKey="ctl"
-                stroke="#007AFF"
+                stroke="var(--primary)"
                 strokeWidth={2}
                 fill="url(#ctlGradient)"
                 name="CTL (Fitness)"
@@ -191,7 +195,7 @@ export function PmcChart({ data, isLoading }: PmcChartProps) {
               <Area
                 type="monotone"
                 dataKey="atl"
-                stroke="#FF3B30"
+                stroke="var(--danger)"
                 strokeWidth={2}
                 fill="url(#atlGradient)"
                 name="ATL (Fatigue)"
@@ -200,9 +204,9 @@ export function PmcChart({ data, isLoading }: PmcChartProps) {
                 <Area
                   type="monotone"
                   dataKey="tsb"
-                  stroke="#34C759"
+                  stroke="var(--success)"
                   strokeWidth={1}
-                  fill="#34C759"
+                  fill="url(#tsbGradient)"
                   fillOpacity={0.1}
                   name="TSB (Forme)"
                 />

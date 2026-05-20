@@ -30,7 +30,7 @@ function formatDist(m: number): string {
 export default function ElevationProfile({
   data,
   height = 120,
-  color = '#3b82f6',
+  color = 'var(--primary)',
 }: ElevationProfileProps) {
   const chartData = useMemo(() => {
     return data.map((pt) => ({
@@ -42,7 +42,7 @@ export default function ElevationProfile({
   if (data.length < 2) {
     return (
       <div
-        className="flex items-center justify-center text-xs text-muted-foreground bg-muted/30 rounded-lg"
+        className="flex items-center justify-center text-xs text-muted bg-surface rounded-lg"
         style={{ height }}
       >
         Pas assez de données d&apos;élévation
@@ -66,7 +66,7 @@ export default function ElevationProfile({
               <stop offset="100%" stopColor={color} stopOpacity={0.05} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis
             dataKey="dist"
             tickFormatter={formatDist}
@@ -87,8 +87,8 @@ export default function ElevationProfile({
             formatter={(value: number) => [`${value} m`, 'Altitude']}
             labelFormatter={(label: number) => formatDist(label)}
             contentStyle={{
-              background: 'rgba(255,255,255,0.95)',
-              border: '1px solid #e5e7eb',
+              background: 'color-mix(in srgb, var(--surface), transparent 5%)',
+              border: '1px solid var(--border)',
               borderRadius: '8px',
               fontSize: '12px',
             }}
@@ -105,10 +105,11 @@ export default function ElevationProfile({
         </AreaChart>
       </ResponsiveContainer>
 
-      <div className="flex justify-between text-xs text-muted-foreground mt-1 px-1">
+      <div className="flex justify-between text-xs text-muted mt-1 px-1">
         <span>D+ {Math.round(maxElev - (chartData[0]?.elev || 0))} m</span>
         <span>{formatDist(chartData[chartData.length - 1]?.dist || 0)}</span>
       </div>
     </div>
   );
 }
+

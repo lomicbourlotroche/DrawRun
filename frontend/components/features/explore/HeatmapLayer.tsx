@@ -74,11 +74,11 @@ export default function HeatmapLayer({
         maxZoom: 16,
         max: 1.0,
         gradient: {
-          0.2: '#313695',
-          0.4: '#4575b4',
-          0.6: '#74add1',
-          0.8: '#fdae61',
-          1.0: '#f46d43',
+          0.2: 'var(--primary)',
+          0.4: 'var(--primary)',
+          0.6: 'var(--primary)',
+          0.8: 'var(--peak)',
+          1.0: 'var(--peak)',
         },
       });
       heat.addTo(map);

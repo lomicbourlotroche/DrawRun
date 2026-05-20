@@ -36,7 +36,7 @@ export default function WeatherSection() {
   }, []);
 
   return (
-    <section id="weather" className="py-20 lg:py-32 bg-neutral-900 overflow-hidden">
+    <section id="weather" className="py-20 lg:py-32 bg-background overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left Content */}
@@ -54,7 +54,7 @@ export default function WeatherSection() {
               </span>
             </h2>
             
-            <p className="text-lg text-neutral-300 leading-relaxed mb-8 max-w-xl">
+            <p className="text-lg text-foreground leading-relaxed mb-8 max-w-xl">
               Visualisez la température, l&apos;humidité, le vent et les conditions météo
               au moment de chaque sortie. L&apos;impact estimé sur votre allure vous aide
               à contextualiser vos performances.
@@ -72,7 +72,7 @@ export default function WeatherSection() {
                   <div className="w-8 h-8 bg-primary-500/20 rounded-lg flex items-center justify-center shrink-0">
                     <item.icon className="w-4 h-4 text-primary-400" />
                   </div>
-                  <span className="text-neutral-300">{item.text}</span>
+                  <span className="text-foreground">{item.text}</span>
                 </div>
               ))}
             </div>
@@ -85,7 +85,7 @@ export default function WeatherSection() {
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="text-lg font-bold text-white">Sortie matin — 15 Mai</h3>
-                    <p className="text-sm text-neutral-400">06:30 • Paris, France</p>
+                    <p className="text-sm text-muted">06:30 • Paris, France</p>
                   </div>
                   <Sun className="w-10 h-10 text-warning-400" />
                 </div>
@@ -94,17 +94,17 @@ export default function WeatherSection() {
                   <div className="text-center">
                     <Thermometer className="w-5 h-5 text-danger-400 mx-auto mb-1" />
                     <p className="text-2xl font-bold text-white">18°C</p>
-                    <p className="text-xs text-neutral-400">Température</p>
+                    <p className="text-xs text-muted">Température</p>
                   </div>
                   <div className="text-center">
                     <Droplets className="w-5 h-5 text-primary-400 mx-auto mb-1" />
                     <p className="text-2xl font-bold text-white">65%</p>
-                    <p className="text-xs text-neutral-400">Humidité</p>
+                    <p className="text-xs text-muted">Humidité</p>
                   </div>
                   <div className="text-center">
-                    <Wind className="w-5 h-5 text-neutral-400 mx-auto mb-1" />
+                    <Wind className="w-5 h-5 text-muted mx-auto mb-1" />
                     <p className="text-2xl font-bold text-white">12</p>
-                    <p className="text-xs text-neutral-400">km/h</p>
+                    <p className="text-xs text-muted">km/h</p>
                   </div>
                 </div>
 
@@ -126,10 +126,10 @@ export default function WeatherSection() {
                 { icon: Snowflake, label: 'Neige' },
               ].map((w, i) => (
                 <div key={i} className="flex flex-col items-center gap-1">
-                  <div className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
-                    <w.icon className="w-5 h-5 text-neutral-400" />
+                  <div className="w-10 h-10 bg-surface/5 border border-white/10 rounded-xl flex items-center justify-center">
+                    <w.icon className="w-5 h-5 text-muted" />
                   </div>
-                  <span className="text-xs text-neutral-500">{w.label}</span>
+                  <span className="text-xs text-muted">{w.label}</span>
                 </div>
               ))}
             </div>

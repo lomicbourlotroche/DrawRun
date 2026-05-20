@@ -42,7 +42,7 @@ export default function RecordActivityPage() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex flex-col items-center justify-center gap-4">
         <div className="w-12 h-12 rounded-full border-4 border-primary/30 border-t-blue-500 animate-spin" />
-        <div className="text-slate-400 text-sm font-medium">Préparation de l&apos;enregistrement...</div>
+        <div className="text-muted text-sm font-medium">Préparation de l&apos;enregistrement...</div>
       </div>
     );
   }

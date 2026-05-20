@@ -15,7 +15,7 @@ const LAYERS = [
 
 export default function MapLayerSwitcher({ activeLayer, onLayerChange }: MapLayerSwitcherProps) {
   return (
-    <div className="flex flex-col gap-1 bg-white/90 backdrop-blur-sm rounded-lg shadow-md p-1">
+    <div className="flex flex-col gap-1 bg-surface/90 backdrop-blur-sm rounded-lg shadow-md p-1">
       {LAYERS.map((layer) => {
         const Icon = layer.icon;
         const isActive = activeLayer === layer.id;
@@ -26,7 +26,7 @@ export default function MapLayerSwitcher({ activeLayer, onLayerChange }: MapLaye
             title={layer.label}
             className={`flex items-center justify-center min-w-[44px] min-h-[44px] rounded-md transition-all ${
               isActive
-                ? 'bg-primary text-white shadow-sm'
+                ? 'bg-primary text-foreground shadow-sm'
                 : 'text-muted-foreground hover:bg-primary/10 hover:text-primary'
             }`}
           >

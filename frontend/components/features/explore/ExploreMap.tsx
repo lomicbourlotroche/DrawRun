@@ -95,7 +95,7 @@ const TILE_CONFIGS: Record<string, { url: string; attribution: string }> = {
   },
 };
 
-const ROUTE_COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899'];
+const ROUTE_COLORS = ['var(--danger)', 'var(--primary)', 'var(--success)', 'var(--peak)', 'var(--secondary)', 'var(--danger)'];
 
 /**
  * ExploreMap component for displaying interactive maps with routes, segments, and heatmaps.
@@ -294,7 +294,7 @@ export default function ExploreMap({
         }
 
         const polyline = L.polyline(points, {
-          color: '#8b5cf6',
+          color: 'var(--secondary)',
           weight: 3,
           opacity: 0.5,
           dashArray: '8 4',
@@ -308,7 +308,7 @@ export default function ExploreMap({
         const markerSize = window.innerWidth < 640 ? 14 : 10;
         const startIcon = L.divIcon({
           className: 'segment-marker-start',
-          html: `<div style="width:${markerSize}px;height:${markerSize}px;background:#22c55e;border:2px solid white;border-radius:50%;"></div>`,
+          html: `<div style="width:${markerSize}px;height:${markerSize}px;background:var(--success);border:2px solid var(--surface);border-radius:50%;"></div>`,
           iconSize: [markerSize, markerSize],
           iconAnchor: [markerSize / 2, markerSize / 2],
         });
@@ -317,7 +317,7 @@ export default function ExploreMap({
 
         const endIcon = L.divIcon({
           className: 'segment-marker-end',
-          html: `<div style="width:${markerSize}px;height:${markerSize}px;background:#ef4444;border:2px solid white;border-radius:50%;"></div>`,
+          html: `<div style="width:${markerSize}px;height:${markerSize}px;background:var(--danger);border:2px solid var(--surface);border-radius:50%;"></div>`,
           iconSize: [markerSize, markerSize],
           iconAnchor: [markerSize / 2, markerSize / 2],
         });
@@ -345,8 +345,8 @@ export default function ExploreMap({
         const pulseIcon = L.divIcon({
           className: 'user-location-marker',
           html: `<div style="
-            width:18px;height:18px;background:#3b82f6;border:3px solid white;
-            border-radius:50%;box-shadow:0 0 0 4px rgba(59,130,246,0.3);
+            width:18px;height:18px;background:var(--primary);border:3px solid var(--surface);
+            border-radius:50%;box-shadow:0 0 0 4px var(--primary-400);
           "></div>`,
           iconSize: [18, 18],
           iconAnchor: [9, 9],
@@ -380,7 +380,13 @@ export default function ExploreMap({
         blur: 15,
         maxZoom: 17,
         max: 1.0,
-        gradient: { 0.2: '#313695', 0.4: '#4575b4', 0.6: '#74add1', 0.8: '#fdae61', 1.0: '#f46d43' },
+        gradient: { 
+          0.2: 'var(--primary)', 
+          0.4: 'var(--primary)', 
+          0.6: 'var(--primary)', 
+          0.8: 'var(--peak)', 
+          1.0: 'var(--peak)' 
+        },
       });
       heat.addTo(map);
       heatmapLayerRef.current = heat as unknown as L.HeatLayer;
@@ -420,9 +426,9 @@ export default function ExploreMap({
         const waypointIcon = L.divIcon({
           className: 'waypoint-marker',
           html: `<div style="
-            width:24px;height:24px;background:#3b82f6;border:3px solid white;
+            width:24px;height:24px;background:var(--primary);border:3px solid var(--surface);
             border-radius:50%;display:flex;align-items:center;justify-content:center;
-            color:white;font-size:11px;font-weight:bold;
+            color:var(--surface);font-size:11px;font-weight:bold;
           ">${idx + 1}</div>`,
           iconSize: [24, 24],
           iconAnchor: [12, 12],
@@ -446,7 +452,7 @@ export default function ExploreMap({
 
       const polyPoints = routeCreationPoints.map((p) => [p.lat, p.lng] as LatLng);
       const polyline = L.polyline(polyPoints, {
-        color: '#3b82f6',
+        color: 'var(--primary)',
         weight: 4,
         opacity: 0.8,
       }) as DrawRunPolyline;
@@ -460,7 +466,7 @@ export default function ExploreMap({
         const loopLine = L.polyline(
           [[last.lat, last.lng], [first.lat, first.lng]],
           {
-            color: '#3b82f6',
+            color: 'var(--primary)',
             weight: 3,
             opacity: 0.6,
             dashArray: '8 6',
@@ -507,7 +513,7 @@ export default function ExploreMap({
       if (points.length < 2) return;
 
       const polyline = L.polyline(points, {
-        color: '#f59e0b',
+        color: 'var(--peak)',
         weight: 5,
         opacity: 0.9,
       }) as DrawRunPolyline;

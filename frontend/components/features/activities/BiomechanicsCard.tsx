@@ -65,7 +65,7 @@ export const BiomechanicsCard: React.FC<BiomechanicsCardProps> = ({ metrics }) =
           </div>
           <div className="space-y-1">
             <p className="text-xs text-muted uppercase font-medium">Ratio Vertical</p>
-            <p className="text-2xl font-bold text-purple-500">
+            <p className="text-2xl font-bold text-secondary">
               {metrics.verticalRatio} <span className="text-sm font-normal text-muted">%</span>
             </p>
           </div>
@@ -86,14 +86,14 @@ export const BiomechanicsCard: React.FC<BiomechanicsCardProps> = ({ metrics }) =
         {metrics.advice && metrics.advice.length > 0 && (
           <div className="space-y-3 pt-2">
             <h4 className="text-sm font-bold flex items-center gap-2">
-              <Zap className="w-4 h-4 text-amber-500" />
+              <Zap className="w-4 h-4 text-warning" />
               Conseils Techniques du Coach
             </h4>
             <div className="space-y-2">
               {metrics.advice.map((adv, i) => (
                 <div key={i} className={`p-3 rounded-xl border-l-4 ${
                   adv.priority === 'high' ? 'bg-danger/5 border-danger' : 
-                  adv.priority === 'moderate' ? 'bg-amber-500/5 border-amber-500' : 
+                  adv.priority === 'moderate' ? 'bg-warning/5 border-warning' : 
                   'bg-primary/5 border-primary'
                 }`}>
                   <p className="text-sm font-bold">{adv.message}</p>
@@ -104,7 +104,7 @@ export const BiomechanicsCard: React.FC<BiomechanicsCardProps> = ({ metrics }) =
           </div>
         )}
 
-        <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-xl text-[10px] text-blue-700/70">
+        <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-xl text-[10px] text-primary/70">
           <Info className="w-3 h-3 shrink-0" />
           <p>Ces métriques sont des estimations algorithmiques basées sur la vitesse et la cadence. Elles visent à identifier des tendances techniques majeures.</p>
         </div>

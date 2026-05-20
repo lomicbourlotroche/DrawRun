@@ -80,10 +80,10 @@ function StatCard({ title, value, subtitle, icon, iconBg, trend }: StatCardProps
           <div
             className={`flex items-center gap-0.5 text-xs font-medium px-2 py-1 rounded-full ${
               trend > 0
-                ? 'bg-green-50 text-success'
+                ? 'bg-success/5 text-success'
                 : trend < 0
-                ? 'bg-red-50 text-danger'
-                : 'bg-neutral-100 text-neutral-500'
+                ? 'bg-danger/5 text-danger'
+                : 'bg-surface text-muted'
             }`}
           >
             {trend > 0 ? (
@@ -97,9 +97,9 @@ function StatCard({ title, value, subtitle, icon, iconBg, trend }: StatCardProps
           </div>
         )}
       </div>
-       <p className="text-2xl font-bold text-neutral-900 tabular-nums">{value}</p>
-       <p className="text-sm font-medium text-neutral-900 mt-0.5">{title}</p>
-       <p className="text-xs text-neutral-400 mt-0.5">{subtitle}</p>
+       <p className="text-2xl font-bold text-foreground tabular-nums">{value}</p>
+       <p className="text-sm font-medium text-foreground mt-0.5">{title}</p>
+       <p className="text-xs text-muted mt-0.5">{subtitle}</p>
      </GlassCard>
    );
  }
@@ -117,17 +117,17 @@ function ActivityRow({ activity }: ActivityRowProps) {
   return (
     <Link
       href={`/app/activities/${activity.id}`}
-      className="flex items-center justify-between p-3.5 rounded-xl hover:bg-neutral-50 transition-colors duration-150 group"
+      className="flex items-center justify-between p-3.5 rounded-xl hover:bg-background transition-colors duration-150 group"
     >
       <div className="flex items-center gap-3 min-w-0">
-        <div className="w-9 h-9 rounded-lg bg-blue-50 text-primary flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 transition-colors">
+        <div className="w-9 h-9 rounded-lg bg-primary/5 text-primary flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 transition-colors">
           {getActivityIcon(activity.type)}
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-neutral-900 truncate">
+          <p className="text-sm font-semibold text-foreground truncate">
             {activity.title ?? 'Activité'}
           </p>
-          <p className="text-xs text-neutral-400 mt-0.5">
+          <p className="text-xs text-muted mt-0.5">
             {dateStr ? formatDate(dateStr) : '—'}
             {durationS > 0 && ` · ${formatDuration(durationS)}`}
           </p>
@@ -137,11 +137,11 @@ function ActivityRow({ activity }: ActivityRowProps) {
       <div className="flex items-center gap-4 flex-shrink-0 ml-3">
         {distanceM > 0 && (
           <div className="text-right">
-            <p className="text-sm font-semibold text-neutral-900 tabular-nums">
+            <p className="text-sm font-semibold text-foreground tabular-nums">
               {formatDistance(distanceM)}
             </p>
             {elevation !== null && elevation !== undefined && elevation > 0 && (
-              <p className="text-xs text-neutral-400 flex items-center justify-end gap-0.5">
+              <p className="text-xs text-muted flex items-center justify-end gap-0.5">
                 <Mountain className="w-3 h-3" />
                 {Math.round(elevation)} m
               </p>
@@ -199,17 +199,17 @@ export function ModernDashboard() {
     return (
       <div className="animate-fade-in max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Header skeleton */}
-        <div className="h-20 w-64 bg-neutral-200 rounded-lg animate-pulse" />
+        <div className="h-20 w-64 bg-background rounded-lg animate-pulse" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-32 bg-white/60 border border-border/50 rounded-2xl animate-pulse" />
+            <div key={i} className="h-32 bg-surface/60 border border-border/50 rounded-2xl animate-pulse" />
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 h-64 bg-white/60 border border-border/50 rounded-2xl animate-pulse" />
+          <div className="lg:col-span-2 h-64 bg-surface/60 border border-border/50 rounded-2xl animate-pulse" />
           <div className="space-y-6">
-            <div className="h-40 bg-white/60 border border-border/50 rounded-2xl animate-pulse" />
-            <div className="h-40 bg-white/60 border border-border/50 rounded-2xl animate-pulse" />
+            <div className="h-40 bg-surface/60 border border-border/50 rounded-2xl animate-pulse" />
+            <div className="h-40 bg-surface/60 border border-border/50 rounded-2xl animate-pulse" />
           </div>
         </div>
       </div>
@@ -219,15 +219,15 @@ export function ModernDashboard() {
   return (
     <div className="animate-fade-in space-y-6">
       {/* Background Effects */}
-      <div className="fixed inset-0 bg-gradient-to-b from-neutral-50 to-white -z-10" />
-      <div className="fixed inset-0 bg-[linear-gradient(rgba(0,102,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,102,255,0.03)_1px,transparent_1px)] bg-[size:60px_60px] -z-10" />
+      <div className="fixed inset-0 bg-gradient-to-b from-bg to-surface -z-10" />
+      <div className="fixed inset-0 bg-[linear-gradient(color-mix(in srgb, var(--primary), transparent 97%)_1px,transparent_1px),linear-gradient(90deg,color-mix(in srgb, var(--primary), transparent 97%)_1px,transparent_1px)] bg-[size:60px_60px] -z-10" />
 
       {/* Greeting */}
       <div className="relative">
-        <h2 className="text-2xl font-bold text-neutral-900">
+        <h2 className="text-2xl font-bold text-foreground">
           {greeting}, {firstName} 👋
         </h2>
-        <p className="text-sm text-neutral-500 mt-1">
+        <p className="text-sm text-muted mt-1">
           {new Date().toLocaleDateString('fr-FR', {
             weekday: 'long',
             day: 'numeric',
@@ -243,7 +243,7 @@ export function ModernDashboard() {
           value={String(monthly.count)}
           subtitle="depuis le 1er du mois"
           icon={<Activity className="w-5 h-5 text-primary" />}
-          iconBg="bg-blue-50"
+          iconBg="bg-primary/5"
           trend={null}
         />
         <StatCard
@@ -251,15 +251,15 @@ export function ModernDashboard() {
           value={monthly.totalDistance > 0 ? formatDistance(monthly.totalDistance) : '—'}
           subtitle="ce mois-ci"
           icon={<TrendingUp className="w-5 h-5 text-success" />}
-          iconBg="bg-green-50"
+          iconBg="bg-success/5"
           trend={null}
         />
         <StatCard
           title="CTL (Forme)"
           value={pmc ? String(pmc.ctl) : '—'}
           subtitle="charge chronique"
-          icon={<BarChart3 className="w-5 h-5 text-violet-600" />}
-          iconBg="bg-violet-50"
+          icon={<BarChart3 className="w-5 h-5 text-secondary" />}
+          iconBg="bg-secondary/5"
           trend={pmc?.ctlTrend ?? null}
         />
         <StatCard
@@ -276,12 +276,12 @@ export function ModernDashboard() {
           }
           icon={
             pmc && pmc.tsb < -10 ? (
-              <TrendingDown className="w-5 h-5 text-amber-600" />
+              <TrendingDown className="w-5 h-5 text-warning" />
             ) : (
-              <TrendingUp className="w-5 h-5 text-amber-600" />
+              <TrendingUp className="w-5 h-5 text-warning" />
             )
           }
-          iconBg="bg-amber-50"
+          iconBg="bg-warning/5"
           trend={pmc?.tsbTrend ?? null}
         />
       </div>
@@ -290,11 +290,11 @@ export function ModernDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent activities */}
         <GlassCard className="lg:col-span-2" padding="none">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100/50">
-            <h3 className="text-base font-semibold text-neutral-900">Activités récentes</h3>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
+            <h3 className="text-base font-semibold text-foreground">Activités récentes</h3>
             <Link
               href="/app/activities"
-              className="text-sm font-medium text-primary hover:text-blue-700 transition-colors"
+              className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
             >
               Voir tout
             </Link>
@@ -307,11 +307,11 @@ export function ModernDashboard() {
               ))
             ) : (
               <div className="flex flex-col items-center justify-center py-10 text-center">
-                <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center mb-3">
-                  <Clock className="w-6 h-6 text-neutral-400" />
+                <div className="w-12 h-12 rounded-xl bg-background flex items-center justify-center mb-3">
+                  <Clock className="w-6 h-6 text-muted" />
                 </div>
-                <p className="text-sm font-medium text-neutral-600">Aucune activité récente</p>
-                <p className="text-xs text-neutral-400 mt-1">
+                <p className="text-sm font-medium text-foreground">Aucune activité récente</p>
+                <p className="text-xs text-muted mt-1">
                   Synchronisez vos services pour voir vos activités
                 </p>
               </div>
@@ -340,8 +340,8 @@ export function ModernDashboard() {
           {/* PMC summary if no recommendation */}
           {!recommendation && pmc && (
             <GlassCard className="p-0" padding="none">
-              <div className="px-5 py-4 border-b border-neutral-100/50">
-                <h3 className="text-sm font-semibold text-neutral-900">Métriques PMC</h3>
+              <div className="px-5 py-4 border-b border-border/50">
+                <h3 className="text-sm font-semibold text-foreground">Métriques PMC</h3>
               </div>
               <div className="p-5 space-y-3">
                 {[
@@ -350,18 +350,18 @@ export function ModernDashboard() {
                   {
                     label: 'TSB — Fraîcheur',
                     value: Math.abs(pmc.tsb),
-                    color: pmc.tsb >= 0 ? 'bg-success' : 'bg-amber-400',
+                    color: pmc.tsb >= 0 ? 'bg-success' : 'bg-warning',
                   },
                 ].map((m) => (
                   <div key={m.label}>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-neutral-500">{m.label}</span>
-                      <span className="font-semibold text-neutral-900 tabular-nums">
+                      <span className="text-muted">{m.label}</span>
+                      <span className="font-semibold text-foreground tabular-nums">
                         {m.label.startsWith('TSB') && pmc.tsb < 0 ? '-' : ''}
                         {m.value}
                       </span>
                     </div>
-                    <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-background rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full ${m.color}`}
                         style={{ width: `${Math.min(100, (m.value / 150) * 100)}%` }}
@@ -377,3 +377,4 @@ export function ModernDashboard() {
     </div>
   );
 }
+

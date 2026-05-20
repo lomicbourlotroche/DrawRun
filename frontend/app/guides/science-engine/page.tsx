@@ -104,11 +104,11 @@ export default function ScienceEngineGuide() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-blue-50/30">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-neutral-200">
+      <div className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-surface">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
           <button
             onClick={() => router.push('/')}
-            className="p-2 rounded-xl hover:bg-neutral-100 transition-colors"
+            className="p-2 rounded-xl hover:bg-surface transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -127,20 +127,20 @@ export default function ScienceEngineGuide() {
       <div className="max-w-4xl mx-auto px-4 py-12 space-y-12">
         {/* Hero */}
         <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-neutral-900 mb-4">
+          <h2 className="text-4xl font-extrabold text-foreground mb-4">
             La science derrière chaque{' '}
             <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
               donnée
             </span>
           </h2>
-          <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
+          <p className="text-lg text-muted max-w-2xl mx-auto">
             DrawRun intègre les algorithmes les plus validés de la littérature scientifique en physiologie de l'exercice.
             Chaque métrique est calculée côté serveur selon les formules de référence.
           </p>
         </div>
 
         {/* Architecture */}
-        <div className="bg-white rounded-3xl border border-neutral-200 shadow-sm p-8">
+        <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
             <Layers className="w-6 h-6 text-primary" />
             Architecture de calcul
@@ -151,31 +151,31 @@ export default function ScienceEngineGuide() {
                 <span className="text-white font-bold">1</span>
               </div>
               <h4 className="font-semibold mb-2">Collecte</h4>
-              <p className="text-sm text-neutral-600">Données GPS, FC, allure, dénivelé importées depuis Strava, Garmin, Suunto ou saisie manuelle.</p>
+              <p className="text-sm text-muted">Données GPS, FC, allure, dénivelé importées depuis Strava, Garmin, Suunto ou saisie manuelle.</p>
             </div>
             <div className="p-4 bg-purple-50 rounded-2xl">
               <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center mb-3">
                 <span className="text-white font-bold">2</span>
               </div>
               <h4 className="font-semibold mb-2">Calcul serveur</h4>
-              <p className="text-sm text-neutral-600">TSS, TRIMP, VDOT, PMC calculés par les algorithmes backend (Node.js) selon les formules scientifiques.</p>
+              <p className="text-sm text-muted">TSS, TRIMP, VDOT, PMC calculés par les algorithmes backend (Node.js) selon les formules scientifiques.</p>
             </div>
             <div className="p-4 bg-green-50 rounded-2xl">
               <div className="w-10 h-10 bg-success rounded-xl flex items-center justify-center mb-3">
                 <span className="text-white font-bold">3</span>
               </div>
               <h4 className="font-semibold mb-2">Analyse</h4>
-              <p className="text-sm text-neutral-600">Recommandations, zones d'entraînement et prédictions générées à partir de l'historique complet.</p>
+              <p className="text-sm text-muted">Recommandations, zones d'entraînement et prédictions générées à partir de l'historique complet.</p>
             </div>
           </div>
         </div>
 
         {/* Metrics */}
         {metrics.map((metric, index) => (
-          <div key={index} className="bg-white rounded-3xl border border-neutral-200 shadow-sm overflow-hidden">
+          <div key={index} className="bg-surface rounded-3xl border border-surface shadow-sm overflow-hidden">
             <div className={`bg-gradient-to-r ${metric.color} p-6 text-white`}>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-surface/20 rounded-xl flex items-center justify-center">
                   <metric.icon className="w-6 h-6" />
                 </div>
                 <div>
@@ -185,21 +185,21 @@ export default function ScienceEngineGuide() {
               </div>
             </div>
             <div className="p-6 space-y-6">
-              <p className="text-neutral-700 leading-relaxed">{metric.description}</p>
+              <p className="text-muted leading-relaxed">{metric.description}</p>
               
-              <div className="p-4 bg-neutral-50 rounded-xl border border-neutral-200">
-                <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Formule</p>
+              <div className="p-4 bg-background rounded-xl border border-surface">
+                <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Formule</p>
                 <code className="text-sm font-mono text-primary">{metric.formula}</code>
               </div>
 
               <div>
                 <h4 className="font-semibold mb-3 flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-neutral-500" />
+                  <BookOpen className="w-4 h-4 text-muted" />
                   Détails
                 </h4>
                 <ul className="space-y-2">
                   {metric.details.map((detail, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-neutral-600">
+                    <li key={i} className="flex items-start gap-2 text-sm text-muted">
                       <span className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0" />
                       {detail}
                     </li>
@@ -223,7 +223,7 @@ export default function ScienceEngineGuide() {
           <p className="text-white/80 mb-6">Créez un compte pour bénéficier de toutes ces métriques appliquées à vos données.</p>
           <button
             onClick={() => router.push('/login?mode=register')}
-            className="px-8 py-3 bg-white text-primary font-semibold rounded-xl hover:bg-neutral-100 transition-colors"
+            className="px-8 py-3 bg-surface text-primary font-semibold rounded-xl hover:bg-surface transition-colors"
           >
             Créer un compte gratuit
           </button>
