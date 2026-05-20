@@ -205,13 +205,4 @@ export function FilterChipGroup({
   );
 }
 
-export {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-  LegacyTabs,
-  TabPanel,
-  FilterChip,
-  FilterChipGroup,
-};
+
