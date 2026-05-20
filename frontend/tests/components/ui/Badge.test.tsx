@@ -45,9 +45,9 @@ describe('Badge component', () => {
     render(<Badge variant="secondary">Secondary</Badge>);
     
     const badge = screen.getByText('Secondary');
-    expect(badge).toHaveClass('bg-neutral-100');
-    expect(badge).toHaveClass('text-neutral-700');
-    expect(badge).toHaveClass('border-neutral-200');
+    expect(badge).toHaveClass('bg-background');
+    expect(badge).toHaveClass('text-muted');
+    expect(badge).toHaveClass('border-surface');
   });
 
   it('applies success variant styles', () => {

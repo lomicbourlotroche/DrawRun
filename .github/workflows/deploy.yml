@@ -14,12 +14,10 @@ jobs:
     if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
     name: Deploy to VPS
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
@@ -27,38 +25,39 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           known_hosts: ${{ secrets.KNOWN_HOSTS }}
 
-      - name: Deploy to VPS
+      - name: Deploy to VPS via git pull
         run: |
-          # Copy files to VPS
-          scp -r -o StrictHostKeyChecking=no -P 20708 ./* drawrun@37.69.94.253:/home/drawrun/app-new/
-          
-          # Run deployment script on VPS
           ssh -o StrictHostKeyChecking=no -p 20708 drawrun@37.69.94.253 << 'EOF'
-          cd /home/drawrun
-          
-          # Backup current app
-          mv app app-backup-$(date +%Y%m%d-%H%M%S)
-          mv app-new app
-          
-          # Install dependencies
-          cd /home/drawrun/app/backend
-          npm install --omit=dev --production
-          cd ../frontend
-          npm install --omit=dev
-          npm run build
-          
-          # Restart services
-          cd /home/drawrun/app
-          pm2 restart all
-          
-          # Verify
-          pm2 list
-          sleep 5
-          curl -f http://localhost:3000/health || true
-          
-          # Cleanup old backups (keep last 5)
-          cd /home/drawrun
-          ls -td app-backup-* | tail -n +6 | xargs rm -rf
+            set -e
+            cd /home/drawrun/app
+
+            echo "=== Pulling latest code ==="
+            git fetch origin
+            git reset --hard origin/main
+
+            echo "=== Installing backend dependencies ==="
+            cd /home/drawrun/app/backend
+            npm install 2>&1 | tail -3
+
+            echo "=== Installing frontend dependencies ==="
+            cd /home/drawrun/app/frontend
+            npm install 2>&1 | tail -3
+
+            echo "=== Building frontend ==="
+            npm run build 2>&1 | tail -5
+
+            echo "=== Restarting PM2 services ==="
+            cd /home/drawrun/app
+            pm2 restart all --update-env
+            sleep 5
+
+            echo "=== Verification ==="
+            pm2 list
+            echo "--- Backend health ---"
+            curl -s http://localhost:3000/health | head -1
+            echo ""
+            echo "--- Frontend status ---"
+            curl -s -o /dev/null -w "HTTP %{http_code}" http://localhost:3001/
+            echo ""
+            echo "=== Deployment complete ==="
           EOF
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}

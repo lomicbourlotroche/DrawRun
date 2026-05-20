@@ -99,7 +99,7 @@ describe('Modal component', () => {
     );
     
     // Find the backdrop/overlay element
-    const backdrop = screen.getByRole('generic', { name: /bg-black/ });
+    const backdrop = document.querySelector('[aria-hidden="true"]') as HTMLElement;
     fireEvent.click(backdrop);
     
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -193,8 +193,8 @@ describe('Modal component', () => {
       </Modal>
     );
     
-    const modal = document.querySelector('[aria-label="fixed inset-0 z-50"]') as HTMLElement;
-    expect(modal).toHaveAttribute('role', 'generic');
+    const modal = document.querySelector('[role="dialog"]') as HTMLElement;
+    expect(modal).toHaveAttribute('role', 'dialog');
     
     const title = screen.getByRole('heading');
     expect(title).toHaveTextContent('Accessible Modal');
@@ -207,8 +207,8 @@ describe('Modal component', () => {
       </Modal>
     );
     
-    const modal = document.querySelector('[aria-label="fixed inset-0 z-50"]') as HTMLElement;
-    expect(modal.className).toContain('z-50');
+    const modal = document.querySelector('[role="dialog"]') as HTMLElement;
+    expect(modal.className).toContain('z-modal');
   });
 
   it('has backdrop blur effect', () => {
@@ -218,7 +218,7 @@ describe('Modal component', () => {
       </Modal>
     );
     
-    const backdrop = document.querySelector('[aria-label="bg-black/60 backdrop"]') as HTMLElement;
+    const backdrop = document.querySelector('[aria-hidden="true"]') as HTMLElement;
     expect(backdrop.className).toContain('backdrop-blur-sm');
   });
 
@@ -229,10 +229,10 @@ describe('Modal component', () => {
       </Modal>
     );
     
-    const backdrop = document.querySelector('[aria-label="bg-black/60 backdrop"]') as HTMLElement;
+    const backdrop = document.querySelector('[aria-hidden="true"]') as HTMLElement;
     expect(backdrop.className).toContain('animate-fade-in');
     
-    const content = document.querySelector('[aria-label*="relative w-full"]') as HTMLElement;
+    const content = document.querySelector('[class*="animate-slide-up"]') as HTMLElement;
     expect(content.className).toContain('animate-slide-up');
   });
 });

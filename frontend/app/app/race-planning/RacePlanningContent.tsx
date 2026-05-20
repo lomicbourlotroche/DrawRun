@@ -4,7 +4,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Badge, Modal } from '@/components/ui';
 import { api, racePlanningApi } from '@/lib/api';
-import type { RacePlanningResponse, RacePlanningRequest, GpxProfile, Split, NutritionStrategy } from '@/types';
+import type { RacePlanningResponse, RacePlanningRequest, GpxProfile, Split, RaceNutritionStrategy } from '@/types';
 import type { SavedRacePlan, RaceSplit } from '@/lib/api/race-planning.api';
 import {
   Trophy, Download, AlertTriangle, MapPin, Heart, Zap, Droplets, Save, Upload,
@@ -260,7 +260,7 @@ export function RacePlanningContent() {
         fcm: 0,
       },
       splits: plan.splits as Split[],
-      nutritionStrategy: plan.nutritionStrategy as NutritionStrategy,
+      nutritionStrategy: plan.nutritionStrategy as RaceNutritionStrategy,
       racePrediction: null,
       warnings: [],
     } as RacePlanningResponse);

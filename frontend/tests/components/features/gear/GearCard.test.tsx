@@ -86,14 +86,14 @@ describe('GearCard component', () => {
     render(<GearCard gear={mockGear} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
 
     const progressBar = screen.getByRole('progressbar');
-    expect(progressBar).toHaveClass('bg-emerald-500');
+    expect(progressBar).toHaveClass('bg-success');
   });
 
   it('displays progress bar with amber color when near limit', () => {
     render(<GearCard gear={mockGearNearLimit} onEdit={mockOnEdit} onDelete={mockOnDelete} />);
 
     const progressBar = screen.getByRole('progressbar');
-    expect(progressBar).toHaveClass('bg-amber-500');
+    expect(progressBar).toHaveClass('bg-warning');
   });
 
   it('displays progress bar with danger color when over limit', () => {

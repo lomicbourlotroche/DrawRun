@@ -1049,7 +1049,7 @@ export interface PostRaceRecovery {
   description: string;
 }
 
-export interface NutritionStrategy {
+export interface RaceNutritionStrategy {
   totalWater: number;
   totalGels: number;
   carbPerHour?: number;
@@ -1096,7 +1096,7 @@ export interface GpxProfile {
 export interface RacePlanningResponse {
   splits: Split[];
   racePrediction: RacePrediction | null;
-  nutritionStrategy: NutritionStrategy;
+  nutritionStrategy: RaceNutritionStrategy;
   warnings: Array<{
     type: 'fatigue' | 'freshness' | 'injury_risk' | 'overtraining';
     severity: 'info' | 'moderate' | 'high' | 'critical';

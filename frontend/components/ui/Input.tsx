@@ -1,3 +1,4 @@
+import React from 'react';
 import { forwardRef, cloneElement, isValidElement, useState, useEffect, type InputHTMLAttributes, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { AlertCircle, X } from 'lucide-react';
@@ -14,7 +15,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, label, error, hint, leftIcon, rightIcon, id, clearable = false, ...props }, ref) => {
     const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
-    const [value, setValue] = useState(props.value || '');
+    const [value, setValue] = useState(props.value || props.defaultValue || '');
 
     const handleClear = () => {
       setValue('');
@@ -25,7 +26,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     };
 
     useEffect(() => {
-      setValue(props.value || '');
+      if (props.value !== undefined) {
+        setValue(props.value || '');
+      }
     }, [props.value]);
 
     return (

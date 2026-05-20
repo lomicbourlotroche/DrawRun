@@ -109,9 +109,10 @@ describe('useGroupDetail hook', () => {
 
     const { result } = renderHook(() => useGroupDetail());
 
-    await waitFor(() => {});
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
 
-    expect(result.current.isLoading).toBe(false);
     expect(result.current.group).toEqual(mockGroup);
     expect(result.current.members).toEqual(mockMembers);
     expect(result.current.activities).toEqual(mockActivities);
@@ -132,9 +133,9 @@ describe('useGroupDetail hook', () => {
 
     const { result } = renderHook(() => useGroupDetail());
 
-    await waitFor(() => {});
-
-    expect(result.current.error).toBe(SOCIAL_ERRORS.FETCH_GROUPS);
+    await waitFor(() => {
+      expect(result.current.error).toBe(SOCIAL_ERRORS.FETCH_GROUPS);
+    });
     expect(mockPush).toHaveBeenCalledWith('/app/social');
   });
 

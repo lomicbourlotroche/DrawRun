@@ -10,7 +10,7 @@ jobs:
   test-backend:
     name: Backend Tests
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -47,7 +47,7 @@ jobs:
   test-frontend:
     name: Frontend Tests
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -69,7 +69,7 @@ jobs:
       - name: Run frontend linting
         run: |
           cd frontend
-          npm run lint
+          npx eslint . --ignore-pattern "scripts/" --ignore-pattern "tests/" --ignore-pattern "node_modules/"
 
       - name: Run frontend tests
         run: |

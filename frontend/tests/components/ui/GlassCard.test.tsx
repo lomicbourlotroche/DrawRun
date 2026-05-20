@@ -21,7 +21,7 @@ describe('GlassCard component', () => {
     expect(card).toBeInTheDocument();
     expect(card).toHaveClass('rounded-2xl');
     expect(card).toHaveClass('bg-surface/90');
-    expect(card).toHaveClass('backdrop-blur-sm');
+    expect(card).toHaveClass('backdrop-blur-md');
     expect(card).toHaveClass('border');
     expect(card).toHaveClass('border-surface/60');
     expect(card).toHaveClass('shadow-sm');

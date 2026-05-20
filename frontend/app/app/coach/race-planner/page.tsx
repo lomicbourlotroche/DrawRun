@@ -16,7 +16,6 @@ import {
   ChevronLeft
 } from 'lucide-react';
 import { api } from '@/lib/api';
-import type { RaceStrategyResult } from '@/lib/api/coach-types';
 import { 
   Button, 
   Card, 
@@ -51,8 +50,6 @@ export default function RacePlannerPage() {
     goalTime: '', // minutes
   });
   
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [strategy, setStrategy] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useEffect } from 'react';
 import { Skeleton, GlassCard } from '@/components/ui';
 import { Trophy, MapPin, Clock, Activity } from 'lucide-react';

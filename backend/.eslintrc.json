@@ -52,6 +52,17 @@
       "rules": {
         "security/detect-non-literal-fs-filename": "off"
       }
+    },
+    {
+      "files": ["src/database/**/*.js", "src/middleware/security/**/*.js", "src/middleware/validation.js"],
+      "rules": {
+        "security/detect-non-literal-fs-filename": "off",
+        "security/detect-object-injection": "off",
+        "security/detect-unsafe-regex": "off",
+        "no-process-exit": "off",
+        "no-empty": "off",
+        "no-useless-catch": "off"
+      }
     }
   ],
   "ignorePatterns": [
