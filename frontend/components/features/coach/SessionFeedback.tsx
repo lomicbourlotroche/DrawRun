@@ -34,7 +34,7 @@ const getResultFromFeedback = (difficulty: string, onTime: boolean, completed: b
   if (difficulty === 'easy' && onTime) return 'success';
   if (difficulty === 'normal' && onTime) return 'success';
   if (difficulty === 'hard' && onTime) return 'partial';
-  if (!onTime) return 'delayed';
+  if (!onTime) return 'partial';
   return 'partial';
 };
 
