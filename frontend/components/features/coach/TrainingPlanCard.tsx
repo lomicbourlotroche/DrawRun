@@ -56,18 +56,17 @@ const getSessionTypeColor = (type: string) => {
 const getResultIndicator = (session: TrainingSession) => {
   if (!session.completed) return null;
   
-  if (session.result) {
-    return <SessionResultIndicator result={session.result} size="sm" />;
+  if ((session as Record<string, unknown>).result) {
+    return <SessionResultIndicator result={(session as Record<string, unknown>).result as 'success' | 'failed' | 'partial' | 'skipped'} size="sm" />;
   }
   
-  // Sinon, deduire du feedback
-  if (session.feedback) {
-    if (session.feedback.difficulty === 'easy') return <SessionResultIndicator result="success" size="sm" />;
-    if (session.feedback.difficulty === 'normal') return <SessionResultIndicator result="success" size="sm" />;
-    if (session.feedback.difficulty === 'hard') return <SessionResultIndicator result="partial" size="sm" />;
+  if ((session as Record<string, unknown>).feedback) {
+    const feedback = (session as Record<string, unknown>).feedback as { difficulty?: string };
+    if (feedback.difficulty === 'easy') return <SessionResultIndicator result="success" size="sm" />;
+    if (feedback.difficulty === 'normal') return <SessionResultIndicator result="success" size="sm" />;
+    if (feedback.difficulty === 'hard') return <SessionResultIndicator result="partial" size="sm" />;
   }
   
-  // Par defaut, si completé sans feedback
   return <SessionResultIndicator result="success" size="sm" />;
 };
 
