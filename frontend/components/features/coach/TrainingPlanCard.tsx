@@ -82,7 +82,7 @@ export function TrainingPlanCard({ plan, onDelete, onSessionComplete }: Training
   const handleMarkComplete = (session: TrainingSession) => {
     // Marquer comme completé
     // En vrai, ca devrait appeler l'API
-    onSessionComplete?.({ ...session, completed: true, completedAt: new Date().toISOString() });
+    onSessionComplete?.({ ...session, completed: true } as TrainingSession);
     setShowDetailModal(false);
     setSelectedSession(null);
   };
