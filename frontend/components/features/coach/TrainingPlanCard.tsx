@@ -56,12 +56,13 @@ const getSessionTypeColor = (type: string) => {
 const getResultIndicator = (session: TrainingSession) => {
   if (!session.completed) return null;
   
-  if ((session as Record<string, unknown>).result) {
-    return <SessionResultIndicator result={(session as Record<string, unknown>).result as 'success' | 'failed' | 'partial' | 'skipped'} size="sm" />;
+  const s = session as unknown as Record<string, unknown>;
+  if (s.result) {
+    return <SessionResultIndicator result={s.result as 'success' | 'failed' | 'partial' | 'skipped'} size="sm" />;
   }
   
-  if ((session as Record<string, unknown>).feedback) {
-    const feedback = (session as Record<string, unknown>).feedback as { difficulty?: string };
+  if (s.feedback) {
+    const feedback = s.feedback as { difficulty?: string };
     if (feedback.difficulty === 'easy') return <SessionResultIndicator result="success" size="sm" />;
     if (feedback.difficulty === 'normal') return <SessionResultIndicator result="success" size="sm" />;
     if (feedback.difficulty === 'hard') return <SessionResultIndicator result="partial" size="sm" />;
