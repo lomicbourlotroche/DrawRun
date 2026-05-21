@@ -146,14 +146,14 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6 animate-fade-in max-w-3xl mx-auto pb-8">
-      <div className="flex items-center gap-3">
-        <Link href="/app/profile" className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors">
+      <div className="flex items-center gap-3 pt-2">
+        <Link href="/app/profile" className="flex items-center gap-2 text-sm text-neutral-500 hover:text-foreground transition-colors duration-200 ease-smooth">
           <ChevronLeft className="w-4 h-4" />Retour au profil
         </Link>
       </div>
       <div>
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Settings className="w-6 h-6 text-primary" />Paramètres</h1>
-        <p className="text-muted mt-1">Configurez votre compte et vos préférences</p>
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2 tracking-tight"><Settings className="w-6 h-6 text-primary-500" />Paramètres</h1>
+        <p className="text-neutral-500 mt-1.5">Configurez votre compte et vos préférences</p>
       </div>
 
       <GlassCard>

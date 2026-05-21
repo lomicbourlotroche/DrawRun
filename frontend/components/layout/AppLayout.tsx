@@ -60,11 +60,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         The sidebar collapse state is managed inside Sidebar itself and doesn't affect
         this layout because the sidebar is fixed-positioned.
       */}
-      <div className="md:pl-16 lg:pl-64 min-h-screen transition-all duration-300 relative z-0 overflow-y-auto">
+      <div className="pl-4 md:pl-16 lg:pl-64 min-h-screen transition-all duration-300 relative z-0 overflow-y-auto">
         <Header />
         <main className="p-4 lg:p-6">{children}</main>
       </div>
     </div>
   );
 }
-

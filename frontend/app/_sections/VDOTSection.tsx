@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card } from '@/components/ui';
+import { VDOTDemoCalculator } from '@/components/features/performance';
 import { 
   Activity, 
   TrendingUp, 
   Target, 
   Zap, 
-  Clock,
   Calculator
 } from 'lucide-react';
 
@@ -33,14 +32,6 @@ const vdotFeatures = [
     title: '15+ Métriques Avancées',
     description: 'Age Grading, W\', RAI, Marathon Prediction et plus.',
   },
-];
-
-const zones = [
-  { name: 'EASY (E)', range: '4:45 - 5:15', color: 'var(--success)', description: 'Récupération & endurance' },
-  { name: 'MARATHON (M)', range: '4:15', color: 'var(--primary)', description: 'Allure marathon' },
-  { name: 'THRESHOLD (T)', range: '3:58', color: 'var(--secondary)', description: 'Seuil lactique' },
-  { name: 'INTERVAL (I)', range: '3:42', color: 'var(--danger)', description: 'VO2max' },
-  { name: 'REPETITION (R)', range: '3:25', color: 'var(--warning)', description: 'Vitesse pure' },
 ];
 
 export default function VDOTSection() {
@@ -112,73 +103,12 @@ export default function VDOTSection() {
             </div>
           </div>
 
-          {/* Right Content - Zones Card */}
+          {/* Right Content - Interactive VDOT Calculator */}
           <div className={`transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
-            <Card variant="glass" className="relative overflow-hidden">
-              {/* Header */}
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary rounded-xl flex items-center justify-center">
-                  <Activity className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-foreground">ZONES VDOT</h3>
-                  <p className="text-sm text-muted">Basé sur 10km en 39:00</p>
-                </div>
-              </div>
-
-              {/* Zones List */}
-              <div className="space-y-3">
-                {zones.map((zone, index) => (
-                  <div 
-                    key={index}
-                    className="flex items-center justify-between gap-2 p-3 bg-surface/50 rounded-xl border border-surface hover:border-surface transition-colors"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span 
-                        className="w-3 h-3 rounded-full shrink-0"
-                        style={{ backgroundColor: zone.color }}
-                      />
-                      <div className="min-w-0">
-                        <div className="font-semibold text-foreground text-sm truncate">{zone.name}</div>
-                        <div className="text-xs text-muted truncate">{zone.description}</div>
-                      </div>
-                    </div>
-                    <div className="text-right shrink-0 whitespace-nowrap">
-                      <div className="font-bold text-foreground font-mono">{zone.range}</div>
-                      <div className="text-xs text-muted">min/km</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Calculator Preview */}
-              <div className="mt-6 p-4 bg-gradient-to-r from-primary-50 to-secondary/10 rounded-xl border border-primary-100">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-semibold text-muted">VDOT Calculator</span>
-                  <span className="text-xs text-primary-600 font-medium">VDOT: 52.4</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted">
-                  <Clock className="w-4 h-4" />
-                  <span>10km → Marathon: 3:12:00</span>
-                </div>
-              </div>
-
-              {/* CTA */}
-              <button
-                onClick={() => router.push('/vdot-calculator')}
-                className="w-full mt-6 py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-colors shadow-button-primary cursor-pointer"
-              >
-                Calculer mon VDOT
-              </button>
-            </Card>
+            <VDOTDemoCalculator />
           </div>
         </div>
       </div>
     </section>
   );
 }
-
-
-
-
-

@@ -6,7 +6,7 @@ const guidesDir = '../app/guides';
 const fullGuidesDir = path.join(__dirname, guidesDir);
 
 // Lister tous les fichiers dans le dossier guides
-let filesToFix = [];
+const filesToFix = [];
 try {
   const files = fs.readdirSync(fullGuidesDir);
   for (const file of files) {

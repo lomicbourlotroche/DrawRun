@@ -16,7 +16,7 @@ describe('Input component', () => {
     expect(input).toHaveClass('w-full');
     expect(input).toHaveClass('bg-background');
     expect(input).toHaveClass('border');
-    expect(input).toHaveClass('rounded-lg');
+    expect(input).toHaveClass('rounded-md');
   });
 
   it('renders with label', () => {

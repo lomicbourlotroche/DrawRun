@@ -1,16 +1,17 @@
 /* eslint-disable unused-imports/no-unused-vars, react-hooks/exhaustive-deps */
 /**
  * PerformanceContent - Contenu de la page Performance
+ * Corrigé : accessibilité, nombre d'onglets réduit, indication données estimées
  */
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { useUserConstantsStore } from '@/stores';
 import { PerformanceZones, PerformanceMetrics, ProgressionChart } from '@/components/features/performance';
-import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent, Skeleton, Progress } from '@/components/ui';
-import { Dumbbell, Bike, Waves, Heart, Activity, TrendingUp, Gauge, Zap, BarChart3, Brain, AlertCircle, MapPin, Clock, Crown, Star } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent, Skeleton, Progress, Badge } from '@/components/ui';
+import { Dumbbell, Bike, Waves, Heart, Activity, TrendingUp, Gauge, Zap, BarChart3, Brain, AlertCircle, MapPin, Clock } from 'lucide-react';
 import type { PmcDataPoint, Activity as ActivityType, Zones } from '@/types';
 
 interface PolarizationData {
@@ -53,7 +54,7 @@ function computeStats(activities: ActivityType[]): StatsData {
 
 export default function PerformanceContent() {
   const [sport, setSport] = useState<'run' | 'bike' | 'swim'>('run');
-  const [activeTab, setActiveTab] = useState<'metrics' | 'zones' | 'stats' | 'progression' | 'analyse' | 'elite'>('metrics');
+  const [activeTab, setActiveTab] = useState<'metrics' | 'zones' | 'progression' | 'analyse'>('metrics');
   const [pmc, setPmc] = useState<PmcDataPoint[]>([]);
   const [activities, setActivities] = useState<ActivityType[]>([]);
   const [polarization, setPolarization] = useState<PolarizationData | null>(null);
@@ -80,24 +81,19 @@ export default function PerformanceContent() {
         api.getActivities().catch(() => ({ data: [] as ActivityType[] })),
       ]);
       setPmc(p);
-      // acts est maintenant { data: Activity[], pagination: ... }
       const actsArray = Array.isArray(acts?.data) ? acts.data : [];
       setActivities(actsArray);
 
-      // ── Polarisation ──────────────────────────────────────────────────────
-      // Calculer la distribution d'intensité depuis la FC des activités
-      // (zonePercent n'existe pas dans le type Activity — on estime depuis avgHR/maxHR)
+      // Polarisation
       try {
-        const profile = constantsResult?.profile;
-        const fcm = profile?.fcm || 180;
+        const profileData = constantsResult?.profile;
+        const fcm = profileData?.fcm || 180;
 
-        // Construire zonePercent estimé depuis average_heartrate et max_heartrate
         const activitiesWithZones = actsArray
           .filter((a: ActivityType) => a.average_heartrate)
           .map((a: ActivityType) => {
             const avgHR = a.average_heartrate ?? 0;
             const hrPct = avgHR / fcm;
-            // Estimer la zone dominante depuis le % FCM
             let low = 0, moderate = 0, high = 0;
             if (hrPct < 0.70) { low = 100; }
             else if (hrPct < 0.80) { low = 40; moderate = 60; }
@@ -116,24 +112,20 @@ export default function PerformanceContent() {
         setPolarizationError('Données de polarisation non disponibles');
       }
 
-      // ── HRV ───────────────────────────────────────────────────────────────
-      // Estimer le HRV depuis la FC de repos et les activités récentes
+      // HRV
       try {
-        const profile = constantsResult?.profile;
-        const restingHR = (profile as unknown as Record<string, unknown> | null)?.restingHR as number | undefined;
+        const profileData = constantsResult?.profile;
+        const restingHR = (profileData as unknown as Record<string, unknown> | null)?.restingHR as number | undefined;
 
-        // Calculer un RMSSD estimé depuis la variabilité de FC entre activités
         const hrs = actsArray
           .filter((a: ActivityType) => a.average_heartrate)
-          .slice(0, 14) // 2 dernières semaines
+          .slice(0, 14)
           .map((a: ActivityType) => a.average_heartrate as number);
 
         if (hrs.length >= 3) {
-          // RMSSD estimé : écart-type de la FC × facteur de conversion empirique
           const mean = hrs.reduce((s: number, v: number) => s + v, 0) / hrs.length;
           const variance = hrs.reduce((s: number, v: number) => s + (v - mean) ** 2, 0) / hrs.length;
           const stdDev = Math.sqrt(variance);
-          // Conversion empirique : stdDev FC ≈ RMSSD / 3 pour coureurs entraînés
           const estimatedRmssd = Math.round(stdDev * 3 + 20);
           const baseline = restingHR ? Math.round(60 / restingHR * 30 + 20) : null;
 
@@ -166,36 +158,50 @@ export default function PerformanceContent() {
     }
   };
 
+  // Keyboard navigation for tabs
+  const handleTabKeyDown = useCallback((e: React.KeyboardEvent, tabId: string) => {
+    if (e.key === 'ArrowRight') {
+      const currentIndex = tabs.findIndex(t => t.id === tabId);
+      const nextIndex = (currentIndex + 1) % tabs.length;
+      setActiveTab(tabs[nextIndex].id as typeof activeTab);
+    } else if (e.key === 'ArrowLeft') {
+      const currentIndex = tabs.findIndex(t => t.id === tabId);
+      const prevIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+      setActiveTab(tabs[prevIndex].id as typeof activeTab);
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      setActiveTab(tabId as typeof activeTab);
+    }
+  }, [activeTab]);
+
   const sportTabs = [
     { id: 'run', label: 'Course', icon: <Dumbbell className="w-4 h-4" /> },
     { id: 'bike', label: 'Vélo', icon: <Bike className="w-4 h-4" /> },
     { id: 'swim', label: 'Natation', icon: <Waves className="w-4 h-4" /> },
   ] as const;
 
+  // Réduit de 6 à 4 onglets (fusion de stats+progression, analyse+elite supprimés ou fusionnés)
   const tabs = [
     { id: 'metrics', label: 'Métriques', icon: <Gauge className="w-4 h-4" /> },
     { id: 'zones', label: 'Zones', icon: <Zap className="w-4 h-4" /> },
-    { id: 'stats', label: 'Statistiques', icon: <BarChart3 className="w-4 h-4" /> },
     { id: 'progression', label: 'Progression', icon: <TrendingUp className="w-4 h-4" /> },
     { id: 'analyse', label: 'Analyse', icon: <Brain className="w-4 h-4" /> },
-    { id: 'elite', label: 'Elite', icon: <Crown className="w-4 h-4 text-amber-500" /> },
   ] as const;
 
   return (
     <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
       <div>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between pt-2">
           <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <Activity className="w-6 h-6 text-primary" />
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2 tracking-tight">
+              <Activity className="w-6 h-6 text-primary-500" />
               Performances
             </h1>
-            <p className="text-muted mt-1">Suivez vos métriques et progressions</p>
+            <p className="text-neutral-500 mt-1.5">Suivez vos métriques et progressions</p>
           </div>
           <button
             onClick={handleRecalculate}
             disabled={isRecalculating}
-            className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium bg-primary-50 text-primary-600 hover:bg-primary-100 transition-all duration-200 ease-smooth disabled:opacity-50"
           >
             <Activity className={`w-4 h-4 ${isRecalculating ? 'animate-spin' : ''}`} />
             {isRecalculating ? 'Calcul...' : 'Recalculer'}
@@ -203,14 +209,19 @@ export default function PerformanceContent() {
         </div>
       </div>
 
-      {/* Sport selector */}
-      <div className="flex gap-1 overflow-x-auto pb-2 border-b border-border">
+      <div className="flex gap-1 overflow-x-auto pb-2 border-b border-neutral-200/60" role="tablist" aria-label="Sélection du sport">
         {sportTabs.map(t => (
           <button
             key={t.id}
             onClick={() => setSport(t.id as typeof sport)}
-            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-              sport === t.id ? 'bg-primary text-foreground' : 'text-muted hover:text-foreground hover:bg-muted'
+            role="tab"
+            aria-selected={sport === t.id}
+            tabIndex={sport === t.id ? 0 : -1}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') setSport(t.id as typeof sport);
+            }}
+            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ease-smooth ${
+              sport === t.id ? 'bg-primary-500 text-white shadow-sm' : 'text-neutral-600 hover:text-foreground hover:bg-neutral-100'
             }`}
           >
             {t.icon}
@@ -228,14 +239,17 @@ export default function PerformanceContent() {
         </div>
       ) : (
         <>
-          {/* Tabs */}
-          <div className="flex gap-1 overflow-x-auto pb-2 border-b border-border">
+          <div className="flex gap-1 overflow-x-auto pb-2 border-b border-neutral-200/60" role="tablist" aria-label="Sections de performance">
             {tabs.map(t => (
               <button
                 key={t.id}
                 onClick={() => setActiveTab(t.id as typeof activeTab)}
-                className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                  activeTab === t.id ? 'bg-primary text-foreground' : 'text-muted hover:text-foreground hover:bg-muted'
+                onKeyDown={(e) => handleTabKeyDown(e, t.id)}
+                role="tab"
+                aria-selected={activeTab === t.id}
+                tabIndex={activeTab === t.id ? 0 : -1}
+                className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ease-smooth ${
+                  activeTab === t.id ? 'bg-primary-500 text-white shadow-sm' : 'text-neutral-600 hover:text-foreground hover:bg-neutral-100'
                 }`}
               >
                 {t.icon}
@@ -252,30 +266,38 @@ export default function PerformanceContent() {
                 vdot: profile?.vdot ?? undefined,
                 vo2max: profile?.fcm ? Math.round((profile.fcm - (profile.restingHR || 60)) * 0.15 + 30) : undefined,
               }} />
-              <GlassCard>
-                <GlassCardHeader>
-                  <GlassCardTitle className="flex items-center gap-2">
+              <div className="bg-surface rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
+                <div className="px-6 py-4 border-b border-neutral-200/60">
+                  <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
                     <Heart className="w-5 h-5 text-danger" />
                     Métriques clés
-                  </GlassCardTitle>
-                </GlassCardHeader>
-                <GlassCardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="p-3 rounded-lg bg-danger/10 border border-danger/20 text-center">
-                      <p className="text-2xl font-bold text-danger/80">{profile?.fcm || '--'}</p>
-                      <p className="text-xs text-muted">FCM</p>
+                  </h3>
+                </div>
+                <div className="p-5">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="relative overflow-hidden p-4 rounded-xl bg-gradient-to-br from-danger/5 to-danger/10 border border-danger/10 text-center transition-all duration-200 ease-smooth hover:shadow-md">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-danger" />
+                      <p className="text-3xl font-bold text-danger tracking-tight tabular-nums">{profile?.fcm || '--'}</p>
+                      <p className="text-xs text-neutral-500 mt-1 font-medium">FCM</p>
                     </div>
-                    <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-center">
-                      <p className="text-2xl font-bold text-primary/80">{profile?.vdot || '--'}</p>
-                      <p className="text-xs text-muted">VDOT</p>
+                    <div className="relative overflow-hidden p-4 rounded-xl bg-gradient-to-br from-primary-50 to-primary-100/50 border border-primary-200/30 text-center transition-all duration-200 ease-smooth hover:shadow-md">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-primary-500" />
+                      <p className="text-3xl font-bold text-primary-600 tracking-tight tabular-nums">{profile?.vdot || '--'}</p>
+                      <p className="text-xs text-neutral-500 mt-1 font-medium">VDOT</p>
                     </div>
-                    <div className="p-3 rounded-lg bg-success/10 border border-success/20 text-center">
-                      <p className="text-2xl font-bold text-success/80">{profile?.vma ? `${profile.vma.toFixed(1)}` : '--'}</p>
-                      <p className="text-xs text-muted">VMA km/h</p>
+                    <div className="relative overflow-hidden p-4 rounded-xl bg-gradient-to-br from-success/5 to-success/10 border border-success/10 text-center transition-all duration-200 ease-smooth hover:shadow-md">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-success" />
+                      <p className="text-3xl font-bold text-success tracking-tight tabular-nums">{profile?.vma ? `${profile.vma.toFixed(1)}` : '--'}</p>
+                      <p className="text-xs text-neutral-500 mt-1 font-medium">VMA km/h</p>
+                    </div>
+                    <div className="relative overflow-hidden p-4 rounded-xl bg-gradient-to-br from-warning/5 to-warning/10 border border-warning/10 text-center transition-all duration-200 ease-smooth hover:shadow-md">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-warning" />
+                      <p className="text-3xl font-bold text-warning tracking-tight tabular-nums">{profile?.fcm ? Math.round((profile.fcm - (profile.restingHR || 60)) * 0.15 + 30) : '--'}</p>
+                      <p className="text-xs text-neutral-500 mt-1 font-medium">VO₂ max <Badge variant="outline" className="text-[10px] ml-1">Estimé</Badge></p>
                     </div>
                   </div>
-                </GlassCardContent>
-              </GlassCard>
+                </div>
+              </div>
             </div>
           )}
           {activeTab === 'zones' && <PerformanceZones zones={{
@@ -284,94 +306,89 @@ export default function PerformanceContent() {
             vma: profile?.vma || 0,
             vdot: profile?.vdot || 0,
           } as unknown as Zones} />}
-          {activeTab === 'stats' && (
-            (() => {
-              const stats = computeStats(activities);
-              if (activities.length === 0) {
-                return (
-                  <GlassCard>
-                    <GlassCardContent className="p-8 text-center">
-                      <BarChart3 className="w-12 h-12 mx-auto mb-4 text-muted opacity-30" />
-                      <p className="text-muted">Aucune activité enregistrée</p>
-                      <p className="text-xs text-muted mt-1">Synchronisez vos activités pour voir vos statistiques.</p>
-                    </GlassCardContent>
-                  </GlassCard>
-                );
-              }
-              return (
-                <div className="space-y-4">
-                  {/* Métriques globales */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 text-center">
-                      <MapPin className="w-5 h-5 mx-auto mb-1 text-primary" />
-                      <p className="text-2xl font-bold text-foreground">{stats.totalKm.toFixed(1)}</p>
-                      <p className="text-xs text-muted">km total</p>
+          {activeTab === 'progression' && (
+            <div className="space-y-4">
+              {activities.length === 0 ? (
+                <div className="bg-surface rounded-2xl border border-neutral-200/60 shadow-card p-8 text-center">
+                  <BarChart3 className="w-12 h-12 mx-auto mb-4 text-neutral-300" />
+                  <p className="text-neutral-500">Aucune activité enregistrée</p>
+                  <p className="text-xs text-neutral-400 mt-1">Synchronisez vos activités pour voir vos statistiques.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100/50 border border-primary-200/30 text-center transition-all duration-200 ease-smooth hover:shadow-md">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-primary-500" />
+                      <MapPin className="w-5 h-5 mx-auto mb-2 text-primary-500" />
+                      <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">{computeStats(activities).totalKm.toFixed(1)}</p>
+                      <p className="text-xs text-neutral-500 mt-1 font-medium">km total</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 text-center">
-                      <Clock className="w-5 h-5 mx-auto mb-1 text-primary/80" />
-                      <p className="text-2xl font-bold text-foreground">{stats.totalHours.toFixed(1)}</p>
-                      <p className="text-xs text-muted">heures</p>
+                    <div className="relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100/50 border border-primary-200/30 text-center transition-all duration-200 ease-smooth hover:shadow-md">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-primary-400" />
+                      <Clock className="w-5 h-5 mx-auto mb-2 text-primary-400" />
+                      <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">{computeStats(activities).totalHours.toFixed(1)}</p>
+                      <p className="text-xs text-neutral-500 mt-1 font-medium">heures</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-success/10 border border-success/20 text-center">
-                      <TrendingUp className="w-5 h-5 mx-auto mb-1 text-success/80" />
-                      <p className="text-2xl font-bold text-foreground">{stats.avgKm.toFixed(1)}</p>
-                      <p className="text-xs text-muted">km/séance</p>
+                    <div className="relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br from-success/5 to-success/10 border border-success/10 text-center transition-all duration-200 ease-smooth hover:shadow-md">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-success" />
+                      <TrendingUp className="w-5 h-5 mx-auto mb-2 text-success" />
+                      <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">{computeStats(activities).avgKm.toFixed(1)}</p>
+                      <p className="text-xs text-neutral-500 mt-1 font-medium">km/séance</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-peak/10 border border-peak/20 text-center">
-                      <BarChart3 className="w-5 h-5 mx-auto mb-1 text-peak/80" />
-                      <p className="text-2xl font-bold text-foreground">{activities.length}</p>
-                      <p className="text-xs text-muted">activités</p>
+                    <div className="relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br from-peak/5 to-peak/10 border border-peak/10 text-center transition-all duration-200 ease-smooth hover:shadow-md">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-peak" />
+                      <BarChart3 className="w-5 h-5 mx-auto mb-2 text-peak" />
+                      <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">{activities.length}</p>
+                      <p className="text-xs text-neutral-500 mt-1 font-medium">activités</p>
                     </div>
                   </div>
 
-                  {/* Répartition par type */}
-                  <GlassCard>
-                    <GlassCardHeader>
-                      <GlassCardTitle className="text-base flex items-center gap-2">
-                        <Activity className="w-4 h-4 text-primary" />
+                  <div className="bg-surface rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
+                    <div className="px-6 py-4 border-b border-neutral-200/60">
+                      <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-primary-500" />
                         Répartition par type
-                      </GlassCardTitle>
-                    </GlassCardHeader>
-                    <GlassCardContent>
-                      <div className="space-y-3">
-                        {Object.entries(stats.byType).sort((a, b) => b[1] - a[1]).map(([type, count]) => {
-                          const pct = Math.round((count / activities.length) * 100);
-                          return (
-                            <div key={type} className="space-y-1">
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="font-medium text-foreground">{type}</span>
-                                <span className="text-muted">{count} séance{count > 1 ? 's' : ''} ({pct}%)</span>
-                              </div>
-                              <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
-                                <div
-                                  className="h-full bg-primary rounded-full transition-all"
-                                  style={{ width: `${pct}%` }}
-                                />
-                              </div>
+                      </h3>
+                    </div>
+                    <div className="p-5 space-y-4">
+                      {Object.entries(computeStats(activities).byType).sort((a, b) => b[1] - a[1]).map(([type, count]) => {
+                        const pct = Math.round((count / activities.length) * 100);
+                        return (
+                          <div key={type} className="space-y-2">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="font-medium text-foreground">{type}</span>
+                              <span className="text-neutral-500">{count} séance{count > 1 ? 's' : ''} ({pct}%)</span>
                             </div>
-                          );
-                        })}
-                      </div>
-                    </GlassCardContent>
-                  </GlassCard>
-                </div>
-              );
-            })()
+                            <div className="h-2.5 bg-neutral-100 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-primary-500 rounded-full transition-all duration-500"
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  
+                  <ProgressionChart activities={activities} sport={sport} />
+                </>
+              )}
+            </div>
           )}
-          {activeTab === 'progression' && <ProgressionChart activities={activities} sport={sport} />}
           {activeTab === 'analyse' && (
             <div className="space-y-6">
-              {/* ── 10.1 Distribution d'intensité ── */}
+              {/* Distribution d'intensité */}
               <IntensityDistributionSection
                 polarization={polarization}
                 error={polarizationError}
               />
-              {/* ── 10.2 HRV & Récupération ── */}
+              {/* HRV & Récupération */}
               <HRVRecoverySection hrv={hrv} error={hrvError} />
+              
+              {/* Elite Analytics (fusionné ici) */}
+              <EliteAnalyticsSection activities={activities} />
             </div>
-          )}
-          {activeTab === 'elite' && (
-            <EliteAnalyticsSection activities={activities} />
           )}
         </>
       )}
@@ -380,11 +397,10 @@ export default function PerformanceContent() {
 }
 
 // ============================================================================
-// 10.3 — Elite Analytics Section
+// Elite Analytics Section
 // ============================================================================
 
 function EliteAnalyticsSection({ activities }: { activities: ActivityType[] }) {
-    // Filtrer les activités avec EF
     const efData = activities
         .filter(a => a.efficiency_factor)
         .map(a => ({
@@ -396,135 +412,82 @@ function EliteAnalyticsSection({ activities }: { activities: ActivityType[] }) {
     const trailActivities = activities.filter(a => a.gap && a.total_elevation_gain && a.total_elevation_gain > 50);
 
     return (
-        <div className="space-y-6 animate-slide-up">
-            <GlassCard>
-                <GlassCardHeader>
-                    <GlassCardTitle className="flex items-center gap-2">
-                        <TrendingUp className="w-5 h-5 text-primary" />
-                        Efficacité Aérobie (EF)
-                    </GlassCardTitle>
-                </GlassCardHeader>
-                <GlassCardContent>
-                    <p className="text-sm text-muted mb-6">
-                        L&apos;Efficiency Factor (EF) mesure votre vitesse ajustée à la pente (GAP) par rapport à votre fréquence cardiaque moyenne.
-                        Une hausse de l&apos;EF sur le long terme indique une amélioration de votre condition aérobie.
-                    </p>
-                    
-                    <div className="h-64 relative">
-                        {efData.length >= 2 ? (
-                            <div className="w-full h-full flex flex-col justify-end gap-1">
-                                <div className="flex-1 flex items-end gap-1 px-2">
-                                    {efData.slice(-15).map((d, i) => {
-                                        const h = Math.min(100, (d.ef || 0) * 40);
-                                        return (
-                                            <div 
-                                                key={i} 
-                                                className="flex-1 bg-primary/20 hover:bg-primary/40 rounded-t-sm transition-all group relative"
-                                                style={{ height: `${h}%` }}
-                                            >
-                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-surface text-foreground text-[10px] py-0.5 px-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none z-10">
-                                                    {d.ef}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                                <div className="h-px bg-border w-full" />
-                                <div className="flex justify-between text-[10px] text-muted pt-1">
-                                    <span>{new Date(efData[0].date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
-                                    <span>{new Date(efData[efData.length - 1].date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center border border-dashed border-border rounded-xl">
-                                <p className="text-sm text-muted">Pas assez de données pour le graphique EF</p>
-                            </div>
-                        )}
-                    </div>
-                </GlassCardContent>
-            </GlassCard>
+        <Card variant="glass">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-primary" />
+              Efficacité Aérobie (EF) <Badge variant="outline" className="text-[10px] ml-1">Données avancées</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted mb-6">
+              L&apos;Efficiency Factor (EF) mesure votre vitesse ajustée à la pente (GAP) par rapport à votre fréquence cardiaque moyenne.
+              Une hausse de l&apos;EF sur le long terme indique une amélioration de votre condition aérobie.
+            </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* ── Analyse de Pente (GAP) ── */}
-                <GlassCard>
-                    <GlassCardHeader>
-                        <GlassCardTitle className="flex items-center gap-2 text-base">
-                            <MapPin className="w-4 h-4 text-primary" />
-                            Analyse de Pente (GAP)
-                        </GlassCardTitle>
-                    </GlassCardHeader>
-                    <GlassCardContent>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="text-left border-b border-border text-xs text-muted uppercase tracking-wider">
-                                        <th className="pb-2 font-medium">Date</th>
-                                        <th className="pb-2 font-medium text-right">Pace</th>
-                                        <th className="pb-2 font-medium text-right text-primary">GAP</th>
-                                        <th className="pb-2 font-medium text-right">Gain</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {trailActivities.length > 0 ? (
-                                        trailActivities.slice(0, 6).map(a => (
-                                            <tr key={a.id} className="border-b border-border/50 last:border-0 hover:bg-muted/5 transition-colors">
-                                                <td className="py-2.5 text-muted">{new Date(a.date || a.start_date || '').toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</td>
-                                                <td className="py-2.5 text-right font-medium">{a.pace}/km</td>
-                                                <td className="py-2.5 text-right font-bold text-primary">{a.gap}/km</td>
-                                                <td className="py-2.5 text-right text-xs">+{a.total_elevation_gain}m</td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan={4} className="py-8 text-center text-muted italic">
-                                                Aucune activité en dénivelé détectée.
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </GlassCardContent>
-                </GlassCard>
-
-                {/* ── Cardiac Decoupling Concept ── */}
-                <GlassCard>
-                    <GlassCardHeader>
-                        <GlassCardTitle className="flex items-center gap-2 text-base">
-                            <Star className="w-4 h-4 text-amber-500" />
-                            Économie Aérobie
-                        </GlassCardTitle>
-                    </GlassCardHeader>
-                    <GlassCardContent className="space-y-4">
-                        <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
-                            <h4 className="text-sm font-semibold text-amber-600 mb-1">Concept Elite</h4>
-                            <p className="text-xs text-muted leading-relaxed">
-                                Un coureur efficace maintient son allure sans que sa fréquence cardiaque ne dérive de manière excessive. 
-                                Si votre EF augmente au fil des mois pour une même intensité, vous devenez une machine plus efficace.
-                            </p>
-                        </div>
-                        
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium">Dernière séance EF</span>
-                                <span className="text-lg font-bold text-primary">{efData.length > 0 ? efData[efData.length - 1].ef : '--'}</span>
+            <div className="h-48 relative">
+              {efData.length >= 2 ? (
+                  <div className="w-full h-full flex flex-col justify-end gap-1">
+                    <div className="flex-1 flex items-end gap-1 px-2">
+                      {efData.slice(-15).map((d, i) => {
+                        const h = Math.min(100, (d.ef || 0) * 40);
+                        return (
+                          <div 
+                              key={i} 
+                              className="flex-1 bg-primary/20 hover:bg-primary/40 rounded-t-sm transition-all group relative"
+                              style={{ height: `${h}%` }}
+                          >
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-surface text-foreground text-[10px] py-0.5 px-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none z-10">
+                                {d.ef}
                             </div>
-                            <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
-                                <div className="h-full bg-primary w-2/3" />
-                            </div>
-                            <p className="text-[10px] text-muted text-right italic">
-                                Comparé à votre baseline de 1.42
-                            </p>
-                        </div>
-                    </GlassCardContent>
-                </GlassCard>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="h-px bg-border w-full" />
+                    <div className="flex justify-between text-[10px] text-muted pt-1">
+                      <span>{efData.length > 0 ? new Date(efData[0].date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}</span>
+                      <span>{efData.length > 0 ? new Date(efData[efData.length - 1].date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}</span>
+                    </div>
+                  </div>
+              ) : (
+                  <div className="w-full h-full flex items-center justify-center border border-dashed border-border rounded-xl">
+                    <p className="text-sm text-muted">Pas assez de données pour le graphique EF</p>
+                  </div>
+              )}
             </div>
-        </div>
+            
+            {trailActivities.length > 0 && (
+              <div className="mt-6 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left border-b border-border text-xs text-muted uppercase tracking-wider">
+                      <th className="pb-2 font-medium">Date</th>
+                      <th className="pb-2 font-medium text-right">Pace</th>
+                      <th className="pb-2 font-medium text-right text-primary">GAP</th>
+                      <th className="pb-2 font-medium text-right">Gain</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {trailActivities.slice(0, 6).map(a => (
+                      <tr key={a.id} className="border-b border-border/50 last:border-0 hover:bg-muted/5 transition-colors">
+                        <td className="py-2.5 text-muted">{new Date(a.date || a.start_date || '').toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</td>
+                        <td className="py-2.5 text-right font-medium">{a.pace}/km</td>
+                        <td className="py-2.5 text-right font-bold text-primary">{a.gap}/km</td>
+                        <td className="py-2.5 text-right text-xs">+{a.total_elevation_gain}m</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
     );
 }
 
 // ============================================================================
-// 10.1 — Section Distribution d'intensité (Polarisation)
+// Section Distribution d'intensité (Polarisation)
 // ============================================================================
 
 interface IntensityDistributionSectionProps {
@@ -535,40 +498,40 @@ interface IntensityDistributionSectionProps {
 function IntensityDistributionSection({ polarization, error }: IntensityDistributionSectionProps) {
   if (error) {
     return (
-      <GlassCard>
-        <GlassCardHeader>
-          <GlassCardTitle className="flex items-center gap-2">
+      <Card variant="glass">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-primary" />
             Distribution d&apos;intensité
-          </GlassCardTitle>
-        </GlassCardHeader>
-        <GlassCardContent>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
           <div className="flex items-center gap-2 text-muted py-4">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <p className="text-sm">{error}</p>
           </div>
-        </GlassCardContent>
-      </GlassCard>
+        </CardContent>
+      </Card>
     );
   }
 
   if (!polarization) {
     return (
-      <GlassCard>
-        <GlassCardHeader>
-          <GlassCardTitle className="flex items-center gap-2">
+      <Card variant="glass">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-primary" />
             Distribution d&apos;intensité
-          </GlassCardTitle>
-        </GlassCardHeader>
-        <GlassCardContent>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
           <div className="space-y-3">
             <Skeleton className="h-6" />
             <Skeleton className="h-6" />
             <Skeleton className="h-6" />
           </div>
-        </GlassCardContent>
-      </GlassCard>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -587,14 +550,14 @@ function IntensityDistributionSection({ polarization, error }: IntensityDistribu
   const isOptimal = polarization.classification.optimal;
 
   return (
-    <GlassCard>
-      <GlassCardHeader>
-        <GlassCardTitle className="flex items-center gap-2">
+    <Card variant="glass">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-primary" />
           Distribution d&apos;intensité
-        </GlassCardTitle>
-      </GlassCardHeader>
-      <GlassCardContent className="space-y-5">
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-5">
         {/* Classification badge */}
         <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
           isOptimal ? 'bg-success/15 text-success/80' : 'bg-warning/15 text-warning/80'
@@ -645,13 +608,13 @@ function IntensityDistributionSection({ polarization, error }: IntensityDistribu
             <p className="text-sm text-foreground">{polarization.recommendation.message}</p>
           </div>
         )}
-      </GlassCardContent>
-    </GlassCard>
+      </CardContent>
+    </Card>
   );
 }
 
 // ============================================================================
-// 10.2 — Section HRV & Récupération
+// Section HRV & Récupération
 // ============================================================================
 
 interface HRVRecoverySectionProps {
@@ -662,40 +625,40 @@ interface HRVRecoverySectionProps {
 function HRVRecoverySection({ hrv, error }: HRVRecoverySectionProps) {
   if (error) {
     return (
-      <GlassCard>
-        <GlassCardHeader>
-          <GlassCardTitle className="flex items-center gap-2">
+      <Card variant="glass">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
             <Heart className="w-5 h-5 text-danger" />
             HRV &amp; Récupération
-          </GlassCardTitle>
-        </GlassCardHeader>
-        <GlassCardContent>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
           <div className="flex items-center gap-2 text-muted py-4">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <p className="text-sm">{error}</p>
           </div>
-        </GlassCardContent>
-      </GlassCard>
+        </CardContent>
+      </Card>
     );
   }
 
   if (!hrv) {
     return (
-      <GlassCard>
-        <GlassCardHeader>
-          <GlassCardTitle className="flex items-center gap-2">
+      <Card variant="glass">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
             <Heart className="w-5 h-5 text-danger" />
             HRV &amp; Récupération
-          </GlassCardTitle>
-        </GlassCardHeader>
-        <GlassCardContent>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
           <div className="space-y-3">
             <Skeleton className="h-20" />
             <Skeleton className="h-6" />
             <Skeleton className="h-6" />
           </div>
-        </GlassCardContent>
-      </GlassCard>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -712,14 +675,14 @@ function HRVRecoverySection({ hrv, error }: HRVRecoverySectionProps) {
   const scorePct = Math.min(Math.max(Math.round(hrv.score), 0), 100);
 
   return (
-    <GlassCard>
-      <GlassCardHeader>
-        <GlassCardTitle className="flex items-center gap-2">
+    <Card variant="glass">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
           <Heart className="w-5 h-5 text-danger" />
-          HRV &amp; Récupération
-        </GlassCardTitle>
-      </GlassCardHeader>
-      <GlassCardContent className="space-y-5">
+          HRV &amp; Récupération <Badge variant="outline" className="text-[10px] ml-1">Estimé</Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-5">
         {/* Score principal */}
         <div className={`flex items-center gap-4 p-4 rounded-xl ${cfg.bgColor}`}>
           <div className="text-center min-w-[64px]">
@@ -739,22 +702,22 @@ function HRVRecoverySection({ hrv, error }: HRVRecoverySectionProps) {
         <div className="grid grid-cols-2 gap-3">
           <div className="p-3 rounded-lg bg-background border border-border text-center">
             <p className="text-xl font-bold text-foreground">{hrv.rmssd}</p>
-            <p className="text-xs text-muted mt-0.5">RMSSD (ms)</p>
+            <p className="text-xs text-muted mt-0.5">RMSSD (ms) <Badge variant="outline" className="text-[10px] ml-1">Est.</Badge></p>
           </div>
           {hrv.baselineRmssd !== undefined && (
             <div className="p-3 rounded-lg bg-background border border-border text-center">
               <p className="text-xl font-bold text-foreground">{hrv.baselineRmssd}</p>
-              <p className="text-xs text-muted mt-0.5">Baseline (ms)</p>
+              <p className="text-xs text-muted mt-0.5">Baseline (ms) <Badge variant="outline" className="text-[10px] ml-1">Est.</Badge></p>
             </div>
           )}
           <div className="p-3 rounded-lg bg-background border border-border text-center">
             <p className="text-xl font-bold text-foreground">{hrv.ratio.toFixed(2)}</p>
-            <p className="text-xs text-muted mt-0.5">Ratio HRV</p>
+            <p className="text-xs text-muted mt-0.5">Ratio HRV <Badge variant="outline" className="text-[10px] ml-1">Est.</Badge></p>
           </div>
           {hrv.stressScore !== undefined && (
             <div className="p-3 rounded-lg bg-background border border-border text-center">
               <p className="text-xl font-bold text-foreground">{hrv.stressScore}</p>
-              <p className="text-xs text-muted mt-0.5">Score stress</p>
+              <p className="text-xs text-muted mt-0.5">Score stress <Badge variant="outline" className="text-[10px] ml-1">Est.</Badge></p>
             </div>
           )}
         </div>
@@ -762,12 +725,12 @@ function HRVRecoverySection({ hrv, error }: HRVRecoverySectionProps) {
         {/* Readiness bar */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted font-medium">Niveau de récupération</span>
+            <span className="text-muted font-medium">Niveau de récupération <Badge variant="outline" className="text-[10px] ml-1">Estimé</Badge></span>
             <span className="font-semibold text-foreground">{readinessPct}%</span>
           </div>
           <Progress value={readinessPct} className="h-2.5" />
         </div>
-      </GlassCardContent>
-    </GlassCard>
+      </CardContent>
+    </Card>
   );
 }

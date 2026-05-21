@@ -127,11 +127,11 @@ export default function ActivitiesContent() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 animate-fade-in max-w-5xl mx-auto">
+      <div className="flex items-center justify-between pt-2">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{t.activities.title}</h1>
-          <p className="text-muted mt-1">{filteredActivities.length} {t.activities.title.toLowerCase()}</p>
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">{t.activities.title}</h1>
+          <p className="text-neutral-500 mt-1.5">{filteredActivities.length} {t.activities.title.toLowerCase()}</p>
         </div>
         <div className="flex gap-2">
           {isAuthenticated && (
@@ -161,7 +161,7 @@ export default function ActivitiesContent() {
       {/* Mobile FAB - Record Activity */}
       <Link
         href="/app/record"
-        className="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-primary to-blue-600 text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center active:scale-90 transition-transform z-40"
+        className="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-primary-500 text-white rounded-full shadow-button-primary flex items-center justify-center active:scale-90 transition-all duration-200 ease-smooth z-40 hover:bg-primary-600 hover:shadow-button-primary-hover"
       >
         <Plus className="w-6 h-6" />
       </Link>
@@ -170,24 +170,24 @@ export default function ActivitiesContent() {
        <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Ajouter une activité" size="md">
          <div className="space-y-4">
            {/* GPX Import Option */}
-           <div className="p-4 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer text-center"
-                onClick={() => fileInputRef.current?.click()}>
-             <FileUp className="w-8 h-8 mx-auto mb-2 text-muted" />
-             <p className="text-sm font-medium text-foreground">Importer un fichier GPX</p>
-             <p className="text-xs text-muted mt-1">Le fichier sera analysé automatiquement</p>
-           </div>
+            <div className="p-4 rounded-xl border-2 border-dashed border-neutral-200 hover:border-primary-300 transition-colors cursor-pointer text-center"
+                 onClick={() => fileInputRef.current?.click()}>
+              <FileUp className="w-8 h-8 mx-auto mb-2 text-neutral-400" />
+              <p className="text-sm font-medium text-foreground">Importer un fichier GPX</p>
+              <p className="text-xs text-neutral-500 mt-1">Le fichier sera analysé automatiquement</p>
+            </div>
            <input ref={fileInputRef} type="file" accept=".gpx" className="hidden" onChange={handleGpxImport} />
            
            {isSubmitting && <p className="text-sm text-muted text-center">Import en cours...</p>}
            
-           <div className="relative">
-             <div className="absolute inset-0 flex items-center">
-               <div className="w-full border-t border-border" />
-             </div>
-             <div className="relative flex justify-center text-xs uppercase">
-               <span className="bg-surface px-2 text-muted">Ou saisie manuelle</span>
-             </div>
-           </div>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-neutral-200" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-surface px-2 text-neutral-400">Ou saisie manuelle</span>
+              </div>
+            </div>
            
            {/* Manual Form */}
            <Input label="Nom" placeholder="Ex: Course du matin" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />

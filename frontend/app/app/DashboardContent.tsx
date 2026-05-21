@@ -19,7 +19,7 @@ import {
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { Activity, Heart, TrendingUp, Zap } from 'lucide-react';
 import Link from 'next/link';
-import { GlassCard, GradientBadge, PrimaryButton } from '@/components/ui';
+import { GradientBadge, PrimaryButton } from '@/components/ui';
 import dynamic from 'next/dynamic';
 
 const OnboardingWizard = dynamic(
@@ -124,30 +124,27 @@ export default function DashboardContent() {
 
   if (!isLoading && !hasData) {
     return (
-      <div className="space-y-6 animate-fade-in">
-        {/* Onboarding wizard — affiché si l'utilisateur n'a pas encore configuré son profil */}
+      <div className="space-y-8 animate-fade-in max-w-3xl mx-auto">
         {onboardingChecked && showOnboarding && (
           <OnboardingWizard onComplete={() => setShowOnboarding(false)} />
         )}
-        {/* Header avec badge */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground tracking-tight">{t.dashboard.title}</h1>
-            <p className="text-muted mt-1">{t.dashboard.subtitle}</p>
+            <p className="text-neutral-500 mt-1.5">{t.dashboard.subtitle}</p>
           </div>
           <GradientBadge variant="primary" icon={Zap} dot>
             Prêt à commencer
           </GradientBadge>
         </div>
 
-        {/* Empty State avec GlassCard */}
-        <GlassCard className="p-8 md:p-12 text-center max-w-2xl mx-auto" hover={false}>
-          <div className="w-20 h-20 bg-gradient-to-br from-primary-100 to-primary-50 border border-primary-200 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-            <Activity className="w-10 h-10 text-primary-600" />
+        <div className="bg-surface rounded-2xl border border-neutral-200/60 shadow-card p-8 md:p-12 text-center transition-all duration-200 ease-smooth">
+          <div className="w-20 h-20 bg-gradient-to-br from-primary-100 to-primary-50 border border-primary-200/60 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+            <Activity className="w-10 h-10 text-primary-500" />
           </div>
           
           <h2 className="text-xl font-bold text-foreground mb-2 tracking-tight">Aucune activité</h2>
-          <p className="text-muted mb-8 max-w-md mx-auto leading-relaxed">
+          <p className="text-neutral-500 mb-8 max-w-md mx-auto leading-relaxed">
             Connectez Strava ou Garmin pour importer vos activités et voir vos statistiques. 
             Vos données seront automatiquement synchronisées.
           </p>
@@ -164,19 +161,18 @@ export default function DashboardContent() {
               </PrimaryButton>
             </Link>
           </div>
-        </GlassCard>
+        </div>
 
-        {/* Quick Tips */}
-        <div className="grid sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
+        <div className="grid sm:grid-cols-3 gap-4">
           {[
             { title: 'Synchronisation auto', desc: 'Vos activités se mettent à jour automatiquement' },
             { title: 'Analyse avancée', desc: 'VDOT, PMC et métriques scientifiques' },
             { title: 'Coaching adaptatif', desc: 'Plans personnalisés selon vos objectifs' },
           ].map((tip, i) => (
-            <GlassCard key={i} padding="md" variant="subtle">
+            <div key={i} className="bg-surface/70 backdrop-blur-sm border border-neutral-200/40 rounded-xl p-4 shadow-sm transition-all duration-200 ease-smooth hover:shadow-md hover:border-primary-200/50">
               <h3 className="font-semibold text-foreground text-sm mb-1">{tip.title}</h3>
-              <p className="text-xs text-muted">{tip.desc}</p>
-            </GlassCard>
+              <p className="text-xs text-neutral-500">{tip.desc}</p>
+            </div>
           ))}
         </div>
       </div>
@@ -185,12 +181,9 @@ export default function DashboardContent() {
 
   return (
     <div className="animate-fade-in">
-      {/* Background Effects */}
-      <div className="fixed inset-0 bg-gradient-to-b from-neutral-50 to-white" />
-      <div className="fixed inset-0 bg-[linear-gradient(color-mix(in srgb, var(--primary), transparent 97%)_1px,transparent_1px),linear-gradient(90deg,color-mix(in srgb, var(--primary), transparent 97%)_1px,transparent_1px)] bg-[size:60px_60px]" />
+      <div className="fixed inset-0 bg-gradient-to-b from-neutral-50 to-white pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Onboarding wizard — affiché par-dessus le dashboard si nécessaire */}
         {onboardingChecked && showOnboarding && (
           <OnboardingWizard onComplete={() => setShowOnboarding(false)} />
         )}
@@ -200,4 +193,6 @@ export default function DashboardContent() {
     </div>
   );
 }
+
+
 

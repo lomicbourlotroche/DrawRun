@@ -1,185 +1,653 @@
 /**
  * DrawRun Design System - Single Source of Truth
  * 
- * Ce fichier centralise TOUS les tokens de design :
- * - Couleurs (light + dark)
- * - Typographie
- * - Espacement (8pt grid)
- * - Rayons
- * - Ombres
- * - Z-index
- * - Transitions
- * - Animations
+ * Ce fichier centralise TOUS les tokens de design pour DrawRun.
+ * UNIQUE au projet - inspiré des algorithmes scientifiques et du domaine sportif.
  * 
  * UTILISATION :
  * 1. Importer depuis ce fichier UNIQUEMENT
  * 2. NE JAMAIS dupliquer ces valeurs ailleurs
- * 3. Générer globals.css et tailwind.config.js à partir de ce fichier
+ * 3. Exécuter `npm run generate:design-tokens` pour synchroniser globals.css et tailwind.config.js
+ * 
+ * DOMAINE SPORTIF :
+ * - Zones cardiaques (5 zones basées sur %FCM)
+ * - Zones de puissance cyclisme (7 zones)
+ * - États de forme (PMC: Performance Management Chart)
+ * - seuils de fatigue et surentraînement
  */
 
 // ============================================================================
-// COULEURS - Palette Principal
+// COULEURS - Palette Principale (Unique à DrawRun)
 // ============================================================================
 
 export const colors = {
-  // Primary - Bleu Performance (CTA, liens, actions principales)
+  // Primary - Soft Blue (Flow Light - CTA, liens, actions principales)
+  // 🎯 Couleur principale apaisante et moderne
   primary: {
-    50: '#E6F2FF',
-    100: '#CCE5FF',
-    200: '#99CBFF',
-    300: '#66B0FF',
-    400: '#4C9AFF',
-    500: '#007AFF',
-    600: '#0066FF',        // ← DEFAULT (CTA principal)
-    700: '#0052CC',
-    800: '#003D99',
-    900: '#001A4D',
-    DEFAULT: '#0066FF',
+    50: '#F0F7FF',
+    100: '#E0F0FE',
+    200: '#B8DAFD',
+    300: '#8FC3FB',
+    400: '#66ADF9',
+    500: '#4D97F7',        // ← DEFAULT (CTA principal)
+    600: '#337BE5',
+    700: '#265FB3',
+    800: '#1A4380',
+    900: '#0D2140',
+    DEFAULT: '#4D97F7',
     foreground: '#FFFFFF',
-    glow: 'rgba(0, 102, 255, 0.3)',
-    glowStrong: 'rgba(0, 102, 255, 0.4)',
+    glow: 'rgba(77, 151, 247, 0.25)',
+    glowStrong: 'rgba(77, 151, 247, 0.35)',
   },
 
-  // Secondary - Violet (accents secondaires)
+  // Secondary - Soft Lavender (accents secondaires, profondeur)
   secondary: {
-    50: '#EEEDFB',
-    100: '#DCDBF7',
-    200: '#B9B7EF',
-    300: '#9593E7',
-    400: '#7B79E0',
-    500: '#5856D6',        // ← DEFAULT
-    600: '#4644AB',
-    700: '#353380',
-    800: '#232256',
-    900: '#12112B',
-    DEFAULT: '#5856D6',
+    50: '#F8F7FC',
+    100: '#F0EEF8',
+    200: '#D8D5EC',
+    300: '#C0BCE0',
+    400: '#A8A3D4',
+    500: '#908BC8',        // ← DEFAULT
+    600: '#7873BC',
+    700: '#605BAF',
+    800: '#4844A3',
+    900: '#302E97',
+    DEFAULT: '#908BC8',
     foreground: '#FFFFFF',
   },
 
-  // Success - Vert (validation, succès)
+  // Success - Soft Sage (validation, succès, récupération)
   success: {
-    50: '#E8F9EE',
-    100: '#D1F3DD',
-    200: '#A3E7BB',
-    300: '#75DB99',
-    400: '#69F0AE',
-    500: '#00C853',        // ← DEFAULT
-    600: '#00A042',
-    700: '#007831',
-    800: '#005021',
-    900: '#002810',
-    DEFAULT: '#00C853',
+    50: '#F4F9F4',
+    100: '#E8F3E8',
+    200: '#C8E0C8',
+    300: '#A8CD A8',
+    400: '#88BA88',
+    500: '#68A768',        // ← DEFAULT
+    600: '#549454',
+    700: '#408140',
+    800: '#2C6E2C',
+    900: '#185B18',
+    DEFAULT: '#68A768',
     foreground: '#FFFFFF',
-    glow: 'rgba(0, 200, 83, 0.3)',
+    glow: 'rgba(104, 167, 104, 0.25)',
   },
 
-  // Recovery - Cyan (récupération, fraîcheur)
+  // Recovery - Soft Teal (récupération, fraîcheur)
   recovery: {
-    50: '#E0F7FA',
-    100: '#B2EBF2',
-    200: '#80DEEA',
-    300: '#4DD0E1',
-    400: '#80DEEA',
-    500: '#00BCD4',        // ← DEFAULT
-    600: '#0097A7',
-    700: '#006064',
-    800: '#004050',
-    900: '#002030',
-    DEFAULT: '#00BCD4',
+    50: '#F0F9FA',
+    100: '#E0F3F4',
+    200: '#B8E1E3',
+    300: '#90CFD2',
+    400: '#68BDC1',
+    500: '#40ABAF',        // ← DEFAULT
+    600: '#34999D',
+    700: '#28777A',
+    800: '#1C5557',
+    900: '#103335',
+    DEFAULT: '#40ABAF',
     foreground: '#FFFFFF',
-    glow: 'rgba(0, 188, 212, 0.3)',
+    glow: 'rgba(64, 171, 175, 0.25)',
   },
 
-  // Warning - Orange (alertes, attention)
+  // Warning - Soft Amber (alertes, attention)
   warning: {
-    50: '#FFF8E1',
-    100: '#FFECB3',
-    200: '#FFE082',
-    300: '#FFD54F',
-    400: '#FFD180',
-    500: '#FFAB00',        // ← DEFAULT
-    600: '#FF8F00',
-    700: '#FF6F00',
-    800: '#CC5900',
-    900: '#994300',
-    DEFAULT: '#FFAB00',
-    foreground: '#0F172A',
-    glow: 'rgba(255, 171, 0, 0.3)',
+    50: '#FEFBF4',
+    100: '#FDF6E8',
+    200: '#FAE8C8',
+    300: '#F7DAA8',
+    400: '#F4CC88',
+    500: '#F1BE68',        // ← DEFAULT
+    600: '#D9A954',
+    700: '#C19440',
+    800: '#A97F2C',
+    900: '#916A18',
+    DEFAULT: '#F1BE68',
+    foreground: '#2C3E50',
+    glow: 'rgba(241, 190, 104, 0.25)',
   },
 
-  // Danger - Rouge (erreurs, danger)
+  // Danger - Soft Coral (erreurs, danger)
   danger: {
-    50: '#FFEBEE',
-    100: '#FFCDD2',
-    200: '#EF9A9A',
-    300: '#E57373',
-    400: '#FF8A80',
-    500: '#FF5252',        // ← DEFAULT
-    600: '#D32F2F',
-    700: '#B71C1C',
-    800: '#8C0E0E',
-    900: '#5C0A0A',
-    DEFAULT: '#FF5252',
+    50: '#FEF5F4',
+    100: '#FDEAE8',
+    200: '#FACAC6',
+    300: '#F7AAA4',
+    400: '#F48A82',
+    500: '#F16A60',        // ← DEFAULT
+    600: '#D95448',
+    700: '#C13E30',
+    800: '#A92818',
+    900: '#911200',
+    DEFAULT: '#F16A60',
     foreground: '#FFFFFF',
-    glow: 'rgba(255, 82, 82, 0.3)',
+    glow: 'rgba(241, 106, 96, 0.25)',
   },
 
-  // Peak - Orange vif (pic de performance)
+  // Peak - Soft Peach (pic de performance)
   peak: {
-    50: '#FFF3E0',
-    100: '#FFE0B2',
-    200: '#FFCC80',
-    300: '#FFB74D',
-    400: '#FF9100',
-    500: '#FF6D00',        // ← DEFAULT
-    600: '#E65100',
-    700: '#BF360C',
-    800: '#8C2400',
-    900: '#5C1800',
-    DEFAULT: '#FF6D00',
+    50: '#FEF8F4',
+    100: '#FDEFE8',
+    200: '#FAD8C8',
+    300: '#F7C1A8',
+    400: '#F4AA88',
+    500: '#F19368',        // ← DEFAULT
+    600: '#D97E54',
+    700: '#C16940',
+    800: '#A9542C',
+    900: '#913F18',
+    DEFAULT: '#F19368',
     foreground: '#FFFFFF',
-    glow: 'rgba(255, 109, 0, 0.3)',
+    glow: 'rgba(241, 147, 104, 0.25)',
   },
 
-  // Neutres (60-30-10 rule)
+  // Neutres Flow Light - Palette apaisante et aérée
   neutral: {
-    50: '#F8FAFC',        // Fond principal (60%)
-    100: '#F1F5F9',       // Fond alternatif
-    200: '#E2E8F0',       // Bordures légères
-    300: '#CBD5E1',       // Bordures
-    400: '#94A3B8',       // Texte secondaire/muted
-    500: '#64748B',       // Texte tertiaire
-    600: '#475569',       // Texte émphasé
-    700: '#334155',       // Élévation
-    800: '#1E293B',       // Surface (30%)
-    900: '#0F172A',       // Texte principal (10%)
+    50: '#FAFBFD',        // Fond principal (60%) - off-white
+    100: '#F5F7FA',       // Fond alternatif
+    200: '#E8ECF2',       // Bordures légères
+    300: '#CBD2DC',       // Bordures
+    400: '#8A95A7',       // Texte secondaire/muted
+    500: '#6B7280',       // Texte tertiaire
+    600: '#4B5563',       // Texte émphasé
+    700: '#374151',       // Élévation
+    800: '#2C3E50',       // Surface (30%) - dark blue-gray
+    900: '#1F2937',       // Texte principal (10%)
   },
 
-  // Couleurs des types d'activités
+  // Couleurs des types d'activités (Sport-specific)
   activity: {
-    run: '#FF3B30',
-    ride: '#FF9500',
-    swim: '#007AFF',
-    hike: '#34C759',
-    walk: '#8E8E93',
-    ski: '#007AFF',
-    other: '#8E8E93',
+    run: '#FF3B30',       // Course à pied
+    ride: '#FF9500',      // Cyclisme
+    swim: '#007AFF',      // Natation
+    hike: '#34C759',      // Randonnée
+    walk: '#8E8E93',      // Marche
+    ski: '#007AFF',       // Ski
+    trail: '#FF6D00',     // Trail running
+    rowing: '#00BCD4',    // Aviron
+    other: '#8E8E93',     // Autre
   },
 };
 
 // ============================================================================
-// GRADIENTS
+// 🎯 TOKENS METIERS - UNIQUEMENT DRAWRUN
+// ============================================================================
+
+// Zones Cardiaques (basées sur %FCM - Fréquence Cardiaque Maximale)
+// 📊 Utilisées dans les algorithmes cardiovascular.js et hr_zones/
+export const hrZones = {
+  // Zone 1: Très léger - Récupération active (50-60% FCM)
+  zone1: {
+    color: '#00C853',     // Vert clair - récupération
+    name: 'Very Light',
+    description: 'Récupération active, échauffement',
+    intensity: '50-60%',
+    DEFAULT: '#00C853',
+    foreground: '#0F172A',
+    light: '#E8F9EE',
+    dark: '#002810',
+  },
+
+  // Zone 2: Léger - Endurance de base (60-70% FCM)
+  zone2: {
+    color: '#8BC34A',     // Vert - endurance
+    name: 'Light',
+    description: 'Endurance fondamentale, combustion des graisses',
+    intensity: '60-70%',
+    DEFAULT: '#8BC34A',
+    foreground: '#0F172A',
+    light: '#F0F8E8',
+    dark: '#1B5E20',
+  },
+
+  // Zone 3: Modéré - Seuil aérobie (70-80% FCM)
+  zone3: {
+    color: '#FFAB00',     // Orange - modéré
+    name: 'Moderate',
+    description: 'Amélioration de la capacité aérobie',
+    intensity: '70-80%',
+    DEFAULT: '#FFAB00',
+    foreground: '#0F172A',
+    light: '#FFF8E1',
+    dark: '#E65100',
+  },
+
+  // Zone 4: Intense - Seuil lactique (80-90% FCM)
+  zone4: {
+    color: '#FF6D00',     // Orange vif - intense
+    name: 'Hard',
+    description: 'Amélioration de la puissance et de la vitesse',
+    intensity: '80-90%',
+    DEFAULT: '#FF6D00',
+    foreground: '#FFFFFF',
+    light: '#FFF3E0',
+    dark: '#E65100',
+  },
+
+  // Zone 5: Maximum - Effort maximal (90-100% FCM)
+  zone5: {
+    color: '#FF5252',     // Rouge - maximal
+    name: 'Maximum',
+    description: 'Sprints, efforts maximaux, compétition',
+    intensity: '90-100%',
+    DEFAULT: '#FF5252',
+    foreground: '#FFFFFF',
+    light: '#FFEBEE',
+    dark: '#C62828',
+  },
+
+  // Palette complète des zones
+  all: ['#00C853', '#8BC34A', '#FFAB00', '#FF6D00', '#FF5252'],
+  palette: {
+    1: '#00C853',
+    2: '#8BC34A',
+    3: '#FFAB00',
+    4: '#FF6D00',
+    5: '#FF5252',
+  },
+};
+
+// Zones de Puissance Cyclisme (basées sur FTP - Functional Threshold Power)
+// 🚴 Utilisées dans power/, critical_power.js
+export const powerZones = {
+  // Zone 1: Récupération active (<55% FTP)
+  zone1: {
+    color: '#00BCD4',     // Cyan - récupération
+    name: 'Active Recovery',
+    description: 'Récupération, très léger',
+    intensity: '<55%',
+    DEFAULT: '#00BCD4',
+    foreground: '#FFFFFF',
+  },
+
+  // Zone 2: Endurance (56-75% FTP)
+  zone2: {
+    color: '#00C853',     // Vert - endurance
+    name: 'Endurance',
+    description: 'Endurance fondamentale',
+    intensity: '56-75%',
+    DEFAULT: '#00C853',
+    foreground: '#FFFFFF',
+  },
+
+  // Zone 3: Tempo (76-90% FTP)
+  zone3: {
+    color: '#8BC34A',     // Vert foncé - tempo
+    name: 'Tempo',
+    description: 'Allure marathon, seuil aérobie',
+    intensity: '76-90%',
+    DEFAULT: '#8BC34A',
+    foreground: '#0F172A',
+  },
+
+  // Zone 4: Seuil lactique (91-105% FTP)
+  zone4: {
+    color: '#FFAB00',     // Orange - seuil
+    name: 'Threshold',
+    description: 'Seuil lactique, allure 10km',
+    intensity: '91-105%',
+    DEFAULT: '#FFAB00',
+    foreground: '#0F172A',
+  },
+
+  // Zone 5: VO2 Max (106-120% FTP)
+  zone5: {
+    color: '#FF6D00',     // Orange vif - VO2 max
+    name: 'VO2 Max',
+    description: 'Capacité anaérobie, allure 3km-5km',
+    intensity: '106-120%',
+    DEFAULT: '#FF6D00',
+    foreground: '#FFFFFF',
+  },
+
+  // Zone 6: Anaérobie (121-150% FTP)
+  zone6: {
+    color: '#E91E63',     // Rose - anaérobie
+    name: 'Anaerobic Capacity',
+    description: 'Efforts courts et intenses',
+    intensity: '121-150%',
+    DEFAULT: '#E91E63',
+    foreground: '#FFFFFF',
+  },
+
+  // Zone 7: Neuromusculaire (>150% FTP)
+  zone7: {
+    color: '#9C27B0',     // Violet - neuromusculaire
+    name: 'Neuromuscular',
+    description: 'Sprints, départs, accélérations',
+    intensity: '>150%',
+    DEFAULT: '#9C27B0',
+    foreground: '#FFFFFF',
+  },
+
+  // Palette complète
+  all: ['#00BCD4', '#00C853', '#8BC34A', '#FFAB00', '#FF6D00', '#E91E63', '#9C27B0'],
+  palette: {
+    1: '#00BCD4',
+    2: '#00C853',
+    3: '#8BC34A',
+    4: '#FFAB00',
+    5: '#FF6D00',
+    6: '#E91E63',
+    7: '#9C27B0',
+  },
+};
+
+// États de Forme - Performance Management Chart (PMC)
+// 📈 Modèle scientifique pour suivre la fatigue, la forme et la performance
+export const pmcStates = {
+  // Forme excellente - Pic de performance (Forme > Fatigue)
+  peak: {
+    color: colors.peak.DEFAULT,
+    name: 'Peak Form',
+    description: 'Performance optimale, prêt à battre des records',
+    DEFAULT: colors.peak.DEFAULT,
+    foreground: colors.peak.foreground,
+    glow: colors.peak.glow,
+  },
+
+  // Bonne forme - Récupération complète
+  fresh: {
+    color: colors.recovery.DEFAULT,
+    name: 'Fresh',
+    description: 'Bien récupéré, bonne forme générale',
+    DEFAULT: colors.recovery.DEFAULT,
+    foreground: colors.recovery.foreground,
+    glow: colors.recovery.glow,
+  },
+
+  // Forme normale - Équilibre
+  normal: {
+    color: colors.primary.DEFAULT,
+    name: 'Normal',
+    description: 'État de forme standard, équilibre charge/récupération',
+    DEFAULT: colors.primary.DEFAULT,
+    foreground: colors.primary.foreground,
+    glow: colors.primary.glow,
+  },
+
+  // Fatigue modérée - Besoin de récupération
+  fatigued: {
+    color: colors.warning.DEFAULT,
+    name: 'Fatigued',
+    description: 'Fatigue accumulée, récupération nécessaire',
+    DEFAULT: colors.warning.DEFAULT,
+    foreground: colors.warning.foreground,
+    glow: colors.warning.glow,
+  },
+
+  // Surentraînement - Alerte rouge
+  overtrained: {
+    color: colors.danger.DEFAULT,
+    name: 'Overtrained',
+    description: 'Risque de blessure ou de contre-performance',
+    DEFAULT: colors.danger.DEFAULT,
+    foreground: colors.danger.foreground,
+    glow: colors.danger.glow,
+  },
+
+  // Palette des états
+  palette: [
+    colors.danger.DEFAULT,   // overtrained
+    colors.warning.DEFAULT, // fatigued
+    colors.primary.DEFAULT, // normal
+    colors.recovery.DEFAULT,// fresh
+    colors.peak.DEFAULT,    // peak
+  ],
+};
+
+// Niveaux de Fatigue (basés sur le modèle PMC)
+// 💤 Utilisés dans overtraining.js
+export const fatigueLevels = {
+  // Niveau 1: Frais - Fatigue < 10%
+  fresh: {
+    color: colors.recovery.DEFAULT,
+    threshold: 10,
+    description: 'Aucune fatigue significatif',
+    DEFAULT: colors.recovery.DEFAULT,
+  },
+
+  // Niveau 2: Normal - Fatigue 10-30%
+  normal: {
+    color: colors.primary.DEFAULT,
+    threshold: 30,
+    description: 'Fatigue normale après entraînement',
+    DEFAULT: colors.primary.DEFAULT,
+  },
+
+  // Niveau 3: Fatigué - Fatigue 30-50%
+  fatigued: {
+    color: colors.warning.DEFAULT,
+    threshold: 50,
+    description: 'Besoin de récupération',
+    DEFAULT: colors.warning.DEFAULT,
+  },
+
+  // Niveau 4: Très fatigué - Fatigue 50-70%
+  veryFatigued: {
+    color: '#FF8F00',
+    threshold: 70,
+    description: 'Récupération active nécessaire',
+    DEFAULT: '#FF8F00',
+    foreground: '#0F172A',
+  },
+
+  // Niveau 5: Surentraînement - Fatigue > 70%
+  overtrained: {
+    color: colors.danger.DEFAULT,
+    threshold: 70,
+    description: 'Risque élevé de blessure',
+    DEFAULT: colors.danger.DEFAULT,
+  },
+};
+
+// Niveaux de Readiness (Prêt à s'entraîner)
+// ✅ Utilisés dans readiness.js
+export const readinessLevels = {
+  // Excellent - Toutes les métriques au vert
+  excellent: {
+    color: colors.success.DEFAULT,
+    score: 90,
+    description: 'Parfait pour un entraînement intense',
+    DEFAULT: colors.success.DEFAULT,
+    foreground: colors.success.foreground,
+  },
+
+  // Bon - Métriques légèrement en dessous
+  good: {
+    color: colors.recovery.DEFAULT,
+    score: 70,
+    description: 'Bon pour un entraînement modéré',
+    DEFAULT: colors.recovery.DEFAULT,
+    foreground: colors.recovery.foreground,
+  },
+
+  // Moyen - Certaines métriques en alertes
+  fair: {
+    color: colors.warning.DEFAULT,
+    score: 50,
+    description: 'Récupération active recommandée',
+    DEFAULT: colors.warning.DEFAULT,
+    foreground: colors.warning.foreground,
+  },
+
+  // Faible - Plusieurs métriques en alerte
+  poor: {
+    color: '#FF6D00',
+    score: 30,
+    description: 'Éviter les entraînements intenses',
+    DEFAULT: '#FF6D00',
+    foreground: '#FFFFFF',
+  },
+
+  // Très faible - Métriques critiques
+  veryPoor: {
+    color: colors.danger.DEFAULT,
+    score: 0,
+    description: 'Repos complet nécessaire',
+    DEFAULT: colors.danger.DEFAULT,
+    foreground: colors.danger.foreground,
+  },
+};
+
+// Métriques de Performance (TSS, TRIMP, etc.)
+// 📊 Utilisées dans tss.js, training_load.js
+export const performanceMetrics = {
+  // TSS - Training Stress Score
+  tss: {
+    low: '#00BCD4',       // < 150 - Récupération
+    moderate: '#00C853',  // 150-300 - Endurance
+    high: '#FFAB00',     // 300-450 - Intense
+    veryHigh: '#FF6D00', // > 450 - Très intense
+    extreme: '#FF5252',   // > 600 - Extrême
+  },
+
+  // TRIMP - Training Impulse
+  trimp: {
+    low: '#00BCD4',
+    moderate: '#00C853',
+    high: '#FFAB00',
+    veryHigh: '#FF6D00',
+    extreme: '#FF5252',
+  },
+
+  // Charge d'entraînement
+  load: {
+    acute: '#0066FF',     // Charge aiguë (7 jours)
+    chronic: '#5856D6',  // Charge chronique (42 jours)
+    ratio: '#FF6D00',     // Ratio ACWR
+  },
+};
+
+// Niveaux de Polarisation (80/20 Rule)
+// 🎯 Utilisés dans polarization.js
+export const polarization = {
+  // Zone 1 - Endurance (80% du volume)
+  zone1: {
+    color: colors.recovery.DEFAULT,
+    target: 80,
+    name: 'Endurance',
+    description: 'Entraînement en zone 1 (aérobie)',
+    DEFAULT: colors.recovery.DEFAULT,
+  },
+
+  // Zone 2+ - Intensité (20% du volume)
+  zone2Plus: {
+    color: colors.peak.DEFAULT,
+    target: 20,
+    name: 'Intensity',
+    description: 'Entraînement en zones 2+ (anaérobie)',
+    DEFAULT: colors.peak.DEFAULT,
+  },
+
+  // Déséquilibre
+  imbalance: {
+    color: colors.danger.DEFAULT,
+    threshold: 85,
+    description: 'Trop d\'intensité, risque de surentraînement',
+    DEFAULT: colors.danger.DEFAULT,
+  },
+};
+
+// Niveaux de Stress Thermique
+// 🌡️ Utilisés dans environmental_impact.js
+export const heatStress = {
+  low: {
+    color: '#00BCD4',
+    threshold: 20,      // °C
+    description: 'Conditions optimales',
+    DEFAULT: '#00BCD4',
+  },
+  moderate: {
+    color: '#00C853',
+    threshold: 25,
+    description: 'Conditions acceptables',
+    DEFAULT: '#00C853',
+  },
+  high: {
+    color: '#FFAB00',
+    threshold: 30,
+    description: 'Précautions nécessaires',
+    DEFAULT: '#FFAB00',
+  },
+  extreme: {
+    color: '#FF5252',
+    threshold: 35,
+    description: 'Danger - Éviter l\'effort',
+    DEFAULT: '#FF5252',
+  },
+};
+
+// Niveaux d'Hydratation
+// 💧 Utilisés dans nutrition.js
+export const hydrationLevels = {
+  optimal: {
+    color: '#00C853',
+    percentage: 100,
+    description: 'Hydratation optimale',
+    DEFAULT: '#00C853',
+  },
+  good: {
+    color: '#8BC34A',
+    percentage: 80,
+    description: 'Bonne hydratation',
+    DEFAULT: '#8BC34A',
+  },
+  fair: {
+    color: '#FFAB00',
+    percentage: 60,
+    description: 'Hydratation moyenne',
+    DEFAULT: '#FFAB00',
+  },
+  poor: {
+    color: '#FF6D00',
+    percentage: 40,
+    description: 'Déshydratation légère',
+    DEFAULT: '#FF6D00',
+  },
+  critical: {
+    color: '#FF5252',
+    percentage: 20,
+    description: 'Déshydratation sévère',
+    DEFAULT: '#FF5252',
+  },
+};
+
+// ============================================================================
+// GRADIENTS (y compris gradients métiers)
 // ============================================================================
 
 export const gradients = {
-  primary: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-  success: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
-  warning: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-  dark: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-  peak: 'linear-gradient(135deg, #FF9100 0%, #FF6D00 100%)',
-  recovery: 'linear-gradient(135deg, #4DD0E1 0%, #00BCD4 100%)',
-  glass: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
-  mesh: 'radial-gradient(at 40% 20%, var(--primary-400) 0px, transparent 50%), radial-gradient(at 80% 0%, var(--success-400) 0px, transparent 50%), radial-gradient(at 0% 50%, var(--neutral-700) 0px, transparent 50%)',
+  // Gradients Flow Light - doux et apaisants
+  primary: 'linear-gradient(135deg, #66A3F5 0%, #4D97F7 50%, #337BE5 100%)',
+  success: 'linear-gradient(135deg, #7FB069 0%, #68A768 50%, #549454 100%)',
+  warning: 'linear-gradient(135deg, #F4C57A 0%, #F1BE68 50%, #D9A954 100%)',
+  dark: 'linear-gradient(135deg, #2C3E50 0%, #374151 100%)',
+  peak: 'linear-gradient(135deg, #F4A982 0%, #F19368 50%, #D97E54 100%)',
+  recovery: 'linear-gradient(135deg, #52B8BC 0%, #40ABAF 50%, #34999D 100%)',
+  glass: 'linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.4) 100%)',
+  mesh: 'radial-gradient(at 40% 20%, var(--primary-200) 0px, transparent 50%), radial-gradient(at 80% 0%, var(--success-200) 0px, transparent 50%), radial-gradient(at 0% 50%, var(--neutral-100) 0px, transparent 50%)',
+
+  // Gradients métiers
+  // PMC (Performance Management Chart)
+  pmc: {
+    fitness: 'linear-gradient(135deg, #0066FF 0%, #5856D6 100%)',     // Courbe de fitness
+    fatigue: 'linear-gradient(135deg, #FFAB00 0%, #FF6D00 100%)',    // Courbe de fatigue
+    form: 'linear-gradient(135deg, #00BCD4 0%, #00C853 100%)',        // Courbe de forme
+  },
+
+  // Zones cardiaques
+  hrZones: 'linear-gradient(90deg, #00C853 0%, #00C853 20%, #8BC34A 20%, #8BC34A 40%, #FFAB00 40%, #FFAB00 60%, #FF6D00 60%, #FF6D00 80%, #FF5252 80%, #FF5252 100%)',
+  hrZonesVertical: 'linear-gradient(to bottom, #00C853 0%, #00C853 20%, #8BC34A 20%, #8BC34A 40%, #FFAB00 40%, #FFAB00 60%, #FF6D00 60%, #FF6D00 80%, #FF5252 80%, #FF5252 100%)',
+
+  // Zones de puissance
+  powerZones: 'linear-gradient(90deg, #00BCD4 0%, #00BCD4 14.28%, #00C853 14.28%, #00C853 42.85%, #8BC34A 42.85%, #8BC34A 57.14%, #FFAB00 57.14%, #FFAB00 71.42%, #FF6D00 71.42%, #FF6D00 85.71%, #E91E63 85.71%, #E91E63 100%)',
+
+  // Niveaux de readiness
+  readiness: 'linear-gradient(90deg, #FF5252 0%, #FF5252 20%, #FF6D00 20%, #FF6D00 40%, #FFAB00 40%, #FFAB00 60%, #00BCD4 60%, #00BCD4 80%, #00C853 80%, #00C853 100%)',
+
+  // État de forme PMC
+  formState: 'linear-gradient(135deg, #FF5252 0%, #FF6D00 25%, #FFAB00 50%, #00BCD4 75%, #00C853 100%)',
 };
 
 // ============================================================================
@@ -187,39 +655,46 @@ export const gradients = {
 // ============================================================================
 
 export const lightTokens = {
-  // Background
-  bg: colors.neutral[50],           // Fond principal
-  bgSecondary: colors.neutral[100],  // Fond secondaire
-  surface: '#FFFFFF',               // Cartes, surfaces élevées
+  // Background - Flow Light airy feel
+  bg: colors.neutral[50],           // #FAFBFD - Fond principal
+  bgSecondary: colors.neutral[100], // #F5F7FA - Fond alternatif
+  surface: '#FFFFFF',              // Cartes blanches avec ombre douce
   surfaceElevated: '#FFFFFF',
   
-  // Text
-  foreground: colors.neutral[900],   // Texte principal
-  textPrimary: colors.neutral[900],
-  textSecondary: colors.neutral[600],
-  textTertiary: colors.neutral[500],
-  muted: colors.neutral[400],        // Texte atténué
+  // Text - Softer contrast for comfort
+  foreground: colors.neutral[900],  // #1F2937 - Texte principal
+  textPrimary: colors.neutral[800], // #2C3E50
+  textSecondary: colors.neutral[600], // #4B5563
+  textTertiary: colors.neutral[500],  // #6B7280
+  muted: colors.neutral[400],       // #8A95A7 - Texte atténué
   textMuted: colors.neutral[400],
   
-  // Borders
-  border: colors.neutral[200],       // Bordures
-  borderStrong: colors.neutral[300],
+  // Borders - Subtle and soft
+  border: colors.neutral[200],      // #E8ECF2
+  borderStrong: colors.neutral[300], // #CBD2DC
   
-  // Semantic colors
-  primary: colors.primary.DEFAULT,
-  secondary: colors.secondary.DEFAULT,
-  success: colors.success.DEFAULT,
-  warning: colors.warning.DEFAULT,
-  danger: colors.danger.DEFAULT,
+  // Semantic colors - Flow Light palette
+  primary: colors.primary.DEFAULT,  // #4D97F7
+  secondary: colors.secondary.DEFAULT, // #908BC8
+  success: colors.success.DEFAULT,  // #68A768
+  warning: colors.warning.DEFAULT,  // #F1BE68
+  danger: colors.danger.DEFAULT,    // #F16A60
   info: colors.primary.DEFAULT,
-  peak: colors.peak.DEFAULT,
-  recovery: colors.recovery.DEFAULT,
+  peak: colors.peak.DEFAULT,        // #F19368
+  recovery: colors.recovery.DEFAULT, // #40ABAF
 
-  // Background status
-  bgSuccess: colors.success[50],
-  bgWarning: colors.warning[50],
-  bgDanger: colors.danger[50],
-  bgInfo: colors.primary[50],
+  // Background status - Soft tints
+  bgSuccess: colors.success[50],    // #F4F9F4
+  bgWarning: colors.warning[50],    // #FEFBF4
+  bgDanger: colors.danger[50],      // #FEF5F4
+  bgInfo: colors.primary[50],       // #F0F7FF
+
+  // DrawRun-specific semantic colors
+  formPeak: pmcStates.peak.DEFAULT,
+  formFresh: pmcStates.fresh.DEFAULT,
+  formNormal: pmcStates.normal.DEFAULT,
+  formFatigued: pmcStates.fatigued.DEFAULT,
+  formOvertrained: pmcStates.overtrained.DEFAULT,
 };
 
 // ============================================================================
@@ -227,25 +702,25 @@ export const lightTokens = {
 // ============================================================================
 
 export const darkTokens = {
-  // Background
-  bg: '#080C14',                   // Fond principal
-  bgSecondary: '#111827',          // Fond secondaire
-  surface: '#111827',              // Cartes, surfaces élevées
-  surfaceElevated: '#1E2D45',
+  // Background - Flow Light dark variant (softer than pure black)
+  bg: '#0F172A',                   // #0F172A - Fond principal doux
+  bgSecondary: '#1E293B',          // #1E293B - Fond secondaire
+  surface: '#1E293B',              // Cartes
+  surfaceElevated: '#334155',      // Élévation
   
-  // Text
-  foreground: '#E8EDF5',           // Texte principal
-  textPrimary: '#E8EDF5',
-  textSecondary: '#94A3B8',
-  textTertiary: '#64748B',
-  muted: '#4A5568',                // Texte atténué
-  textMuted: '#4A5568',
+  // Text - High contrast but comfortable
+  foreground: '#F8FAFC',           // #F8FAFC - Texte principal
+  textPrimary: '#F1F5F9',
+  textSecondary: '#CBD5E1',
+  textTertiary: '#94A3B8',
+  muted: '#64748B',                // Texte atténué
+  textMuted: '#64748B',
   
-  // Borders
-  border: '#1E2D45',               // Bordures
-  borderStrong: '#334155',
+  // Borders - Subtle in dark mode
+  border: '#334155',               // Bordures
+  borderStrong: '#475569',
   
-  // Semantic colors (same as light for consistency)
+  // Semantic colors - Same hues as light for brand consistency
   primary: colors.primary.DEFAULT,
   secondary: colors.secondary.DEFAULT,
   success: colors.success.DEFAULT,
@@ -255,11 +730,18 @@ export const darkTokens = {
   peak: colors.peak.DEFAULT,
   recovery: colors.recovery.DEFAULT,
 
-  // Background status
+  // Background status (dark variants - muted tints)
   bgSuccess: '#1A2E22',
   bgWarning: '#2E2212',
   bgDanger: '#2E1A1A',
   bgInfo: '#1A2332',
+
+  // DrawRun-specific semantic colors
+  formPeak: pmcStates.peak.DEFAULT,
+  formFresh: pmcStates.fresh.DEFAULT,
+  formNormal: pmcStates.normal.DEFAULT,
+  formFatigued: pmcStates.fatigued.DEFAULT,
+  formOvertrained: pmcStates.overtrained.DEFAULT,
 };
 
 // ============================================================================
@@ -409,38 +891,38 @@ export const radius = {
 // ============================================================================
 
 export const shadows = {
-  // Standard shadows
-  xs: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-  sm: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-  md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-  lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-  xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-  '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+  // Standard shadows - Flow Light: softer, more diffused
+  xs: '0 1px 2px 0 rgba(15, 23, 42, 0.04)',
+  sm: '0 2px 4px 0 rgba(15, 23, 42, 0.06), 0 1px 2px 0 rgba(15, 23, 42, 0.04)',
+  md: '0 4px 8px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06)',
+  lg: '0 8px 16px -4px rgba(15, 23, 42, 0.1), 0 4px 8px -4px rgba(15, 23, 42, 0.06)',
+  xl: '0 16px 32px -8px rgba(15, 23, 42, 0.12), 0 8px 16px -8px rgba(15, 23, 42, 0.08)',
+  '2xl': '0 24px 48px -12px rgba(15, 23, 42, 0.15)',
   
-  // Component shadows
-  card: '0 2px 8px rgba(0, 0, 0, 0.08)',
-  cardHover: '0 8px 24px rgba(0, 0, 0, 0.12)',
-  elevated: '0 4px 16px rgba(0, 0, 0, 0.1)',
+  // Component shadows - Flow Light aesthetic
+  card: '0 2px 8px rgba(15, 23, 42, 0.06)',
+  cardHover: '0 8px 24px rgba(15, 23, 42, 0.1)',
+  elevated: '0 4px 16px rgba(15, 23, 42, 0.08)',
   
-  // Glow effects
+  // Glow effects - softer for Flow Light
   glow: {
-    primary: `0 0 20px ${colors.primary.glow}, 0 0 40px ${colors.primary.glow}`,
-    success: `0 0 20px ${colors.success.glow}, 0 0 40px ${colors.success.glow}`,
-    recovery: `0 0 20px ${colors.recovery.glow}, 0 0 40px ${colors.recovery.glow}`,
-    warning: `0 0 20px ${colors.warning.glow}, 0 0 40px ${colors.warning.glow}`,
-    danger: `0 0 20px ${colors.danger.glow}, 0 0 40px ${colors.danger.glow}`,
-    peak: `0 0 20px ${colors.peak.glow}, 0 0 40px ${colors.peak.glow}`,
+    primary: `0 0 24px ${colors.primary.glow}, 0 0 48px ${colors.primary.glow}`,
+    success: `0 0 24px ${colors.success.glow}, 0 0 48px ${colors.success.glow}`,
+    recovery: `0 0 24px ${colors.recovery.glow}, 0 0 48px ${colors.recovery.glow}`,
+    warning: `0 0 24px ${colors.warning.glow}, 0 0 48px ${colors.warning.glow}`,
+    danger: `0 0 24px ${colors.danger.glow}, 0 0 48px ${colors.danger.glow}`,
+    peak: `0 0 24px ${colors.peak.glow}, 0 0 48px ${colors.peak.glow}`,
   },
   
   button: {
-    primary: '0 4px 12px rgba(0, 102, 255, 0.3)',
-    primaryHover: '0 8px 20px rgba(0, 102, 255, 0.4)',
+    primary: `0 4px 12px ${colors.primary.glow}`,
+    primaryHover: `0 8px 20px ${colors.primary.glowStrong}`,
   },
   
-  // Inner shadows
+  // Inner shadows - subtle depth
   inner: {
-    sm: 'inset 0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-    md: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)',
+    sm: 'inset 0 1px 2px 0 rgba(15, 23, 42, 0.04)',
+    md: 'inset 0 2px 4px 0 rgba(15, 23, 42, 0.06)',
   },
 };
 
@@ -662,6 +1144,72 @@ export const breakpoints = {
 };
 
 // ============================================================================
+// FONCTIONS UTILITAIRES
+// ============================================================================
+
+/**
+ * Récupère la couleur d'une zone cardiaque
+ * @param zone - Numéro de zone (1-5)
+ * @returns Couleur hexadécimale
+ */
+export function getHRZoneColor(zone: number): string {
+  const zones = [hrZones.zone1, hrZones.zone2, hrZones.zone3, hrZones.zone4, hrZones.zone5];
+  return zones[Math.min(Math.max(zone, 1), 5) - 1].DEFAULT;
+}
+
+/**
+ * Récupère la couleur d'une zone de puissance
+ * @param zone - Numéro de zone (1-7)
+ * @returns Couleur hexadécimale
+ */
+export function getPowerZoneColor(zone: number): string {
+  const zones = [
+    powerZones.zone1, powerZones.zone2, powerZones.zone3,
+    powerZones.zone4, powerZones.zone5, powerZones.zone6, powerZones.zone7
+  ];
+  return zones[Math.min(Math.max(zone, 1), 7) - 1].DEFAULT;
+}
+
+/**
+ * Récupère la couleur d'un état de forme PMC
+ * @param formValue - Valeur de forme (Forme - Fatigue)
+ * @returns Couleur hexadécimale
+ */
+export function getPMCFormColor(formValue: number): string {
+  if (formValue > 20) return pmcStates.peak.DEFAULT;
+  if (formValue > 10) return pmcStates.fresh.DEFAULT;
+  if (formValue > -10) return pmcStates.normal.DEFAULT;
+  if (formValue > -20) return pmcStates.fatigued.DEFAULT;
+  return pmcStates.overtrained.DEFAULT;
+}
+
+/**
+ * Récupère la couleur d'un niveau de readiness
+ * @param score - Score de readiness (0-100)
+ * @returns Couleur hexadécimale
+ */
+export function getReadinessColor(score: number): string {
+  if (score >= 90) return readinessLevels.excellent.DEFAULT;
+  if (score >= 70) return readinessLevels.good.DEFAULT;
+  if (score >= 50) return readinessLevels.fair.DEFAULT;
+  if (score >= 30) return readinessLevels.poor.DEFAULT;
+  return readinessLevels.veryPoor.DEFAULT;
+}
+
+/**
+ * Récupère la couleur d'un niveau de fatigue
+ * @param fatiguePercent - Pourcentage de fatigue
+ * @returns Couleur hexadécimale
+ */
+export function getFatigueColor(fatiguePercent: number): string {
+  if (fatiguePercent > 70) return fatigueLevels.overtrained.DEFAULT;
+  if (fatiguePercent > 50) return fatigueLevels.veryFatigued.DEFAULT;
+  if (fatiguePercent > 30) return fatigueLevels.fatigued.DEFAULT;
+  if (fatiguePercent > 10) return fatigueLevels.normal.DEFAULT;
+  return fatigueLevels.fresh.DEFAULT;
+}
+
+// ============================================================================
 // EXPORT DEFAULT (pour compatibilité descendante)
 // ============================================================================
 
@@ -669,10 +1217,24 @@ export const breakpoints = {
  * @deprecated Utiliser les exports nommés directement (colors, typography, etc.)
  */
 export const designTokens = {
+  // Couleurs
   colors,
   gradients,
   lightTokens,
   darkTokens,
+  
+  // Tokens métiers (UNIQUE À DRAWRUN)
+  hrZones,
+  powerZones,
+  pmcStates,
+  fatigueLevels,
+  readinessLevels,
+  performanceMetrics,
+  polarization,
+  heatStress,
+  hydrationLevels,
+  
+  // Design system
   typography,
   spacing,
   radius,
@@ -682,6 +1244,13 @@ export const designTokens = {
   animations,
   opacity,
   breakpoints,
+  
+  // Fonctions utilitaires
+  getHRZoneColor,
+  getPowerZoneColor,
+  getPMCFormColor,
+  getReadinessColor,
+  getFatigueColor,
 };
 
 export default designTokens;

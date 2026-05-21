@@ -12,15 +12,16 @@ import {
   Minus,
   Clock,
   Mountain,
+  ChevronRight,
+  Zap,
+  Heart,
+  Flame,
 } from 'lucide-react';
 import { useAuthStore, useDashboardStore } from '@/stores';
 import { ReadinessCard } from './ReadinessCard';
 import { RecommendationCard } from './RecommendationCard';
 import { InjuryRiskCard } from './InjuryRiskCard';
-import { GlassCard } from '@/components/ui';
 import type { Activity as ActivityType, PmcDataPoint } from '@/types';
-
-// ─── helpers ────────────────────────────────────────────────────────────────
 
 function formatDistance(meters: number): string {
   if (meters >= 1000) return `${(meters / 1000).toFixed(1)} km`;
@@ -58,32 +59,31 @@ function getActivityIcon(type: string) {
   return <Activity className="w-4 h-4" />;
 }
 
-// ─── sub-components ──────────────────────────────────────────────────────────
-
 interface StatCardProps {
   title: string;
   value: string;
   subtitle: string;
   icon: React.ReactNode;
-  iconBg: string;
+  accentColor: string;
   trend?: number | null;
 }
 
-function StatCard({ title, value, subtitle, icon, iconBg, trend }: StatCardProps) {
+function StatCard({ title, value, subtitle, icon, accentColor, trend }: StatCardProps) {
   return (
-    <GlassCard className="p-5" hover>
-      <div className="flex items-start justify-between mb-3">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${iconBg}`}>
+    <div className="relative overflow-hidden bg-surface rounded-2xl border border-neutral-200/60 p-5 shadow-card transition-all duration-200 ease-smooth hover:shadow-md hover:-translate-y-0.5 group">
+      <div className={`absolute top-0 left-0 w-full h-1 ${accentColor}`} />
+      <div className="flex items-start justify-between mb-4">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${accentColor.replace('bg-', 'bg-').replace('/100', '/10')} text-white`}>
           {icon}
         </div>
         {trend !== null && trend !== undefined && (
           <div
             className={`flex items-center gap-0.5 text-xs font-medium px-2 py-1 rounded-full ${
               trend > 0
-                ? 'bg-success/5 text-success'
+                ? 'bg-success/10 text-success'
                 : trend < 0
-                ? 'bg-danger/5 text-danger'
-                : 'bg-surface text-muted'
+                ? 'bg-danger/10 text-danger'
+                : 'bg-neutral-100 text-neutral-500'
             }`}
           >
             {trend > 0 ? (
@@ -97,12 +97,12 @@ function StatCard({ title, value, subtitle, icon, iconBg, trend }: StatCardProps
           </div>
         )}
       </div>
-       <p className="text-2xl font-bold text-foreground tabular-nums">{value}</p>
-       <p className="text-sm font-medium text-foreground mt-0.5">{title}</p>
-       <p className="text-xs text-muted mt-0.5">{subtitle}</p>
-     </GlassCard>
-   );
- }
+      <p className="text-3xl font-bold text-foreground tabular-nums tracking-tight">{value}</p>
+      <p className="text-sm font-medium text-foreground mt-1">{title}</p>
+      <p className="text-xs text-neutral-500 mt-0.5">{subtitle}</p>
+    </div>
+  );
+}
 
 interface ActivityRowProps {
   activity: ActivityType;
@@ -117,43 +117,42 @@ function ActivityRow({ activity }: ActivityRowProps) {
   return (
     <Link
       href={`/app/activities/${activity.id}`}
-      className="flex items-center justify-between p-3.5 rounded-xl hover:bg-background transition-colors duration-150 group"
+      className="flex items-center justify-between p-4 rounded-xl hover:bg-neutral-50 transition-all duration-200 ease-smooth group"
     >
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="w-9 h-9 rounded-lg bg-primary/5 text-primary flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 transition-colors">
+      <div className="flex items-center gap-3.5 min-w-0">
+        <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary-500 flex items-center justify-center flex-shrink-0 group-hover:bg-primary-100 transition-colors">
           {getActivityIcon(activity.type)}
         </div>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-foreground truncate">
             {activity.title ?? 'Activité'}
           </p>
-          <p className="text-xs text-muted mt-0.5">
+          <p className="text-xs text-neutral-500 mt-0.5">
             {dateStr ? formatDate(dateStr) : '—'}
             {durationS > 0 && ` · ${formatDuration(durationS)}`}
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-4 flex-shrink-0 ml-3">
+      <div className="flex items-center gap-3 flex-shrink-0 ml-3">
         {distanceM > 0 && (
           <div className="text-right">
             <p className="text-sm font-semibold text-foreground tabular-nums">
               {formatDistance(distanceM)}
             </p>
             {elevation !== null && elevation !== undefined && elevation > 0 && (
-              <p className="text-xs text-muted flex items-center justify-end gap-0.5">
+              <p className="text-xs text-neutral-500 flex items-center justify-end gap-0.5">
                 <Mountain className="w-3 h-3" />
                 {Math.round(elevation)} m
               </p>
             )}
           </div>
         )}
+        <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-primary-500 transition-colors" />
       </div>
     </Link>
   );
 }
-
-// ─── PMC stat helpers ────────────────────────────────────────────────────────
 
 function getPmcStats(pmcData: PmcDataPoint[]) {
   if (pmcData.length === 0) return null;
@@ -176,10 +175,9 @@ function getMonthlyStats(activities: ActivityType[]) {
     return d >= startOfMonth;
   });
   const totalDistance = thisMonth.reduce((sum, a) => sum + (a.distance ?? 0), 0);
-  return { count: thisMonth.length, totalDistance };
+  const totalDuration = thisMonth.reduce((sum, a) => sum + (a.moving_time ?? a.elapsed_time ?? 0), 0);
+  return { count: thisMonth.length, totalDistance, totalDuration };
 }
-
-// ─── main component ──────────────────────────────────────────────────────────
 
 export function ModernDashboard() {
   const { user } = useAuthStore();
@@ -188,28 +186,25 @@ export function ModernDashboard() {
   const pmc = getPmcStats(pmcData);
   const monthly = getMonthlyStats(recentActivities);
 
-  // Greeting
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
   const firstName = user?.name?.split(' ')[0] ?? 'Athlète';
 
-  // Skeleton loader
   if (isLoading) {
     return (
-      <div className="animate-fade-in max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Header skeleton */}
-        <div className="h-20 w-64 bg-background rounded-lg animate-pulse" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="animate-fade-in space-y-6">
+        <div className="h-24 w-72 bg-neutral-100 rounded-2xl animate-pulse" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-32 bg-surface/60 border border-border/50 rounded-2xl animate-pulse" />
+            <div key={i} className="h-36 bg-neutral-100 rounded-2xl animate-pulse" />
           ))}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 h-64 bg-surface/60 border border-border/50 rounded-2xl animate-pulse" />
-          <div className="space-y-6">
-            <div className="h-40 bg-surface/60 border border-border/50 rounded-2xl animate-pulse" />
-            <div className="h-40 bg-surface/60 border border-border/50 rounded-2xl animate-pulse" />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <div className="lg:col-span-7 h-72 bg-neutral-100 rounded-2xl animate-pulse" />
+          <div className="lg:col-span-5 space-y-4">
+            <div className="h-36 bg-neutral-100 rounded-2xl animate-pulse" />
+            <div className="h-36 bg-neutral-100 rounded-2xl animate-pulse" />
           </div>
         </div>
       </div>
@@ -218,52 +213,78 @@ export function ModernDashboard() {
 
   return (
     <div className="animate-fade-in space-y-6">
-      {/* Background Effects */}
-      <div className="fixed inset-0 bg-gradient-to-b from-bg to-surface -z-10" />
-      <div className="fixed inset-0 bg-[linear-gradient(color-mix(in srgb, var(--primary), transparent 97%)_1px,transparent_1px),linear-gradient(90deg,color-mix(in srgb, var(--primary), transparent 97%)_1px,transparent_1px)] bg-[size:60px_60px] -z-10" />
-
-      {/* Greeting */}
-      <div className="relative">
-        <h2 className="text-2xl font-bold text-foreground">
-          {greeting}, {firstName} 👋
-        </h2>
-        <p className="text-sm text-muted mt-1">
-          {new Date().toLocaleDateString('fr-FR', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-          })}
-        </p>
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-primary-500 via-primary-600 to-secondary rounded-2xl p-6 md:p-8 text-white shadow-lg">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_50%)]" />
+        <div className="absolute bottom-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute top-0 right-20 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2" />
+        
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-2">
+            <Zap className="w-5 h-5 text-primary-200" />
+            <span className="text-sm font-medium text-primary-200">Dashboard</span>
+          </div>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
+            {greeting}, {firstName}
+          </h2>
+          <p className="text-primary-200 mt-1.5 text-sm md:text-base">
+            {new Date().toLocaleDateString('fr-FR', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+            })}
+          </p>
+          
+          {/* Quick metrics in hero */}
+          <div className="flex flex-wrap gap-4 mt-5 pt-5 border-t border-white/20">
+            <div className="flex items-center gap-2">
+              <Flame className="w-4 h-4 text-primary-200" />
+              <span className="text-sm"><strong>{monthly.count}</strong> activités ce mois</span>
+            </div>
+            {monthly.totalDistance > 0 && (
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-primary-200" />
+                <span className="text-sm"><strong>{formatDistance(monthly.totalDistance)}</strong> parcourus</span>
+              </div>
+            )}
+            {pmc && (
+              <div className="flex items-center gap-2">
+                <Heart className="w-4 h-4 text-primary-200" />
+                <span className="text-sm">Forme : <strong>{pmc.tsb > 5 ? 'Fraîche' : pmc.tsb < -10 ? 'Fatiguée' : 'Équilibrée'}</strong></span>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Stats grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {/* Stats Grid — Bento style */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Activités ce mois"
+          title="Activités"
           value={String(monthly.count)}
-          subtitle="depuis le 1er du mois"
-          icon={<Activity className="w-5 h-5 text-primary" />}
-          iconBg="bg-primary/5"
+          subtitle="ce mois-ci"
+          icon={<Activity className="w-5 h-5 text-white" />}
+          accentColor="bg-primary-500"
           trend={null}
         />
         <StatCard
-          title="Distance totale"
+          title="Distance"
           value={monthly.totalDistance > 0 ? formatDistance(monthly.totalDistance) : '—'}
           subtitle="ce mois-ci"
-          icon={<TrendingUp className="w-5 h-5 text-success" />}
-          iconBg="bg-success/5"
+          icon={<TrendingUp className="w-5 h-5 text-white" />}
+          accentColor="bg-success"
           trend={null}
         />
         <StatCard
-          title="CTL (Forme)"
+          title="CTL"
           value={pmc ? String(pmc.ctl) : '—'}
           subtitle="charge chronique"
-          icon={<BarChart3 className="w-5 h-5 text-secondary" />}
-          iconBg="bg-secondary/5"
+          icon={<BarChart3 className="w-5 h-5 text-white" />}
+          accentColor="bg-secondary"
           trend={pmc?.ctlTrend ?? null}
         />
         <StatCard
-          title="TSB (Fraîcheur)"
+          title="TSB"
           value={pmc ? String(pmc.tsb) : '—'}
           subtitle={
             pmc
@@ -276,27 +297,28 @@ export function ModernDashboard() {
           }
           icon={
             pmc && pmc.tsb < -10 ? (
-              <TrendingDown className="w-5 h-5 text-warning" />
+              <TrendingDown className="w-5 h-5 text-white" />
             ) : (
-              <TrendingUp className="w-5 h-5 text-warning" />
+              <TrendingUp className="w-5 h-5 text-white" />
             )
           }
-          iconBg="bg-warning/5"
+          accentColor={pmc && pmc.tsb > 5 ? 'bg-success' : pmc && pmc.tsb < -10 ? 'bg-warning' : 'bg-primary-500'}
           trend={pmc?.tsbTrend ?? null}
         />
       </div>
 
-      {/* Main content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent activities */}
-        <GlassCard className="lg:col-span-2" padding="none">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
+      {/* Main Content — Asymmetric Bento Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* Recent Activities — Large card */}
+        <div className="lg:col-span-7 bg-surface rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200/60">
             <h3 className="text-base font-semibold text-foreground">Activités récentes</h3>
             <Link
               href="/app/activities"
-              className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+              className="text-sm font-medium text-primary-500 hover:text-primary-600 transition-colors flex items-center gap-1"
             >
               Voir tout
+              <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
@@ -306,25 +328,23 @@ export function ModernDashboard() {
                 <ActivityRow key={activity.id} activity={activity} />
               ))
             ) : (
-              <div className="flex flex-col items-center justify-center py-10 text-center">
-                <div className="w-12 h-12 rounded-xl bg-background flex items-center justify-center mb-3">
-                  <Clock className="w-6 h-6 text-muted" />
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-neutral-50 flex items-center justify-center mb-4">
+                  <Clock className="w-7 h-7 text-neutral-400" />
                 </div>
                 <p className="text-sm font-medium text-foreground">Aucune activité récente</p>
-                <p className="text-xs text-muted mt-1">
+                <p className="text-xs text-neutral-500 mt-1">
                   Synchronisez vos services pour voir vos activités
                 </p>
               </div>
             )}
           </div>
-        </GlassCard>
+        </div>
 
-        {/* Side panel */}
-        <div className="space-y-5">
-          {/* Readiness */}
+        {/* Side Panel — Stacked cards */}
+        <div className="lg:col-span-5 space-y-4">
           <ReadinessCard readiness={readiness} isLoading={isLoading} />
 
-          {/* Injury Risk (ACWR) */}
           {pmcData.length > 0 && (
             <InjuryRiskCard 
               acwr={pmcData[pmcData.length - 1].acwr || (pmcData[pmcData.length - 1].atl / (pmcData[pmcData.length - 1].ctl || 1))} 
@@ -332,49 +352,47 @@ export function ModernDashboard() {
             />
           )}
 
-          {/* Recommendation */}
           {recommendation && (
             <RecommendationCard recommendation={recommendation} isLoading={isLoading} />
           )}
 
-          {/* PMC summary if no recommendation */}
           {!recommendation && pmc && (
-            <GlassCard className="p-0" padding="none">
-              <div className="px-5 py-4 border-b border-border/50">
+            <div className="bg-surface rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
+              <div className="px-6 py-4 border-b border-neutral-200/60">
                 <h3 className="text-sm font-semibold text-foreground">Métriques PMC</h3>
               </div>
-              <div className="p-5 space-y-3">
+              <div className="p-5 space-y-4">
                 {[
-                  { label: 'CTL — Forme', value: pmc.ctl, color: 'bg-primary' },
-                  { label: 'ATL — Fatigue', value: pmc.atl, color: 'bg-danger/80' },
+                  { label: 'CTL — Forme', value: pmc.ctl, color: 'bg-primary-500', max: 150 },
+                  { label: 'ATL — Fatigue', value: pmc.atl, color: 'bg-danger', max: 150 },
                   {
                     label: 'TSB — Fraîcheur',
                     value: Math.abs(pmc.tsb),
                     color: pmc.tsb >= 0 ? 'bg-success' : 'bg-warning',
+                    max: 50,
                   },
                 ].map((m) => (
                   <div key={m.label}>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-muted">{m.label}</span>
+                    <div className="flex justify-between text-xs mb-1.5">
+                      <span className="text-neutral-500 font-medium">{m.label}</span>
                       <span className="font-semibold text-foreground tabular-nums">
                         {m.label.startsWith('TSB') && pmc.tsb < 0 ? '-' : ''}
                         {m.value}
                       </span>
                     </div>
-                    <div className="h-1.5 bg-background rounded-full overflow-hidden">
+                    <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
                       <div
-                        className={`h-full rounded-full ${m.color}`}
-                        style={{ width: `${Math.min(100, (m.value / 150) * 100)}%` }}
+                        className={`h-full rounded-full ${m.color} transition-all duration-500`}
+                        style={{ width: `${Math.min(100, (m.value / m.max) * 100)}%` }}
                       />
                     </div>
                   </div>
                 ))}
               </div>
-            </GlassCard>
+            </div>
           )}
         </div>
       </div>
     </div>
   );
 }
-

@@ -304,40 +304,39 @@ export function RacePlanningContent() {
 
   return (
     <div className="space-y-6 animate-fade-in max-w-6xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2">
         <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Trophy className="w-6 h-6 text-primary" />
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2 tracking-tight">
+            <Trophy className="w-6 h-6 text-primary-500" />
             Planification de Course
           </h1>
-          <p className="text-muted mt-1">
+          <p className="text-neutral-500 mt-1.5">
             Planifiez votre stratégie de course avec des splits détaillés et une stratégie de nutrition
           </p>
         </div>
-        <div className="flex bg-muted p-1 rounded-xl">
+        <div className="flex bg-neutral-100 p-1 rounded-xl">
           <button
             onClick={() => setMode('simple')}
-            className={cn("px-4 py-2 rounded-lg text-sm font-medium transition-all", mode === 'simple' ? "bg-white text-primary shadow-sm" : "text-muted hover:text-foreground")}
+            className={cn("px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ease-smooth", mode === 'simple' ? "bg-surface text-primary-600 shadow-sm" : "text-neutral-600 hover:text-foreground")}
           >
             Distance Simple
           </button>
           <button
             onClick={() => setMode('gpx')}
-            className={cn("px-4 py-2 rounded-lg text-sm font-medium transition-all", mode === 'gpx' ? "bg-white text-primary shadow-sm" : "text-muted hover:text-foreground")}
+            className={cn("px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ease-smooth", mode === 'gpx' ? "bg-surface text-primary-600 shadow-sm" : "text-neutral-600 hover:text-foreground")}
           >
             Profil GPX
           </button>
         </div>
       </div>
 
-      {/* Configuration Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle>
+      <div className="bg-surface rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
+        <div className="px-6 py-4 border-b border-neutral-200/60">
+          <h3 className="text-base font-semibold text-foreground">
             {mode === 'simple' ? 'Configuration de la course' : 'Configuration via GPX'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
+          </h3>
+        </div>
+        <div className="p-6 space-y-6">
           {/* Mode Simple: full form */}
           {mode === 'simple' && (
             <>
@@ -541,8 +540,8 @@ export function RacePlanningContent() {
           <Button onClick={handleCalculate} isLoading={isLoading} className="w-full">
             Calculer le plan de course
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Loading Skeleton */}
       {isLoading && !result && (

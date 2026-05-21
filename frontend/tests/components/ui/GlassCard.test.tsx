@@ -11,7 +11,7 @@ import {
   GlassCardDescription,
   GlassCardContent,
   GlassCardFooter
-} from '@/components/ui/GlassCard';
+} from '@/components/ui';
 
 describe('GlassCard component', () => {
   it('renders with default props', () => {
@@ -19,7 +19,7 @@ describe('GlassCard component', () => {
     
     const card = screen.getByText('Content');
     expect(card).toBeInTheDocument();
-    expect(card).toHaveClass('rounded-2xl');
+    expect(card).toHaveClass('rounded-xl');
     expect(card).toHaveClass('bg-surface/90');
     expect(card).toHaveClass('backdrop-blur-md');
     expect(card).toHaveClass('border');
@@ -40,13 +40,20 @@ describe('GlassCard component', () => {
     expect(card).toHaveClass('custom-class');
   });
 
-  it('has hover effect by default', () => {
+  it('has hover effect when hover prop is true with elevated variant', () => {
+    render(<GlassCard variant="elevated" hover>Content</GlassCard>);
+    
+    const card = screen.getByText('Content');
+    expect(card.className).toContain('hover:shadow-lg');
+    expect(card.className).toContain('hover:border-primary-200/50');
+    expect(card.className).toContain('hover:-translate-y-0.5');
+  });
+
+  it('has no hover effect by default', () => {
     render(<GlassCard>Content</GlassCard>);
     
     const card = screen.getByText('Content');
-    expect(card.className).toContain('hover:shadow-md');
-    expect(card.className).toContain('hover:border-primary-200/50');
-    expect(card.className).toContain('hover:-translate-y-0.5');
+    expect(card.className).not.toContain('hover:shadow');
   });
 
   it('disables hover effect when hover prop is false', () => {

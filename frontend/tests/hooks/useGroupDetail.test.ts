@@ -48,10 +48,12 @@ vi.mock('sonner', () => ({
 }));
 
 // Mock de navigator.clipboard
-Object.assign(navigator, {
-  clipboard: {
+Object.defineProperty(navigator, 'clipboard', {
+  value: {
     writeText: vi.fn().mockResolvedValue(undefined),
   },
+  writable: true,
+  configurable: true,
 });
 
 describe('useGroupDetail hook', () => {

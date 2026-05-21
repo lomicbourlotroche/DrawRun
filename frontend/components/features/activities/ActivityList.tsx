@@ -3,10 +3,10 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { GlassCard, GlassCardContent, GradientBadge, FilterChipGroup, Select, ActivitySkeleton, EmptyState } from '@/components/ui';
+import { Select, ActivitySkeleton, EmptyState } from '@/components/ui';
 import { formatDate, formatDistance, getSportColor } from '@/lib/utils';
 import type { Activity } from '@/types';
-import { Clock, Heart, TrendingUp, ChevronRight, Search, RefreshCw, ChevronDown } from 'lucide-react';
+import { Clock, Heart, TrendingUp, ChevronRight, Search, RefreshCw, ChevronDown, Mountain } from 'lucide-react';
 import { DrawButton } from '@/components/features/social/DrawButton';
 
 const PAGE_SIZE = 20;
@@ -55,7 +55,6 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
     });
   }, [activities, filter, sortBy, searchQuery]);
 
-  // Réinitialiser la pagination quand les filtres changent
   const handleFilterChange = (id: string) => {
     setFilter(id as typeof filter);
     setVisibleCount(PAGE_SIZE);
@@ -74,9 +73,9 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
 
   const validActivities = Array.isArray(activities) ? activities : [];
   const filterOptions = [
-    { id: 'all',  label: 'Tous',     count: validActivities.length },
-    { id: 'run',  label: 'Course',   count: validActivities.filter((a) => (a.type as string).toLowerCase().startsWith('run')).length },
-    { id: 'bike', label: 'Vélo',     count: validActivities.filter((a) => (a.type as string).toLowerCase().startsWith('bike') || (a.type as string).toLowerCase().startsWith('ride')).length },
+    { id: 'all', label: 'Tous', count: validActivities.length },
+    { id: 'run', label: 'Course', count: validActivities.filter((a) => (a.type as string).toLowerCase().startsWith('run')).length },
+    { id: 'bike', label: 'Vélo', count: validActivities.filter((a) => (a.type as string).toLowerCase().startsWith('bike') || (a.type as string).toLowerCase().startsWith('ride')).length },
     { id: 'swim', label: 'Natation', count: validActivities.filter((a) => (a.type as string).toLowerCase().startsWith('swim')).length },
   ];
 
@@ -92,9 +91,9 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <ActivitySkeleton key={i} />
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div key={i} className="h-48 bg-neutral-100 rounded-2xl animate-pulse" />
         ))}
       </div>
     );
@@ -119,22 +118,22 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
   }
 
   return (
-    <div className="space-y-4">
-      {/* Barre de recherche + tri */}
-      <div className="flex flex-col sm:flex-row gap-4">
+    <div className="space-y-5">
+      {/* Filters Bar */}
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
           <input
             type="text"
             placeholder="Rechercher une activité..."
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="input pl-10"
+            className="w-full bg-surface border border-neutral-200/60 rounded-xl pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-400 transition-all duration-200 ease-smooth hover:border-neutral-300"
           />
         </div>
         <Select
           options={[
-            { value: 'date',     label: 'Date' },
+            { value: 'date', label: 'Date' },
             { value: 'distance', label: 'Distance' },
             { value: 'duration', label: 'Durée' },
           ]}
@@ -144,85 +143,133 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
         />
       </div>
 
-      {/* Filtres par type */}
-      <FilterChipGroup
-        options={filterOptions}
-        activeFilter={filter}
-        onFilterChange={handleFilterChange}
-      />
+      {/* Filter Chips */}
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {filterOptions.map((opt) => (
+          <button
+            key={opt.id}
+            onClick={() => handleFilterChange(opt.id)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 ease-smooth ${
+              filter === opt.id
+                ? 'bg-primary-500 text-white shadow-sm'
+                : 'bg-surface border border-neutral-200/60 text-neutral-600 hover:bg-neutral-50 hover:border-neutral-300'
+            }`}
+          >
+            {opt.label}
+            <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+              filter === opt.id ? 'bg-white/20' : 'bg-neutral-100'
+            }`}>
+              {opt.count}
+            </span>
+          </button>
+        ))}
+      </div>
 
-      {/* Compteur */}
-      <p className="text-xs text-muted">
+      {/* Results count */}
+      <p className="text-xs text-neutral-500">
         {filteredActivities.length} activité{filteredActivities.length > 1 ? 's' : ''}
         {filter !== 'all' || searchQuery ? ' (filtrées)' : ''}
-        {hasMore ? ` — ${visibleCount} affichées` : ''}
       </p>
 
-      {/* Liste */}
-      <div className="space-y-3">
-        {visibleActivities.map((activity, index) => (
-          <Link
-            key={activity.id}
-            href={`/app/activities/${activity.id}`}
-            className="block group"
-            style={{ animationDelay: `${index * 30}ms` }}
-          >
-            <GlassCard hover className="animate-slide-up" padding="md">
-              <GlassCardContent>
-                <div className="flex items-start sm:items-center gap-4 flex-wrap">
-                  <div
-                    className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
-                    style={{ backgroundColor: `${getSportColor(activity.type)}20` }}
-                  >
-                    {getSportIcon(activity.type)}
+      {/* Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {visibleActivities.map((activity) => {
+          const distanceM = activity.distance ?? 0;
+          const durationS = activity.moving_time ?? activity.elapsed_time ?? 0;
+          const elevation = activity.total_elevation_gain;
+          const avgHR = activity.avgHR || activity.average_heartrate || 0;
+
+          return (
+            <Link
+              key={activity.id}
+              href={`/app/activities/${activity.id}`}
+              className="group block"
+            >
+              <div className="relative bg-surface rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden transition-all duration-200 ease-smooth hover:shadow-md hover:-translate-y-0.5 hover:border-primary-200/50">
+                {/* Sport color accent */}
+                <div
+                  className="absolute top-0 left-0 w-full h-1"
+                  style={{ backgroundColor: getSportColor(activity.type) }}
+                />
+
+                <div className="p-5">
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                        style={{ backgroundColor: `${getSportColor(activity.type)}15` }}
+                      >
+                        {getSportIcon(activity.type)}
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-foreground truncate text-sm group-hover:text-primary-500 transition-colors">
+                          {activity.title || activity.name || 'Activité'}
+                        </h3>
+                        <p className="text-xs text-neutral-500 mt-0.5">
+                          {formatDate(activity.date || activity.start_date || '')}
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-primary-500 transition-colors flex-shrink-0 mt-1" />
                   </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-                        {activity.title || activity.name || 'Activité'}
-                      </h3>
-                      <GradientBadge variant="primary" size="sm">
-                        {activity.type}
-                      </GradientBadge>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        {formatDate(activity.date || activity.start_date || '')}
-                      </span>
-                      {(activity.avgHR || activity.average_heartrate || 0) > 0 && (
-                        <span className="flex items-center gap-1">
-                          <Heart className="w-3.5 h-3.5" />
-                          {activity.avgHR || activity.average_heartrate} bpm
-                        </span>
-                      )}
-                      {activity.tss && (
-                        <span className="flex items-center gap-1">
-                          <TrendingUp className="w-3.5 h-3.5" />
-                          TSS {activity.tss}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="text-right flex-shrink-0 ml-auto sm:ml-0">
-                    <p className="text-lg font-bold text-foreground">
-                      {formatDistance(activity.distance)}
-                    </p>
-                    <div className="flex items-center gap-2 text-sm text-muted justify-end">
-                      {activity.gap ? (
-                        <div className="flex flex-col items-end leading-tight">
-                          <span className="text-foreground font-medium">{activity.pace}/km</span>
-                          <span className="text-xs text-primary-600 font-semibold" title="Grade Adjusted Pace (GAP)">GAP {activity.gap}</span>
+                  {/* Stats */}
+                  <div className="grid grid-cols-2 gap-3 mt-4">
+                    {distanceM > 0 && (
+                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-neutral-50">
+                        <TrendingUp className="w-3.5 h-3.5 text-primary-500 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-bold text-foreground tabular-nums">{formatDistance(distanceM)}</p>
+                          <p className="text-[10px] text-neutral-500">distance</p>
                         </div>
-                      ) : (
-                        activity.pace && <span>{activity.pace}/km</span>
+                      </div>
+                    )}
+                    {durationS > 0 && (
+                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-neutral-50">
+                        <Clock className="w-3.5 h-3.5 text-primary-500 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-bold text-foreground tabular-nums">
+                            {Math.floor(durationS / 3600) > 0
+                              ? `${Math.floor(durationS / 3600)}h${Math.floor((durationS % 3600) / 60).toString().padStart(2, '0')}`
+                              : `${Math.floor(durationS / 60)} min`}
+                          </p>
+                          <p className="text-[10px] text-neutral-500">durée</p>
+                        </div>
+                      </div>
+                    )}
+                    {avgHR > 0 && (
+                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-neutral-50">
+                        <Heart className="w-3.5 h-3.5 text-danger flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-bold text-foreground tabular-nums">{avgHR}</p>
+                          <p className="text-[10px] text-neutral-500">FC moy</p>
+                        </div>
+                      </div>
+                    )}
+                    {elevation !== null && elevation !== undefined && elevation > 0 && (
+                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-neutral-50">
+                        <Mountain className="w-3.5 h-3.5 text-success flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-bold text-foreground tabular-nums">{Math.round(elevation)} m</p>
+                          <p className="text-[10px] text-neutral-500">dénivelé</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Pace + Draw Button */}
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-neutral-100">
+                    <div className="flex items-center gap-3">
+                      {activity.pace && (
+                        <span className="text-xs font-medium text-neutral-600">{activity.pace}/km</span>
                       )}
-                      {activity.duration && <span>{activity.duration}</span>}
+                      {activity.gap && (
+                        <span className="text-xs font-semibold text-primary-500">GAP {activity.gap}</span>
+                      )}
                     </div>
                     {activity.user_id && (
-                      <div className="mt-2">
+                      <div onClick={(e) => e.preventDefault()}>
                         <DrawButton
                           activityId={activity.id}
                           ownerId={activity.user_id}
@@ -237,24 +284,21 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
                       </div>
                     )}
                   </div>
-
-                  <ChevronRight className="w-5 h-5 text-muted group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0 self-center" />
                 </div>
-              </GlassCardContent>
-            </GlassCard>
-          </Link>
-        ))}
+              </div>
+            </Link>
+          );
+        })}
       </div>
 
-      {/* Bouton "Charger plus" */}
+      {/* Load more */}
       {hasMore && (
         <button
           onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-border text-sm font-medium text-muted hover:text-foreground hover:border-primary/50 hover:bg-primary/5 transition-all"
+          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-neutral-200/60 text-sm font-medium text-neutral-600 hover:text-foreground hover:border-primary-300 hover:bg-primary-50 transition-all duration-200 ease-smooth"
         >
           <ChevronDown className="w-4 h-4" />
           Charger {Math.min(PAGE_SIZE, filteredActivities.length - visibleCount)} activités de plus
-          <span className="text-xs text-muted/60">({filteredActivities.length - visibleCount} restantes)</span>
         </button>
       )}
 
@@ -268,4 +312,3 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
     </div>
   );
 }
-

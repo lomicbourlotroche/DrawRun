@@ -60,7 +60,7 @@ export function Select({
           disabled={disabled}
           onClick={() => !disabled && setIsOpen(!isOpen)}
           className={cn(
-            'w-full flex items-center justify-between bg-background border rounded-lg px-4 py-3 min-h-[44px] text-left',
+            'w-full flex items-center justify-between bg-background border rounded-md px-4 py-3 min-h-[44px] text-left',
             'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary',
             'transition-all duration-200',
             error ? 'border-danger' : 'border-border',

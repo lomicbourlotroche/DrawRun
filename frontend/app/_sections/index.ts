@@ -7,5 +7,6 @@ export { default as PWASection } from './PWASection';
 export { default as FeaturesSection } from './FeaturesSection';
 export { default as VDOTSection } from './VDOTSection';
 export { default as SocialSection } from './SocialSection';
+export { default as TestimonialsSection } from './TestimonialsSection';
 export { default as HowItWorksSection } from './HowItWorksSection';
 export { default as Footer } from './Footer';

@@ -21,7 +21,7 @@ import {
   Card, 
   Input 
 } from '@/components/ui';
-import { GlassCard } from '@/components/ui/GlassCard';
+import { GlassCard } from '@/components/ui';
 import { 
   AreaChart, 
   Area, 
@@ -486,6 +486,7 @@ export default function RacePlannerPage() {
     </div>
   );
 }
+
 
 
 

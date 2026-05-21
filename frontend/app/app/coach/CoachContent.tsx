@@ -1,21 +1,23 @@
 /* eslint-disable eqeqeq */
 /**
  * CoachContent - Contenu de la page Coach
+ * Corrigé : utilisation de Card unifié, tokens métiers, accessibilité
  */
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent, GradientBadge, Skeleton } from '@/components/ui';
+import { useState, useEffect, useCallback, type KeyboardEvent } from 'react';
+import { Card, CardHeader, CardTitle, CardContent, GradientBadge, Skeleton } from '@/components/ui';
 import { api } from '@/lib/api';
 import type { Recommendation, TrainingPlan } from '@/types';
 import {
   Zap, TrendingUp,
-  Brain, Calendar,
-  Gauge, Trophy, Flame, Target,
+  Brain, Calendar, Gauge, Trophy, Flame, Target,
 } from 'lucide-react';
 import AdaptivePlanWizard from '@/components/features/coach/AdaptivePlanWizard';
-import { TrainingPlanCard } from '@/components/features/coach/TrainingPlanCard';
+// TrainingPlanCard available for future use
+// import { TrainingPlanCard } from '@/components/features/coach/TrainingPlanCard';
+import { GanttChart } from '@/components/features/coach/GanttChart';
 import ProgressChart from '@/components/features/coach/ProgressChart';
 import GamificationWidget from '@/components/features/coach/GamificationWidget';
 
@@ -38,6 +40,7 @@ function TodayTab() {
     }).finally(() => setIsLoading(false));
   }, []);
 
+  // Utilisation des tokens métiers pour les couleurs d'intensité
   const intensityStyles: Record<string, { bg: string; border: string; icon: string }> = {
     green: { bg: 'bg-success/20', border: 'border-l-success', icon: 'text-success/80' },
     blue: { bg: 'bg-primary/20', border: 'border-l-primary', icon: 'text-primary/80' },
@@ -48,6 +51,13 @@ function TodayTab() {
 
   const style = intensityStyles[rec?.intensityColor || 'blue'];
 
+  // Keyboard navigation for internal tabs
+  const handleTabKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+    }
+  }, []);
+
   return (
     <div className="space-y-6">
       {isLoading ? (
@@ -56,8 +66,8 @@ function TodayTab() {
           <Skeleton className="h-32" />
         </div>
       ) : rec ? (
-        <GlassCard className={`border-l-4 ${style.border}`} padding="lg">
-          <GlassCardContent>
+        <Card variant="glass" className={`border-l-4 ${style.border}`}>
+          <CardContent>
             <div className="flex items-start gap-4">
               <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${style.bg}`}>
                 <Zap className={`w-6 h-6 ${style.icon}`} />
@@ -109,37 +119,37 @@ function TodayTab() {
                 {rec.metrics.streak !== undefined && (
                   <div className="text-center p-2 rounded-lg bg-muted/50">
                     <p className="text-lg font-bold text-peak/80">{rec.metrics.streak}</p>
-                    <p className="text-xs text-muted">Série</p>
+                    <p className="text-xs text-muted">Serie</p>
                   </div>
                 )}
                 {rec.metrics.activitiesCount !== undefined && (
                   <div className="text-center p-2 rounded-lg bg-muted/50">
                     <p className="text-lg font-bold text-primary/80">{rec.metrics.activitiesCount}</p>
-                    <p className="text-xs text-muted">Séances</p>
+                    <p className="text-xs text-muted">Seances</p>
                   </div>
                 )}
               </div>
             )}
-          </GlassCardContent>
-         </GlassCard>
-       ) : (
-          <GlassCard padding="lg">
-            <GlassCardContent className="text-center">
-             <Zap className="w-12 h-12 mx-auto mb-4 text-muted opacity-30" />
-             <p className="text-muted">Aucune recommandation</p>
-           </GlassCardContent>
-         </GlassCard>
-       )}
+          </CardContent>
+        </Card>
+      ) : (
+        <Card variant="glass" padding="lg">
+          <CardContent className="text-center">
+            <Zap className="w-12 h-12 mx-auto mb-4 text-muted opacity-30" />
+            <p className="text-muted">Aucune recommandation</p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick Stats */}
-      <GlassCard>
-        <GlassCardHeader>
-          <GlassCardTitle className="text-base flex items-center gap-2">
+      <Card variant="glass">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
             <Gauge className="w-4 h-4 text-primary" />
             Profil actuel
-          </GlassCardTitle>
-        </GlassCardHeader>
-        <GlassCardContent>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-center">
               <p className="text-2xl font-bold text-primary/80">
@@ -166,8 +176,8 @@ function TodayTab() {
               <p className="text-xs text-muted">Allure</p>
             </div>
           </div>
-        </GlassCardContent>
-      </GlassCard>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -178,13 +188,13 @@ function TodayTab() {
 
 function NoPlanMessage({ message }: { message: string }) {
   return (
-    <GlassCard>
-      <GlassCardContent className="p-8 text-center">
+    <Card variant="glass">
+      <CardContent className="p-8 text-center">
         <Target className="w-12 h-12 mx-auto mb-4 text-muted opacity-30" />
         <p className="text-muted">{message}</p>
-        <p className="text-xs text-muted mt-2">Créez un plan dans l&apos;onglet Plan pour commencer.</p>
-      </GlassCardContent>
-    </GlassCard>
+        <p className="text-xs text-muted mt-2">Creez un plan dans l&apos;onglet Plan pour commencer.</p>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -223,29 +233,47 @@ export default function CoachContent() {
     { id: 'today', label: "Aujourd'hui", icon: Flame },
     { id: 'plan', label: 'Plan', icon: Calendar },
     { id: 'progress', label: 'Progression', icon: TrendingUp },
-    { id: 'achievements', label: 'Réalisations', icon: Trophy },
+    { id: 'achievements', label: 'Realisations', icon: Trophy },
   ] as const;
 
+  // Keyboard navigation for tabs
+  const handleTabKeyDown = useCallback((e: KeyboardEvent, tabId: typeof tabs[number]['id']) => {
+    if (e.key === 'ArrowRight') {
+      const currentIndex = tabs.findIndex(t => t.id === tabId);
+      const nextIndex = (currentIndex + 1) % tabs.length;
+      setActiveTab(tabs[nextIndex].id);
+    } else if (e.key === 'ArrowLeft') {
+      const currentIndex = tabs.findIndex(t => t.id === tabId);
+      const prevIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+      setActiveTab(tabs[prevIndex].id);
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      setActiveTab(tabId);
+    }
+  }, [tabs]);
+
   return (
-    <div className="space-y-6 animate-fade-in max-w-3xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <Brain className="w-6 h-6 text-primary" />
+    <div className="space-y-6 animate-fade-in max-w-6xl mx-auto">
+      <div className="pt-2">
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2 tracking-tight">
+          <Brain className="w-6 h-6 text-primary-500" />
           Coach DrawRun
         </h1>
-        <p className="text-muted mt-1">Entraînement personnalisé basé sur vos données</p>
+        <p className="text-neutral-500 mt-1.5">Entrainement personnalise base sur vos donnees</p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 overflow-x-auto pb-2 border-b border-border">
+      <div className="flex gap-1 overflow-x-auto pb-2 border-b border-neutral-200/60" role="tablist" aria-label="Onglets Coach">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+            onKeyDown={(e) => handleTabKeyDown(e, tab.id)}
+            role="tab"
+            aria-selected={activeTab === tab.id}
+            tabIndex={activeTab === tab.id ? 0 : -1}
+            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ease-smooth ${
               activeTab === tab.id
-                ? 'bg-primary text-white'
-                : 'text-muted hover:text-foreground hover:bg-muted'
+                ? 'bg-primary-500 text-white shadow-sm'
+                : 'text-neutral-600 hover:text-foreground hover:bg-neutral-100'
             }`}
           >
             <tab.icon className="w-4 h-4" />
@@ -264,7 +292,7 @@ export default function CoachContent() {
             <Skeleton className="h-32" />
           </div>
         ) : activePlan ? (
-          <TrainingPlanCard plan={activePlan} />
+          <GanttChart plan={activePlan} />
         ) : (
           <AdaptivePlanWizard onComplete={handlePlanCreated} />
         )
@@ -276,7 +304,7 @@ export default function CoachContent() {
         ) : activePlan ? (
           <ProgressChart planId={Number(activePlan.id)} />
         ) : (
-          <NoPlanMessage message="Aucune progression à afficher." />
+          <NoPlanMessage message="Aucune progression a afficher." />
         )
       )}
 
@@ -286,7 +314,7 @@ export default function CoachContent() {
         ) : activePlan ? (
           <GamificationWidget planId={Number(activePlan.id)} />
         ) : (
-          <NoPlanMessage message="Aucune réalisation à afficher." />
+          <NoPlanMessage message="Aucune realisation a afficher." />
         )
       )}
     </div>

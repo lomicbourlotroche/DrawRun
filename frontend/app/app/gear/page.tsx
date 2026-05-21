@@ -100,10 +100,10 @@ export default function GearPage() {
   return (
     <AppLayout>
       <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center pt-2">
           <div>
             <h1 className="text-3xl font-bold text-foreground tracking-tight">Mon Matériel</h1>
-            <p className="text-muted mt-1">Suivez l&apos;usure de vos chaussures et équipements pour prévenir les blessures.</p>
+            <p className="text-neutral-500 mt-1.5">Suivez l&apos;usure de vos chaussures et équipements pour prévenir les blessures.</p>
           </div>
           <PrimaryButton 
             variant="primary" 
@@ -125,12 +125,12 @@ export default function GearPage() {
             ))}
           </div>
         ) : gearList.length === 0 ? (
-          <div className="bg-surface border-2 border-dashed border rounded-3xl p-12 text-center">
-            <div className="w-16 h-16 bg-background rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Package className="w-8 h-8 text-foreground" />
+          <div className="bg-surface border-2 border-dashed border-neutral-200/60 rounded-2xl p-12 text-center shadow-card">
+            <div className="w-16 h-16 bg-neutral-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Package className="w-8 h-8 text-neutral-400" />
             </div>
             <h3 className="text-lg font-bold text-foreground">Aucun matériel enregistré</h3>
-            <p className="text-muted mb-6 max-w-sm mx-auto">
+            <p className="text-neutral-500 mb-6 max-w-sm mx-auto">
               Commencez par ajouter vos chaussures de running ou votre vélo pour suivre leur kilométrage.
             </p>
             <PrimaryButton variant="outline" onClick={() => setIsModalOpen(true)}>

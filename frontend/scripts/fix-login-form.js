@@ -186,7 +186,7 @@ const replacements = [
 ];
 
 // Appliquer tous les remplacements
-let originalContent = content;
+const originalContent = content;
 for (const [regex, replacement] of replacements) {
   const newContent = content.replace(regex, replacement);
   if (newContent !== content) {

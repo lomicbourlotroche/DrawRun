@@ -1,7 +1,9 @@
 'use client';
 
 import Image from 'next/image';
-import { Github, Twitter, Mail } from 'lucide-react';
+import Link from 'next/link';
+import { Github, Twitter, Mail, ArrowRight, Rocket } from 'lucide-react';
+import { Button } from '@/components/ui';
 
 const footerLinks = {
   produit: [
@@ -57,6 +59,29 @@ export default function Footer() {
                   </a>
                 );
               })}
+            </div>
+          </div>
+
+          {/* Secondary CTA */}
+          <div className="lg:col-span-5 md:col-span-2">
+            <div className="p-6 rounded-xl bg-gradient-to-r from-primary-500/10 to-secondary/10 border border-primary-500/20">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary-500 flex items-center justify-center">
+                    <Rocket className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white mb-1">Prêt à optimiser vos performances ?</h3>
+                    <p className="text-sm text-muted">Créez votre compte gratuitement et découvrez votre VDOT.</p>
+                  </div>
+                </div>
+                <Link href="/login?mode=register">
+                  <Button variant="primary" size="lg" className="min-h-[44px]">
+                    Commencer gratuitement
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
 

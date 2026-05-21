@@ -293,8 +293,8 @@ export function ProgressionChart({ activities, sport }: ProgressionChartProps) {
                 />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
+                    backgroundColor: 'var(--surface))',
+                    border: '1px solid var(--border))',
                     borderRadius: '8px'
                   }}
                   formatter={(value: number, name: string) => [

@@ -93,13 +93,13 @@ export default function Sidebar() {
         />
       )}
 
-      <aside
-        className={cn(
-          'fixed top-0 left-0 h-full bg-surface/98 backdrop-blur-xl border-r border-border/60 z-50 transition-all duration-300 flex flex-col',
-          isCollapsed ? 'w-16' : 'w-full max-w-64 lg:max-w-none',
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        )}
-      >
+        <aside
+          className={cn(
+            'fixed top-0 left-0 h-full bg-surface/95 backdrop-blur-md border-r border-neutral-200/60 z-50 transition-all duration-300 ease-smooth flex flex-col',
+            isCollapsed ? 'w-16' : 'w-full max-w-64 lg:max-w-none',
+            isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          )}
+        >
         {/* Logo */}
         <div
           className={cn(
@@ -136,11 +136,11 @@ export default function Sidebar() {
                 href={item.href}
                 title={isCollapsed ? item.label : undefined}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-3 min-h-[44px] rounded-xl transition-all duration-200 relative group',
+                  'flex items-center gap-3 px-3 py-3 min-h-[44px] rounded-xl transition-all duration-200 ease-smooth relative group',
                   isCollapsed && 'justify-center px-0',
                   active
-                    ? 'bg-primary-50 text-primary-700 border border-primary-100'
-                    : 'text-muted hover:bg-background hover:text-foreground border border-transparent'
+                    ? 'bg-primary-50 text-primary-600 border border-primary-100'
+                    : 'text-neutral-600 hover:bg-neutral-100 hover:text-foreground border border-transparent'
                 )}
               >
                 <div className="relative flex-shrink-0">
