@@ -172,9 +172,9 @@ export function TrainingPlanCard({ plan, onDelete, onSessionComplete }: Training
                     {session.completed && (
                       <div className="flex items-center gap-2">
                         {resultIndicator}
-                        {session.feedback && (
+                        {(session as unknown as Record<string, unknown>).feedback && (
                           <Badge variant="default" size="sm" className="bg-muted/50">
-                            RPE: {session.feedback.rpe}/10
+                            RPE: {((session as unknown as Record<string, unknown>).feedback as { rpe?: number }).rpe}/10
                           </Badge>
                         )}
                       </div>
@@ -250,30 +250,30 @@ export function TrainingPlanCard({ plan, onDelete, onSessionComplete }: Training
                 <h4 className="font-medium text-foreground mb-3">Resultat</h4>
                 <div className="flex items-center gap-4">
                   {getResultIndicator(selectedSession)}
-                  {selectedSession.feedback && (
+                  {(selectedSession as unknown as Record<string, unknown>).feedback && (
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-muted">Difficulte:</span>
                         <Badge variant="default" size="sm">
-                          {selectedSession.feedback.difficulty}
+                          {((selectedSession as unknown as Record<string, unknown>).feedback as { difficulty?: string }).difficulty}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-muted">RPE:</span>
                         <Badge variant="default" size="sm">
-                          {selectedSession.feedback.rpe}/10
+                          {((selectedSession as unknown as Record<string, unknown>).feedback as { rpe?: number }).rpe}/10
                         </Badge>
                       </div>
-                      {selectedSession.feedback.hasPain && (
+                      {((selectedSession as unknown as Record<string, unknown>).feedback as { hasPain?: boolean; painLocation?: string }).hasPain && (
                         <div className="text-sm text-danger">
-                          ⚠️ Douleur: {selectedSession.feedback.painLocation}
+                          ⚠️ Douleur: {((selectedSession as unknown as Record<string, unknown>).feedback as { painLocation?: string }).painLocation}
                         </div>
                       )}
                     </div>
                   )}
                 </div>
                 
-                {!selectedSession.feedback && (
+                {!(selectedSession as unknown as Record<string, unknown>).feedback && (
                   <div className="mt-4 p-4 rounded-lg bg-surface border border-border">
                     <p className="text-sm text-muted mb-3">
                       Donnez votre feedback pour cette seance
@@ -299,9 +299,9 @@ export function TrainingPlanCard({ plan, onDelete, onSessionComplete }: Training
                     className="flex-1"
                     onClick={() => handleGiveFeedback(selectedSession)}
                     leftIcon={<MessageSquare className="w-4 h-4" />}
-                    disabled={!!selectedSession.feedback}
+                    disabled={!!(selectedSession as unknown as Record<string, unknown>).feedback}
                   >
-                    {selectedSession.feedback ? 'Feedback deja donne' : 'Donner un feedback'}
+                    {(selectedSession as unknown as Record<string, unknown>).feedback ? 'Feedback deja donne' : 'Donner un feedback'}
                   </Button>
                 </>
               ) : (
