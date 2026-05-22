@@ -61,7 +61,7 @@ export default function HeroSection() {
             <div className="flex flex-col sm:flex-row gap-3 mb-12">
               <a
                 href="/login?mode=register"
-                className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-primary-600 text-foreground font-semibold rounded-xl shadow-button-primary hover:shadow-button-primary-hover hover:-translate-y-0.5 transition-all duration-200 text-base"
+                className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-primary-600 text-white font-semibold rounded-xl shadow-button-primary hover:shadow-button-primary-hover hover:-translate-y-0.5 transition-all duration-200 text-base"
               >
                 <TrendingUp className="w-5 h-5 flex-shrink-0" />
                 Commencer gratuitement
@@ -108,7 +108,7 @@ export default function HeroSection() {
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
-                    <Users className="w-6 h-6 text-foreground" />
+                    <Users className="w-6 h-6 text-white" />
                   </div>
                   <div>
                     {isLoading ? (
