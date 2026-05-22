@@ -2,7 +2,7 @@ export { default as AdaptivePlanWizard } from './AdaptivePlanWizard';
 export { default as ExternalEventForm } from './ExternalEventForm';
 export { default as GamificationWidget } from './GamificationWidget';
 export { default as MissedSessionDialog } from './MissedSessionDialog';
-export { default as PlanGanttChart } from './PlanGanttChart';
+export { PlanGanttChart } from './PlanGanttChart';
 export { default as ProgressChart } from './ProgressChart';
 export { default as SessionFeedback } from './SessionFeedback';
 export { default as SessionResultIndicator } from './SessionResultIndicator';
