@@ -132,6 +132,13 @@ module.exports = {
           foreground: '#FFFFFF',
         },
         
+        // Semantic colors (light/dark via RGB CSS vars — enables opacity modifiers)
+        surface: 'rgb(var(--surface-rgb) / <alpha-value>)',
+        background: 'rgb(var(--background-rgb) / <alpha-value>)',
+        foreground: 'rgb(var(--foreground-rgb) / <alpha-value>)',
+        muted: 'rgb(var(--muted-rgb) / <alpha-value>)',
+        border: 'rgb(var(--border-rgb) / <alpha-value>)',
+
         // Neutral colors
         neutral: {
           50: '#F8FAFC',

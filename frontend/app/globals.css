@@ -622,27 +622,4 @@
 .animate-ping { animation: ping 1s ease-out infinite; }
 .animate-bounce { animation: bounce 1s ease-in-out infinite; }
 
-/* ======================================================================== */
-/* SEMANTIC COLOR UTILITIES (Flow Light) */
-/* These use RGB triplet CSS vars for light/dark switching */
-/* ======================================================================== */
 
-.bg-background { background-color: rgb(var(--background-rgb) / 1); }
-.bg-background\/80 { background-color: rgb(var(--background-rgb) / 0.8); }
-.bg-background\/95 { background-color: rgb(var(--background-rgb) / 0.95); }
-
-.bg-surface { background-color: rgb(var(--surface-rgb) / 1); }
-.bg-surface\/80 { background-color: rgb(var(--surface-rgb) / 0.8); }
-.bg-surface\/95 { background-color: rgb(var(--surface-rgb) / 0.95); }
-.bg-surface\/60 { background-color: rgb(var(--surface-rgb) / 0.6); }
-.bg-surface\/50 { background-color: rgb(var(--surface-rgb) / 0.5); }
-
-.text-foreground { color: rgb(var(--foreground-rgb) / 1); }
-.hover\:text-foreground:hover { color: rgb(var(--foreground-rgb) / 1); }
-.text-muted { color: rgb(var(--muted-rgb) / 1); }
-.hover\:text-muted:hover { color: rgb(var(--muted-rgb) / 1); }
-
-.border-border { border-color: rgb(var(--border-rgb) / 1); }
-
-.hover\:bg-surface:hover { background-color: rgb(var(--surface-rgb) / 1); }
-.hover\:bg-background:hover { background-color: rgb(var(--background-rgb) / 1); }
