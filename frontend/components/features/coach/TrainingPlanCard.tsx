@@ -172,7 +172,7 @@ export function TrainingPlanCard({ plan, onDelete, onSessionComplete }: Training
                     {session.completed && (
                       <div className="flex items-center gap-2">
                         {resultIndicator}
-                        {(session as unknown as Record<string, unknown>).feedback && (
+                        {!!(session as unknown as Record<string, unknown>).feedback && (
                           <Badge variant="default" size="sm" className="bg-muted/50">
                             RPE: {((session as unknown as Record<string, unknown>).feedback as { rpe?: number }).rpe}/10
                           </Badge>
@@ -250,7 +250,7 @@ export function TrainingPlanCard({ plan, onDelete, onSessionComplete }: Training
                 <h4 className="font-medium text-foreground mb-3">Resultat</h4>
                 <div className="flex items-center gap-4">
                   {getResultIndicator(selectedSession)}
-                  {(selectedSession as unknown as Record<string, unknown>).feedback && (
+                  {!!(selectedSession as unknown as Record<string, unknown>).feedback && (
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-muted">Difficulte:</span>
@@ -273,7 +273,7 @@ export function TrainingPlanCard({ plan, onDelete, onSessionComplete }: Training
                   )}
                 </div>
                 
-                {!(selectedSession as unknown as Record<string, unknown>).feedback && (
+                {!Boolean((selectedSession as unknown as Record<string, unknown>).feedback) && (
                   <div className="mt-4 p-4 rounded-lg bg-surface border border-border">
                     <p className="text-sm text-muted mb-3">
                       Donnez votre feedback pour cette seance
