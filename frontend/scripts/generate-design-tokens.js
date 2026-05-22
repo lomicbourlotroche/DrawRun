@@ -31,7 +31,11 @@ const TAILWIND_CONFIG_PATH = path.join(__dirname, '../tailwind.config.js');
  * Convertit les tokens TypeScript en variables CSS
  */
 function generateGlobalsCSS() {
-  return `/**
+  return `@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
  * DrawRun Design System - CSS Variables
  * GÉNÉRÉ AUTOMATIQUEMENT depuis src/lib/designTokens.ts
  * NE PAS MODIFIER MANUELLEMENT - Exécuter 'npm run generate:design-tokens' pour mettre à jour
@@ -175,20 +179,25 @@ function generateGlobalsCSS() {
 
   /* Background */
   --bg: #F8FAFC;
+  --background-rgb: 248 250 252;
   --bg-secondary: #F1F5F9;
   --surface: #FFFFFF;
+  --surface-rgb: 255 255 255;
   --surface-elevated: #FFFFFF;
 
   /* Text */
   --foreground: #0F172A;
+  --foreground-rgb: 15 23 42;
   --text-primary: #0F172A;
   --text-secondary: #475569;
   --text-tertiary: #64748B;
   --muted: #94A3B8;
+  --muted-rgb: 148 163 184;
   --text-muted: #94A3B8;
 
   /* Borders */
   --border: #E2E8F0;
+  --border-rgb: 226 232 240;
   --border-strong: #CBD5E1;
 
   /* Semantic colors */
@@ -436,20 +445,25 @@ function generateGlobalsCSS() {
 .dark {
   /* Background */
   --bg: #080C14;
+  --background-rgb: 8 12 20;
   --bg-secondary: #111827;
   --surface: #111827;
+  --surface-rgb: 17 24 39;
   --surface-elevated: #1E2D45;
 
   /* Text */
   --foreground: #E8EDF5;
+  --foreground-rgb: 232 237 245;
   --text-primary: #E8EDF5;
   --text-secondary: #94A3B8;
   --text-tertiary: #64748B;
   --muted: #4A5568;
+  --muted-rgb: 74 85 104;
   --text-muted: #4A5568;
 
   /* Borders */
   --border: #1E2D45;
+  --border-rgb: 30 45 69;
   --border-strong: #334155;
 
   /* Semantic colors (same as light for brand consistency) */
@@ -782,6 +796,13 @@ module.exports = {
           foreground: '#FFFFFF',
         },
         
+        // Semantic colors (light/dark via RGB CSS vars — enables opacity modifiers)
+        surface: 'rgb(var(--surface-rgb) / <alpha-value>)',
+        background: 'rgb(var(--background-rgb) / <alpha-value>)',
+        foreground: 'rgb(var(--foreground-rgb) / <alpha-value>)',
+        muted: 'rgb(var(--muted-rgb) / <alpha-value>)',
+        border: 'rgb(var(--border-rgb) / <alpha-value>)',
+
         // Neutral colors
         neutral: {
           50: '#F8FAFC',

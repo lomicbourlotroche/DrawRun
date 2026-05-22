@@ -621,5 +621,3 @@
 .animate-spin { animation: spin 1s linear infinite; }
 .animate-ping { animation: ping 1s ease-out infinite; }
 .animate-bounce { animation: bounce 1s ease-in-out infinite; }
-
-
