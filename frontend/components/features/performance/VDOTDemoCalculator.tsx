@@ -107,12 +107,13 @@ const calculateTrainingPaces = (vdot: number) => {
 };
 
 const getVDOTLevel = (vdot: number) => {
-  for (const level of VDOT_LEVELS) {
-    if (vdot >= level.min && vdot <= level.max) {
-      return { ...level, level: level.label };
+  for (const l of VDOT_LEVELS) {
+    if (vdot >= l.min && vdot <= l.max) {
+      return { ...l, level: l.label };
     }
   }
-  return VDOT_LEVELS[VDOT_LEVELS.length - 1];
+  const last = VDOT_LEVELS[VDOT_LEVELS.length - 1];
+  return { ...last, level: last.label };
 };
 
 export interface VDOTDemoCalculatorProps {
