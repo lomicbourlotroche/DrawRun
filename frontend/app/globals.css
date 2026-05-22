@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /**
  * DrawRun Design System - CSS Variables
  * GÉNÉRÉ AUTOMATIQUEMENT depuis src/lib/designTokens.ts

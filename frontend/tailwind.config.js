@@ -188,14 +188,6 @@ module.exports = {
           overtrained: '#FF5252',
         },
 
-        // Semantic color tokens (Flow Light)
-        // These reference CSS variables set in globals.css for light/dark mode
-        // RGB triplet vars allow opacity modifiers e.g. bg-background/80
-        background: 'rgb(var(--background-rgb) / <alpha-value>)',
-        foreground: 'rgb(var(--foreground-rgb) / <alpha-value>)',
-        surface: 'rgb(var(--surface-rgb) / <alpha-value>)',
-        muted: 'rgb(var(--muted-rgb) / <alpha-value>)',
-        border: 'rgb(var(--border-rgb) / <alpha-value>)',
       },
       
       // ======================================================================
