@@ -134,4 +134,11 @@ frontend/src/NUL
 
 
 
+# Playwright MCP artifacts
+.playwright-mcp/
+
+# Misc temp files
+page-snapshot.md
+snapshot-home.txt
+
 node_modules

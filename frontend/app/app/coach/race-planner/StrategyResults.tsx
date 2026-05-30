@@ -48,13 +48,13 @@ export default function StrategyResults({ strategy, formatTime, downloadCsv }: S
         </h3>
         <StrategyChart
           segments={(strategy.segments as Array<Record<string, unknown>>) || []}
-          segmentsWithGrade={(strategy.strategy as Record<string, unknown>).segments as Array<{ grade: number }> || []}
+          segmentsWithGrade={((strategy.strategy as Record<string, unknown>).segments as Array<{ grade: number }> | undefined) || []}
         />
       </Card>
 
       {/* Tapering Analysis */}
-      {strategy.taper && (
-        <TaperingChart data={strategy.taper} />
+      {Boolean(strategy.taper) && (
+        <TaperingChart data={strategy.taper as Record<string, unknown>} />
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
