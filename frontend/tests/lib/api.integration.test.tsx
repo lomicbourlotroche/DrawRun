@@ -1,11 +1,10 @@
-/* eslint-disable unused-imports/no-unused-vars, react/display-name */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import type { Activity } from '@/types';
 
 // Create a wrapper with QueryClient
-const createWrapper = () => {
+const _createWrapper = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -13,10 +12,11 @@ const createWrapper = () => {
       },
     },
   });
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+  return function QueryWrapper({ children }: { children: React.ReactNode }) {
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  };
 };
+
 
 // Mock API
 vi.mock('@/lib/api', () => ({

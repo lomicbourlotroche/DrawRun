@@ -1,10 +1,9 @@
-/* eslint-disable unused-imports/no-unused-vars */
+
 'use client';
 
 import { Card, CardHeader, CardTitle, CardContent, Badge } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { Recommendation } from '@/types';
-import { TRAINING_TYPES } from '@/lib/constants';
 import { ChevronRight, Activity, TrendingUp, Zap } from 'lucide-react';
 
 interface RecommendationCardProps {
@@ -56,7 +55,6 @@ export function RecommendationCard({ recommendation, isLoading, onViewDetails }:
     );
   }
 
-  const typeInfo = TRAINING_TYPES[recommendation.type as keyof typeof TRAINING_TYPES] || TRAINING_TYPES.REST;
   const intensityStyle = getIntensityColor(recommendation.intensity);
 
   return (
@@ -104,7 +102,7 @@ export function RecommendationCard({ recommendation, isLoading, onViewDetails }:
               <span className="w-5 h-5 rounded-full bg-background flex items-center justify-center text-xs text-muted flex-shrink-0">
                 {index + 1}
               </span>
-              <span className="text-text-secondary">{step}</span>
+              <span className="text-muted">{step}</span>
             </div>
           ))}
           {recommendation.structure.length > 3 && (

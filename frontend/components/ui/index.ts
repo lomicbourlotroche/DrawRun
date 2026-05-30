@@ -22,7 +22,9 @@ export {
   BadgeSkeleton,
   StatRowSkeleton,
 } from './Skeleton';
-export { Tabs, TabsList, TabsTrigger, TabsContent, TabPanel, FilterChip, FilterChipGroup, LegacyTabs } from './Tabs';
+export { Tabs, TabsList, TabsTrigger, TabsContent, TabPanel, FilterChip, FilterChipGroup, LegacyTabs } from './Tabs';
+export { NavTabs } from './NavTabs';
+export { ModalSheet } from './ModalSheet';
 export { Progress, CircularProgress } from './Progress';
 export { Avatar, StatCard } from './Avatar';
 export {

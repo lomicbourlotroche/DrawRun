@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars */
 'use client';
 
 import { useState } from 'react';
@@ -49,8 +48,6 @@ export default function TestScheduler({ planId, onTestScheduled }: TestScheduler
       setIsLoading(false);
     }
   };
-
-  const selectedTest = testTypes.find(t => t.value === testType);
 
   return (
     <>

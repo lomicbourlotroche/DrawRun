@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -134,7 +133,7 @@ export default function ScienceEngineGuide() {
             </span>
           </h2>
           <p className="text-lg text-muted max-w-2xl mx-auto">
-            DrawRun intègre les algorithmes les plus validés de la littérature scientifique en physiologie de l'exercice.
+            DrawRun intègre les algorithmes les plus validés de la littérature scientifique en physiologie de l&apos;exercice.
             Chaque métrique est calculée côté serveur selon les formules de référence.
           </p>
         </div>
@@ -165,7 +164,7 @@ export default function ScienceEngineGuide() {
                 <span className="text-white font-bold">3</span>
               </div>
               <h4 className="font-semibold mb-2">Analyse</h4>
-              <p className="text-sm text-muted">Recommandations, zones d'entraînement et prédictions générées à partir de l'historique complet.</p>
+              <p className="text-sm text-muted">Recommandations, zones d&apos;entraînement et prédictions générées à partir de l&apos;historique complet.</p>
             </div>
           </div>
         </div>

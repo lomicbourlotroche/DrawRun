@@ -30,8 +30,8 @@ export default function FeedTab() {
     }
   }, [error]);
 
-  const handleCommentCountChange = useCallback(
-    (activityId: number, delta: number) => {
+  const handleCommentCountChange = useCallback(
+    (_activityId: number, _delta: number) => {
       // This could be moved to useFeed hook if needed
       // For now, keeping it local as it's a UI concern
       // The actual comment count update would need to be handled by the hook

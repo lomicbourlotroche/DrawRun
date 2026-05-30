@@ -152,6 +152,16 @@ const SCIENTIFIC_CONSTANTS = {
         HEAT_DEGRADATION_START: 20, // °C - Début de la perte de performance significante
         ALTITUDE_DEGRADATION_START: 700, // m - Début de la baisse de VO2max
     },
+
+    // Minetti Energy Cost Model (2002)
+    // Polynomial coefficients for grade-adjusted metabolic cost of running
+    // Ref: Minetti, A. E. et al. (2002). Energy cost of walking and running
+    //      at extreme uphill and downhill slopes. J Appl Physiol.
+    MINETTI: {
+        COEFFICIENTS: { c5: 155.4, c4: -30.4, c3: -43.3, c2: 46.3, c1: 19.5, c0: 3.6 },
+        GRADE_CLAMP_MIN: -0.45,
+        GRADE_CLAMP_MAX: 0.45,
+    },
 };
 
 module.exports = SCIENTIFIC_CONSTANTS;

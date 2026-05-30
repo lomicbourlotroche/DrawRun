@@ -35,11 +35,11 @@ interface UseFriendsReturn {
   isSearching: boolean;
   searchQuery: string;
   loadFriends: () => Promise<void>;
-  handleSearch: (query: string) => Promise<void>;
-  handleAddFriend: (userId: number) => Promise<void>;
-  handleAccept: (userId: number) => Promise<void>;
-  handleRemove: (userId: number) => Promise<void>;
-  setSearchQuery: (query: string) => void;
+  handleSearch: (_query: string) => Promise<void>;
+  handleAddFriend: (_userId: number) => Promise<void>;
+  handleAccept: (_userId: number) => Promise<void>;
+  handleRemove: (_userId: number) => Promise<void>;
+  setSearchQuery: (_query: string) => void;
 }
 
 interface UseGroupsReturn {
@@ -49,76 +49,12 @@ interface UseGroupsReturn {
   error: string | null;
   searchQuery: string;
   loadGroups: () => Promise<void>;
-  handleSearch: (query: string) => Promise<void>;
-  handleLeave: (groupId: number) => Promise<void>;
-  setSearchQuery: (query: string) => void;
+  handleSearch: (_query: string) => Promise<void>;
+  handleLeave: (_groupId: number) => Promise<void>;
+  setSearchQuery: (_query: string) => void;
 }
 
-interface UseLeaderboardReturn {
-  entries: LeaderboardEntry[];
-  isLoading: boolean;
-  error: string | null;
-  category: string;
-  period: string;
-  setCategory: (category: string) => void;
-  setPeriod: (period: string) => void;
-  loadLeaderboard: () => Promise<void>;
-}
 
-interface UseFeedReturn {
-  activities: SocialFeedItem[];
-  isLoading: boolean;
-  isRefreshing: boolean;
-  error: string | null;
-  displayCount: number;
-  loadFeed: (refresh?: boolean) => Promise<void>;
-  handleLike: (activityId: number, currentLiked: boolean) => Promise<void>;
-  setDisplayCount: (count: number) => void;
-}
-
-interface UseChallengesReturn {
-  publicChallenges: Array<{
-    id: number;
-    title: string;
-    description?: string;
-    type: string;
-    target_value: number;
-    target_unit?: string;
-    duration_days: number;
-    participant_count: number;
-    created_at: string;
-    challenge_mode?: string;
-    badge_icon?: string;
-    sport_type?: string;
-    milestones?: string;
-    weekly_target?: number;
-    weekly_increase_pct?: number;
-    streak_days?: number;
-    frequency_per_week?: number;
-    creator_name?: string;
-  }>;
-  myChallenges: Array<{
-    id: number;
-    title: string;
-    description?: string;
-    type: string;
-    target_value: number;
-    target_unit?: string;
-    progress: number;
-    user_status: string;
-    start_date: string;
-    end_date: string;
-    challenge_mode?: string;
-    badge_icon?: string;
-    milestones?: string;
-    streak_current?: number;
-    streak_best?: number;
-  }>;
-  isLoading: boolean;
-  error: string | null;
-  loadChallenges: () => Promise<void>;
-  handleJoin: (challengeId: number) => Promise<void>;
-}
 
 // ============================================================
 // HOOKS

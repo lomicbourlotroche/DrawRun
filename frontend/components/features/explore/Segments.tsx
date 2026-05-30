@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars */
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -33,7 +32,7 @@ interface Segment {
 
 interface SegmentListProps {
   segments: Segment[];
-  onSegmentClick?: (segment: Segment) => void;
+  onSegmentClick?: (_segment: Segment) => void;
   isLoading?: boolean;
 }
 

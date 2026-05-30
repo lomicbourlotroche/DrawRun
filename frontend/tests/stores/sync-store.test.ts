@@ -169,7 +169,7 @@ describe('Sync Store — Garmin-only', () => {
     });
 
     it('sets isSyncing state during sync', async () => {
-      let resolvePromise!: (value: SyncResult | PromiseLike<SyncResult>) => void;
+      let resolvePromise!: (_value: SyncResult | PromiseLike<SyncResult>) => void;
       vi.mocked(api.sync).mockReturnValue(
         new Promise<SyncResult>((resolve) => {
           resolvePromise = resolve;

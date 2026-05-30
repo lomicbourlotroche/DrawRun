@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars */
 /**
  * Dialog Components - Wrapper around Modal for compatibility
  */
@@ -9,7 +8,7 @@ import { ReactNode } from 'react';
 
 interface DialogProps {
   open?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  onOpenChange?: (_open: boolean) => void;
   children: ReactNode;
 }
 

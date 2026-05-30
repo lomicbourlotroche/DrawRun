@@ -46,15 +46,15 @@ export interface UseLeafletMapResult {
   /** Whether there was an error loading the map */
   error: Error | null;
   /** Fit the map to the given bounds */
-  fitBounds: (bounds: LatLng[] | L.LatLngBounds, options?: L.FitBoundsOptions) => void;
+  fitBounds: (_bounds: LatLng[] | L.LatLngBounds, _options?: L.FitBoundsOptions) => void;
   /** Pan the map to a specific coordinate */
-  panTo: (latlng: LatLng, options?: L.PanOptions) => void;
+  panTo: (_latlng: LatLng, _options?: L.PanOptions) => void;
   /** Add a polyline to the map */
-  addPolyline: (coordinates: LatLng[], options?: L.PolylineOptions) => DrawRunPolyline | null;
+  addPolyline: (_coordinates: LatLng[], _options?: L.PolylineOptions) => DrawRunPolyline | null;
   /** Add a marker to the map */
-  addMarker: (latlng: LatLng, options?: L.MarkerOptions) => DrawRunMarker | null;
+  addMarker: (_latlng: LatLng, _options?: L.MarkerOptions) => DrawRunMarker | null;
   /** Add a circle to the map */
-  addCircle: (latlng: LatLng, options?: L.CircleOptions) => DrawRunCircle | null;
+  addCircle: (_latlng: LatLng, _options?: L.CircleOptions) => DrawRunCircle | null;
   /** Remove all layers from the map */
   clearLayers: () => void;
   /** Get the current map bounds */

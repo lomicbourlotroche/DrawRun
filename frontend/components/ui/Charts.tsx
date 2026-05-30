@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars */
 'use client';
 
 interface ChartProps {
@@ -14,7 +13,7 @@ interface ChartProps {
   unit?: string;
   min?: number;
   max?: number;
-  formatValue?: (v: number) => string;
+  formatValue?: (_v: number) => string;
 }
 
 function autoScale(data: number[], padding = 0.1): { min: number; max: number; step: number } {

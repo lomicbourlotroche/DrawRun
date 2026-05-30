@@ -8,6 +8,7 @@
  *
  * @module lib/api/user-counter.api
  */
+/* eslint-disable no-console */
 
 import { client } from './client';
 
@@ -25,7 +26,7 @@ export interface UserCountWebSocketMessage {
 
 // Singleton pour la connexion WebSocket
 let socket: WebSocket | null = null;
-let subscribers: Array<(count: number) => void> = [];
+let subscribers: Array<(_count: number) => void> = [];
 
 /**
  * Récupère le nombre d'utilisateurs actifs (méthode HTTP)
@@ -47,7 +48,7 @@ export const getUserCount = async (): Promise<UserCountResponse> => {
  * @returns Fonction pour se désabonner
  */
 export const subscribeToUserCount = (
-  callback: (count: number) => void
+  callback: (_count: number) => void
 ): (() => void) => {
   // Ajouter le callback à la liste des abonnés
   subscribers.push(callback);
@@ -116,7 +117,7 @@ const connectWebSocket = (): void => {
  * @returns Promesse avec le compteur initial et fonction de désabonnement
  */
 export const getUserCountAndSubscribe = async (
-  callback: (count: number) => void
+  callback: (_count: number) => void
 ): Promise<{ count: number; unsubscribe: () => void }> => {
   // Récupérer le compteur initial
   const initialCount = await getUserCount();

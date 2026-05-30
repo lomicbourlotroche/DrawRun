@@ -55,14 +55,18 @@ const SleepOptimization = {
         else if (restingHRChange < 7) score += 8;
         else score += 0;
 
+        const durationScore = sleepDuration >= 8 ? 30 : sleepDuration >= 7 ? 25 : sleepDuration >= 6 ? 15 : 5;
+        const hrvScore = hrvChange >= 0 ? 25 : hrvChange > -5 ? 20 : hrvChange > -15 ? 10 : 0;
+        const rhrScore = restingHRChange <= 0 ? 20 : restingHRChange < 3 ? 15 : restingHRChange < 7 ? 8 : 0;
+
         return {
             score: Math.min(100, score),
             rating: score >= 80 ? 'excellent' : score >= 60 ? 'good' : score >= 40 ? 'fair' : 'poor',
             components: {
-                duration: Math.round((score >= 75 ? 30 : score >= 55 ? 25 : score >= 30 ? 15 : 5) / 30 * 100),
+                duration: Math.round(durationScore / 30 * 100),
                 efficiency: Math.round((sleepEfficiency || 0)),
-                hrv: Math.round((hrvChange >= 0 ? 25 : hrvChange > -5 ? 20 : hrvChange > -15 ? 10 : 0) / 25 * 100),
-                restingHR: Math.round((restingHRChange <= 0 ? 20 : restingHRChange < 3 ? 15 : restingHRChange < 7 ? 8 : 0) / 20 * 100),
+                hrv: Math.round(hrvScore / 25 * 100),
+                restingHR: Math.round(rhrScore / 20 * 100),
             },
         };
     },

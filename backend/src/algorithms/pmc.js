@@ -42,14 +42,14 @@ const PMC = {
         const data = [];
         
         sorted.forEach((act) => {
-            const tss = act.tss || 0;
+            const tss = (act.tss ?? act.trimp ?? act.load ?? 0);
             
             // HRV modulation (si disponible)
             let hrvMod = 1.0;
             if (options.hrvModulator && act.hrvRmssd) {
                 const baseline = options.hrvModulator.baseline || 50;
                 const ratio = act.hrvRmssd / baseline;
-                hrvMod = MathUtils.clamp(0.8 + ratio * 0.4, 0.7, 1.3);
+                hrvMod = MathUtils.clamp(0.6 + ratio * 0.4, 0.7, 1.3);
             }
             
             ctl = MathUtils.expMovingAvg(ctl, tss * hrvMod, alphaFitness);

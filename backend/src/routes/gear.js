@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { dbAllUser, dbRunUser, dbGetUser } = require('../database');
+const { dbAllUser, dbRunUser, dbGetUser, getUserDb } = require('../database');
 const { logger } = require('../utils/logger');
 const { verifyToken } = require('./auth');
 
@@ -15,8 +15,9 @@ router.use(verifyToken);
  */
 router.get('/', async (req, res) => {
     try {
+        const userDb = await getUserDb(req.user.id);
         const userId = req.user.id;
-        const gear = await dbAllUser(req.user.db, 'SELECT * FROM gear WHERE user_id = ? ORDER BY is_active DESC, name ASC', [userId]);
+        const gear = await dbAllUser(userDb, 'SELECT * FROM gear WHERE user_id = ? ORDER BY is_active DESC, name ASC', [userId]);
         res.json(gear);
     } catch (error) {
         logger.error('Error fetching gear:', error);
@@ -30,6 +31,7 @@ router.get('/', async (req, res) => {
  */
 router.post('/', async (req, res) => {
     try {
+        const userDb = await getUserDb(req.user.id);
         const userId = req.user.id;
         const { name, brand, model, type, purchase_date, initial_distance = 0, max_distance = 800 } = req.body;
 
@@ -37,7 +39,7 @@ router.post('/', async (req, res) => {
             return res.status(400).json({ error: 'Nom et type requis' });
         }
 
-        const result = await dbRunUser(req.user.db, `
+        const result = await dbRunUser(userDb, `
             INSERT INTO gear (user_id, name, brand, model, type, purchase_date, current_distance, max_distance, is_active)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
         `, [userId, name, brand, model, type, purchase_date, initial_distance, max_distance]);
@@ -55,16 +57,17 @@ router.post('/', async (req, res) => {
  */
 router.put('/:id', async (req, res) => {
     try {
+        const userDb = await getUserDb(req.user.id);
         const userId = req.user.id;
         const gearId = req.params.id;
         const { name, brand, model, type, max_distance, is_active, initial_distance } = req.body;
 
-        const gear = await dbGetUser(req.user.db, 'SELECT * FROM gear WHERE id = ? AND user_id = ?', [gearId, userId]);
+        const gear = await dbGetUser(userDb, 'SELECT * FROM gear WHERE id = ? AND user_id = ?', [gearId, userId]);
         if (!gear) {
             return res.status(404).json({ error: 'Matériel non trouvé' });
         }
 
-        await dbRunUser(req.user.db, `
+        await dbRunUser(userDb, `
             UPDATE gear 
             SET name = ?, brand = ?, model = ?, type = ?, max_distance = ?, is_active = ?, current_distance = COALESCE(?, current_distance)
             WHERE id = ? AND user_id = ?
@@ -93,19 +96,20 @@ router.put('/:id', async (req, res) => {
  */
 router.delete('/:id', async (req, res) => {
     try {
+        const userDb = await getUserDb(req.user.id);
         const userId = req.user.id;
         const gearId = req.params.id;
 
         // Check if gear is used in any activity
-        const used = await dbGetUser(req.user.db, 'SELECT id FROM activities WHERE gear_id = ? LIMIT 1', [gearId]);
+        const used = await dbGetUser(userDb, 'SELECT id FROM activities WHERE gear_id = ? LIMIT 1', [gearId]);
         
         if (used) {
             // Just deactivate
-            await dbRunUser(req.user.db, 'UPDATE gear SET is_active = 0 WHERE id = ? AND user_id = ?', [gearId, userId]);
+            await dbRunUser(userDb, 'UPDATE gear SET is_active = 0 WHERE id = ? AND user_id = ?', [gearId, userId]);
             return res.json({ message: 'Matériel archivé car utilisé dans des activités' });
         }
 
-        await dbRunUser(req.user.db, 'DELETE FROM gear WHERE id = ? AND user_id = ?', [gearId, userId]);
+        await dbRunUser(userDb, 'DELETE FROM gear WHERE id = ? AND user_id = ?', [gearId, userId]);
         res.json({ message: 'Matériel supprimé' });
     } catch (error) {
         logger.error('Error deleting gear:', error);

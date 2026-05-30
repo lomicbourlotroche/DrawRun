@@ -1,4 +1,3 @@
-/* eslint-disable eqeqeq */
 /**
  * CoachContent - Contenu de la page Coach
  * Corrigé : utilisation de Card unifié, tokens métiers, accessibilité
@@ -6,8 +5,8 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, type KeyboardEvent } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, GradientBadge, Skeleton } from '@/components/ui';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Card, CardHeader, CardTitle, CardContent, GradientBadge, Skeleton, NavTabs } from '@/components/ui';
 import { api } from '@/lib/api';
 import type { Recommendation, TrainingPlan } from '@/types';
 import {
@@ -50,13 +49,6 @@ function TodayTab() {
   };
 
   const style = intensityStyles[rec?.intensityColor || 'blue'];
-
-  // Keyboard navigation for internal tabs
-  const handleTabKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-    }
-  }, []);
 
   return (
     <div className="space-y-6">
@@ -153,25 +145,25 @@ function TodayTab() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-center">
               <p className="text-2xl font-bold text-primary/80">
-                {profile?.vdot != null ? String(profile.vdot) : '-'}
+                {profile?.vdot !== null && profile?.vdot !== undefined ? String(profile.vdot) : '-'}
               </p>
               <p className="text-xs text-muted">VDOT</p>
             </div>
             <div className="p-3 rounded-lg bg-danger/10 border border-danger/20 text-center">
               <p className="text-2xl font-bold text-danger/80">
-                {profile?.fcm != null ? String(profile.fcm) : '-'}
+                {profile?.fcm !== null && profile?.fcm !== undefined ? String(profile.fcm) : '-'}
               </p>
               <p className="text-xs text-muted">FCM</p>
             </div>
             <div className="p-3 rounded-lg bg-success/10 border border-success/20 text-center">
               <p className="text-2xl font-bold text-success/80">
-                {profile?.weeklyKm != null ? `${profile.weeklyKm}km` : '-'}
+                {profile?.weeklyKm !== null && profile?.weeklyKm !== undefined ? `${profile.weeklyKm}km` : '-'}
               </p>
               <p className="text-xs text-muted">Volume/sem</p>
             </div>
             <div className="p-3 rounded-lg bg-peak/10 border border-peak/20 text-center">
               <p className="text-2xl font-bold text-peak/80">
-                {profile?.pace != null ? String(profile.pace) : '-'}
+                {profile?.pace !== null && profile?.pace !== undefined ? String(profile.pace) : '-'}
               </p>
               <p className="text-xs text-muted">Allure</p>
             </div>
@@ -229,27 +221,12 @@ export default function CoachContent() {
     setActiveTab('plan');
   }, [loadActivePlan]);
 
-  const tabs = [
-    { id: 'today', label: "Aujourd'hui", icon: Flame },
-    { id: 'plan', label: 'Plan', icon: Calendar },
-    { id: 'progress', label: 'Progression', icon: TrendingUp },
-    { id: 'achievements', label: 'Realisations', icon: Trophy },
-  ] as const;
-
-  // Keyboard navigation for tabs
-  const handleTabKeyDown = useCallback((e: KeyboardEvent, tabId: typeof tabs[number]['id']) => {
-    if (e.key === 'ArrowRight') {
-      const currentIndex = tabs.findIndex(t => t.id === tabId);
-      const nextIndex = (currentIndex + 1) % tabs.length;
-      setActiveTab(tabs[nextIndex].id);
-    } else if (e.key === 'ArrowLeft') {
-      const currentIndex = tabs.findIndex(t => t.id === tabId);
-      const prevIndex = (currentIndex - 1 + tabs.length) % tabs.length;
-      setActiveTab(tabs[prevIndex].id);
-    } else if (e.key === 'Enter' || e.key === ' ') {
-      setActiveTab(tabId);
-    }
-  }, [tabs]);
+  const tabs = useMemo(() => [
+    { id: 'today', label: "Aujourd'hui", icon: <Flame className="w-4 h-4" /> },
+    { id: 'plan', label: 'Plan', icon: <Calendar className="w-4 h-4" /> },
+    { id: 'progress', label: 'Progression', icon: <TrendingUp className="w-4 h-4" /> },
+    { id: 'achievements', label: 'Realisations', icon: <Trophy className="w-4 h-4" /> },
+  ] as const, []);
 
   return (
     <div className="space-y-6 animate-fade-in max-w-6xl mx-auto">
@@ -261,26 +238,7 @@ export default function CoachContent() {
         <p className="text-neutral-500 mt-1.5">Entrainement personnalise base sur vos donnees</p>
       </div>
 
-      <div className="flex gap-1 overflow-x-auto pb-2 border-b border-neutral-200/60" role="tablist" aria-label="Onglets Coach">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            onKeyDown={(e) => handleTabKeyDown(e, tab.id)}
-            role="tab"
-            aria-selected={activeTab === tab.id}
-            tabIndex={activeTab === tab.id ? 0 : -1}
-            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ease-smooth ${
-              activeTab === tab.id
-                ? 'bg-primary-500 text-white shadow-sm'
-                : 'text-neutral-600 hover:text-foreground hover:bg-neutral-100'
-            }`}
-          >
-            <tab.icon className="w-4 h-4" />
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <NavTabs tabs={tabs} activeTab={activeTab} onChange={(id) => setActiveTab(id as typeof tabs[number]['id'])} />
 
       {/* Content */}
       {activeTab === 'today' && <TodayTab />}

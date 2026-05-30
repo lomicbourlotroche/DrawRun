@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars, no-undef */
 import { cn } from '@/lib/utils';
 import { createContext, useContext, useState, ReactNode } from 'react';
 
@@ -8,7 +7,7 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 
 interface TabsContextValue {
   value: string;
-  onValueChange: (value: string) => void;
+  onValueChange: (_value: string) => void;
 }
 
 const TabsContext = createContext<TabsContextValue | undefined>(undefined);
@@ -24,7 +23,7 @@ function useTabs() {
 interface TabsProps {
   defaultValue?: string;
   value?: string;
-  onValueChange?: (value: string) => void;
+  onValueChange?: (_value: string) => void;
   children: ReactNode;
   className?: string;
 }
@@ -108,7 +107,7 @@ export function TabsContent({ value, children, className }: TabsContentProps) {
 interface LegacyTabsProps {
   tabs: { id: string; label: string; icon?: React.ReactNode }[];
   activeTab: string;
-  onTabChange: (tabId: string) => void;
+  onTabChange: (_tabId: string) => void;
   className?: string;
 }
 
@@ -180,7 +179,7 @@ export function FilterChip({ label, isActive, onClick, count }: FilterChipProps)
 interface FilterChipGroupProps {
   options: { id: string; label: string; count?: number }[];
   activeFilter: string;
-  onFilterChange: (filterId: string) => void;
+  onFilterChange: (_filterId: string) => void;
   className?: string;
 }
 
@@ -204,5 +203,3 @@ export function FilterChipGroup({
     </div>
   );
 }
-
-

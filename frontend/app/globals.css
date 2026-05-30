@@ -16,113 +16,113 @@
 
 :root {
   /* ======================================================================== */
-  /* COULEURS PRINCIPALES */
+  /* COULEURS PRINCIPALES - Flow Light (Palette unique DrawRun) */
   /* ======================================================================== */
 
-  /* Primary - Bleu Performance */
-  --primary-50: #E6F2FF;
-  --primary-100: #CCE5FF;
-  --primary-200: #99CBFF;
-  --primary-300: #66B0FF;
-  --primary-400: #4C9AFF;
-  --primary-500: #007AFF;
-  --primary-600: #0066FF;
-  --primary-700: #0052CC;
-  --primary-800: #003D99;
-  --primary-900: #001A4D;
-  --primary: #0066FF;
+  /* Primary - Soft Blue */
+  --primary-50: #F0F7FF;
+  --primary-100: #E0F0FE;
+  --primary-200: #B8DAFD;
+  --primary-300: #8FC3FB;
+  --primary-400: #66ADF9;
+  --primary-500: #4D97F7;
+  --primary-600: #337BE5;
+  --primary-700: #265FB3;
+  --primary-800: #1A4380;
+  --primary-900: #0D2140;
+  --primary: #4D97F7;
   --primary-foreground: #FFFFFF;
-  --primary-glow: rgba(0, 102, 255, 0.3);
-  --primary-glow-strong: rgba(0, 102, 255, 0.4);
+  --primary-glow: rgba(77, 151, 247, 0.25);
+  --primary-glow-strong: rgba(77, 151, 247, 0.35);
 
-  /* Secondary - Violet */
-  --secondary-50: #EEEDFB;
-  --secondary-100: #DCDBF7;
-  --secondary-200: #B9B7EF;
-  --secondary-300: #9593E7;
-  --secondary-400: #7B79E0;
-  --secondary-500: #5856D6;
-  --secondary-600: #4644AB;
-  --secondary-700: #353380;
-  --secondary-800: #232256;
-  --secondary-900: #12112B;
-  --secondary: #5856D6;
+  /* Secondary - Soft Lavender */
+  --secondary-50: #F8F7FC;
+  --secondary-100: #F0EEF8;
+  --secondary-200: #D8D5EC;
+  --secondary-300: #C0BCE0;
+  --secondary-400: #A8A3D4;
+  --secondary-500: #908BC8;
+  --secondary-600: #7873BC;
+  --secondary-700: #605BAF;
+  --secondary-800: #4844A3;
+  --secondary-900: #302E97;
+  --secondary: #908BC8;
   --secondary-foreground: #FFFFFF;
 
-  /* Success - Vert */
-  --success-50: #E8F9EE;
-  --success-100: #D1F3DD;
-  --success-200: #A3E7BB;
-  --success-300: #75DB99;
-  --success-400: #69F0AE;
-  --success-500: #00C853;
-  --success-600: #00A042;
-  --success-700: #007831;
-  --success-800: #005021;
-  --success-900: #002810;
-  --success: #00C853;
+  /* Success - Soft Sage */
+  --success-50: #F4F9F4;
+  --success-100: #E8F3E8;
+  --success-200: #C8E0C8;
+  --success-300: #A8CDA8;
+  --success-400: #88BA88;
+  --success-500: #68A768;
+  --success-600: #549454;
+  --success-700: #408140;
+  --success-800: #2C6E2C;
+  --success-900: #185B18;
+  --success: #68A768;
   --success-foreground: #FFFFFF;
-  --success-glow: rgba(0, 200, 83, 0.3);
+  --success-glow: rgba(104, 167, 104, 0.25);
 
-  /* Recovery - Cyan */
-  --recovery-50: #E0F7FA;
-  --recovery-100: #B2EBF2;
-  --recovery-200: #80DEEA;
-  --recovery-300: #4DD0E1;
-  --recovery-400: #80DEEA;
-  --recovery-500: #00BCD4;
-  --recovery-600: #0097A7;
-  --recovery-700: #006064;
-  --recovery-800: #004050;
-  --recovery-900: #002030;
-  --recovery: #00BCD4;
+  /* Recovery - Soft Teal */
+  --recovery-50: #F0F9FA;
+  --recovery-100: #E0F3F4;
+  --recovery-200: #B8E1E3;
+  --recovery-300: #90CFD2;
+  --recovery-400: #68BDC1;
+  --recovery-500: #40ABAF;
+  --recovery-600: #34999D;
+  --recovery-700: #28777A;
+  --recovery-800: #1C5557;
+  --recovery-900: #103335;
+  --recovery: #40ABAF;
   --recovery-foreground: #FFFFFF;
-  --recovery-glow: rgba(0, 188, 212, 0.3);
+  --recovery-glow: rgba(64, 171, 175, 0.25);
 
-  /* Warning - Orange */
-  --warning-50: #FFF8E1;
-  --warning-100: #FFECB3;
-  --warning-200: #FFE082;
-  --warning-300: #FFD54F;
-  --warning-400: #FFD180;
-  --warning-500: #FFAB00;
-  --warning-600: #FF8F00;
-  --warning-700: #FF6F00;
-  --warning-800: #CC5900;
-  --warning-900: #994300;
-  --warning: #FFAB00;
-  --warning-foreground: #0F172A;
-  --warning-glow: rgba(255, 171, 0, 0.3);
+  /* Warning - Soft Amber */
+  --warning-50: #FEFBF4;
+  --warning-100: #FDF6E8;
+  --warning-200: #FAE8C8;
+  --warning-300: #F7DAA8;
+  --warning-400: #F4CC88;
+  --warning-500: #F1BE68;
+  --warning-600: #D9A954;
+  --warning-700: #C19440;
+  --warning-800: #A97F2C;
+  --warning-900: #916A18;
+  --warning: #F1BE68;
+  --warning-foreground: #2C3E50;
+  --warning-glow: rgba(241, 190, 104, 0.25);
 
-  /* Danger - Rouge */
-  --danger-50: #FFEBEE;
-  --danger-100: #FFCDD2;
-  --danger-200: #EF9A9A;
-  --danger-300: #E57373;
-  --danger-400: #FF8A80;
-  --danger-500: #FF5252;
-  --danger-600: #D32F2F;
-  --danger-700: #B71C1C;
-  --danger-800: #8C0E0E;
-  --danger-900: #5C0A0A;
-  --danger: #FF5252;
+  /* Danger - Soft Coral */
+  --danger-50: #FEF5F4;
+  --danger-100: #FDEAE8;
+  --danger-200: #FACAC6;
+  --danger-300: #F7AAA4;
+  --danger-400: #F48A82;
+  --danger-500: #F16A60;
+  --danger-600: #D95448;
+  --danger-700: #C13E30;
+  --danger-800: #A92818;
+  --danger-900: #911200;
+  --danger: #F16A60;
   --danger-foreground: #FFFFFF;
-  --danger-glow: rgba(255, 82, 82, 0.3);
+  --danger-glow: rgba(241, 106, 96, 0.25);
 
-  /* Peak - Orange vif (Pic de performance) */
-  --peak-50: #FFF3E0;
-  --peak-100: #FFE0B2;
-  --peak-200: #FFCC80;
-  --peak-300: #FFB74D;
-  --peak-400: #FF9100;
-  --peak-500: #FF6D00;
-  --peak-600: #E65100;
-  --peak-700: #BF360C;
-  --peak-800: #8C2400;
-  --peak-900: #5C1800;
-  --peak: #FF6D00;
+  /* Peak - Soft Peach */
+  --peak-50: #FEF8F4;
+  --peak-100: #FDEFE8;
+  --peak-200: #FAD8C8;
+  --peak-300: #F7C1A8;
+  --peak-400: #F4AA88;
+  --peak-500: #F19368;
+  --peak-600: #D97E54;
+  --peak-700: #C16940;
+  --peak-800: #A9542C;
+  --peak-900: #913F18;
+  --peak: #F19368;
   --peak-foreground: #FFFFFF;
-  --peak-glow: rgba(255, 109, 0, 0.3);
+  --peak-glow: rgba(241, 147, 104, 0.25);
 
   /* ======================================================================== */
   /* NEUTRES */
@@ -168,205 +168,33 @@
   --border-strong: #CBD5E1;
 
   /* Semantic colors */
-  --primary: #0066FF;
-  --secondary: #5856D6;
-  --success: #00C853;
-  --warning: #FFAB00;
-  --danger: #FF5252;
-  --info: #0066FF;
-  --peak: #FF6D00;
-  --recovery: #00BCD4;
+  --primary: #4D97F7;
+  --secondary: #908BC8;
+  --success: #68A768;
+  --warning: #F1BE68;
+  --danger: #F16A60;
+  --info: #4D97F7;
+  --peak: #F19368;
+  --recovery: #40ABAF;
 
   /* Background status */
-  --bg-success: #E8F9EE;
-  --bg-warning: #FFF8E1;
-  --bg-danger: #FFEBEE;
-  --bg-info: #E6F2FF;
+  --bg-success: #F4F9F4;
+  --bg-warning: #FEFBF4;
+  --bg-danger: #FEF5F4;
+  --bg-info: #F0F7FF;
 
   /* DrawRun-specific: PMC Form States */
-  --form-peak: #FF6D00;
-  --form-fresh: #00BCD4;
-  --form-normal: #0066FF;
-  --form-fatigued: #FFAB00;
-  --form-overtrained: #FF5252;
+  --form-peak: #F19368;
 
-  /* DrawRun-specific: HR Zones */
-  --hr-zone-1: #00C853;
-  --hr-zone-2: #8BC34A;
-  --hr-zone-3: #FFAB00;
-  --hr-zone-4: #FF6D00;
-  --hr-zone-5: #FF5252;
+  --form-fresh: #40ABAF;
 
-  /* DrawRun-specific: Power Zones */
-  --power-zone-1: #00BCD4;
-  --power-zone-2: #00C853;
-  --power-zone-3: #8BC34A;
-  --power-zone-4: #FFAB00;
-  --power-zone-5: #FF6D00;
-  --power-zone-6: #E91E63;
-  --power-zone-7: #9C27B0;
+  --form-normal: #4D97F7;
 
-  /* Activity colors */
-  --activity-run: #FF3B30;
-  --activity-ride: #FF9500;
-  --activity-swim: #007AFF;
-  --activity-hike: #34C759;
-  --activity-walk: #8E8E93;
-  --activity-ski: #007AFF;
-  --activity-trail: #FF6D00;
-  --activity-rowing: #00BCD4;
-  --activity-other: #8E8E93;
+  --form-fatigued: #F1BE68;
 
-  /* ======================================================================== */
-  /* Z-INDEX SYSTEM */
-  /* ======================================================================== */
+  --form-overtrained: #F16A60;
 
-  --z-base: 0;
-  --z-raised: 10;
-  --z-content: 20;
-  --z-fixed: 20;
-  --z-sticky: 30;
-  --z-dropdown: 40;
-  --z-modal-backdrop: 45;
-  --z-modal: 50;
-  --z-drawer: 50;
-  --z-toast: 60;
-  --z-tooltip: 70;
-  --z-max: 9999;
-
-  /* ======================================================================== */
-  /* ESPACEMENT (8pt Grid) */
-  /* ======================================================================== */
-
-  --spacing-0: 0px;
-  --spacing-1: 4px;
-  --spacing-2: 8px;
-  --spacing-3: 12px;
-  --spacing-4: 16px;
-  --spacing-5: 20px;
-  --spacing-6: 24px;
-  --spacing-7: 28px;
-  --spacing-8: 32px;
-  --spacing-9: 36px;
-  --spacing-10: 40px;
-  --spacing-11: 44px;
-  --spacing-12: 48px;
-  --spacing-14: 56px;
-  --spacing-16: 64px;
-  --spacing-20: 80px;
-  --spacing-24: 96px;
-  --spacing-28: 112px;
-  --spacing-32: 128px;
-  --spacing-36: 144px;
-  --spacing-40: 160px;
-  --spacing-44: 176px;
-  --spacing-48: 192px;
-  --spacing-52: 208px;
-  --spacing-56: 224px;
-  --spacing-64: 256px;
-
-  /* ======================================================================== */
-  /* RAYONS */
-  /* ======================================================================== */
-
-  --radius-none: 0px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-2xl: 24px;
-  --radius-3xl: 32px;
-  --radius-full: 9999px;
-  --radius-button: 8px;
-  --radius-card: 12px;
-  --radius-input: 8px;
-  --radius-badge: 9999px;
-  --radius-avatar: 50%;
-
-  /* ======================================================================== */
-  /* OMBRES */
-  /* ======================================================================== */
-
-  /* Standard shadows */
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-
-  /* Component shadows */
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
-  --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.1);
-
-  /* Button shadows */
-  --shadow-button-primary: 0 4px 12px rgba(0, 102, 255, 0.3);
-  --shadow-button-primary-hover: 0 8px 20px rgba(0, 102, 255, 0.4);
-
-  /* Inner shadows */
-  --shadow-inner-sm: inset 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-inner-md: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
-
-  /* ======================================================================== */
-  /* TRANSITIONS */
-  /* ======================================================================== */
-
-  --transition-instant: 0ms;
-  --transition-fast: 150ms;
-  --transition-normal: 200ms;
-  --transition-slow: 300ms;
-  --transition-slower: 400ms;
-  --transition-slowest: 500ms;
-
-  --transition-timing-linear: linear;
-  --transition-timing-ease: ease;
-  --transition-timing-ease-in: ease-in;
-  --transition-timing-ease-out: ease-out;
-  --transition-timing-ease-in-out: ease-in-out;
-  --transition-timing-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --transition-timing-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-timing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-
-  --transition-fast-full: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal-full: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow-full: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-spring-full: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
-  --transition-smooth-full: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-
-  --transition-button: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-card: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-modal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-drawer: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-
-  /* ======================================================================== */
-  /* GRADIENTS */
-  /* ======================================================================== */
-
-  /* Primary gradients */
-  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --gradient-success: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
-  --gradient-warning: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --gradient-dark: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --gradient-peak: linear-gradient(135deg, #FF9100 0%, #FF6D00 100%);
-  --gradient-recovery: linear-gradient(135deg, #4DD0E1 0%, #00BCD4 100%);
-  --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-
-  /* PMC gradients */
-  --gradient-pmc-fitness: linear-gradient(135deg, #0066FF 0%, #5856D6 100%);
-  --gradient-pmc-fatigue: linear-gradient(135deg, #FFAB00 0%, #FF6D00 100%);
-  --gradient-pmc-form: linear-gradient(135deg, #00BCD4 0%, #00C853 100%);
-
-  /* Zone gradients */
-  --gradient-hr-zones: linear-gradient(90deg, #00C853 0%, #00C853 20%, #8BC34A 20%, #8BC34A 40%, #FFAB00 40%, #FFAB00 60%, #FF6D00 60%, #FF6D00 80%, #FF5252 80%, #FF5252 100%);
-  --gradient-hr-zones-vertical: linear-gradient(to bottom, #00C853 0%, #00C853 20%, #8BC34A 20%, #8BC34A 40%, #FFAB00 40%, #FFAB00 60%, #FF6D00 60%, #FF6D00 80%, #FF5252 80%, #FF5252 100%);
-  --gradient-power-zones: linear-gradient(90deg, #00BCD4 0%, #00BCD4 14.28%, #00C853 14.28%, #00C853 42.85%, #8BC34A 42.85%, #8BC34A 57.14%, #FFAB00 57.14%, #FFAB00 71.42%, #FF6D00 71.42%, #FF6D00 85.71%, #E91E63 85.71%, #E91E63 100%);
-
-  /* Readiness gradient */
-  --gradient-readiness: linear-gradient(90deg, #FF5252 0%, #FF5252 20%, #FF6D00 20%, #FF6D00 40%, #FFAB00 40%, #FFAB00 60%, #00BCD4 60%, #00BCD4 80%, #00C853 80%, #00C853 100%);
-
-  /* Form state gradient */
-  --gradient-form-state: linear-gradient(135deg, #FF5252 0%, #FF6D00 25%, #FFAB00 50%, #00BCD4 75%, #00C853 100%);
+  --gradient-form-state: linear-gradient(135deg, #F16A60 0%, #F19368 25%, #F1BE68 50%, #40ABAF 75%, #68A768 100%);
 
   /* Mesh gradient for backgrounds */
   --gradient-mesh: radial-gradient(at 40% 20%, var(--primary-400) 0px, transparent 50%), radial-gradient(at 80% 0%, var(--success-400) 0px, transparent 50%), radial-gradient(at 0% 50%, var(--neutral-700) 0px, transparent 50%);
@@ -397,12 +225,12 @@
   /* GLOW EFFECTS (Light mode) */
   /* ======================================================================== */
 
-  --glow-primary: 0 0 20px rgba(0, 102, 255, 0.3), 0 0 40px rgba(0, 102, 255, 0.3);
-  --glow-success: 0 0 20px rgba(0, 200, 83, 0.3), 0 0 40px rgba(0, 200, 83, 0.3);
-  --glow-recovery: 0 0 20px rgba(0, 188, 212, 0.3), 0 0 40px rgba(0, 188, 212, 0.3);
-  --glow-warning: 0 0 20px rgba(255, 171, 0, 0.3), 0 0 40px rgba(255, 171, 0, 0.3);
-  --glow-danger: 0 0 20px rgba(255, 82, 82, 0.3), 0 0 40px rgba(255, 82, 82, 0.3);
-  --glow-peak: 0 0 20px rgba(255, 109, 0, 0.3), 0 0 40px rgba(255, 109, 0, 0.3);
+  --glow-primary: 0 0 20px rgba(77, 151, 247, 0.2), 0 0 40px rgba(77, 151, 247, 0.15);
+  --glow-success: 0 0 20px rgba(104, 167, 104, 0.2), 0 0 40px rgba(104, 167, 104, 0.15);
+  --glow-recovery: 0 0 20px rgba(64, 171, 175, 0.2), 0 0 40px rgba(64, 171, 175, 0.15);
+  --glow-warning: 0 0 20px rgba(241, 190, 104, 0.2), 0 0 40px rgba(241, 190, 104, 0.15);
+  --glow-danger: 0 0 20px rgba(241, 106, 96, 0.2), 0 0 40px rgba(241, 106, 96, 0.15);
+  --glow-peak: 0 0 20px rgba(241, 147, 104, 0.2), 0 0 40px rgba(241, 147, 104, 0.15);
 }
 
 /* ======================================================================== */
@@ -434,14 +262,14 @@
   --border-strong: #334155;
 
   /* Semantic colors (same as light for brand consistency) */
-  --primary: #0066FF;
-  --secondary: #5856D6;
-  --success: #00C853;
-  --warning: #FFAB00;
-  --danger: #FF5252;
-  --info: #0066FF;
-  --peak: #FF6D00;
-  --recovery: #00BCD4;
+  --primary: #4D97F7;
+  --secondary: #908BC8;
+  --success: #68A768;
+  --warning: #F1BE68;
+  --danger: #F16A60;
+  --info: #4D97F7;
+  --peak: #F19368;
+  --recovery: #40ABAF;
 
   /* Background status (dark variants) */
   --bg-success: #1A2E22;
@@ -450,52 +278,56 @@
   --bg-info: #1A2332;
 
   /* DrawRun-specific colors (same as light for consistency) */
-  --form-peak: #FF6D00;
-  --form-fresh: #00BCD4;
-  --form-normal: #0066FF;
-  --form-fatigued: #FFAB00;
-  --form-overtrained: #FF5252;
+  --form-peak: #F19368;
+
+  --form-fresh: #40ABAF;
+
+  --form-normal: #4D97F7;
+
+  --form-fatigued: #F1BE68;
+
+  --form-overtrained: #F16A60;
 
   /* Zone colors (same as light for consistency) */
-  --hr-zone-1: #00C853;
-  --hr-zone-2: #8BC34A;
-  --hr-zone-3: #FFAB00;
-  --hr-zone-4: #FF6D00;
-  --hr-zone-5: #FF5252;
+  --hr-zone-1: #40ABAF;
+  --hr-zone-2: #68A768;
+  --hr-zone-3: #F1BE68;
+  --hr-zone-4: #F19368;
+  --hr-zone-5: #F16A60;
 
-  --power-zone-1: #00BCD4;
-  --power-zone-2: #00C853;
-  --power-zone-3: #8BC34A;
-  --power-zone-4: #FFAB00;
-  --power-zone-5: #FF6D00;
-  --power-zone-6: #E91E63;
-  --power-zone-7: #9C27B0;
+  --power-zone-1: #40ABAF;
+  --power-zone-2: #68A768;
+  --power-zone-3: #8FC3FB;
+  --power-zone-4: #F1BE68;
+  --power-zone-5: #F19368;
+  --power-zone-6: #F16A60;
+  --power-zone-7: #908BC8;
 
   /* Activity colors (same as light for consistency) */
-  --activity-run: #FF3B30;
-  --activity-ride: #FF9500;
-  --activity-swim: #007AFF;
-  --activity-hike: #34C759;
-  --activity-walk: #8E8E93;
-  --activity-ski: #007AFF;
-  --activity-trail: #FF6D00;
-  --activity-rowing: #00BCD4;
-  --activity-other: #8E8E93;
+  --activity-run: #F16A60;
+  --activity-ride: #F19368;
+  --activity-swim: #4D97F7;
+  --activity-hike: #68A768;
+  --activity-walk: #908BC8;
+  --activity-ski: #337BE5;
+  --activity-trail: #F1BE68;
+  --activity-rowing: #40ABAF;
+  --activity-other: #94A3B8;
 
   /* Shadow adjustments for dark mode */
   --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
   --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.3);
-  --shadow-button-primary: 0 4px 12px rgba(0, 102, 255, 0.4);
-  --shadow-button-primary-hover: 0 8px 20px rgba(0, 102, 255, 0.5);
+  --shadow-button-primary: 0 4px 12px rgba(77, 151, 247, 0.4);
+  --shadow-button-primary-hover: 0 8px 20px rgba(77, 151, 247, 0.5);
 
   /* Glow effects for dark mode (more pronounced) */
-  --glow-primary: 0 0 30px rgba(0, 102, 255, 0.4), 0 0 60px rgba(0, 102, 255, 0.3);
-  --glow-success: 0 0 30px rgba(0, 200, 83, 0.4), 0 0 60px rgba(0, 200, 83, 0.3);
-  --glow-recovery: 0 0 30px rgba(0, 188, 212, 0.4), 0 0 60px rgba(0, 188, 212, 0.3);
-  --glow-warning: 0 0 30px rgba(255, 171, 0, 0.4), 0 0 60px rgba(255, 171, 0, 0.3);
-  --glow-danger: 0 0 30px rgba(255, 82, 82, 0.4), 0 0 60px rgba(255, 82, 82, 0.3);
-  --glow-peak: 0 0 30px rgba(255, 109, 0, 0.4), 0 0 60px rgba(255, 109, 0, 0.3);
+  --glow-primary: 0 0 30px rgba(77, 151, 247, 0.3), 0 0 60px rgba(77, 151, 247, 0.2);
+  --glow-success: 0 0 30px rgba(104, 167, 104, 0.3), 0 0 60px rgba(104, 167, 104, 0.2);
+  --glow-recovery: 0 0 30px rgba(64, 171, 175, 0.3), 0 0 60px rgba(64, 171, 175, 0.2);
+  --glow-warning: 0 0 30px rgba(241, 190, 104, 0.3), 0 0 60px rgba(241, 190, 104, 0.2);
+  --glow-danger: 0 0 30px rgba(241, 106, 96, 0.3), 0 0 60px rgba(241, 106, 96, 0.2);
+  --glow-peak: 0 0 30px rgba(241, 147, 104, 0.3), 0 0 60px rgba(241, 147, 104, 0.2);
 }
 
 /* ======================================================================== */

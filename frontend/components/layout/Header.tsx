@@ -6,12 +6,9 @@ import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuthStore, useSyncStore, useNotificationsStore } from '@/stores';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { LanguageToggle } from '@/components/ui/LanguageToggle';
-import { InstallPrompt } from '@/components/ui/InstallPrompt';
 import { RefreshCw, Settings, LogOut, User, ChevronDown, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 
-/** Map pathname prefixes to human-readable page titles */
 const PAGE_TITLES: { prefix: string; label: string; exact?: boolean }[] = [
   { prefix: '/app', label: 'Tableau de bord', exact: true },
   { prefix: '/app/activities/new', label: 'Nouvelle activité' },
@@ -44,14 +41,8 @@ export default function Header() {
 
   const pageTitle = getPageTitle(pathname);
 
-  // Initials for avatar
   const initials = user?.name
-    ? user.name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
+    ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
     : 'U';
 
   const handleSync = async () => {
@@ -68,53 +59,40 @@ export default function Header() {
     router.push('/login');
   };
 
+  const closeMenus = () => {
+    setIsNotifOpen(false);
+    setIsUserMenuOpen(false);
+  };
+
   return (
-    <header className="sticky top-0 z-sticky bg-surface/80 backdrop-blur-md border-b border-neutral-200/60 shadow-sm transition-all duration-200 ease-smooth">
-      <div className="flex items-center justify-between h-16 px-4 lg:px-6">
-        {/* Left: spacer for mobile hamburger + page title */}
+    <header className="sticky top-0 z-sticky bg-surface/80 backdrop-blur-md border-b border-border transition-all duration-200">
+      <div className="flex items-center justify-between h-14 px-4 lg:px-6">
         <div className="flex items-center gap-3 min-w-0">
-          {/* Spacer for mobile hamburger button rendered by Sidebar */}
           <div className="lg:hidden w-10 flex-shrink-0" />
           <h1 className="text-base lg:text-lg font-semibold text-foreground tracking-tight truncate">
             {pageTitle}
           </h1>
         </div>
 
-        {/* Right: actions */}
-        <div className="flex items-center gap-2">
-          {/* Sync button */}
+        <div className="flex items-center gap-1.5">
           <button
             onClick={handleSync}
             disabled={isSyncing}
-            className={cn(
-              'inline-flex items-center gap-1.5 px-3 py-2.5 min-h-[44px] rounded-xl text-sm font-medium',
-              'bg-surface/70 border border-neutral-200 text-neutral-600',
-              'hover:bg-primary-50 hover:border-primary-200 hover:text-primary-600',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-              'hover:-translate-y-0.5 active:translate-y-0',
-              'transition-all duration-200 ease-smooth'
-            )}
+            className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted hover:text-primary hover:bg-primary-50 transition-colors disabled:opacity-50"
+            aria-label="Synchroniser"
           >
             <RefreshCw className={cn('w-4 h-4', isSyncing && 'animate-spin')} />
-            <span className="hidden sm:inline">Sync</span>
           </button>
 
-          {/* Notifications */}
           <div className="relative">
             <button
               onClick={() => setIsNotifOpen(!isNotifOpen)}
-              className={cn(
-                'inline-flex items-center justify-center w-10 h-10 min-h-[44px] rounded-xl',
-                'bg-surface/70 border border-neutral-200 text-neutral-600',
-                'hover:bg-primary-50 hover:border-primary-200 hover:text-primary-600',
-                isNotifOpen && 'bg-primary-50 border-primary-200 text-primary-600',
-                'transition-all duration-200 ease-smooth'
-              )}
+              className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted hover:text-primary hover:bg-primary-50 transition-colors"
               aria-label="Notifications"
             >
-              <Bell className="w-5 h-5" />
+              <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-danger text-foreground text-xs font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-danger text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
@@ -122,28 +100,18 @@ export default function Header() {
 
             {isNotifOpen && (
               <>
-                {/* Backdrop */}
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setIsNotifOpen(false)}
-                />
-                {/* Dropdown */}
-                <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-surface/95 backdrop-blur-xl border border-border/60 rounded-2xl shadow-lg z-dropdown py-2 animate-slide-down overflow-hidden max-h-[70vh] overflow-y-auto">
+                <div className="fixed inset-0 z-40" onClick={closeMenus} />
+                <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-surface/95 backdrop-blur-xl border border-border/60 rounded-2xl shadow-lg z-dropdown py-2 max-h-[70vh] overflow-y-auto">
                   <div className="flex items-center justify-between px-4 py-2 border-b border-border">
                     <h3 className="font-semibold text-sm">Notifications</h3>
                     {unreadCount > 0 && (
-                      <button
-                        onClick={() => markAllAsRead()}
-                        className="text-xs text-primary hover:underline"
-                      >
+                      <button onClick={() => markAllAsRead()} className="text-xs text-primary hover:underline">
                         Tout marquer comme lu
                       </button>
                     )}
                   </div>
                   {notifications.length === 0 ? (
-                    <div className="px-4 py-8 text-center text-sm text-muted">
-                      Aucune notification
-                    </div>
+                    <div className="px-4 py-8 text-center text-sm text-muted">Aucune notification</div>
                   ) : (
                     <div className="divide-y divide-border">
                       {notifications.slice(0, 10).map((n) => (
@@ -155,12 +123,10 @@ export default function Header() {
                           }}
                           className={cn(
                             'w-full px-4 py-3 text-left transition-colors hover:bg-primary-50/50',
-                            n.unread ? 'bg-primary-50/30' : 'bg-surface'
+                            n.unread ? 'bg-primary-50/30' : ''
                           )}
                         >
-                          <p className={cn('text-sm', n.unread ? 'font-medium' : 'text-muted')}>
-                            {n.message}
-                          </p>
+                          <p className={cn('text-sm', n.unread ? 'font-medium' : 'text-muted')}>{n.message}</p>
                           <p className="text-xs text-muted mt-1">
                             {new Date(n.created_at || Date.now()).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
                           </p>
@@ -174,47 +140,31 @@ export default function Header() {
           </div>
 
           <ThemeToggle />
-          <LanguageToggle />
-          <InstallPrompt />
 
-          {/* User menu */}
           <div className="relative">
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-background transition-colors"
+              className="flex items-center gap-1.5 pl-1 pr-2 py-1 rounded-lg hover:bg-background transition-colors"
               aria-label="Menu utilisateur"
             >
-              {/* Avatar */}
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-100 to-primary-50 border border-primary-200 flex items-center justify-center flex-shrink-0">
-                <span className="text-xs font-bold text-primary-700">{initials}</span>
+              <div className="w-7 h-7 rounded-full bg-primary-100 border border-primary-200 flex items-center justify-center flex-shrink-0">
+                <span className="text-[10px] font-bold text-primary-700">{initials}</span>
               </div>
-              <ChevronDown
-                className={cn(
-                  'w-4 h-4 text-muted hidden sm:block transition-transform duration-150',
-                  isUserMenuOpen && 'rotate-180'
-                )}
-              />
+              <ChevronDown className={cn('w-3.5 h-3.5 text-muted hidden sm:block transition-transform', isUserMenuOpen && 'rotate-180')} />
             </button>
 
             {isUserMenuOpen && (
               <>
-                {/* Backdrop */}
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setIsUserMenuOpen(false)}
-                />
-                {/* Dropdown */}
-                <div className="absolute right-0 mt-2 w-56 bg-surface/95 backdrop-blur-xl border border-border/60 rounded-2xl shadow-lg z-dropdown py-1 animate-slide-down overflow-hidden max-h-[70vh] overflow-y-auto">
-                  {/* User info */}
+                <div className="fixed inset-0 z-40" onClick={closeMenus} />
+                <div className="absolute right-0 mt-2 w-56 bg-surface/95 backdrop-blur-xl border border-border/60 rounded-2xl shadow-lg z-dropdown py-1">
                   <div className="px-4 py-3 border-b border-border">
                     <p className="text-sm font-semibold text-foreground truncate">{user?.name}</p>
                     <p className="text-xs text-muted truncate">{user?.email}</p>
                   </div>
-
                   <Link
                     href="/app/profile"
                     onClick={() => setIsUserMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-3 min-h-[44px] text-sm text-muted hover:text-foreground hover:bg-primary-50/50 transition-colors"
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-muted hover:text-foreground hover:bg-primary-50/50 transition-colors"
                   >
                     <User className="w-4 h-4 text-muted" />
                     Mon profil
@@ -222,19 +172,18 @@ export default function Header() {
                   <Link
                     href="/app/settings"
                     onClick={() => setIsUserMenuOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-3 min-h-[44px] text-sm text-muted hover:text-foreground hover:bg-primary-50/50 transition-colors"
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-muted hover:text-foreground hover:bg-primary-50/50 transition-colors"
                   >
                     <Settings className="w-4 h-4 text-muted" />
                     Paramètres
                   </Link>
-
                   <div className="border-t border-border mt-1 pt-1">
                     <button
                       onClick={handleLogout}
-                      className="flex items-center gap-2.5 w-full px-4 py-3 min-h-[44px] text-sm text-danger hover:text-danger hover:bg-danger-50 transition-colors"
+                      className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-danger hover:text-danger hover:bg-danger-50 transition-colors"
                     >
-                     <LogOut className="w-4 h-4" />
-                     Déconnexion
+                      <LogOut className="w-4 h-4" />
+                      Déconnexion
                     </button>
                   </div>
                 </div>

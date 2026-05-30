@@ -17,14 +17,14 @@ export default function GroupsTab() {
     publicGroups,
     isLoading,
     error,
-    searchQuery: hookSearchQuery,
-    handleSearch: hookHandleSearch,
-    handleLeave,
-    setSearchQuery: setHookSearchQuery,
-    loadGroups,
-  } = useGroups();
-
-  const [showCreate, setShowCreate] = useState(false);
+    handleSearch: hookHandleSearch,
+
+    handleLeave,
+    loadGroups,
+
+  } = useGroups();
+
+  const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
   const [preJoinCode, setPreJoinCode] = useState('');
   const [searchQuery, setSearchQuery] = useState('');

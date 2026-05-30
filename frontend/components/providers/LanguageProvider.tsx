@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars, no-undef */
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -6,7 +5,7 @@ import { translations, Language, TranslationKeys, supportedLanguages } from '@/l
 
 interface LanguageContextType {
   language: Language;
-  setLanguage: (lang: Language) => void;
+  setLanguage: (_lang: Language) => void;
   t: TranslationKeys;
 }
 

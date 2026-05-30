@@ -19,7 +19,7 @@ function PowerCurveChart({ curve }: { curve: PowerCurvePoint[] }) {
           return (
             <div key={i} className="flex-1 flex flex-col items-center group relative">
               <div
-                className="w-full bg-peak/80/60 rounded-t hover:bg-peak/80/80 transition-colors cursor-pointer"
+                className="w-full bg-peak/60 rounded-t hover:bg-peak/80 transition-colors cursor-pointer"
                 style={{ height: `${pct}%`, minHeight: '4px' }}
               />
               <span className="text-[8px] text-muted mt-1 truncate w-full text-center">{pt.durationFormatted}</span>

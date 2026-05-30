@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button, Input } from '@/components/ui';
+import { ModalSheet } from '@/components/ui/ModalSheet';
 import { api } from '@/lib/api';
 import { X, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
@@ -34,18 +35,8 @@ export default function CreateGroupModal({ onClose, onCreated }: CreateGroupModa
   };
 
   return (
-    <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-2 sm:p-4"
-      onClick={onClose}
-      aria-label="Fermer la modal"
-    >
-      <div
-        className="bg-card rounded-t-2xl sm:rounded-2xl w-full max-w-md border border-border shadow-2xl overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="create-group-title"
-      >
+    <ModalSheet open onClose={onClose} maxWidth="md" withBorder>
+      <div role="dialog" aria-modal="true" aria-labelledby="create-group-title">
         <div className="px-5 pt-5 pb-3 border-b border-border flex items-center justify-between">
           <div>
             <h3 id="create-group-title" className="text-lg sm:text-xl font-bold">
@@ -124,6 +115,6 @@ export default function CreateGroupModal({ onClose, onCreated }: CreateGroupModa
           </Button>
         </div>
       </div>
-    </div>
+    </ModalSheet>
   );
 }

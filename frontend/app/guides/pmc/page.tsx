@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -36,7 +35,7 @@ export default function PMCGuide() {
           </h2>
           <p className="text-lg text-muted max-w-2xl mx-auto">
             Le PMC (Performance Management Chart) est le modèle mathématique le plus utilisé pour suivre
-            la forme, la fatigue et la fraîcheur d'un athlète à partir de la charge d'entraînement.
+            la forme, la fatigue et la fraîcheur d&apos;un athlète à partir de la charge d&apos;entraînement.
           </p>
         </div>
 
@@ -55,14 +54,14 @@ export default function PMCGuide() {
                 </div>
                 <h4 className="text-lg font-bold text-blue-700">CTL — Chronic Training Load</h4>
               </div>
-              <p className="text-sm text-primary mb-3">Votre <strong>forme physique</strong> à long terme. C'est une moyenne exponentielle pondérée des TSS des 42 derniers jours (tau = 42).</p>
+              <p className="text-sm text-primary mb-3">Votre <strong>forme physique</strong> à long terme. C&apos;est une moyenne exponentielle pondérée des TSS des 42 derniers jours (tau = 42).</p>
               <div className="p-3 bg-surface rounded-lg">
                 <code className="text-xs font-mono text-primary">CTL(t) = CTL(t-1) × e^(-1/42) + TSS × (1 - e^(-1/42))</code>
               </div>
               <ul className="mt-3 space-y-1 text-sm text-primary">
                 <li>• Monte lentement (il faut des semaines de cohérence)</li>
                 <li>• Descend lentement (la forme se perd progressivement)</li>
-                <li>• Un CTL de 80+ est typique d'un marathonien bien entraîné</li>
+                <li>• Un CTL de 80+ est typique d&apos;un marathonien bien entraîné</li>
               </ul>
             </div>
 
@@ -91,7 +90,7 @@ export default function PMCGuide() {
                 </div>
                 <h4 className="text-lg font-bold text-green-700">TSB — Training Stress Balance</h4>
               </div>
-              <p className="text-sm text-success mb-3">Votre <strong>fraîcheur</strong>. C'est la différence entre forme et fatigue : TSB = CTL - ATL.</p>
+              <p className="text-sm text-success mb-3">Votre <strong>fraîcheur</strong>. C&apos;est la différence entre forme et fatigue : TSB = CTL - ATL.</p>
               <div className="p-3 bg-surface rounded-lg">
                 <code className="text-xs font-mono text-success">TSB(t) = CTL(t) - ATL(t)</code>
               </div>

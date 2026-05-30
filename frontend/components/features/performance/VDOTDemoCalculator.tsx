@@ -44,7 +44,6 @@ const PRESET_RACES = [
 // Formules VDOT simplifiées (approximation)
 const calculateVDOT = (distanceKm: number, timeMinutes: number): number => {
   // Formules basées sur les tables de Jack Daniels
-  const vo2Factor = Math.pow(timeMinutes / (distanceKm * 0.6), -1);
   const vdot = Math.round(
     (distanceKm === 5 ? 6.037 * Math.pow(timeMinutes, -1) :
      distanceKm === 10 ? 5.113 * Math.pow(timeMinutes, -1) :
@@ -156,12 +155,6 @@ export function VDOTDemoCalculator({ className = '' }: VDOTDemoCalculatorProps) 
     setMinutes(String(race.defaultTime.m).padStart(2, '0'));
     setSeconds(String(race.defaultTime.s).padStart(2, '0'));
     setResult(null);
-  };
-
-  const formatPace = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = Math.round(seconds % 60);
-    return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
   return (

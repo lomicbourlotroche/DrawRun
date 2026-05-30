@@ -7,7 +7,7 @@
  * @module tests/hooks/useSocial
  */
 
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useFriends, useGroups, useLeaderboard, useFeed, useChallenges, formatPace, getSportGradient } from '@/hooks/useSocial';
 import { SOCIAL_ERRORS } from '@/constants/social';
 
@@ -262,7 +262,7 @@ describe('useSocial hooks', () => {
 
       mockApi.getLeaderboard.mockResolvedValue(mockEntries);
 
-      const { result, waitForNextUpdate, rerender } = renderHook(() => useLeaderboard());
+      const { result, waitForNextUpdate: _waitForNextUpdate, rerender: _rerender } = renderHook(() => useLeaderboard());
 
       await new Promise(resolve => setTimeout(resolve, 100));
 

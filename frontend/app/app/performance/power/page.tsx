@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -84,7 +83,7 @@ export default function PowerAnalysisPage() {
         <TabsList className="grid w-full grid-cols-2 mb-6">
           <TabsTrigger value="analysis" className="flex items-center gap-2">
             <Activity className="w-4 h-4" />
-            Analyse d'activité
+            Analyse d&apos;activité
           </TabsTrigger>
           <TabsTrigger value="ftp" className="flex items-center gap-2">
             <Gauge className="w-4 h-4" />
@@ -163,7 +162,7 @@ export default function PowerAnalysisPage() {
             <Card>
               <CardContent className="p-6 text-center text-muted-foreground">
                 <Zap className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p className="font-medium">Sélectionnez une activité pour voir l'analyse</p>
+                <p className="font-medium">Sélectionnez une activité pour voir l&apos;analyse</p>
                 <p className="text-sm mt-2">Les activités avec capteur de puissance (Garmin, Wahoo, etc.) affichent ici les données de puissance détaillées</p>
               </CardContent>
             </Card>

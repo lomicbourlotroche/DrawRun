@@ -10,7 +10,7 @@ export interface BluetoothHRState {
   error: string | null;
   isScanning: boolean;
 }
-export function useBluetoothHR(onHR?: (hr: number) => void): BluetoothHRState & {
+export function useBluetoothHR(_onHR?: (_hr: number) => void): BluetoothHRState & {
   startScanning: () => void;
   stopScanning: () => void;
   disconnect: () => void;

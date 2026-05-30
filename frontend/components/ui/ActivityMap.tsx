@@ -254,7 +254,7 @@ export default function ActivityMap({
     return (
       <div
         className={`bg-background rounded-lg flex items-center justify-center ${className}`}
-        style={{ minHeight: '200px' }}
+        className="min-h-[200px]"
         role="region"
         aria-label="Carte sans données GPS"
       >
@@ -294,7 +294,7 @@ export default function ActivityMap({
       `}</style>
       <div
         ref={mapRef}
-        style={{ height: '100%', minHeight: '250px' }}
+        className="h-full min-h-[250px]"
         aria-label="Carte interactive affichant le parcours de l'activité"
         role="application"
       />

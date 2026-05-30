@@ -1,17 +1,15 @@
-/* eslint-disable unused-imports/no-unused-vars, react-hooks/exhaustive-deps */
-/**
- * PerformanceContent - Contenu de la page Performance
- * Corrigé : accessibilité, nombre d'onglets réduit, indication données estimées
- */
-
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { useUserConstantsStore } from '@/stores';
 import { PerformanceZones, PerformanceMetrics, ProgressionChart } from '@/components/features/performance';
-import { Card, CardHeader, CardTitle, CardContent, Skeleton, Progress, Badge } from '@/components/ui';
-import { Dumbbell, Bike, Waves, Heart, Activity, TrendingUp, Gauge, Zap, BarChart3, Brain, AlertCircle, MapPin, Clock } from 'lucide-react';
+import { Card, Skeleton, Badge } from '@/components/ui';
+import { NavTabs } from '@/components/ui/NavTabs';
+import { EliteAnalyticsSection } from './EliteAnalyticsSection';
+import { IntensityDistributionSection } from './IntensityDistributionSection';
+import { HRVRecoverySection } from './HRVRecoverySection';
+import { Dumbbell, Bike, Waves, Activity, TrendingUp, Gauge, Zap, BarChart3, Brain, Heart, MapPin, Clock } from 'lucide-react';
 import type { PmcDataPoint, Activity as ActivityType, Zones } from '@/types';
 
 interface PolarizationData {
@@ -55,7 +53,7 @@ function computeStats(activities: ActivityType[]): StatsData {
 export default function PerformanceContent() {
   const [sport, setSport] = useState<'run' | 'bike' | 'swim'>('run');
   const [activeTab, setActiveTab] = useState<'metrics' | 'zones' | 'progression' | 'analyse'>('metrics');
-  const [pmc, setPmc] = useState<PmcDataPoint[]>([]);
+  const [, setPmc] = useState<PmcDataPoint[]>([]);
   const [activities, setActivities] = useState<ActivityType[]>([]);
   const [polarization, setPolarization] = useState<PolarizationData | null>(null);
   const [polarizationError, setPolarizationError] = useState<string | null>(null);
@@ -64,10 +62,11 @@ export default function PerformanceContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRecalculating, setIsRecalculating] = useState(false);
 
-  const { data: userConstants, fetchConstants, zones, profile } = useUserConstantsStore();
+  const { fetchConstants, zones, profile } = useUserConstantsStore();
 
   useEffect(() => {
     if (api.isAuthenticated()) loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sport]);
 
   const loadData = async () => {
@@ -84,7 +83,6 @@ export default function PerformanceContent() {
       const actsArray = Array.isArray(acts?.data) ? acts.data : [];
       setActivities(actsArray);
 
-      // Polarisation
       try {
         const profileData = constantsResult?.profile;
         const fcm = profileData?.fcm || 180;
@@ -112,7 +110,6 @@ export default function PerformanceContent() {
         setPolarizationError('Données de polarisation non disponibles');
       }
 
-      // HRV
       try {
         const profileData = constantsResult?.profile;
         const restingHR = (profileData as unknown as Record<string, unknown> | null)?.restingHR as number | undefined;
@@ -158,79 +155,41 @@ export default function PerformanceContent() {
     }
   };
 
-  // Keyboard navigation for tabs
-  const handleTabKeyDown = useCallback((e: React.KeyboardEvent, tabId: string) => {
-    if (e.key === 'ArrowRight') {
-      const currentIndex = tabs.findIndex(t => t.id === tabId);
-      const nextIndex = (currentIndex + 1) % tabs.length;
-      setActiveTab(tabs[nextIndex].id as typeof activeTab);
-    } else if (e.key === 'ArrowLeft') {
-      const currentIndex = tabs.findIndex(t => t.id === tabId);
-      const prevIndex = (currentIndex - 1 + tabs.length) % tabs.length;
-      setActiveTab(tabs[prevIndex].id as typeof activeTab);
-    } else if (e.key === 'Enter' || e.key === ' ') {
-      setActiveTab(tabId as typeof activeTab);
-    }
-  }, [activeTab]);
-
   const sportTabs = [
     { id: 'run', label: 'Course', icon: <Dumbbell className="w-4 h-4" /> },
     { id: 'bike', label: 'Vélo', icon: <Bike className="w-4 h-4" /> },
     { id: 'swim', label: 'Natation', icon: <Waves className="w-4 h-4" /> },
-  ] as const;
+  ];
 
-  // Réduit de 6 à 4 onglets (fusion de stats+progression, analyse+elite supprimés ou fusionnés)
   const tabs = [
     { id: 'metrics', label: 'Métriques', icon: <Gauge className="w-4 h-4" /> },
     { id: 'zones', label: 'Zones', icon: <Zap className="w-4 h-4" /> },
     { id: 'progression', label: 'Progression', icon: <TrendingUp className="w-4 h-4" /> },
     { id: 'analyse', label: 'Analyse', icon: <Brain className="w-4 h-4" /> },
-  ] as const;
+  ];
 
   return (
     <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
-      <div>
-        <div className="flex items-center justify-between pt-2">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2 tracking-tight">
-              <Activity className="w-6 h-6 text-primary-500" />
-              Performances
-            </h1>
-            <p className="text-neutral-500 mt-1.5">Suivez vos métriques et progressions</p>
-          </div>
-          <button
-            onClick={handleRecalculate}
-            disabled={isRecalculating}
-            className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium bg-primary-50 text-primary-600 hover:bg-primary-100 transition-all duration-200 ease-smooth disabled:opacity-50"
-          >
-            <Activity className={`w-4 h-4 ${isRecalculating ? 'animate-spin' : ''}`} />
-            {isRecalculating ? 'Calcul...' : 'Recalculer'}
-          </button>
+      <div className="flex items-center justify-between pt-2">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2 tracking-tight">
+            <Activity className="w-6 h-6 text-primary-500" />
+            Performances
+          </h1>
+          <p className="text-neutral-500 mt-1.5">Suivez vos métriques et progressions</p>
         </div>
+        <button
+          onClick={handleRecalculate}
+          disabled={isRecalculating}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-primary-50 text-primary-600 hover:bg-primary-100 transition-all disabled:opacity-50"
+        >
+          <Activity className={`w-4 h-4 ${isRecalculating ? 'animate-spin' : ''}`} />
+          {isRecalculating ? 'Calcul...' : 'Recalculer'}
+        </button>
       </div>
 
-      <div className="flex gap-1 overflow-x-auto pb-2 border-b border-neutral-200/60" role="tablist" aria-label="Sélection du sport">
-        {sportTabs.map(t => (
-          <button
-            key={t.id}
-            onClick={() => setSport(t.id as typeof sport)}
-            role="tab"
-            aria-selected={sport === t.id}
-            tabIndex={sport === t.id ? 0 : -1}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') setSport(t.id as typeof sport);
-            }}
-            className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ease-smooth ${
-              sport === t.id ? 'bg-primary-500 text-white shadow-sm' : 'text-neutral-600 hover:text-foreground hover:bg-neutral-100'
-            }`}
-          >
-            {t.icon}
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <NavTabs tabs={sportTabs} activeTab={sport} onChange={(id) => setSport(id as 'run' | 'bike' | 'swim')} />
 
-      {/* Content */}
       {isLoading ? (
         <div className="space-y-4">
           <Skeleton className="h-32" />
@@ -239,26 +198,8 @@ export default function PerformanceContent() {
         </div>
       ) : (
         <>
-          <div className="flex gap-1 overflow-x-auto pb-2 border-b border-neutral-200/60" role="tablist" aria-label="Sections de performance">
-            {tabs.map(t => (
-              <button
-                key={t.id}
-                onClick={() => setActiveTab(t.id as typeof activeTab)}
-                onKeyDown={(e) => handleTabKeyDown(e, t.id)}
-                role="tab"
-                aria-selected={activeTab === t.id}
-                tabIndex={activeTab === t.id ? 0 : -1}
-                className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ease-smooth ${
-                  activeTab === t.id ? 'bg-primary-500 text-white shadow-sm' : 'text-neutral-600 hover:text-foreground hover:bg-neutral-100'
-                }`}
-              >
-                {t.icon}
-                {t.label}
-              </button>
-            ))}
-          </div>
+          <NavTabs tabs={tabs} activeTab={activeTab} onChange={(id) => setActiveTab(id as typeof activeTab)} />
 
-          {/* Tab content */}
           {activeTab === 'metrics' && (
             <div className="space-y-6">
               <PerformanceMetrics sport={sport} metrics={{
@@ -266,7 +207,7 @@ export default function PerformanceContent() {
                 vdot: profile?.vdot ?? undefined,
                 vo2max: profile?.fcm ? Math.round((profile.fcm - (profile.restingHR || 60)) * 0.15 + 30) : undefined,
               }} />
-              <div className="bg-surface rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
+              <Card padding="none">
                 <div className="px-6 py-4 border-b border-neutral-200/60">
                   <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
                     <Heart className="w-5 h-5 text-danger" />
@@ -275,29 +216,21 @@ export default function PerformanceContent() {
                 </div>
                 <div className="p-5">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="relative overflow-hidden p-4 rounded-xl bg-gradient-to-br from-danger/5 to-danger/10 border border-danger/10 text-center transition-all duration-200 ease-smooth hover:shadow-md">
-                      <div className="absolute top-0 left-0 w-full h-1 bg-danger" />
-                      <p className="text-3xl font-bold text-danger tracking-tight tabular-nums">{profile?.fcm || '--'}</p>
-                      <p className="text-xs text-neutral-500 mt-1 font-medium">FCM</p>
-                    </div>
-                    <div className="relative overflow-hidden p-4 rounded-xl bg-gradient-to-br from-primary-50 to-primary-100/50 border border-primary-200/30 text-center transition-all duration-200 ease-smooth hover:shadow-md">
-                      <div className="absolute top-0 left-0 w-full h-1 bg-primary-500" />
-                      <p className="text-3xl font-bold text-primary-600 tracking-tight tabular-nums">{profile?.vdot || '--'}</p>
-                      <p className="text-xs text-neutral-500 mt-1 font-medium">VDOT</p>
-                    </div>
-                    <div className="relative overflow-hidden p-4 rounded-xl bg-gradient-to-br from-success/5 to-success/10 border border-success/10 text-center transition-all duration-200 ease-smooth hover:shadow-md">
-                      <div className="absolute top-0 left-0 w-full h-1 bg-success" />
-                      <p className="text-3xl font-bold text-success tracking-tight tabular-nums">{profile?.vma ? `${profile.vma.toFixed(1)}` : '--'}</p>
-                      <p className="text-xs text-neutral-500 mt-1 font-medium">VMA km/h</p>
-                    </div>
-                    <div className="relative overflow-hidden p-4 rounded-xl bg-gradient-to-br from-warning/5 to-warning/10 border border-warning/10 text-center transition-all duration-200 ease-smooth hover:shadow-md">
-                      <div className="absolute top-0 left-0 w-full h-1 bg-warning" />
-                      <p className="text-3xl font-bold text-warning tracking-tight tabular-nums">{profile?.fcm ? Math.round((profile.fcm - (profile.restingHR || 60)) * 0.15 + 30) : '--'}</p>
-                      <p className="text-xs text-neutral-500 mt-1 font-medium">VO₂ max <Badge variant="outline" className="text-[10px] ml-1">Estimé</Badge></p>
-                    </div>
+                    {[
+                      { value: profile?.fcm, label: 'FCM', gradient: 'from-danger/5 to-danger/10', border: 'border-danger/10' },
+                      { value: profile?.vdot, label: 'VDOT', gradient: 'from-primary-50 to-primary-100/50', border: 'border-primary-200/30' },
+                      { value: profile?.vma ? `${profile.vma.toFixed(1)}` : null, label: 'VMA km/h', gradient: 'from-success/5 to-success/10', border: 'border-success/10' },
+                      { value: profile?.fcm ? Math.round((profile.fcm - (profile.restingHR || 60)) * 0.15 + 30) : null, label: 'VO₂ max', gradient: 'from-warning/5 to-warning/10', border: 'border-warning/10', badge: 'Estimé' },
+                    ].map(({ value, label, gradient, border, badge }) => (
+                      <div key={label} className={`relative overflow-hidden p-4 rounded-xl bg-gradient-to-br ${gradient} ${border} text-center transition-all hover:shadow-md`}>
+                        <div className="absolute top-0 left-0 w-full h-1 bg-primary-500" />
+                        <p className="text-3xl font-bold text-primary-500 tracking-tight tabular-nums">{value ?? '--'}</p>
+                        <p className="text-xs text-neutral-500 mt-1 font-medium">{label}{badge ? <Badge variant="outline" className="text-[10px] ml-1">{badge}</Badge> : null}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
           )}
           {activeTab === 'zones' && <PerformanceZones zones={{
@@ -309,41 +242,30 @@ export default function PerformanceContent() {
           {activeTab === 'progression' && (
             <div className="space-y-4">
               {activities.length === 0 ? (
-                <div className="bg-surface rounded-2xl border border-neutral-200/60 shadow-card p-8 text-center">
+                <Card padding="lg" className="text-center">
                   <BarChart3 className="w-12 h-12 mx-auto mb-4 text-neutral-300" />
                   <p className="text-neutral-500">Aucune activité enregistrée</p>
                   <p className="text-xs text-neutral-400 mt-1">Synchronisez vos activités pour voir vos statistiques.</p>
-                </div>
+                </Card>
               ) : (
                 <>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100/50 border border-primary-200/30 text-center transition-all duration-200 ease-smooth hover:shadow-md">
-                      <div className="absolute top-0 left-0 w-full h-1 bg-primary-500" />
-                      <MapPin className="w-5 h-5 mx-auto mb-2 text-primary-500" />
-                      <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">{computeStats(activities).totalKm.toFixed(1)}</p>
-                      <p className="text-xs text-neutral-500 mt-1 font-medium">km total</p>
-                    </div>
-                    <div className="relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100/50 border border-primary-200/30 text-center transition-all duration-200 ease-smooth hover:shadow-md">
-                      <div className="absolute top-0 left-0 w-full h-1 bg-primary-400" />
-                      <Clock className="w-5 h-5 mx-auto mb-2 text-primary-400" />
-                      <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">{computeStats(activities).totalHours.toFixed(1)}</p>
-                      <p className="text-xs text-neutral-500 mt-1 font-medium">heures</p>
-                    </div>
-                    <div className="relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br from-success/5 to-success/10 border border-success/10 text-center transition-all duration-200 ease-smooth hover:shadow-md">
-                      <div className="absolute top-0 left-0 w-full h-1 bg-success" />
-                      <TrendingUp className="w-5 h-5 mx-auto mb-2 text-success" />
-                      <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">{computeStats(activities).avgKm.toFixed(1)}</p>
-                      <p className="text-xs text-neutral-500 mt-1 font-medium">km/séance</p>
-                    </div>
-                    <div className="relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br from-peak/5 to-peak/10 border border-peak/10 text-center transition-all duration-200 ease-smooth hover:shadow-md">
-                      <div className="absolute top-0 left-0 w-full h-1 bg-peak" />
-                      <BarChart3 className="w-5 h-5 mx-auto mb-2 text-peak" />
-                      <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">{activities.length}</p>
-                      <p className="text-xs text-neutral-500 mt-1 font-medium">activités</p>
-                    </div>
+                    {[
+                      { icon: MapPin, value: computeStats(activities).totalKm.toFixed(1), label: 'km total', gradient: 'from-primary-50 to-primary-100/50', border: 'border-primary-200/30' },
+                      { icon: Clock, value: computeStats(activities).totalHours.toFixed(1), label: 'heures', gradient: 'from-primary-50 to-primary-100/50', border: 'border-primary-200/30' },
+                      { icon: TrendingUp, value: computeStats(activities).avgKm.toFixed(1), label: 'km/séance', gradient: 'from-success/5 to-success/10', border: 'border-success/10' },
+                      { icon: BarChart3, value: activities.length, label: 'activités', gradient: 'from-peak/5 to-peak/10', border: 'border-peak/10' },
+                    ].map(({ icon: Icon, value, label, gradient, border }) => (
+                      <div key={label} className={`relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br ${gradient} ${border} text-center transition-all hover:shadow-md`}>
+                        <div className="absolute top-0 left-0 w-full h-1 bg-primary-500" />
+                        <Icon className="w-5 h-5 mx-auto mb-2 text-primary-500" />
+                        <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">{value}</p>
+                        <p className="text-xs text-neutral-500 mt-1 font-medium">{label}</p>
+                      </div>
+                    ))}
                   </div>
 
-                  <div className="bg-surface rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden">
+                  <Card padding="none">
                     <div className="px-6 py-4 border-b border-neutral-200/60">
                       <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
                         <Activity className="w-4 h-4 text-primary-500" />
@@ -360,17 +282,14 @@ export default function PerformanceContent() {
                               <span className="text-neutral-500">{count} séance{count > 1 ? 's' : ''} ({pct}%)</span>
                             </div>
                             <div className="h-2.5 bg-neutral-100 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-primary-500 rounded-full transition-all duration-500"
-                                style={{ width: `${pct}%` }}
-                              />
+                              <div className="h-full bg-primary-500 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                             </div>
                           </div>
                         );
                       })}
                     </div>
-                  </div>
-                  
+                  </Card>
+
                   <ProgressionChart activities={activities} sport={sport} />
                 </>
               )}
@@ -378,359 +297,13 @@ export default function PerformanceContent() {
           )}
           {activeTab === 'analyse' && (
             <div className="space-y-6">
-              {/* Distribution d'intensité */}
-              <IntensityDistributionSection
-                polarization={polarization}
-                error={polarizationError}
-              />
-              {/* HRV & Récupération */}
+              <IntensityDistributionSection polarization={polarization} error={polarizationError} />
               <HRVRecoverySection hrv={hrv} error={hrvError} />
-              
-              {/* Elite Analytics (fusionné ici) */}
               <EliteAnalyticsSection activities={activities} />
             </div>
           )}
         </>
       )}
     </div>
-  );
-}
-
-// ============================================================================
-// Elite Analytics Section
-// ============================================================================
-
-function EliteAnalyticsSection({ activities }: { activities: ActivityType[] }) {
-    const efData = activities
-        .filter(a => a.efficiency_factor)
-        .map(a => ({
-            date: a.date || a.start_date || '',
-            ef: a.efficiency_factor
-        }))
-        .reverse();
-    
-    const trailActivities = activities.filter(a => a.gap && a.total_elevation_gain && a.total_elevation_gain > 50);
-
-    return (
-        <Card variant="glass">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-primary" />
-              Efficacité Aérobie (EF) <Badge variant="outline" className="text-[10px] ml-1">Données avancées</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted mb-6">
-              L&apos;Efficiency Factor (EF) mesure votre vitesse ajustée à la pente (GAP) par rapport à votre fréquence cardiaque moyenne.
-              Une hausse de l&apos;EF sur le long terme indique une amélioration de votre condition aérobie.
-            </p>
-            
-            <div className="h-48 relative">
-              {efData.length >= 2 ? (
-                  <div className="w-full h-full flex flex-col justify-end gap-1">
-                    <div className="flex-1 flex items-end gap-1 px-2">
-                      {efData.slice(-15).map((d, i) => {
-                        const h = Math.min(100, (d.ef || 0) * 40);
-                        return (
-                          <div 
-                              key={i} 
-                              className="flex-1 bg-primary/20 hover:bg-primary/40 rounded-t-sm transition-all group relative"
-                              style={{ height: `${h}%` }}
-                          >
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-surface text-foreground text-[10px] py-0.5 px-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none z-10">
-                                {d.ef}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <div className="h-px bg-border w-full" />
-                    <div className="flex justify-between text-[10px] text-muted pt-1">
-                      <span>{efData.length > 0 ? new Date(efData[0].date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}</span>
-                      <span>{efData.length > 0 ? new Date(efData[efData.length - 1].date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}</span>
-                    </div>
-                  </div>
-              ) : (
-                  <div className="w-full h-full flex items-center justify-center border border-dashed border-border rounded-xl">
-                    <p className="text-sm text-muted">Pas assez de données pour le graphique EF</p>
-                  </div>
-              )}
-            </div>
-            
-            {trailActivities.length > 0 && (
-              <div className="mt-6 overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left border-b border-border text-xs text-muted uppercase tracking-wider">
-                      <th className="pb-2 font-medium">Date</th>
-                      <th className="pb-2 font-medium text-right">Pace</th>
-                      <th className="pb-2 font-medium text-right text-primary">GAP</th>
-                      <th className="pb-2 font-medium text-right">Gain</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {trailActivities.slice(0, 6).map(a => (
-                      <tr key={a.id} className="border-b border-border/50 last:border-0 hover:bg-muted/5 transition-colors">
-                        <td className="py-2.5 text-muted">{new Date(a.date || a.start_date || '').toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</td>
-                        <td className="py-2.5 text-right font-medium">{a.pace}/km</td>
-                        <td className="py-2.5 text-right font-bold text-primary">{a.gap}/km</td>
-                        <td className="py-2.5 text-right text-xs">+{a.total_elevation_gain}m</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-    );
-}
-
-// ============================================================================
-// Section Distribution d'intensité (Polarisation)
-// ============================================================================
-
-interface IntensityDistributionSectionProps {
-  polarization: PolarizationData | null;
-  error: string | null;
-}
-
-function IntensityDistributionSection({ polarization, error }: IntensityDistributionSectionProps) {
-  if (error) {
-    return (
-      <Card variant="glass">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-primary" />
-            Distribution d&apos;intensité
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2 text-muted py-4">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <p className="text-sm">{error}</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!polarization) {
-    return (
-      <Card variant="glass">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-primary" />
-            Distribution d&apos;intensité
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <Skeleton className="h-6" />
-            <Skeleton className="h-6" />
-            <Skeleton className="h-6" />
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const zones: Array<{
-    key: keyof PolarizationData['distribution'];
-    label: string;
-    targetKey: keyof PolarizationData['target'];
-    color: string;
-    bgColor: string;
-  }> = [
-    { key: 'low', label: 'Faible intensité (Z1–Z2)', targetKey: 'low', color: 'bg-success', bgColor: 'bg-success/10' },
-    { key: 'moderate', label: 'Intensité modérée (Z3)', targetKey: 'moderate', color: 'bg-warning', bgColor: 'bg-warning/10' },
-    { key: 'high', label: 'Haute intensité (Z4–Z5)', targetKey: 'high', color: 'bg-danger', bgColor: 'bg-danger/10' },
-  ];
-
-  const isOptimal = polarization.classification.optimal;
-
-  return (
-    <Card variant="glass">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-primary" />
-          Distribution d&apos;intensité
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-5">
-        {/* Classification badge */}
-        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
-          isOptimal ? 'bg-success/15 text-success/80' : 'bg-warning/15 text-warning/80'
-        }`}>
-          <span className={`w-2 h-2 rounded-full ${isOptimal ? 'bg-success/80' : 'bg-warning/80'}`} />
-          {polarization.classification.label}
-        </div>
-
-        {/* Zone bars */}
-        <div className="space-y-4">
-          {zones.map(({ key, label, targetKey, color, bgColor }) => {
-            const actual = Math.round(polarization.distribution[key]);
-            const target = Math.round(polarization.target[targetKey]);
-            return (
-              <div key={key} className="space-y-1.5">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-foreground font-medium">{label}</span>
-                  <div className="flex items-center gap-2 text-muted">
-                    <span className="font-semibold text-foreground">{actual}%</span>
-                    <span className="text-xs">cible {target}%</span>
-                  </div>
-                </div>
-                <div className={`relative h-3 rounded-full ${bgColor} overflow-hidden`}>
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 ${color}`}
-                    style={{ width: `${Math.min(actual, 100)}%` }}
-                  />
-                  {/* Target marker */}
-                  <div
-                    className="absolute top-0 bottom-0 w-0.5 bg-surface/60"
-                    style={{ left: `${Math.min(target, 100)}%` }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Polarization index */}
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <span className="text-sm text-muted">Indice de polarisation</span>
-          <span className="text-lg font-bold text-foreground">{polarization.index.toFixed(2)}</span>
-        </div>
-
-        {/* Recommendation */}
-        {polarization.recommendation.message && (
-          <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
-            <p className="text-sm text-foreground">{polarization.recommendation.message}</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-// ============================================================================
-// Section HRV & Récupération
-// ============================================================================
-
-interface HRVRecoverySectionProps {
-  hrv: HRVData | null;
-  error: string | null;
-}
-
-function HRVRecoverySection({ hrv, error }: HRVRecoverySectionProps) {
-  if (error) {
-    return (
-      <Card variant="glass">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Heart className="w-5 h-5 text-danger" />
-            HRV &amp; Récupération
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2 text-muted py-4">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <p className="text-sm">{error}</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!hrv) {
-    return (
-      <Card variant="glass">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Heart className="w-5 h-5 text-danger" />
-            HRV &amp; Récupération
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <Skeleton className="h-20" />
-            <Skeleton className="h-6" />
-            <Skeleton className="h-6" />
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const statusConfig: Record<string, { label: string; color: string; bgColor: string; barColor: string }> = {
-    excellent: { label: 'Excellent', color: 'text-success/80', bgColor: 'bg-success/15', barColor: 'bg-success' },
-    good:      { label: 'Bon',       color: 'text-primary/80',  bgColor: 'bg-primary/15',  barColor: 'bg-primary'  },
-    moderate:  { label: 'Modéré',    color: 'text-warning/80',bgColor: 'bg-warning/15',barColor: 'bg-warning'},
-    low:       { label: 'Faible',    color: 'text-peak/80',bgColor: 'bg-peak/15',barColor: 'bg-peak'},
-    poor:      { label: 'Mauvais',   color: 'text-danger/80',   bgColor: 'bg-danger/15',   barColor: 'bg-danger'   },
-  };
-
-  const cfg = statusConfig[hrv.status] ?? statusConfig['moderate'];
-  const readinessPct = Math.min(Math.max(Math.round(hrv.readiness), 0), 100);
-  const scorePct = Math.min(Math.max(Math.round(hrv.score), 0), 100);
-
-  return (
-    <Card variant="glass">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Heart className="w-5 h-5 text-danger" />
-          HRV &amp; Récupération <Badge variant="outline" className="text-[10px] ml-1">Estimé</Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-5">
-        {/* Score principal */}
-        <div className={`flex items-center gap-4 p-4 rounded-xl ${cfg.bgColor}`}>
-          <div className="text-center min-w-[64px]">
-            <p className={`text-4xl font-bold ${cfg.color}`}>{scorePct}</p>
-            <p className="text-xs text-muted mt-0.5">Score HRV</p>
-          </div>
-          <div className="flex-1 space-y-1">
-            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${cfg.bgColor} ${cfg.color}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${cfg.barColor}`} />
-              {cfg.label}
-            </div>
-            <p className="text-sm text-foreground">{hrv.message}</p>
-          </div>
-        </div>
-
-        {/* Métriques détaillées */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 rounded-lg bg-background border border-border text-center">
-            <p className="text-xl font-bold text-foreground">{hrv.rmssd}</p>
-            <p className="text-xs text-muted mt-0.5">RMSSD (ms) <Badge variant="outline" className="text-[10px] ml-1">Est.</Badge></p>
-          </div>
-          {hrv.baselineRmssd !== undefined && (
-            <div className="p-3 rounded-lg bg-background border border-border text-center">
-              <p className="text-xl font-bold text-foreground">{hrv.baselineRmssd}</p>
-              <p className="text-xs text-muted mt-0.5">Baseline (ms) <Badge variant="outline" className="text-[10px] ml-1">Est.</Badge></p>
-            </div>
-          )}
-          <div className="p-3 rounded-lg bg-background border border-border text-center">
-            <p className="text-xl font-bold text-foreground">{hrv.ratio.toFixed(2)}</p>
-            <p className="text-xs text-muted mt-0.5">Ratio HRV <Badge variant="outline" className="text-[10px] ml-1">Est.</Badge></p>
-          </div>
-          {hrv.stressScore !== undefined && (
-            <div className="p-3 rounded-lg bg-background border border-border text-center">
-              <p className="text-xl font-bold text-foreground">{hrv.stressScore}</p>
-              <p className="text-xs text-muted mt-0.5">Score stress <Badge variant="outline" className="text-[10px] ml-1">Est.</Badge></p>
-            </div>
-          )}
-        </div>
-
-        {/* Readiness bar */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted font-medium">Niveau de récupération <Badge variant="outline" className="text-[10px] ml-1">Estimé</Badge></span>
-            <span className="font-semibold text-foreground">{readinessPct}%</span>
-          </div>
-          <Progress value={readinessPct} className="h-2.5" />
-        </div>
-      </CardContent>
-    </Card>
   );
 }

@@ -1,4 +1,3 @@
-/* eslint-disable no-undef, unused-imports/no-unused-vars */
 'use client';
 
 import { useState } from 'react';
@@ -32,7 +31,7 @@ const CATEGORY_ORDER: SportCategoryType[] = ['endurance', 'strength', 'water', '
 
 interface SportPickerProps {
   selectedSport: SportType;
-  onSelect: (sport: SportType) => void;
+  onSelect: (_sport: SportType) => void;
   onClose?: () => void;
 }
 

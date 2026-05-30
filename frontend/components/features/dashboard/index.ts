@@ -5,3 +5,4 @@ export { RecentActivities } from './RecentActivities';
 export { default as OvertrainingAlert } from './OvertrainingAlert';
 export { RecommendationCard } from './RecommendationCard';
 export { ModernDashboard } from './ModernDashboard';
+export { InjuryRiskCard } from './InjuryRiskCard';

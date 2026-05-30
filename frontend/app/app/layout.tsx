@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 'use client';
 
 import { AppLayout } from '@/components/layout';

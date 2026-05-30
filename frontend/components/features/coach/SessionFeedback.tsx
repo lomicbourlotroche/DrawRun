@@ -25,7 +25,7 @@ interface SessionFeedbackProps {
   planId: number;
   sessionNumber: number;
   onComplete: () => void;
-  onResult?: (result: 'success' | 'failed' | 'partial') => void;
+  onResult?: (_result: 'success' | 'failed' | 'partial') => void;
 }
 
 // Map les résultats de séance à des indicateurs visuels

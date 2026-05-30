@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { VDOTDemoCalculator } from '@/components/features/performance';
 import { 
   Activity, 
@@ -35,7 +34,6 @@ const vdotFeatures = [
 ];
 
 export default function VDOTSection() {
-  const router = useRouter();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {

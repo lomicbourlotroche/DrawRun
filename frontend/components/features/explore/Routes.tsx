@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars, no-undef */
 'use client';
 
 import { useState, useCallback } from 'react';
@@ -28,7 +27,7 @@ interface Route {
 
 interface RouteListProps {
   routes: Route[];
-  onRouteClick?: (route: Route) => void;
+  onRouteClick?: (_route: Route) => void;
   isLoading?: boolean;
   showFavoriteButton?: boolean;
 }

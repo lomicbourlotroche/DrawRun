@@ -1,27 +1,19 @@
-/* eslint-disable unused-imports/no-unused-vars */
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
+import { Card, CardHeader, CardContent } from '@/components/ui';
 import { api } from '@/lib/api';
-import { Target, CheckCircle2, ChevronRight, ChevronLeft, Sparkles, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import FieldRenderer, { type Field } from './FieldRenderer';
+import WizardHeader from './WizardHeader';
+import WizardNavigation from './WizardNavigation';
 
 interface WizardStep {
   id: number;
   title: string;
   description: string;
   fields: Field[];
-}
-
-interface Field {
-  name: string;
-  type: 'text' | 'number' | 'select' | 'checkbox' | 'multiselect' | 'distance';
-  label: string;
-  placeholder?: string;
-  options?: { value: string; label: string }[];
-  required?: boolean;
-  condition?: (formData: Record<string, unknown>) => boolean;
 }
 
 const wizardSteps: WizardStep[] = [
@@ -208,7 +200,6 @@ const wizardSteps: WizardStep[] = [
   },
 ];
 
-// Champs qui peuvent être pré-remplis automatiquement
 const AUTO_FILLED_FIELDS = new Set([
   'currentWeeklyKm', 'experienceLevel', 'fcm',
   'vmaValue', 'hasVMA', 'vdotValue', 'hasVDOT',
@@ -234,7 +225,7 @@ const DEFAULT_FORM: Record<string, unknown> = {
   notes: '',
 };
 
-export default function AdaptivePlanWizard({ onComplete }: { onComplete: (plan: unknown) => void }) {
+export default function AdaptivePlanWizard({ onComplete }: { onComplete: (_plan: unknown) => void }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<Record<string, unknown>>({ ...DEFAULT_FORM });
   const [autoFilledFields, setAutoFilledFields] = useState<Set<string>>(new Set());
@@ -242,7 +233,6 @@ export default function AdaptivePlanWizard({ onComplete }: { onComplete: (plan: 
   const [activitiesAnalyzed, setActivitiesAnalyzed] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Charger les valeurs par défaut depuis les activités passées
   useEffect(() => {
     const loadDefaults = async () => {
       setIsLoadingDefaults(true);
@@ -284,7 +274,6 @@ export default function AdaptivePlanWizard({ onComplete }: { onComplete: (plan: 
   const isFirstStep = currentStep === 0;
 
   const updateField = (name: string, value: unknown) => {
-    // Quand l'utilisateur modifie un champ auto-rempli, retirer le badge
     if (autoFilledFields.has(name)) {
       setAutoFilledFields(prev => {
         const next = new Set(prev);
@@ -347,129 +336,6 @@ export default function AdaptivePlanWizard({ onComplete }: { onComplete: (plan: 
     }
   };
 
-  const renderField = (field: Field) => {
-    if (field.condition && !field.condition(formData)) return null;
-
-    const isAutoFilled = autoFilledFields.has(field.name);
-    const autoFilledBadge = isAutoFilled ? (
-      <span className="inline-flex items-center gap-1 text-xs text-primary-600 bg-primary-50 border border-primary-200 rounded-full px-2 py-0.5 ml-2">
-        <Sparkles className="w-3 h-3" />
-        Auto
-      </span>
-    ) : null;
-
-    const inputClass = `w-full bg-background border rounded-lg px-4 py-2.5 text-foreground transition-colors ${
-      isAutoFilled
-        ? 'border-primary-300 bg-primary-50/30 focus:border-primary-500 focus:ring-2 focus:ring-primary-100'
-        : 'border-border focus:border-primary focus:ring-2 focus:ring-primary/10'
-    }`;
-
-    switch (field.type) {
-      case 'text':
-        return (
-          <div key={field.name} className="space-y-1.5">
-            <label className="flex items-center text-sm font-medium text-foreground">
-              {field.label}{autoFilledBadge}
-            </label>
-            <input
-              type="text"
-              value={(formData[field.name] as string) || ''}
-              onChange={e => updateField(field.name, e.target.value)}
-              placeholder={field.placeholder}
-              className={inputClass}
-            />
-          </div>
-        );
-
-      case 'number':
-      case 'distance':
-        return (
-          <div key={field.name} className="space-y-1.5">
-            <label className="flex items-center text-sm font-medium text-foreground">
-              {field.label}{autoFilledBadge}
-            </label>
-            <input
-              type="number"
-              step={field.type === 'distance' ? '0.1' : '1'}
-              value={(formData[field.name] as string | number) || ''}
-              onChange={e => updateField(field.name, e.target.value)}
-              placeholder={field.placeholder}
-              className={inputClass}
-            />
-          </div>
-        );
-
-      case 'select':
-        return (
-          <div key={field.name} className="space-y-1.5">
-            <label className="flex items-center text-sm font-medium text-foreground">
-              {field.label}{autoFilledBadge}
-            </label>
-            <select
-              value={(formData[field.name] as string) || ''}
-              onChange={e => updateField(field.name, e.target.value)}
-              className={inputClass}
-            >
-              <option value="">Sélectionner...</option>
-              {field.options?.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
-        );
-
-      case 'multiselect': {
-        const selected = (formData[field.name] as string[]) || [];
-        return (
-          <div key={field.name} className="space-y-1.5">
-            <label className="flex items-center text-sm font-medium text-foreground">
-              {field.label}{autoFilledBadge}
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {field.options?.map(opt => {
-                const active = selected.includes(opt.value);
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => handleMultiSelect(field.name, opt.value)}
-                    className={`p-2 rounded-lg border text-sm transition-all ${
-                      active
-                        ? 'bg-primary text-foreground border-primary shadow-sm'
-                        : 'bg-background text-foreground border-border hover:border-primary/50'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        );
-      }
-
-      case 'checkbox':
-        return (
-          <div key={field.name} className="flex items-center gap-2.5">
-            <input
-              type="checkbox"
-              id={field.name}
-              checked={(formData[field.name] as boolean) || false}
-              onChange={e => updateField(field.name, e.target.checked)}
-              className="w-4 h-4 rounded border-border bg-background accent-primary"
-            />
-            <label htmlFor={field.name} className="flex items-center text-sm text-foreground cursor-pointer">
-              {field.label}{autoFilledBadge}
-            </label>
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  // Écran de chargement pendant la récupération des defaults
   if (isLoadingDefaults) {
     return (
       <Card className="max-w-2xl mx-auto">
@@ -485,66 +351,38 @@ export default function AdaptivePlanWizard({ onComplete }: { onComplete: (plan: 
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-primary" />
-              {currentStepData.title}
-            </CardTitle>
-            <p className="text-sm text-muted mt-1">{currentStepData.description}</p>
-          </div>
-          <span className="text-sm text-muted tabular-nums">
-            {currentStep + 1} / {wizardSteps.length}
-          </span>
-        </div>
-
-        {/* Barre de progression */}
-        <div className="mt-4 h-2 bg-muted rounded-full overflow-hidden">
-          <div
-            className="h-full bg-primary rounded-full transition-all duration-300"
-            style={{ width: `${((currentStep + 1) / wizardSteps.length) * 100}%` }}
-          />
-        </div>
-
-        {/* Badge données auto-remplies */}
-        {activitiesAnalyzed > 0 && autoFilledFields.size > 0 && (
-          <div className="mt-3 flex items-center gap-2 text-xs text-primary-700 bg-primary-50 border border-primary-200 rounded-lg px-3 py-2">
-            <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
-            <span>
-              <strong>{activitiesAnalyzed} activité{activitiesAnalyzed > 1 ? 's' : ''}</strong> analysée{activitiesAnalyzed > 1 ? 's' : ''} —
-              les champs marqués <strong>Auto</strong> sont pré-remplis depuis vos données
-            </span>
-          </div>
-        )}
+        <WizardHeader
+          title={currentStepData.title}
+          description={currentStepData.description}
+          currentStep={currentStep}
+          totalSteps={wizardSteps.length}
+          activitiesAnalyzed={activitiesAnalyzed}
+          autoFilledFieldsCount={autoFilledFields.size}
+        />
       </CardHeader>
 
       <CardContent>
         <div className="space-y-5">
-          {currentStepData.fields.map(field => renderField(field))}
+          {currentStepData.fields.map(field => (
+            <FieldRenderer
+              key={field.name}
+              field={field}
+              formData={formData}
+              autoFilledFields={autoFilledFields}
+              onUpdateField={updateField}
+              onMultiSelect={handleMultiSelect}
+            />
+          ))}
         </div>
 
-        <div className="flex justify-between mt-8 pt-4 border-t border-border">
-          <Button
-            variant="secondary"
-            onClick={() => setCurrentStep(p => p - 1)}
-            disabled={isFirstStep || isSubmitting}
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Précédent
-          </Button>
-
-          {isLastStep ? (
-            <Button onClick={handleSubmit} isLoading={isSubmitting}>
-              <CheckCircle2 className="w-4 h-4 mr-2" />
-              Créer mon plan
-            </Button>
-          ) : (
-            <Button onClick={() => setCurrentStep(p => p + 1)}>
-              Suivant
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          )}
-        </div>
+        <WizardNavigation
+          isFirstStep={isFirstStep}
+          isLastStep={isLastStep}
+          isSubmitting={isSubmitting}
+          onPrevious={() => setCurrentStep(p => p - 1)}
+          onNext={() => setCurrentStep(p => p + 1)}
+          onSubmit={handleSubmit}
+        />
       </CardContent>
     </Card>
   );

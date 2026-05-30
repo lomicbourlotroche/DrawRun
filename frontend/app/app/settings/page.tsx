@@ -1,4 +1,4 @@
-/* eslint-disable unused-imports/no-unused-vars, no-undef, @next/next/no-img-element, react/no-unescaped-entities */
+/* eslint-disable @next/next/no-img-element */
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';

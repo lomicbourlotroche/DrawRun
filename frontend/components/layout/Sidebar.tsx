@@ -15,9 +15,7 @@ import {
   LogOut,
   Menu,
   X,
-  ChevronLeft,
   Trophy,
-  Plus,
   Compass,
 } from 'lucide-react';
 
@@ -37,7 +35,6 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { isAuthenticated, logout, user } = useAuthStore();
   const { unreadCount, fetchNotifications } = useNotificationsStore();
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   useEffect(() => {
@@ -62,30 +59,22 @@ export default function Sidebar() {
     return pathname.startsWith(href);
   };
 
-  // Initials for user avatar
   const initials = user?.name
-    ? user.name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
+    ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
     : 'U';
 
   if (!isAuthenticated) return null;
 
   return (
     <>
-      {/* Mobile hamburger */}
       <button
         onClick={() => setIsMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-3 min-h-[44px] min-w-[44px] bg-surface/95 backdrop-blur-xl rounded-xl border border-border/60 shadow-sm active:scale-95 transition-transform"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2.5 bg-surface/95 backdrop-blur-xl rounded-xl border border-border/60 shadow-sm"
         aria-label="Ouvrir le menu"
       >
         <Menu className="w-5 h-5 text-muted" />
       </button>
 
-      {/* Mobile overlay */}
       {isMobileOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-foreground/40 z-40"
@@ -93,27 +82,19 @@ export default function Sidebar() {
         />
       )}
 
-        <aside
-          className={cn(
-            'fixed top-0 left-0 h-full bg-surface/95 backdrop-blur-md border-r border-neutral-200/60 z-50 transition-all duration-300 ease-smooth flex flex-col',
-            isCollapsed ? 'w-16' : 'w-full max-w-64 lg:max-w-none',
-            isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-          )}
-        >
-        {/* Logo */}
-        <div
-          className={cn(
-            'flex items-center h-16 px-4 border-b border-border/60 flex-shrink-0',
-            isCollapsed && 'justify-center px-0'
-          )}
-        >
+      <aside
+        className={cn(
+          'fixed top-0 left-0 h-full bg-surface/95 backdrop-blur-md border-r border-neutral-200/60 z-50 transition-all duration-300 ease-smooth flex flex-col',
+          'w-full max-w-64 lg:max-w-64',
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        )}
+      >
+        <div className="flex items-center h-16 px-4 border-b border-border/60 flex-shrink-0">
           <Link href="/app" className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-              <span className="text-foreground font-bold text-sm">DR</span>
+            <div className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-bold text-sm">DR</span>
             </div>
-            {!isCollapsed && (
-              <span className="text-base font-bold text-foreground tracking-tight truncate">DrawRun</span>
-            )}
+            <span className="text-base font-bold text-foreground tracking-tight truncate">DrawRun</span>
           </Link>
           <button
             onClick={() => setIsMobileOpen(false)}
@@ -124,8 +105,7 @@ export default function Sidebar() {
           </button>
         </div>
 
-        {/* Nav items */}
-        <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 py-3 px-2.5 space-y-0.5 overflow-y-auto">
           {navItems.map((item) => {
             const active = isActive(item.href, item.exact);
             const hasNotifications = item.href === '/app/social' && unreadCount > 0;
@@ -134,63 +114,38 @@ export default function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
-                title={isCollapsed ? item.label : undefined}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-3 min-h-[44px] rounded-xl transition-all duration-200 ease-smooth relative group',
-                  isCollapsed && 'justify-center px-0',
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ease-smooth relative group',
                   active
-                    ? 'bg-primary-50 text-primary-600 border border-primary-100'
-                    : 'text-neutral-600 hover:bg-neutral-100 hover:text-foreground border border-transparent'
+                    ? 'bg-primary-50 text-primary-700 font-semibold'
+                    : 'text-neutral-600 hover:bg-neutral-100 hover:text-foreground'
                 )}
               >
                 <div className="relative flex-shrink-0">
                   <item.icon
-                    className={cn(
-                      'w-5 h-5',
-                      active ? 'text-primary-600' : 'text-muted group-hover:text-muted'
-                    )}
+                    className={cn('w-5 h-5', active ? 'text-primary-600' : 'text-muted group-hover:text-muted')}
                   />
                   {hasNotifications && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-danger rounded-full flex items-center justify-center text-[9px] font-bold text-foreground leading-none">
+                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-danger rounded-full flex items-center justify-center text-[8px] font-bold text-white leading-none">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
                 </div>
-                {!isCollapsed && (
-                  <span
-                    className={cn(
-                      'text-sm truncate',
-                      active ? 'font-semibold text-primary-700' : 'font-medium'
-                    )}
-                  >
-                    {item.label}
-                  </span>
-                )}
-                {/* Active indicator bar */}
+                <span className={cn('text-sm', active ? 'font-semibold' : 'font-medium')}>
+                  {item.label}
+                </span>
                 {active && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-primary-500 to-primary-600 rounded-r-full" />
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary-500 rounded-r-full" />
                 )}
               </Link>
             );
           })}
         </nav>
 
-        {/* Mobile-only: Record button in sidebar */}
-        <div className="lg:hidden px-3 py-2 border-t border-border/60">
-          <Link
-            href="/app/record"
-            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl bg-gradient-to-r from-primary to-info text-foreground font-medium text-sm shadow-lg shadow-primary/20 active:scale-95 transition-transform"
-          >
-            <Plus className="w-5 h-5" />
-            {!isCollapsed && <span>Enregistrer une activité</span>}
-          </Link>
-        </div>
-
-        {/* User info + logout */}
         <div className="flex-shrink-0 border-t border-border/60 p-3 space-y-1">
-          {!isCollapsed && user && (
-            <div className="flex items-center gap-3 px-3 py-2 rounded-xl">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-100 to-primary-50 border border-primary-200 flex items-center justify-center flex-shrink-0">
+          {user && (
+            <div className="flex items-center gap-3 px-3 py-2 rounded-lg">
+              <div className="w-8 h-8 rounded-full bg-primary-100 border border-primary-200 flex items-center justify-center flex-shrink-0">
                 <span className="text-xs font-bold text-primary-700">{initials}</span>
               </div>
               <div className="min-w-0 flex-1">
@@ -199,30 +154,16 @@ export default function Sidebar() {
               </div>
             </div>
           )}
-
           <button
             onClick={handleLogout}
-            title={isCollapsed ? 'Déconnexion' : undefined}
             className={cn(
-              'flex items-center gap-3 w-full px-3 py-3 min-h-[44px] rounded-xl text-muted hover:text-danger-600 hover:bg-danger-50 transition-all duration-150',
-              isCollapsed && 'justify-center px-0'
+              'flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-muted hover:text-danger-600 hover:bg-danger-50 transition-all duration-150'
             )}
           >
-            <LogOut className="w-5 h-5 flex-shrink-0" />
-            {!isCollapsed && <span className="text-sm font-medium">Déconnexion</span>}
+            <LogOut className="w-4 h-4 flex-shrink-0" />
+            <span className="text-sm font-medium">Déconnexion</span>
           </button>
         </div>
-
-        {/* Collapse toggle (desktop only) */}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden lg:flex absolute -right-3 top-20 w-6 h-6 bg-surface border border-border rounded-full items-center justify-center hover:bg-background shadow-sm transition-colors"
-          aria-label={isCollapsed ? 'Développer la sidebar' : 'Réduire la sidebar'}
-        >
-          <ChevronLeft
-            className={cn('w-3.5 h-3.5 text-muted transition-transform duration-300', isCollapsed && 'rotate-180')}
-          />
-        </button>
       </aside>
     </>
   );

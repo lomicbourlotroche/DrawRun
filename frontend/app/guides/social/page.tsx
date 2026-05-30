@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -35,7 +34,7 @@ export default function SocialGuide() {
             </span>
           </h2>
           <p className="text-lg text-muted max-w-2xl mx-auto">
-            DrawRun intègre des fonctionnalités sociales pour vous connecter avec d'autres athlètes,
+            DrawRun intègre des fonctionnalités sociales pour vous connecter avec d&apos;autres athlètes,
             partager vos progrès et vous motiver mutuellement.
           </p>
         </div>
@@ -68,14 +67,14 @@ export default function SocialGuide() {
         <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
             <Shield className="w-6 h-6 text-indigo-500" />
-            Groupes d'entraînement
+            Groupes d&apos;entraînement
           </h3>
           <p className="text-muted mb-4 leading-relaxed">
             Créez ou rejoignez des groupes privés avec votre club, vos collègues ou votre communauté :
           </p>
           <div className="grid md:grid-cols-2 gap-4">
             <div className="p-4 bg-indigo-50 rounded-xl">
-              <h4 className="font-semibold text-indigo-700 mb-2">Codes d'invitation</h4>
+              <h4 className="font-semibold text-indigo-700 mb-2">Codes d&apos;invitation</h4>
               <p className="text-sm text-indigo-600">Chaque groupe a un code unique à 6 caractères pour rejoindre facilement.</p>
             </div>
             <div className="p-4 bg-purple-50 rounded-xl">
@@ -120,7 +119,7 @@ export default function SocialGuide() {
             Draws & Commentaires
           </h3>
           <p className="text-muted leading-relaxed">
-            Comme un « like » sur vos activités, les <strong>draws</strong> (tracés) permettent d'encourager
+            Comme un « like » sur vos activités, les <strong>draws</strong> (tracés) permettent d&apos;encourager
             les autres membres. Ajoutez un commentaire pour féliciter un PR ou donner un conseil.
           </p>
         </div>
@@ -129,7 +128,7 @@ export default function SocialGuide() {
         <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-3xl p-8 text-white text-center">
           <Users className="w-12 h-12 mx-auto mb-4" />
           <h3 className="text-2xl font-bold mb-3">Rejoignez la communauté</h3>
-          <p className="text-white/80 mb-6">Connectez-vous avec d'autres athlètes et motivez-vous mutuellement.</p>
+          <p className="text-white/80 mb-6">Connectez-vous avec d&apos;autres athlètes et motivez-vous mutuellement.</p>
           <button
             onClick={() => router.push('/login?mode=register')}
             className="px-8 py-3 bg-surface text-indigo-600 font-semibold rounded-xl hover:bg-surface transition-colors"

@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -29,7 +28,7 @@ export default function CoachingAdaptatifGuide() {
       <div className="max-w-4xl mx-auto px-4 py-12 space-y-12">
         <div className="text-center">
           <h2 className="text-4xl font-extrabold text-foreground mb-4">
-            Un plan qui s'adapte à{' '}
+            Un plan qui s&apos;adapte à{' '}
             <span className="bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">
               votre forme
             </span>
@@ -44,7 +43,7 @@ export default function CoachingAdaptatifGuide() {
         <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-8 flex items-center gap-3">
             <Brain className="w-6 h-6 text-success" />
-            Comment fonctionne l'adaptation
+            Comment fonctionne l&apos;adaptation
           </h3>
 
           <div className="space-y-8">
@@ -96,7 +95,7 @@ export default function CoachingAdaptatifGuide() {
         <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
             <BarChart3 className="w-6 h-6 text-success" />
-            Logique d'adaptation
+            Logique d&apos;adaptation
           </h3>
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -118,7 +117,7 @@ export default function CoachingAdaptatifGuide() {
               </h4>
               <ul className="space-y-1 text-sm text-amber-700">
                 <li>• Réduction du volume de 10-20%</li>
-                <li>• Remplacement des séances intenses par de l'endurance</li>
+                <li>• Remplacement des séances intenses par de l&apos;endurance</li>
                 <li>• Semaine de récupération insérée si ACWR &gt; 1.3</li>
               </ul>
             </div>
@@ -127,7 +126,7 @@ export default function CoachingAdaptatifGuide() {
           <div className="mt-6 p-4 bg-background rounded-xl">
             <p className="text-sm text-muted">
               <strong>Phases typiques :</strong> Base (endurance) → Développement (seuil) → Spécifique (allure course) → Tapering (fraîcheur) → Compétition.
-              Chaque phase dure 3-6 semaines selon l'objectif et le niveau.
+              Chaque phase dure 3-6 semaines selon l&apos;objectif et le niveau.
             </p>
           </div>
         </div>

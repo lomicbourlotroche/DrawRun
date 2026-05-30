@@ -5,7 +5,7 @@ import { api } from '@/lib/api';
 import AppLayout from '@/components/layout/AppLayout';
 import { GearCard } from '@/components/features/gear/GearCard';
 import { Plus, Package, History } from 'lucide-react';
-import { PrimaryButton, Modal, Input } from '@/components/ui';
+import { Card, PrimaryButton, Modal, Input } from '@/components/ui';
 import { toast } from 'sonner';
 
 interface Gear {
@@ -125,7 +125,7 @@ export default function GearPage() {
             ))}
           </div>
         ) : gearList.length === 0 ? (
-          <div className="bg-surface border-2 border-dashed border-neutral-200/60 rounded-2xl p-12 text-center shadow-card">
+          <Card variant="bordered" padding="xl" className="text-center">
             <div className="w-16 h-16 bg-neutral-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Package className="w-8 h-8 text-neutral-400" />
             </div>
@@ -136,7 +136,7 @@ export default function GearPage() {
             <PrimaryButton variant="outline" onClick={() => setIsModalOpen(true)}>
               Ajouter ma première paire
             </PrimaryButton>
-          </div>
+          </Card>
         ) : (
           <div className="space-y-12">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

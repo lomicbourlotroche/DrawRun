@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars, react/no-unescaped-entities, no-undef */
 'use client';
 
 import { useState, useCallback } from 'react';
@@ -30,7 +29,7 @@ const POWER_ZONES: PowerZone[] = [
   { name: 'Neuromusculaire', range: '> 150%', minPercent: 150, maxPercent: 999, color: 'var(--danger)', description: 'Puissance neuromusculaire' },
 ];
 
-export function PowerAnalysis({ activityId, wattsData, duration }: PowerAnalysisProps) {
+export function PowerAnalysis({ activityId: _activityId, wattsData, duration }: PowerAnalysisProps) {
   const [ftp, setFtp] = useState<number | null>(null);
   const [manualFtp, setManualFtp] = useState('');
   const [showZones, setShowZones] = useState(true);
@@ -101,7 +100,7 @@ export function PowerAnalysis({ activityId, wattsData, duration }: PowerAnalysis
         <CardContent className="p-6 text-center text-muted">
           <Zap className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p>Aucune donnée de puissance disponible</p>
-          <p className="text-sm mt-2">Connectez un capteur de puissance pour voir l'analyse</p>
+          <p className="text-sm mt-2">Connectez un capteur de puissance pour voir l&apos;analyse</p>
         </CardContent>
       </Card>
     );

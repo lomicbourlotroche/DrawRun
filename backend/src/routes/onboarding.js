@@ -8,8 +8,9 @@
 'use strict';
 
 const express = require('express');
+const { logger } = require('../utils/logger');
 const { verifyToken } = require('./auth');
-const { getUserDb, dbGetUser, dbGetMain } = require('../database');
+const { getUserDb, dbGetUser, dbGetMain, dbRunUser } = require('../database');
 
 const router = express.Router();
 
@@ -30,10 +31,10 @@ router.get('/status', verifyToken, async (req, res) => {
         let activity = null;
         try {
             plan = await dbGetUser(userDb, 'SELECT id FROM training_plans WHERE user_id = ? AND is_active = 1 LIMIT 1', [req.user.id]);
-        } catch (_) { /* table absente */ }
+        } catch (_) { logger?.warn?.('Training plans table not available'); }
         try {
             activity = await dbGetUser(userDb, 'SELECT id FROM activities LIMIT 1', []);
-        } catch (_) { /* table absente */ }
+        } catch (_) { logger?.warn?.('Activities table not available'); }
 
         const hasFcm = !!(profileData.fcm || profileData.max_heart_rate);
         const hasVma = !!profileData.vma;
@@ -49,7 +50,6 @@ router.get('/status', verifyToken, async (req, res) => {
             }
         });
     } catch (error) {
-        const { logger } = require('../utils/logger');
         logger.error('Onboarding status error', { error: error.message, userId: req.user?.id });
         res.status(500).json({ error: 'Failed to get onboarding status' });
     }
@@ -63,7 +63,6 @@ router.post('/complete', verifyToken, async (req, res) => {
             return res.status(400).json({ error: 'step is required' });
         }
         
-        const { getUserDb, dbRunUser } = require('../database');
         const userDb = await getUserDb(req.user.id);
         
         // Store onboarding progress in user_preferences table

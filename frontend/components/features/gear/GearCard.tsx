@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui';
 import { Footprints, Bike, Settings, Trash2, AlertCircle } from 'lucide-react';
 
 interface Gear {

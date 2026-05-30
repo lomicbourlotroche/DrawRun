@@ -1,4 +1,4 @@
-/* eslint-disable no-undef */
+
 import { cn } from '@/lib/utils';
 import { getZoneColor } from '@/lib/utils';
 
@@ -12,7 +12,7 @@ interface BadgeProps {
 
 export function Badge({ children, variant = 'default', zone, size = 'sm', className }: BadgeProps) {
   const variants = {
-    default: 'bg-surface border border-border text-text-secondary',
+    default: 'bg-surface border border-border text-muted',
     primary: 'bg-primary/20 text-primary border border-primary/30',
     secondary: 'bg-background border border-surface text-muted',
     success: 'bg-success/20 text-success border border-success/30',

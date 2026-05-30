@@ -3,9 +3,30 @@
 import { useMemo } from 'react';
 import type { TrainingPlan, TrainingSession } from '@/types';
 
+// Résolution des couleurs Tailwind → valeurs hex pour les styles inline
+const TW_COLORS: Record<string, string> = {
+  'hr-zone-1': '#00C853',
+  'hr-zone-3': '#FFAB00',
+  'hr-zone-4': '#FF6D00',
+  'peak': '#FF6D00',
+  'danger': '#FF5252',
+  'success': '#00C853',
+  'primary': '#0066FF',
+  'muted': '#64748B',
+  'warning': '#FFAB00',
+};
+
+function resolveColor(twClass: string, defaultFallback = '#64748B20'): string {
+  const base = twClass.replace('bg-', '').replace('border-', '').replace('/30', '').replace('/20', '');
+  const hex = TW_COLORS[base];
+  if (!hex) return defaultFallback;
+  const opacity = twClass.includes('/30') ? '4D' : twClass.includes('/20') ? '33' : '';
+  return opacity ? hex + opacity : hex;
+}
+
 interface PlanGanttChartProps {
   plan: TrainingPlan;
-  onSessionClick?: (week: number, session: TrainingSession) => void;
+  onSessionClick?: (_week: number, _session: TrainingSession) => void;
 }
 
 // Couleurs par type de séance basées sur les tokens métiers
@@ -39,18 +60,14 @@ export function PlanGanttChart({ plan, onSessionClick }: PlanGanttChartProps) {
   const weeks = useMemo(() => plan.weeks, [plan.weeks]);
 
   // Calculer la date de début de chaque semaine
-  const startDate = new Date(plan.startDate);
   const weekStartDates = useMemo(() => {
+    const startDate = new Date(plan.startDate);
     return weeks.map((_, index) => {
       const date = new Date(startDate);
       date.setDate(date.getDate() + (index * 7));
       return date;
     });
-  }, [startDate, weeks.length]);
-
-  // Trouver le jour de départ (0=Dimanche, 1=Lundi, etc.)
-  const startDay = startDate.getDay();
-  const normalizedStartDay = startDay === 0 ? 6 : startDay - 1; // 0=Lundi
+  }, [weeks, plan.startDate]);
 
   // Générer la grille des jours
   const dayGrid = useMemo(() => {
@@ -112,7 +129,7 @@ export function PlanGanttChart({ plan, onSessionClick }: PlanGanttChartProps) {
                 <div key={phase} className="flex items-center gap-1.5">
                   <span
                     className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: `var(${colors.bg.replace('bg-', '').replace('/20', '')})` }}
+                    style={{ backgroundColor: resolveColor(colors.bg) }}
                   />
                   <span className="text-xs text-muted">{phase}</span>
                 </div>
@@ -141,7 +158,7 @@ export function PlanGanttChart({ plan, onSessionClick }: PlanGanttChartProps) {
         <div className="flex border-t border-border">
           {/* Colonne des jours */}
           <div className="w-10 flex-shrink-0">
-            {daysOfWeek.map((day, index) => (
+            {daysOfWeek.map((day, _index) => (
               <div
                 key={day}
                 className="h-14 flex items-center justify-center text-xs font-medium text-muted border-r border-b border-border"
@@ -154,7 +171,7 @@ export function PlanGanttChart({ plan, onSessionClick }: PlanGanttChartProps) {
           {/* Cellules des séances */}
           {dayGrid.map((weekRow, weekIndex) => (
             <div key={weekIndex} className="flex">
-              {weekRow.map((cell, dayIndex) => {
+              {weekRow.map((cell, _dayIndex) => {
                 const session = cell.session;
                 const phase = weeks[weekIndex]?.phase;
                 const phaseColor = getPhaseColor(phase || 'Foundation');
@@ -173,8 +190,8 @@ export function PlanGanttChart({ plan, onSessionClick }: PlanGanttChartProps) {
                         transition-all duration-200
                       `}
                       style={{
-                        background: `var(${color.bg.replace('bg-', '')})`,
-                        borderLeft: cell.day === 1 ? `3px solid var(${phaseColor.bg.replace('bg-', '')})` : undefined,
+                        background: resolveColor(color.bg),
+                        borderLeft: cell.day === 1 ? `3px solid ${resolveColor(phaseColor.bg)}` : undefined,
                       }}
                       aria-label={`Séance: ${session.title} - Semaine ${cell.week}, Jour ${cell.day}`}
                     >
@@ -186,7 +203,7 @@ export function PlanGanttChart({ plan, onSessionClick }: PlanGanttChartProps) {
                       <span className={`text-[10px] font-medium truncate px-1 ${color.text}`}>
                         {session.title.slice(0, 3)}
                       </span>
-                      <div className="absolute bottom-1 left-1 right-1 h-0.5" style={{ backgroundColor: `var(${color.border.replace('border-', '')})` }} />
+                      <div className="absolute bottom-1 left-1 right-1 h-0.5" style={{ backgroundColor: resolveColor(color.border) }} />
                     </button>
                   );
                 }
@@ -196,7 +213,7 @@ export function PlanGanttChart({ plan, onSessionClick }: PlanGanttChartProps) {
                     key={cell.day}
                     className="h-14 w-14 flex-shrink-0 border-r border-b border-border bg-background"
                     style={{
-                      borderLeft: cell.day === 1 ? `3px solid var(${phaseColor.bg.replace('bg-', '')})` : undefined,
+                      borderLeft: cell.day === 1 ? `3px solid ${resolveColor(phaseColor.bg)}` : undefined,
                     }}
                   />
                 );
@@ -217,8 +234,8 @@ export function PlanGanttChart({ plan, onSessionClick }: PlanGanttChartProps) {
                   <span
                     className="w-10 h-4 rounded-sm"
                     style={{
-                      background: `var(${colors.bg.replace('bg-', '').replace('/30', '')})`,
-                      border: `1px solid var(${colors.border.replace('border-', '')})`,
+                      background: resolveColor(colors.bg),
+                      border: `1px solid ${resolveColor(colors.border)}`,
                     }}
                   />
                   <span className="text-xs text-muted">{type}</span>

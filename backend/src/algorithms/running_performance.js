@@ -77,10 +77,8 @@ const RunningPerformance = {
         if (!paceSeconds || paceSeconds <= 0) return 0;
         
         // Pente clampée pour éviter les aberrations
-        const g = MathUtils.clamp(grade, -0.45, 0.45);
-        
-        // Formule polynomiale (Minetti et al. 2002)
-        const c5 = 155.4, c4 = -30.4, c3 = -43.3, c2 = 46.3, c1 = 19.5, c0 = 3.6;
+        const g = MathUtils.clamp(grade, SCIENTIFIC_CONSTANTS.MINETTI.GRADE_CLAMP_MIN, SCIENTIFIC_CONSTANTS.MINETTI.GRADE_CLAMP_MAX);
+        const { c5, c4, c3, c2, c1, c0 } = SCIENTIFIC_CONSTANTS.MINETTI.COEFFICIENTS;
         const costG = c5 * Math.pow(g, 5) + c4 * Math.pow(g, 4) + c3 * Math.pow(g, 3) + c2 * Math.pow(g, 2) + c1 * g + c0;
         const cost0 = c0;
         
@@ -466,8 +464,8 @@ const RunningPerformance = {
         const pace5k = RunningPerformance.getPaceSeconds(vdot, SCIENTIFIC_CONSTANTS.VDOT.I);
         
         return {
-            marathon: parseFloat(m.time.split(':')[0]) + parseFloat(m.time.split(':')[1])/60,
-            half: parseFloat(h.time.split(':')[0]) + parseFloat(h.time.split(':')[1])/60,
+            marathon: parseFloat(m.time.split(':')[0]) + parseFloat(m.time.split(':')[1] || 0)/60 + parseFloat(m.time.split(':')[2] || 0)/3600,
+            half: parseFloat(h.time.split(':')[0]) + parseFloat(h.time.split(':')[1] || 0)/60 + parseFloat(h.time.split(':')[2] || 0)/3600,
             '10k': (pace10k * 10) / 3600,
             '5k': (pace5k * 5) / 3600
         };

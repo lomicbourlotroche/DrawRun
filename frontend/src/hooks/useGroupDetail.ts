@@ -46,14 +46,14 @@ interface UseGroupDetailReturn {
   loadGroup: () => Promise<void>;
   handleEdit: () => Promise<void>;
   handleDelete: () => Promise<void>;
-  handleKick: (userId: number) => Promise<void>;
-  handlePromote: (userId: number, role: string) => Promise<void>;
+  handleKick: (_userId: number) => Promise<void>;
+  handlePromote: (_userId: number, _role: string) => Promise<void>;
   handleLeave: () => Promise<void>;
   copyInvite: () => void;
-  handleCreateChallenge: (form: Omit<CreateChallengeParams, 'groupId'> & { is_public?: boolean; end_date?: string }) => Promise<void>;
-  handleJoinChallenge: (challengeId: number) => Promise<void>;
-  setEditForm: (form: { name: string; description: string; isPrivate: boolean }) => void;
-  setShowWizard: (show: boolean) => void;
+  handleCreateChallenge: (_form: Omit<CreateChallengeParams, 'groupId'> & { is_public?: boolean; end_date?: string }) => Promise<void>;
+  handleJoinChallenge: (_challengeId: number) => Promise<void>;
+  setEditForm: (_form: { name: string; description: string; isPrivate: boolean }) => void;
+  setShowWizard: (_show: boolean) => void;
   showWizard: boolean;
 }
 

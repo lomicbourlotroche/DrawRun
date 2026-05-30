@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -47,12 +46,12 @@ export default function RacePlanningGuide() {
             Splits kilométriques
           </h3>
           <p className="text-muted mb-6 leading-relaxed">
-            Pour chaque kilomètre de votre course, l'algorithme calcule l'allure cible optimale en fonction de votre VDOT,
+            Pour chaque kilomètre de votre course, l&apos;algorithme calcule l&apos;allure cible optimale en fonction de votre VDOT,
             du profil du terrain et de la stratégie de course choisie (even pace, negative split, positive split).
           </p>
           <div className="p-4 bg-amber-50 rounded-xl border border-amber-100">
             <p className="text-sm text-amber-800">
-              <strong>Stratégie par défaut :</strong> départ conservateur (5-10s/km plus lent que l'allure cible),
+              <strong>Stratégie par défaut :</strong> départ conservateur (5-10s/km plus lent que l&apos;allure cible),
               allure de croisière stabilisée à partir du km 3, et finish push si la forme le permet (TSB &gt; 0).
             </p>
           </div>
@@ -65,7 +64,7 @@ export default function RacePlanningGuide() {
             Zones de fréquence cardiaque adaptatives
           </h3>
           <p className="text-muted mb-6 leading-relaxed">
-            Votre FC cible n'est pas constante pendant une course. Le système adapte les zones selon la phase :
+            Votre FC cible n&apos;est pas constante pendant une course. Le système adapte les zones selon la phase :
           </p>
           <div className="space-y-3">
             {[
@@ -98,7 +97,7 @@ export default function RacePlanningGuide() {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="p-4 bg-blue-50 rounded-xl">
               <h4 className="font-semibold text-blue-700 mb-2">Hydratation</h4>
-              <p className="text-sm text-primary">200-300ml d'eau toutes les 20-30 minutes (5-7 km). Ajusté selon la température.</p>
+              <p className="text-sm text-primary">200-300ml d&apos;eau toutes les 20-30 minutes (5-7 km). Ajusté selon la température.</p>
             </div>
             <div className="p-4 bg-orange-50 rounded-xl">
               <h4 className="font-semibold text-orange-700 mb-2">Glucides</h4>
@@ -139,7 +138,7 @@ export default function RacePlanningGuide() {
           <ul className="space-y-2 text-sm text-muted">
             <li className="flex items-start gap-2">
               <span className="text-danger mt-1">•</span>
-              <span><strong>Fatigue élevée (TSB &lt; -30) :</strong> le plan recommande de réduire l'objectif de temps</span>
+              <span><strong>Fatigue élevée (TSB &lt; -30) :</strong> le plan recommande de réduire l&apos;objectif de temps</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-amber-500 mt-1">•</span>
@@ -147,7 +146,7 @@ export default function RacePlanningGuide() {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-primary mt-1">•</span>
-              <span><strong>Température &gt; 25°C :</strong> +3-5% sur l'allure cible (dégradation thermique)</span>
+              <span><strong>Température &gt; 25°C :</strong> +3-5% sur l&apos;allure cible (dégradation thermique)</span>
             </li>
           </ul>
         </div>

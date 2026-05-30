@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars */
 'use client';
 
 import { Component, ReactNode, ErrorInfo } from 'react';
@@ -7,7 +6,7 @@ import { logger } from '@/lib/logger';
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
-  onError?: (error: Error, errorInfo: ErrorInfo) => void;
+  onError?: (_error: Error, _errorInfo: ErrorInfo) => void;
 }
 
 interface State {
@@ -26,12 +25,11 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-    componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // TODO: In production, send to error tracking service (Sentry, etc.)
-    logger.error('ErrorBoundary caught error', { 
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    logger.error('ErrorBoundary caught error', {
       message: error.message,
       stack: error.stack,
-      componentStack: errorInfo.componentStack 
+      componentStack: errorInfo.componentStack
     });
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
@@ -49,39 +47,15 @@ export class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
       return (
-        <div style={{
-          padding: '20px', 
-          textAlign: 'center', 
-          background: 'var(--bg)', 
-          color: 'var(--foreground)',
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
+        <div className="p-5 text-center bg-bg text-foreground min-h-screen flex items-center justify-center">
           <div>
-            <h1 style={{ fontSize: '24px', marginBottom: '16px' }}>Une erreur est survenue</h1>
+            <h1 className="text-2xl mb-4">Une erreur est survenue</h1>
             {process.env.NODE_ENV !== 'production' ? (
-              <p style={{ color: 'var(--danger)', marginBottom: '16px' }}>
-                {this.state.error?.message}
-              </p>
+              <p className="text-danger mb-4">{this.state.error?.message}</p>
             ) : (
-              <p style={{ color: 'var(--mutable)', marginBottom: '16px' }}>
-                Une erreur inattendue est survenue. Veuillez réessayer.
-              </p>
+              <p className="text-muted mb-4">Une erreur inattendue est survenue. Veuillez réessayer.</p>
             )}
-            <button
-              onClick={this.handleRetry}
-              style={{
-                padding: '8px 16px',
-                background: 'var(--primary)',
-                color: 'var(--surface)',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px',
-              }}
-            >
+            <button onClick={this.handleRetry} className="px-4 py-2 bg-primary text-surface rounded text-sm cursor-pointer border-0">
               Réessayer
             </button>
           </div>

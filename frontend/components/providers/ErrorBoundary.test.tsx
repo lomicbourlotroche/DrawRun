@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import * as fc from 'fast-check';
@@ -95,7 +94,7 @@ describe('ErrorBoundary', () => {
     });
 
     it('shows error message in development environment', () => {
-      const originalEnv = process.env.NODE_ENV;
+      const _originalEnv = process.env.NODE_ENV;
       // NODE_ENV is 'test' (not 'production'), so dev branch should render
       render(
         <ErrorBoundary>

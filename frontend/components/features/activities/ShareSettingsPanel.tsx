@@ -14,7 +14,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/Card';
+import { Card } from '@/components/ui';
 import { Button } from '@/components/ui/Button';
 import { activitiesApi } from '@/lib/api';
 import { useGroups } from '@/hooks/useSocial';

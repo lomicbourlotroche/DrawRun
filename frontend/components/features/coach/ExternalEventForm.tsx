@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars */
 'use client';
 
 import { useState } from 'react';
@@ -56,8 +55,6 @@ export default function ExternalEventForm({ planId, onEventAdded }: ExternalEven
       setIsLoading(false);
     }
   };
-
-  const selectedType = eventTypes.find(t => t.value === eventType);
 
   return (
     <>

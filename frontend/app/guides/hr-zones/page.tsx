@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -94,10 +93,10 @@ export default function HRZonesGuide() {
         <div className="bg-surface rounded-3xl border border-surface shadow-sm p-8">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
             <Target className="w-6 h-6 text-danger" />
-            Zones d'allure Jack Daniels (VDOT)
+            Zones d&apos;allure Jack Daniels (VDOT)
           </h3>
           <p className="text-muted mb-4 leading-relaxed">
-            En complément des zones FC, DrawRun calcule les <strong>5 allures d'entraînement</strong> basées sur votre VDOT :
+            En complément des zones FC, DrawRun calcule les <strong>5 allures d&apos;entraînement</strong> basées sur votre VDOT :
           </p>
           <div className="space-y-3">
             {[
@@ -128,7 +127,7 @@ export default function HRZonesGuide() {
             Dérive cardiaque
           </h3>
           <p className="text-muted leading-relaxed">
-            Pendant un effort prolongé, la FC augmente progressivement même si l'allure reste constante. C'est la <strong>dérive cardiaque</strong> (cardiac drift).
+            Pendant un effort prolongé, la FC augmente progressivement même si l&apos;allure reste constante. C&apos;est la <strong>dérive cardiaque</strong> (cardiac drift).
             DrawRun la prend en compte dans ses analyses : une dérive &gt; 10% indique une déshydratation ou une fatigue importante.
           </p>
         </div>

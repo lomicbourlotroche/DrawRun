@@ -1,14 +1,14 @@
-import { forwardRef, type HTMLAttributes } from 'react';
-import { cn } from '@/lib/utils';
-
-export interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'elevated' | 'glass' | 'highlight' | 'bordered' | 'ghost' | 'glass-subtle' | 'glass-elevated';
-  padding?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  hover?: boolean;
-}
-
-const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant = 'default', padding = 'md', hover = false, children, ...props }, ref) => {
+import { forwardRef, type HTMLAttributes } from 'react';
+import { cn } from '@/lib/utils';
+
+export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  variant?: 'default' | 'elevated' | 'glass' | 'highlight' | 'bordered' | 'ghost' | 'glass-subtle' | 'glass-elevated';
+  padding?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  hover?: boolean;
+}
+
+const Card = forwardRef<HTMLDivElement, CardProps>(
+  ({ className, variant = 'default', padding = 'md', hover = false, children, ...props }, ref) => {
     const variants = {
       default: cn(
         'bg-surface border border-border',
@@ -60,247 +60,241 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
         'transition-all duration-200 ease-smooth'
       ),
     };
-
-    const paddings = {
-      none: '',
-      xs: 'p-2',
-      sm: 'p-3',
-      md: 'p-4 md:p-5',
-      lg: 'p-5 md:p-6',
-      xl: 'p-6 md:p-8',
-    };
-
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          'rounded-xl transition-all duration-200 ease-smooth',
-          variants[variant],
-          paddings[padding],
-          className
-        )}
-        {...props}
-      >
-        {children}
-      </div>
-    );
-  }
-);
-
-Card.displayName = 'Card';
-
-const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('flex flex-col space-y-2 pb-4', className)}
-      {...props}
-    />
-  )
-);
-
-CardHeader.displayName = 'CardHeader';
-
-const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) => (
-    <h3
-      ref={ref}
-      className={cn('text-lg font-bold text-foreground tracking-tight', className)}
-      {...props}
-    />
-  )
-);
-
-CardTitle.displayName = 'CardTitle';
-
-const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLParagraphElement>>(
-  ({ className, ...props }, ref) => (
-    <p
-      ref={ref}
-      className={cn('text-sm text-muted leading-relaxed', className)}
-      {...props}
-    />
-  )
-);
-
-CardDescription.displayName = 'CardDescription';
-
-const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('', className)} {...props} />
-  )
-);
-
-CardContent.displayName = 'CardContent';
-
-const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('flex items-center justify-end gap-3 pt-4 mt-auto', className)}
-      {...props}
-    />
-  )
-);
-
-CardFooter.displayName = 'CardFooter';
-
-// CardStat for displaying metrics
-interface CardStatProps extends HTMLAttributes<HTMLDivElement> {
-  label: string;
-  value: string | number;
-  unit?: string;
-  trend?: 'up' | 'down' | 'neutral';
-  trendValue?: string;
-}
-
-const CardStat = forwardRef<HTMLDivElement, CardStatProps>(
-  ({ className, label, value, unit, trend, trendValue, ...props }, ref) => {
-    const trendColors = {
-      up: 'text-success-500',
-      down: 'text-danger-500',
-      neutral: 'text-muted',
-    };
-
-    const trendIcons = {
-      up: '↑',
-      down: '↓',
-      neutral: '→',
-    };
-
-    return (
-      <div ref={ref} className={cn('flex flex-col', className)} {...props}>
-        <span className="text-xs font-semibold text-muted uppercase tracking-wider">
-          {label}
-        </span>
-        <div className="flex items-baseline gap-1 mt-1">
-          <span className="text-2xl font-bold text-foreground tabular-nums">
-            {value}
-          </span>
-          {unit && (
-            <span className="text-sm font-medium text-muted">{unit}</span>
-          )}
-        </div>
-        {trend && (
-          <div className={cn('flex items-center gap-1 text-xs font-medium mt-1', trendColors[trend])}>
-            <span>{trendIcons[trend]}</span>
-            <span>{trendValue}</span>
-          </div>
-        )}
-      </div>
-    );
-  }
-);
-
-CardStat.displayName = 'CardStat';
-
-// Glass variants for backward compatibility (will be deprecated)
+
+    const paddings = {
+      none: '',
+      xs: 'p-2',
+      sm: 'p-3',
+      md: 'p-4 md:p-5',
+      lg: 'p-5 md:p-6',
+      xl: 'p-6 md:p-8',
+    };
+
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          'rounded-xl transition-all duration-200 ease-smooth',
+          variants[variant],
+          paddings[padding],
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+
+Card.displayName = 'Card';
+
+const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn('flex flex-col space-y-2 pb-4', className)}
+      {...props}
+    />
+  )
+);
+
+CardHeader.displayName = 'CardHeader';
+
+const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingElement>>(
+  ({ className, ...props }, ref) => (
+    <h3
+      ref={ref}
+      className={cn('text-lg font-bold text-foreground tracking-tight', className)}
+      {...props}
+    />
+  )
+);
+
+CardTitle.displayName = 'CardTitle';
+
+const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLParagraphElement>>(
+  ({ className, ...props }, ref) => (
+    <p
+      ref={ref}
+      className={cn('text-sm text-muted leading-relaxed', className)}
+      {...props}
+    />
+  )
+);
+
+CardDescription.displayName = 'CardDescription';
+
+const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('', className)} {...props} />
+  )
+);
+
+CardContent.displayName = 'CardContent';
+
+const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn('flex items-center justify-end gap-3 pt-4 mt-auto', className)}
+      {...props}
+    />
+  )
+);
+
+CardFooter.displayName = 'CardFooter';
+
+interface CardStatProps extends HTMLAttributes<HTMLDivElement> {
+  label: string;
+  value: string | number;
+  unit?: string;
+  trend?: 'up' | 'down' | 'neutral';
+  trendValue?: string;
+}
+
+const CardStat = forwardRef<HTMLDivElement, CardStatProps>(
+  ({ className, label, value, unit, trend, trendValue, ...props }, ref) => {
+    const trendColors = {
+      up: 'text-success-500',
+      down: 'text-danger-500',
+      neutral: 'text-muted',
+    };
+
+    const trendIcons = {
+      up: '↑',
+      down: '↓',
+      neutral: '→',
+    };
+
+    return (
+      <div ref={ref} className={cn('flex flex-col', className)} {...props}>
+        <span className="text-xs font-semibold text-muted uppercase tracking-wider">
+          {label}
+        </span>
+        <div className="flex items-baseline gap-1 mt-1">
+          <span className="text-2xl font-bold text-foreground tabular-nums">
+            {value}
+          </span>
+          {unit && (
+            <span className="text-sm font-medium text-muted">{unit}</span>
+          )}
+        </div>
+        {trend && (
+          <div className={cn('flex items-center gap-1 text-xs font-medium mt-1', trendColors[trend])}>
+            <span>{trendIcons[trend]}</span>
+            <span>{trendValue}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+);
+
+CardStat.displayName = 'CardStat';
+
+/* ===== Backward-compatible GlassCard aliases ===== */
+
 const GlassCard = forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = 'default', padding = 'md', hover = true, children, ...props }, ref) => {
-    const glassVariants: Record<string, string> = {
-      default: 'bg-surface/90 backdrop-blur-md border border-surface/60 shadow-sm',
-      elevated: 'bg-surface/90 backdrop-blur-md border border-surface/60 shadow-md hover:shadow-lg hover:border-primary-200/50 hover:-translate-y-0.5',
-      subtle: 'bg-surface/70 backdrop-blur-md border border-surface/40 shadow-sm',
-    };
-
-    const paddings = {
-      none: '',
-      xs: 'p-2',
-      sm: 'p-3',
-      md: 'p-4 md:p-5',
-      lg: 'p-5 md:p-6',
-      xl: 'p-6 md:p-8',
-    };
-
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          'rounded-xl transition-all duration-300 ease-smooth',
-          glassVariants[variant] || glassVariants.default,
-          hover && variant === 'default' && 'hover:shadow-md hover:border-primary-200/50 hover:-translate-y-0.5',
-          paddings[padding],
-          className
-        )}
-        {...props}
-      >
-        {children}
-      </div>
-    );
-  }
-);
-
-GlassCard.displayName = 'GlassCard';
-
-const GlassCardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('flex flex-col space-y-1.5 pb-4 border-b border-surface/50', className)}
-      {...props}
-    />
-  )
-);
-
-GlassCardHeader.displayName = 'GlassCardHeader';
-
-const GlassCardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) => (
-    <h3
-      ref={ref}
-      className={cn('text-lg font-semibold tracking-tight text-foreground', className)}
-      {...props}
-    />
-  )
-);
-
-GlassCardTitle.displayName = 'GlassCardTitle';
-
-const GlassCardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLParagraphElement>>(
-  ({ className, ...props }, ref) => (
-    <p
-      ref={ref}
-      className={cn('text-sm text-muted leading-relaxed', className)}
-      {...props}
-    />
-  )
-);
-
-GlassCardDescription.displayName = 'GlassCardDescription';
-
-const GlassCardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('pt-4', className)} {...props} />
-  )
-);
-
-GlassCardContent.displayName = 'GlassCardContent';
-
-const GlassCardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('flex items-center justify-between pt-4 mt-4 border-t border-surface/50', className)}
-      {...props}
-    />
-  )
-);
-
-GlassCardFooter.displayName = 'GlassCardFooter';
-
-export {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-  CardStat,
-  // Backward compatibility exports - use Card instead
-  GlassCard,
-  GlassCardHeader,
-  GlassCardTitle,
-  GlassCardDescription,
-  GlassCardContent,
-  GlassCardFooter,
-};
+    const glassVariants: Record<string, string> = {
+      default: 'bg-surface/90 backdrop-blur-md border border-surface/60 shadow-sm',
+      elevated: 'bg-surface/90 backdrop-blur-md border border-surface/60 shadow-md hover:shadow-lg hover:border-primary-200/50 hover:-translate-y-0.5',
+      subtle: 'bg-surface/70 backdrop-blur-md border border-surface/40 shadow-sm',
+    };
+
+    const paddings = {
+      none: '', xs: 'p-2', sm: 'p-3', md: 'p-4 md:p-5', lg: 'p-5 md:p-6', xl: 'p-6 md:p-8',
+    };
+
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          'rounded-xl transition-all duration-300 ease-smooth',
+          glassVariants[variant] || glassVariants.default,
+          hover && variant === 'default' && 'hover:shadow-md hover:border-primary-200/50 hover:-translate-y-0.5',
+          paddings[padding],
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+
+GlassCard.displayName = 'GlassCard';
+
+const GlassCardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn('flex flex-col space-y-1.5 pb-4 border-b border-surface/50', className)}
+      {...props}
+    />
+  )
+);
+
+GlassCardHeader.displayName = 'GlassCardHeader';
+
+const GlassCardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingElement>>(
+  ({ className, ...props }, ref) => (
+    <h3
+      ref={ref}
+      className={cn('text-lg font-semibold tracking-tight text-foreground', className)}
+      {...props}
+    />
+  )
+);
+
+GlassCardTitle.displayName = 'GlassCardTitle';
+
+const GlassCardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLParagraphElement>>(
+  ({ className, ...props }, ref) => (
+    <p
+      ref={ref}
+      className={cn('text-sm text-muted leading-relaxed', className)}
+      {...props}
+    />
+  )
+);
+
+GlassCardDescription.displayName = 'GlassCardDescription';
+
+const GlassCardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('pt-4', className)} {...props} />
+  )
+);
+
+GlassCardContent.displayName = 'GlassCardContent';
+
+const GlassCardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn('flex items-center justify-between pt-4 mt-4 border-t border-surface/50', className)}
+      {...props}
+    />
+  )
+);
+
+GlassCardFooter.displayName = 'GlassCardFooter';
+
+export {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+  CardStat,
+  GlassCard,
+  GlassCardHeader,
+  GlassCardTitle,
+  GlassCardDescription,
+  GlassCardContent,
+  GlassCardFooter,
+};

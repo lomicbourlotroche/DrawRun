@@ -6,6 +6,9 @@
   "plugins": [
     "unused-imports"
   ],
+  "globals": {
+    "React": "readonly"
+  },
   "rules": {
     "no-console": ["warn", { "allow": ["error"] }],
     "no-unused-vars": "off",
@@ -22,12 +25,35 @@
   },
   "overrides": [
     {
+      "files": ["*.ts", "*.tsx"],
+      "rules": {
+        "no-undef": "off"
+      }
+    },
+    {
+      "files": ["scripts/**/*.js", "scripts/**/*.ts"],
+      "rules": {
+        "no-console": "off"
+      }
+    },
+    {
       "files": ["*.test.ts", "*.test.tsx", "tests/**/*.ts", "tests/**/*.tsx"],
       "rules": {
         "no-console": "off"
       },
+      "env": {
+        "jest": true
+      },
       "globals": {
-        "React": "readonly"
+        "vi": "readonly",
+        "describe": "readonly",
+        "it": "readonly",
+        "expect": "readonly",
+        "beforeEach": "readonly",
+        "afterEach": "readonly",
+        "beforeAll": "readonly",
+        "afterAll": "readonly",
+        "globalThis": "readonly"
       }
     }
   ]

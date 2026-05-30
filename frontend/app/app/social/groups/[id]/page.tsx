@@ -3,21 +3,11 @@
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Avatar, Skeleton } from '@/components/ui';
 import type { Activity } from '@/types';
-import {
-  Users, Settings, Activity as ActivityIcon, Trophy,
-  ChevronLeft, Copy, Trash2, Edit2, UserX, Crown, Shield, Flame, Save, Eye, Sparkles
-} from 'lucide-react';
+import { NavTabs } from '@/components/ui/NavTabs';
+import { Users, Settings, Activity as ActivityIcon, Trophy, ChevronLeft, Copy, Trash2, Edit2, UserX, Crown, Shield, Flame, Save, Eye, Sparkles } from 'lucide-react';
 import ChallengeWizard from '../../modals/ChallengeWizard';
 import { getModeInfo, getTypeInfo } from '../../tabs/challenge-constants';
 import { useGroupDetail } from '@/hooks/useGroupDetail';
-
-type GroupChallenge = {
-  id: number; title: string; description: string; type: string;
-  target_value: number; target_unit: string; duration_days: number;
-  participant_count: number; created_at: string; challenge_mode?: string;
-  badge_icon?: string; sport_type?: string; milestones?: string;
-  creator_name?: string;
-};
 
 export default function GroupDetailPage() {
   const {
@@ -32,7 +22,6 @@ export default function GroupDetailPage() {
     showWizard,
     setEditForm,
     setShowWizard,
-    loadGroup,
     handleEdit,
     handleDelete,
     handleKick,
@@ -53,12 +42,12 @@ export default function GroupDetailPage() {
   }, [error]);
 
   const tabs = [
-    { id: 'overview',    label: 'Aperçu',                          icon: Eye },
-    { id: 'members',     label: `Membres (${members.length})`,     icon: Users },
-    { id: 'activities',  label: 'Activités',                       icon: ActivityIcon },
-    { id: 'challenges',  label: `Défis (${challenges.length})`,    icon: Trophy },
-    { id: 'settings',    label: 'Paramètres',                      icon: Settings },
-  ] as const;
+    { id: 'overview',    label: 'Aperçu',                          icon: <Eye className="w-4 h-4" /> },
+    { id: 'members',     label: `Membres (${members.length})`,     icon: <Users className="w-4 h-4" /> },
+    { id: 'activities',  label: 'Activités',                       icon: <ActivityIcon className="w-4 h-4" /> },
+    { id: 'challenges',  label: `Défis (${challenges.length})`,    icon: <Trophy className="w-4 h-4" /> },
+    { id: 'settings',    label: 'Paramètres',                      icon: <Settings className="w-4 h-4" /> },
+  ];
 
   if (isLoading) {
     return (
@@ -108,21 +97,7 @@ export default function GroupDetailPage() {
         </div>
       </div>
 
-      {/* ── TABS ── */}
-      <div className="flex gap-1 overflow-x-auto pb-2 border-b border-border">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            aria-label={`Aller à l'onglet ${tab.label}`}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
-              activeTab === tab.id ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-card border border-border text-muted hover:text-foreground hover:border-primary/30'
-            }`}
-          >
-            <tab.icon className="w-4 h-4" />{tab.label}
-          </button>
-        ))}
-      </div>
+      <NavTabs tabs={tabs} activeTab={activeTab} onChange={(id) => setActiveTab(id as typeof activeTab)} />
 
       {/* ── OVERVIEW ── */}
       {activeTab === 'overview' && (
@@ -341,7 +316,7 @@ export default function GroupDetailPage() {
           showPresets={false}
           showPublicToggle={false}
           onClose={() => setShowWizard(false)}
-          onCreate={handleCreateChallenge as unknown as (form: import('../../tabs/challenge-constants').ChallengeForm) => Promise<void>}
+          onCreate={handleCreateChallenge as unknown as (_form: import('../../tabs/challenge-constants').ChallengeForm) => Promise<void>}
         />
       )}
     </div>

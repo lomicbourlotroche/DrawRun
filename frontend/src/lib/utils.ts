@@ -1,4 +1,4 @@
-/* eslint-disable unused-imports/no-unused-vars, no-undef */
+/* eslint-disable unused-imports/no-unused-vars */
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 

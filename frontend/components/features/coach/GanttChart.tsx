@@ -6,7 +6,7 @@ import type { TrainingPlan, TrainingWeek, TrainingSession } from '@/types';
 
 export interface GanttChartProps {
   plan: TrainingPlan;
-  onSessionClick?: (session: TrainingSession, week: TrainingWeek) => void;
+  onSessionClick?: (_session: TrainingSession, _week: TrainingWeek) => void;
 }
 
 // Couleurs des phases basées sur les tokens métiers
@@ -46,16 +46,8 @@ const SESSION_TYPE_MAP: Record<string, string> = {
 };
 
 export function GanttChart({ plan, onSessionClick }: GanttChartProps) {
-  // Calculer la date de début du plan
-  const startDate = useMemo(() => new Date(plan.startDate), [plan.startDate]);
-  
   // Générer les jours de la semaine pour l'affichage
   const daysOfWeek = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-
-  // Trouver le nombre maximum de séances par semaine pour le scaling
-  const maxSessionsPerWeek = useMemo(() => {
-    return Math.max(...plan.weeks.map(w => w.sessions.length), 7);
-  }, [plan.weeks]);
 
   // Calculer la largeur de chaque cellule (en %)
   const cellWidth = useMemo(() => {
@@ -130,9 +122,6 @@ export function GanttChart({ plan, onSessionClick }: GanttChartProps) {
             const session = week.sessions.find((s) => s.day === day);
             return { week, session };
           });
-
-          // Vérifier s'il y a au moins une séance ce jour
-          const hasAnySession = sessionsByWeek.some(({ session }) => session !== undefined);
 
           return (
             <div key={day} className="flex border-b border-border last:border-b-0">

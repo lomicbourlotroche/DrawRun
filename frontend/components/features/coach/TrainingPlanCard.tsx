@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars */
 'use client';
 
 import { useState } from 'react';
@@ -12,7 +11,7 @@ import SessionResultIndicator from './SessionResultIndicator';
 interface TrainingPlanCardProps {
   plan: TrainingPlan;
   onDelete?: () => void;
-  onSessionComplete?: (session: TrainingSession) => void;
+  onSessionComplete?: (_session: TrainingSession) => void;
 }
 
 // Couleurs des phases bases sur les tokens metiers
@@ -71,7 +70,7 @@ const getResultIndicator = (session: TrainingSession) => {
   return <SessionResultIndicator result="success" size="sm" />;
 };
 
-export function TrainingPlanCard({ plan, onDelete, onSessionComplete }: TrainingPlanCardProps) {
+export function TrainingPlanCard({ plan, onDelete: _onDelete, onSessionComplete }: TrainingPlanCardProps) {
   const [expandedWeek, setExpandedWeek] = useState(plan.currentWeek);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -273,7 +272,7 @@ export function TrainingPlanCard({ plan, onDelete, onSessionComplete }: Training
                   )}
                 </div>
                 
-                {!Boolean((selectedSession as unknown as Record<string, unknown>).feedback) && (
+                {!((selectedSession as unknown as Record<string, unknown>).feedback) && (
                   <div className="mt-4 p-4 rounded-lg bg-surface border border-border">
                     <p className="text-sm text-muted mb-3">
                       Donnez votre feedback pour cette seance

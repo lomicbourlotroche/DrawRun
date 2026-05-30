@@ -9,10 +9,6 @@ function toNum(val: unknown): number {
   return typeof val === 'number' ? val : 0;
 }
 
-function toStr(val: unknown): string {
-  return String(val ?? '');
-}
-
 export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRunAnalysis }) {
   return (
     <>

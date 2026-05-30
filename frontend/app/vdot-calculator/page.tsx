@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useState } from 'react';
@@ -283,7 +282,7 @@ export default function VDOTCalculatorPage() {
             <div className="bg-surface rounded-3xl border border-surface shadow-sm p-6">
               <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <Activity className="w-5 h-5 text-primary" />
-                Vos zones d'entraînement
+                Vos zones d&apos;entraînement
               </h3>
               <div className="space-y-3">
                 {TRAINING_ZONES.map((zone) => {

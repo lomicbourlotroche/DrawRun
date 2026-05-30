@@ -1,9 +1,8 @@
-/* eslint-disable unused-imports/no-unused-imports, react/jsx-no-undef, no-undef */
 'use client';
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { Select, ActivitySkeleton, EmptyState } from '@/components/ui';
+import { Card, Select, EmptyState } from '@/components/ui';
 import { formatDate, formatDistance, getSportColor } from '@/lib/utils';
 import type { Activity } from '@/types';
 import { Clock, Heart, TrendingUp, ChevronRight, Search, RefreshCw, ChevronDown, Mountain } from 'lucide-react';
@@ -185,7 +184,7 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
               href={`/app/activities/${activity.id}`}
               className="group block"
             >
-              <div className="relative bg-surface rounded-2xl border border-neutral-200/60 shadow-card overflow-hidden transition-all duration-200 ease-smooth hover:shadow-md hover:-translate-y-0.5 hover:border-primary-200/50">
+              <Card variant="elevated" hover padding="none" className="relative overflow-hidden">
                 {/* Sport color accent */}
                 <div
                   className="absolute top-0 left-0 w-full h-1"
@@ -285,7 +284,7 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
                     )}
                   </div>
                 </div>
-              </div>
+              </Card>
             </Link>
           );
         })}

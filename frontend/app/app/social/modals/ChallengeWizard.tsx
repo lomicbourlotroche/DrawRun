@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button, Input } from '@/components/ui';
+import { ModalSheet } from '@/components/ui/ModalSheet';
 import { X, Trophy, Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SOCIAL_ERRORS } from '@/constants/social';
@@ -13,7 +14,7 @@ import {
 
 interface ChallengeWizardProps {
   onClose: () => void;
-  onCreate: (form: ChallengeForm) => Promise<void>;
+  onCreate: (_form: ChallengeForm) => Promise<void>;
   showPresets?: boolean;
   showPublicToggle?: boolean;
   title?: string;
@@ -80,18 +81,8 @@ export default function ChallengeWizard({
   };
 
   return (
-    <div
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4"
-      onClick={handleClose}
-      aria-label="Fermer la modal"
-    >
-      <div
-        className="bg-card rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="wizard-title"
-      >
+    <ModalSheet open onClose={handleClose} dense>
+      <div role="dialog" aria-modal="true" aria-labelledby="wizard-title">
         <div className="px-6 pt-5 pb-4 border-b border-border">
           <div className="flex items-center justify-between mb-3">
             <h3 id="wizard-title" className="font-bold text-lg flex items-center gap-2">
@@ -387,6 +378,6 @@ export default function ChallengeWizard({
           )}
         </div>
       </div>
-    </div>
+    </ModalSheet>
   );
 }

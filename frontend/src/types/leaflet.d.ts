@@ -19,17 +19,19 @@ declare module 'leaflet' {
   }
 
   interface HeatLayer extends L.Layer {
-    setLatLngs(points: [number, number, number][]): void;
-    addTo(map: L.Map): this;
+    setLatLngs(_points: [number, number, number][]): void;
+    addTo(_map: L.Map): this;
     remove(): void;
   }
 
   // Extend Map with heatLayer method
+  // eslint-disable-next-line unused-imports/no-unused-vars
   interface Map {
-    heatLayer?: (points: [number, number, number][], options?: HeatLayerOptions) => HeatLayer;
+    heatLayer?: (_points: [number, number, number][], _options?: HeatLayerOptions) => HeatLayer;
   }
 
   // Extend Window with L namespace
+  // eslint-disable-next-line unused-imports/no-unused-vars
   interface Window {
     L: typeof L;
   }
@@ -72,36 +74,36 @@ export interface MapBounds {
  * Represents a Leaflet map instance with DrawRun-specific extensions
  */
 export interface DrawRunMap extends L.Map {
-  heatLayer?: (points: LatLngWithIntensity[], options?: L.HeatLayerOptions) => L.HeatLayer;
+  heatLayer?: (_points: LatLngWithIntensity[], _options?: L.HeatLayerOptions) => L.HeatLayer;
 }
 
 /**
  * Represents a Leaflet polyline with DrawRun-specific properties
  */
 export interface DrawRunPolyline extends L.Polyline {
-  setLatLngs: (latlngs: LatLng[]) => void;
+  setLatLngs: (_latlngs: LatLng[]) => void;
 }
 
 /**
  * Represents a Leaflet marker with DrawRun-specific properties
  */
 export interface DrawRunMarker extends L.Marker {
-  setLatLng: (latlng: LatLng) => void;
+  setLatLng: (_latlng: LatLng) => void;
 }
 
 /**
  * Represents a Leaflet circle with DrawRun-specific properties
  */
 export interface DrawRunCircle extends L.Circle {
-  setLatLng: (latlng: LatLng) => void;
-  setRadius: (radius: number) => void;
+  setLatLng: (_latlng: LatLng) => void;
+  setRadius: (_radius: number) => void;
 }
 
 /**
  * Represents a Leaflet circle marker with DrawRun-specific properties
  */
 export interface DrawRunCircleMarker extends L.CircleMarker {
-  setLatLng: (latlng: LatLng) => void;
+  setLatLng: (_latlng: LatLng) => void;
 }
 
 /**
@@ -116,7 +118,7 @@ export interface ActivityMapProps {
   accuracy?: number;
   showTrailAnimation?: boolean;
   segments?: MapSegment[];
-  onMapReady?: (map: DrawRunMap) => void;
+  onMapReady?: (_map: DrawRunMap) => void;
 }
 
 /**
@@ -124,8 +126,8 @@ export interface ActivityMapProps {
  */
 export interface HeatmapLayerProps {
   map: DrawRunMap;
-  bounds: MapBounds | null;
-  activityType?: string;
+  _bounds: MapBounds | null;
+  _activityType?: string;
   visible: boolean;
 }
 

@@ -257,13 +257,11 @@ export function EmptyList({
 
 // Composant pour les empty states de tableau
 export function EmptyTable({
-  columns = 4,
   title = 'Aucune donnée disponible',
   description,
   action,
   className,
 }: {
-  columns?: number;
   title?: string;
   description?: string;
   action?: React.ReactNode;

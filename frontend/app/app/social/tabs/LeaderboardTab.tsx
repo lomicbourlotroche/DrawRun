@@ -22,7 +22,6 @@ export default function LeaderboardTab() {
     period,
     setCategory,
     setPeriod,
-    loadLeaderboard,
   } = useLeaderboard();
 
   // Show errors

@@ -1,6 +1,7 @@
 'use strict';
 
 const { MathUtils } = require('./math_utils');
+const SCIENTIFIC_CONSTANTS = require('./scientific_constants');
 const { RunningPerformance } = require('./running_performance');
 const { EnvironmentalImpact } = require('./environmental_impact');
 const { Taper } = require('./taper');
@@ -59,8 +60,8 @@ const RaceStrategy = {
             if (currentSeg.dist >= 1000 || i === points.length - 1) {
                 const grade = (currentSeg.elevGain - currentSeg.elevLoss) / currentSeg.dist;
                 // Calcul du coût métabolique via Minetti (modèle GAP)
-                const g = MathUtils.clamp(grade, -0.45, 0.45);
-                const c5 = 155.4, c4 = -30.4, c3 = -43.3, c2 = 46.3, c1 = 19.5, c0 = 3.6;
+                const g = MathUtils.clamp(grade, SCIENTIFIC_CONSTANTS.MINETTI.GRADE_CLAMP_MIN, SCIENTIFIC_CONSTANTS.MINETTI.GRADE_CLAMP_MAX);
+                const { c5, c4, c3, c2, c1, c0 } = SCIENTIFIC_CONSTANTS.MINETTI.COEFFICIENTS;
                 const costG = c5 * Math.pow(g, 5) + c4 * Math.pow(g, 4) + c3 * Math.pow(g, 3) + c2 * Math.pow(g, 2) + c1 * g + c0;
                 const slopeFactor = costG / c0;
 

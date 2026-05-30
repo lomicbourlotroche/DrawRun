@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -47,8 +46,8 @@ export default function WeatherGuide() {
             Source des données
           </h3>
           <p className="text-muted leading-relaxed">
-            Les données météo proviennent de l'API <strong>Open-Meteo</strong> (open-source, gratuite, sans clé API).
-            Pour chaque activité, DrawRun récupère les conditions au point GPS de départ et à l'heure de début.
+            Les données météo proviennent de l&apos;API <strong>Open-Meteo</strong> (open-source, gratuite, sans clé API).
+            Pour chaque activité, DrawRun récupère les conditions au point GPS de départ et à l&apos;heure de début.
           </p>
           <div className="mt-4 p-3 bg-sky-50 rounded-lg border border-sky-100">
             <p className="text-sm text-sky-700">
@@ -89,9 +88,9 @@ export default function WeatherGuide() {
             Humidité et indice de chaleur
           </h3>
           <p className="text-muted leading-relaxed">
-            Une humidité élevée réduit l'efficacité de la transpiration, augmentant la perception de l'effort.
-            Au-dessus de 70% d'humidité combinée à &gt; 20°C, l'impact sur la performance est significatif.
-            DrawRun calcule l'<strong>indice de chaleur</strong> (heat index) pour estimer la température ressentie.
+            Une humidité élevée réduit l&apos;efficacité de la transpiration, augmentant la perception de l&apos;effort.
+            Au-dessus de 70% d&apos;humidité combinée à &gt; 20°C, l&apos;impact sur la performance est significatif.
+            DrawRun calcule l&apos;<strong>indice de chaleur</strong> (heat index) pour estimer la température ressentie.
           </p>
         </div>
 
@@ -102,7 +101,7 @@ export default function WeatherGuide() {
             Impact du vent
           </h3>
           <p className="text-muted leading-relaxed">
-            Le vent de face augmente la résistance aérodynamique. À partir de 20 km/h, l'impact sur l'allure devient mesurable.
+            Le vent de face augmente la résistance aérodynamique. À partir de 20 km/h, l&apos;impact sur l&apos;allure devient mesurable.
             DrawRun estime la pénalité en fonction de la vitesse et de la direction du vent par rapport à votre parcours.
           </p>
         </div>
@@ -130,7 +129,7 @@ export default function WeatherGuide() {
         <div className="bg-gradient-to-r from-primary to-primary rounded-3xl p-8 text-foreground text-center">
           <CloudSun className="w-12 h-12 mx-auto mb-4" />
           <h3 className="text-2xl font-bold mb-3">Visualisez la météo de vos sorties</h3>
-          <p className="text-foreground/80 mb-6">Importez vos activités et découvrez l'impact météo sur chaque performance.</p>
+          <p className="text-foreground/80 mb-6">Importez vos activités et découvrez l&apos;impact météo sur chaque performance.</p>
           <button
             onClick={() => router.push('/login?mode=register')}
             className="px-8 py-3 bg-surface text-primary font-semibold rounded-xl hover:bg-surface transition-colors"

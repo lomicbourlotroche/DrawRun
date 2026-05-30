@@ -12,7 +12,7 @@ import MapLayerSwitcher from '@/components/features/explore/MapLayerSwitcher';
 import LocationSearch from '@/components/features/explore/LocationSearch';
 import RoutePlanner from '@/components/features/explore/RoutePlanner';
 import RouteDetailPopup from '@/components/features/explore/RouteDetailPopup';
-import CommunityTracesLayer from '@/components/features/explore/CommunityTracesLayer';
+import HeatmapView from './HeatmapView';
 
 const ExploreMap = dynamic(
   () => import('@/components/features/explore/ExploreMap'),
@@ -119,8 +119,7 @@ export default function ExplorePage() {
   const [isLoop, setIsLoop] = useState(false);
   const [selectedRoute, setSelectedRoute] = useState<RouteItem | null>(null);
 
-  // Community traces & heatmap
-  const [showCommunityTraces, setShowCommunityTraces] = useState(false);
+  // Heatmap
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [heatmapData, setHeatmapData] = useState<Array<{ lat: number; lng: number; intensity: number }>>([]);
   const [mapInstance, setMapInstance] = useState<DrawRunMap | null>(null);
@@ -239,23 +238,6 @@ export default function ExplorePage() {
     loadFavorites();
   }, [loadFavorites]);
 
-  // Load heatmap data when activated
-  useEffect(() => {
-    if (!showHeatmap) {
-      setHeatmapData([]);
-      return;
-    }
-
-    const radius = 10000;
-    api.getHeatmap(mapCenter.lat, mapCenter.lng, radius, activeFilter.type || undefined).then((res) => {
-      if (res.success) {
-        setHeatmapData(res.heatmap || []);
-      }
-    }).catch(() => {
-      /* ignore */
-    });
-  }, [showHeatmap, mapCenter, activeFilter.type]);
-
   const handleLocateMe = useCallback(() => {
     if (!navigator.geolocation) {
       toast.error('Géolocalisation non supportée');
@@ -300,7 +282,7 @@ export default function ExplorePage() {
   }, []);
 
   return (
-    <div className="relative w-full overflow-hidden -m-4 lg:-m-6" style={{ height: 'calc(100dvh - 4rem)' }}>
+    <div className="relative w-full overflow-hidden -m-4 lg:-m-6 h-[calc(100dvh-4rem)]">
       {/* Map */}
       <div className="absolute inset-0">
         <ExploreMap
@@ -320,14 +302,6 @@ export default function ExplorePage() {
           showHeatmap={showHeatmap}
         />
       </div>
-
-      {/* Community traces layer */}
-      {mapInstance && (
-        <CommunityTracesLayer
-          map={mapInstance}
-          visible={showCommunityTraces && !routePlannerOpen}
-        />
-      )}
 
       {/* Desktop search */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[500] max-sm:hidden">
@@ -376,34 +350,15 @@ export default function ExplorePage() {
         >
           <Search className="w-4 h-4" />
         </button>
-        <button
-          onClick={() => setShowHeatmap((p) => !p)}
-          className={`flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg shadow-md border transition-all ${
-            showHeatmap
-              ? 'bg-peak text-white border-peak'
-              : 'bg-white/90 backdrop-blur-sm border-border hover:bg-white text-muted-foreground'
-          }`}
-          title="Heatmap"
-        >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-            <circle cx="12" cy="12" r="3" />
-            <circle cx="12" cy="12" r="6" strokeDasharray="2 2" />
-            <circle cx="12" cy="12" r="10" strokeDasharray="2 4" />
-          </svg>
-        </button>
-        <button
-          onClick={() => setShowCommunityTraces((p) => !p)}
-          className={`flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg shadow-md border transition-all ${
-            showCommunityTraces
-              ? 'bg-purple-600 text-white border-purple-600'
-              : 'bg-white/90 backdrop-blur-sm border-border hover:bg-white text-muted-foreground'
-          }`}
-          title="Traces de la communauté"
-        >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 5h16M4 12h16M4 19h7" />
-          </svg>
-        </button>
+        <HeatmapView
+          mapCenter={mapCenter}
+          activeFilterType={activeFilter.type}
+          mapInstance={mapInstance}
+          routePlannerOpen={routePlannerOpen}
+          showHeatmap={showHeatmap}
+          onShowHeatmapChange={setShowHeatmap}
+          onHeatmapDataChange={setHeatmapData}
+        />
         <MapLayerSwitcher activeLayer={mapLayer} onLayerChange={setMapLayer} />
       </div>
 

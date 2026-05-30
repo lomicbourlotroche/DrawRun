@@ -19,7 +19,7 @@ import {
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { Activity, Heart, TrendingUp, Zap } from 'lucide-react';
 import Link from 'next/link';
-import { GradientBadge, PrimaryButton } from '@/components/ui';
+import { Card, GradientBadge, PrimaryButton } from '@/components/ui';
 import dynamic from 'next/dynamic';
 
 const OnboardingWizard = dynamic(
@@ -138,7 +138,7 @@ export default function DashboardContent() {
           </GradientBadge>
         </div>
 
-        <div className="bg-surface rounded-2xl border border-neutral-200/60 shadow-card p-8 md:p-12 text-center transition-all duration-200 ease-smooth">
+        <Card padding="xl" className="text-center">
           <div className="w-20 h-20 bg-gradient-to-br from-primary-100 to-primary-50 border border-primary-200/60 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
             <Activity className="w-10 h-10 text-primary-500" />
           </div>
@@ -161,7 +161,7 @@ export default function DashboardContent() {
               </PrimaryButton>
             </Link>
           </div>
-        </div>
+        </Card>
 
         <div className="grid sm:grid-cols-3 gap-4">
           {[

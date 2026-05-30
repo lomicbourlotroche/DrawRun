@@ -1,4 +1,3 @@
-/* eslint-disable no-undef, unused-imports/no-unused-vars */
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -14,7 +13,7 @@ export interface SelectOption {
 interface SelectProps {
   options: SelectOption[];
   value?: string;
-  onChange: (value: string) => void;
+  onChange: (_value: string) => void;
   placeholder?: string;
   label?: string;
   error?: string;

@@ -57,7 +57,7 @@ export const TaperingChart: React.FC<TaperingChartProps> = ({ data }) => {
     <Card className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold flex items-center gap-2">
-          <TrendingDown className="w-5 h-5" style={{ color: 'var(--primary)' }} />
+          <TrendingDown className="w-5 h-5 text-primary" />
           Plan d&apos;Affûtage (Phase J-14)
         </h3>
         <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full text-primary text-xs font-bold">

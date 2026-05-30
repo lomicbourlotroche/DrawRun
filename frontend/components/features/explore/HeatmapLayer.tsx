@@ -68,7 +68,7 @@ export default function HeatmapLayer({
     // Create heatmap layer if visible and data is available
     if (visible && (L as unknown as { heatLayer: unknown }).heatLayer) {
       const points = data.map((d) => [d.lat, d.lng, d.intensity] as LatLngWithIntensity);
-      const heat = (L as unknown as { heatLayer: (points: [number, number, number][], options?: Record<string, unknown>) => L.Layer }).heatLayer(points, {
+      const heat = (L as unknown as { heatLayer: (_points: [number, number, number][], _options?: Record<string, unknown>) => L.Layer }).heatLayer(points, {
         radius: 18,
         blur: 12,
         maxZoom: 16,

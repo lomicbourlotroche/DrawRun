@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars, no-undef */
 'use client';
 
 import { useState, useCallback } from 'react';
@@ -14,7 +13,7 @@ interface DrawButtonProps {
   showCount?: boolean;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
-  onDrawChange?: (hasDrawn: boolean, count: number) => void;
+  onDrawChange?: (_hasDrawn: boolean, _count: number) => void;
 }
 
 export function DrawButton({

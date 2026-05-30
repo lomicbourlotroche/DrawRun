@@ -1,4 +1,4 @@
-/* eslint-disable unused-imports/no-unused-vars */
+
 'use client';
 
 import { useState } from 'react';
@@ -23,7 +23,7 @@ interface ActivityDrawsProps {
   draws: Draw[];
   drawCount: number;
   userHasDrawn: boolean;
-  onDrawUpdate?: (newDraws: Draw[], newCount: number, userHasDrawn: boolean) => void;
+  onDrawUpdate?: (_newDraws: Draw[], _newCount: number, _userHasDrawn: boolean) => void;
 }
 
 export function ActivityDraws({ 
@@ -149,7 +149,6 @@ interface SocialDrawProps {
 
 export function SocialDraw({ 
   itemId, 
-  itemType, 
   initialDraws, 
   initialCount, 
   userHasDrawn,

@@ -15,7 +15,6 @@ const path = require('path');
 
 // Set up data directory
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '../../DrawRun-Data');
-const MAIN_DB_PATH = path.join(DATA_DIR, 'main.db');
 
 // Ensure data directory exists
 if (!fs.existsSync(DATA_DIR)) {
@@ -59,8 +58,6 @@ const {
     lruSet,
     lruEvictLRU,
     getCacheStats,
-    clearCache,
-    getCacheInstance,
 } = lruCacheModule;
 
 // Re-export user DB functions
@@ -68,8 +65,6 @@ const {
     sanitizeEmail,
     getUserDbPath,
     saveUserDb,
-    initUserSchema,
-    ensureUserSchemaCompatibility,
     getUserDbByEmail,
     dbGetUser,
     dbRunUser,
@@ -84,8 +79,6 @@ const {
     dbRunMain,
     dbAllMain,
     getMigrationStatus,
-    getMainDb,
-    isInitialized,
 } = mainDbModule;
 
 // Override initMainDb to set global state
