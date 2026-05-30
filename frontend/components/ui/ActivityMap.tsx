@@ -253,8 +253,7 @@ export default function ActivityMap({
   if (!hasData) {
     return (
       <div
-        className={`bg-background rounded-lg flex items-center justify-center ${className}`}
-        className="min-h-[200px]"
+        className={`bg-background rounded-lg flex items-center justify-center min-h-[200px] ${className}`}
         role="region"
         aria-label="Carte sans données GPS"
       >

@@ -161,14 +161,14 @@ export default function LoginForm() {
     }
 
     try {
-      const result = await login(email, password, totpCode || undefined);
-      if (result.requires2FA) {
-        setRequires2FA(true);
-        return;
-      }
+      await login(email, password, totpCode || undefined);
       router.push('/app');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Erreur');
+      if (err instanceof Error && err.message === '2FA_REQUIRED') {
+        setRequires2FA(true);
+      } else {
+        setError(err instanceof Error ? err.message : 'Erreur');
+      }
     }
   };
 

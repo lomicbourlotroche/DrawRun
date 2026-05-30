@@ -58,7 +58,7 @@ export function GpxImportSection({
           </p>
           {gpxRaw && <p className="text-xs text-muted mt-1">Distance estimée : {gpxDistKm} km</p>}
         </div>
-        <input type="file" ref={fileInputRef} onChange={onFileUpload} accept=".gpx" className="hidden" />
+        <input type="file" ref={fileInputRef as React.RefObject<HTMLInputElement>} onChange={onFileUpload} accept=".gpx" className="hidden" />
 
         {gpxRaw && (
           <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-1.5">
@@ -112,7 +112,7 @@ export function GpxImportSection({
             placeholder="04:30"
           />
         )}
-        {recommendedPace !== null && (
+        {recommendedPace != null && (
           <p className="text-xs text-primary mt-1">
             Prédiction VDOT : {recommendedPace}s/km 
             ({fmtPace(recommendedPace)}/km)

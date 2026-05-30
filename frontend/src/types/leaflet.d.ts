@@ -126,8 +126,8 @@ export interface ActivityMapProps {
  */
 export interface HeatmapLayerProps {
   map: DrawRunMap;
-  _bounds: MapBounds | null;
-  _activityType?: string;
+  bounds: MapBounds | null;
+  activityType?: string;
   visible: boolean;
 }
 

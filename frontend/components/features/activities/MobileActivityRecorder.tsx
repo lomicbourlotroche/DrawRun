@@ -296,8 +296,9 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       animationFrameRef.current = null;
     }
     try {
-      if ('getBattery' in navigator && navigator.getBattery) {
-        navigator.getBattery().then((battery: BatteryManager) => {
+      const nav = navigator as any;
+      if ('getBattery' in navigator && nav.getBattery) {
+        nav.getBattery().then((battery: any) => {
           battery.removeEventListener('levelchange', updateBatteryLevel);
         });
       }
@@ -307,13 +308,13 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   };
   const requestWakeLock = async () => {
     try {
-      if (navigator.wakeLock) {
-        wakeLockRef.current = await navigator.wakeLock.request('screen');
+      if ((navigator as any).wakeLock) {
+        (navigator as any).wakeLock.request('screen').then((lock: any) => { wakeLockRef.current = lock; });
       }
     } catch { /* silent */ }
   };
   const releaseWakeLock = () => {
-    wakeLockRef.current?.release();
+    (wakeLockRef.current as any)?.release();
     wakeLockRef.current = null;
   };
   const checkCapabilities = () => {
@@ -324,8 +325,9 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   };
   const getBatteryLevel = async () => {
     try {
-      if (navigator.getBattery) {
-        const battery = await navigator.getBattery();
+      const nav = navigator as any;
+      if (nav.getBattery) {
+        const battery = await nav.getBattery();
         setBatteryLevel(Math.round(battery.level * 100));
         battery.removeEventListener('levelchange', updateBatteryLevel);
         battery.addEventListener('levelchange', updateBatteryLevel);
@@ -334,8 +336,9 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   };
   const updateBatteryLevel = () => {
     try {
-      if (navigator.getBattery) {
-        navigator.getBattery().then((battery: BatteryManager) => {
+      const nav = navigator as any;
+      if (nav.getBattery) {
+        nav.getBattery().then((battery: any) => {
           setBatteryLevel(Math.round(battery.level * 100));
         });
       }
@@ -346,8 +349,9 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       if (watchIdRef.current !== null) navigator.geolocation.clearWatch(watchIdRef.current);
       try {
-        if (navigator.getBattery) {
-          navigator.getBattery().then((battery: BatteryManager) => {
+        const nav = navigator as any;
+        if (nav.getBattery) {
+          nav.getBattery().then((battery: any) => {
             battery.removeEventListener('levelchange', updateBatteryLevel);
           });
         }

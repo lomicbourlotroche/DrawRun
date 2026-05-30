@@ -357,7 +357,7 @@ export function RacePlanningContent() {
                       <p className="text-lg font-semibold">{result.summary.ctl}</p>
                     </div>
                   )}
-                  {result.summary.tsb !== null && (
+                  {result.summary.tsb != null && (
                     <div className={`p-3 rounded-lg border ${result.summary.tsb < -10 ? 'bg-error/10 border-error/30' : 'bg-info/10 border-info/30'}`}>
                       <p className="text-xs text-muted">TSB (Forme)</p>
                       <p className="text-lg font-semibold">{result.summary.tsb}</p>
@@ -456,7 +456,7 @@ export function RacePlanningContent() {
                       </tr>
                     </thead>
                     <tbody>
-                      {result.taperRecommendation?.plan.slice(0, 7).map((day: { daysOut: number; volumePercent: number; targetLoad: string; sessionDescription: string; isCompetition?: boolean }) => (
+                       {result.taperRecommendation?.plan.slice(0, 7).map((day) => (
                         <tr key={day.daysOut} className={`border-b border-border/50 ${day.isCompetition ? 'bg-primary/10 font-semibold' : ''}`}>
                           <td className="py-1 px-2">{day.daysOut}</td>
                           <td className="py-1 px-2">{day.volumePercent}%</td>
