@@ -51,7 +51,7 @@ export function RaceSplitsTable({ splits }: RaceSplitsTableProps) {
                   </td>
                   <td className="hidden md:table-cell py-2 px-2">
                     {split.grade !== null && split.grade !== undefined ? (
-                      <span className={cn('text-xs font-bold px-1.5 py-0.5 rounded-full', split.grade > 2 ? 'bg-red-100 text-red-700' : split.grade < -2 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600')}>
+                      <span className={cn('text-xs font-bold px-1.5 py-0.5 rounded-full', split.grade > 2 ? 'bg-danger-50 text-danger-700' : split.grade < -2 ? 'bg-success-50 text-success-700' : 'bg-muted/20 text-muted-foreground')}>
                         {split.grade > 0 ? '+' : ''}{split.grade}%
                       </span>
                     ) : '-'}

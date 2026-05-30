@@ -218,7 +218,7 @@ export default function GamificationWidget({ planId }: GamificationWidgetProps) 
                 return (
                   <div
                     key={badge.id}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-warning/30"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-warning-500/20 to-peak-500/20 border border-warning/30"
                     title={badge.description}
                   >
                     <Icon className="w-4 h-4 text-warning/80" />

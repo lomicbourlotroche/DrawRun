@@ -45,7 +45,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       ),
       ghost: cn(
         'bg-transparent text-muted',
-        'hover:bg-neutral-100 hover:text-foreground',
+        'hover:bg-muted/20 hover:text-foreground',
         'active:scale-[0.98]',
         'transition-all duration-200 ease-smooth'
       ),
@@ -53,18 +53,16 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         'bg-danger-500 text-danger-foreground',
         'hover:bg-danger-600 hover:-translate-y-0.5',
         'active:translate-y-0 active:scale-[0.98]',
-        'shadow-[0_4px_12px_rgba(241,106,96,0.25)]',
         'transition-all duration-200 ease-smooth'
       ),
       success: cn(
         'bg-success-500 text-success-foreground',
         'hover:bg-success-600 hover:-translate-y-0.5',
         'active:translate-y-0 active:scale-[0.98]',
-        'shadow-[0_4px_12px_rgba(104,167,104,0.25)]',
         'transition-all duration-200 ease-smooth'
       ),
       glass: cn(
-        'bg-surface/70 backdrop-blur-md border border-neutral-200 text-foreground',
+        'bg-surface/70 backdrop-blur-md border border-border text-foreground',
         'hover:bg-surface/90 hover:border-primary-200',
         'active:scale-[0.98]',
         'transition-all duration-200 ease-smooth'

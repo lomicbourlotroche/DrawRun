@@ -63,7 +63,7 @@ export default function StrategyResults({ strategy, formatTime, downloadCsv }: S
           <h3 className="text-lg font-bold mb-4">Détails des Splits (km)</h3>
           <div className="overflow-auto max-h-[500px]">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-white border-b">
+              <thead className="sticky top-0 bg-surface border-b">
                 <tr className="text-left text-muted-foreground">
                   <th className="pb-3 font-medium">KM</th>
                   <th className="pb-3 font-medium">Allure</th>
@@ -79,9 +79,9 @@ export default function StrategyResults({ strategy, formatTime, downloadCsv }: S
                     <td className="py-3 text-muted-foreground font-mono">{formatTime(s.cumulativeTime)}</td>
                     <td className="py-3">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        s.grade > 2 ? 'bg-red-100 text-red-700' :
-                        s.grade < -2 ? 'bg-green-100 text-green-700' :
-                        'bg-gray-100 text-gray-700'
+                        s.grade > 2 ? 'bg-danger-50 text-danger-700' :
+                        s.grade < -2 ? 'bg-success-50 text-success-700' :
+                        'bg-muted/20 text-muted-foreground'
                       }`}>
                         {s.grade > 0 ? '+' : ''}{s.grade}%
                       </span>

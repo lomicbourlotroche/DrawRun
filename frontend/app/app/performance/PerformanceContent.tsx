@@ -279,9 +279,9 @@ export default function PerformanceContent() {
                           <div key={type} className="space-y-2">
                             <div className="flex items-center justify-between text-sm">
                               <span className="font-medium text-foreground">{type}</span>
-                              <span className="text-neutral-500">{count} séance{count > 1 ? 's' : ''} ({pct}%)</span>
+                              <span className="text-muted-foreground">{count} séance{count > 1 ? 's' : ''} ({pct}%)</span>
                             </div>
-                            <div className="h-2.5 bg-neutral-100 rounded-full overflow-hidden">
+                            <div className="h-2.5 bg-muted/20 rounded-full overflow-hidden">
                               <div className="h-full bg-primary-500 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                             </div>
                           </div>

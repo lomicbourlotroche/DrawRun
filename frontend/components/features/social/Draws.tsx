@@ -192,7 +192,7 @@ export function SocialDraw({
         disabled={isSubmitting}
         className={`flex items-center gap-1 px-2 py-1 rounded-md text-sm transition-colors ${
           hasDrawn 
-            ? 'bg-red-100 text-red-700 hover:bg-red-200' 
+            ? 'bg-danger-50 text-danger-700 hover:bg-danger-100' 
             : 'text-muted hover:bg-muted hover:text-foreground'
         }`}
       >
@@ -245,9 +245,9 @@ interface DrawStatsProps {
 export function DrawStats({ totalDraws, thisWeek, thisMonth, bestActivity }: DrawStatsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div className="p-4 bg-gradient-to-br from-red-50 to-pink-50 rounded-lg border border-red-200">
+      <div className="p-4 bg-gradient-to-br from-danger-50 to-secondary-50 rounded-lg border border-danger-200">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-danger-100 flex items-center justify-center">
             <Heart className="w-6 h-6 text-danger" />
           </div>
           <div>
@@ -257,9 +257,9 @@ export function DrawStats({ totalDraws, thisWeek, thisMonth, bestActivity }: Dra
         </div>
       </div>
 
-      <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
+      <div className="p-4 bg-gradient-to-br from-primary-50 to-recovery-50 rounded-lg border border-primary-200">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center">
             <TrendingUp className="w-6 h-6 text-primary" />
           </div>
           <div>
@@ -269,9 +269,9 @@ export function DrawStats({ totalDraws, thisWeek, thisMonth, bestActivity }: Dra
         </div>
       </div>
 
-      <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
+      <div className="p-4 bg-gradient-to-br from-success-50 to-success-100 rounded-lg border border-success-200">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-success-100 flex items-center justify-center">
             <Award className="w-6 h-6 text-success" />
           </div>
           <div>
@@ -282,7 +282,7 @@ export function DrawStats({ totalDraws, thisWeek, thisMonth, bestActivity }: Dra
       </div>
 
       {bestActivity && (
-        <div className="md:col-span-3 p-4 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+        <div className="md:col-span-3 p-4 bg-gradient-to-br from-warning-50 to-peak-50 rounded-lg border border-warning-200">
           <div className="flex items-center gap-3">
             <Trophy className="w-6 h-6 text-warning" />
             <div>

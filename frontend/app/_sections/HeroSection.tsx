@@ -16,7 +16,7 @@ export default function HeroSection() {
   return (
     <section className="relative min-h-screen pt-32 pb-20 lg:pt-40 lg:pb-32 overflow-hidden">
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-neutral-50 via-white to-primary-50/30" />
+      <div className="absolute inset-0 bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 dark:from-background dark:via-background dark:to-primary-50/10" />
       <div className="absolute inset-0">
         <div className="absolute top-20 left-10 w-72 h-72 bg-primary-400/20 rounded-full blur-3xl animate-pulse-soft" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-success-400/10 rounded-full blur-3xl animate-pulse-soft" style={{ animationDelay: '1s' }} />

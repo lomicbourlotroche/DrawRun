@@ -258,7 +258,7 @@ export default function RoutePlanner({
             </span>
           </div>
           {isLoop && (
-            <Badge className="bg-blue-100 text-blue-700 border-blue-300">
+            <Badge className="bg-primary-50 text-primary-700 border-primary-300">
               <Repeat className="w-3 h-3 mr-1" />
               Boucle
             </Badge>
@@ -283,8 +283,8 @@ export default function RoutePlanner({
             disabled={waypoints.length < 2}
             className={`flex items-center gap-2 px-3 min-h-[44px] rounded-lg text-sm font-medium transition-all border ${
               isLoop
-                ? 'bg-blue-50 text-blue-700 border-blue-300 shadow-sm'
-                : 'bg-background text-muted-foreground border-border hover:border-blue-300 hover:text-primary'
+                ? 'bg-primary-50 text-primary-700 border-primary-300 shadow-sm'
+                : 'bg-background text-muted-foreground border-border hover:border-primary-300 hover:text-primary'
             } disabled:opacity-30 disabled:cursor-not-allowed`}
           >
             <Repeat className={`w-4 h-4 ${isLoop ? 'text-primary' : ''}`} />

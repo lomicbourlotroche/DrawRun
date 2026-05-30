@@ -6,7 +6,7 @@ import type { GpxProfile } from '@/types';
 
 export function GpxProfileBadge({ profile }: { profile: GpxProfile }) {
   const terrainLabel = { flat: 'Plat', rolling: 'Vallonné', mountainous: 'Montagneux' }[profile.terrainType];
-  const terrainColor = { flat: 'bg-green-100 text-green-700', rolling: 'bg-yellow-100 text-yellow-700', mountainous: 'bg-red-100 text-red-700' }[profile.terrainType];
+  const terrainColor = { flat: 'bg-success-50 text-success-700', rolling: 'bg-warning-50 text-warning-700', mountainous: 'bg-danger-50 text-danger-700' }[profile.terrainType];
   return (
     <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
       <div className="flex items-center gap-2">

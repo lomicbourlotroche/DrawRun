@@ -1244,7 +1244,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           )}
           {stats.maxHR && (
             <div className="bg-surface rounded-md px-3 py-2 flex items-center gap-2">
-              <Heart className="w-4 h-4 text-rose-400" />
+              <Heart className="w-4 h-4 text-danger-400" />
               <div>
                 <div className="text-sm font-semibold text-foreground">{stats.maxHR} bpm</div>
                 <div className="text-[10px] text-muted">FC max</div>

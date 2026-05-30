@@ -34,7 +34,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={inputId} className="block text-sm font-medium text-neutral-600 mb-1.5">
+          <label htmlFor={inputId} className="block text-sm font-medium text-muted-foreground mb-1.5">
             {label}
           </label>
         )}
@@ -60,7 +60,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               'placeholder:text-muted',
               'focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-400',
               'transition-all duration-200 ease-smooth',
-              'hover:border-neutral-300',
+              'hover:border-border',
               leftIcon && 'pl-10',
               rightIcon && !clearable && 'pr-10',
               rightIcon && clearable && 'pr-16',

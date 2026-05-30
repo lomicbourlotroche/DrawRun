@@ -54,7 +54,7 @@ export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRu
           <CardHeader><CardTitle className="text-base">Répartition zones cardiaques</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-5 gap-2">
-              <div className="text-center p-2 rounded-lg bg-gray-500/10"><p className="text-sm font-bold text-gray-400">{analysis.hrDistribution.zone1Percent}%</p><p className="text-xs text-muted">Z1</p></div>
+              <div className="text-center p-2 rounded-lg bg-muted/10"><p className="text-sm font-bold text-muted">{analysis.hrDistribution.zone1Percent}%</p><p className="text-xs text-muted">Z1</p></div>
               <div className="text-center p-2 rounded-lg bg-success/10"><p className="text-sm font-bold text-success/80">{analysis.hrDistribution.zone2Percent}%</p><p className="text-xs text-muted">Z2</p></div>
               <div className="text-center p-2 rounded-lg bg-primary/10"><p className="text-sm font-bold text-primary/80">{analysis.hrDistribution.zone3Percent}%</p><p className="text-xs text-muted">Z3</p></div>
               <div className="text-center p-2 rounded-lg bg-peak/10"><p className="text-sm font-bold text-peak/80">{analysis.hrDistribution.zone4Percent}%</p><p className="text-xs text-muted">Z4</p></div>
@@ -89,7 +89,7 @@ export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRu
             )}
             {analysis.efficiencyFactor && (
               <div className="text-center p-3 rounded-lg bg-background border border-border">
-                <p className="text-lg font-bold text-amber-500">{analysis.efficiencyFactor.toFixed(2)}</p>
+                <p className="text-lg font-bold text-warning-500">{analysis.efficiencyFactor.toFixed(2)}</p>
                 <p className="text-xs text-muted">Eff. aérobie (EF)</p>
               </div>
             )}
@@ -122,7 +122,7 @@ export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRu
               )}
               {analysis.tss && (
                 <div className="text-center p-3 rounded-lg bg-background border border-border">
-                  <p className="text-lg font-bold text-purple-400">{Math.round(toNum(analysis.tss))}</p>
+                  <p className="text-lg font-bold text-secondary-400">{Math.round(toNum(analysis.tss))}</p>
                   <p className="text-xs text-muted">TSS</p>
                 </div>
               )}
@@ -181,7 +181,7 @@ export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRu
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
               {Object.entries(analysis.trainingPaces).map(([key, val]) => {
-                const colors: Record<string, string> = { E: 'bg-success/10 border-success/30 text-success/80', M: 'bg-primary/10 border-primary/30 text-primary/80', T: 'bg-peak/10 border-peak/30 text-peak/80', I: 'bg-danger/10 border-danger/30 text-danger/80', R: 'bg-purple-500/10 border-purple-500/30 text-purple-400' };
+                const colors: Record<string, string> = { E: 'bg-success/10 border-success/30 text-success/80', M: 'bg-primary/10 border-primary/30 text-primary/80', T: 'bg-peak/10 border-peak/30 text-peak/80', I: 'bg-danger/10 border-danger/30 text-danger/80', R: 'bg-secondary-50 border-secondary-200 text-secondary-500' };
                 return (
                   <div key={key} className={`text-center p-2 rounded-lg border ${colors[key] || 'bg-background border-border'}`}>
                     <p className="text-xs uppercase font-bold">{key}</p>
@@ -202,9 +202,9 @@ export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRu
 
       {/* Nutrition */}
       {analysis.nutrition && (
-        <Card className="border-amber-500/20 bg-amber-500/5">
+        <Card className="border-warning-200 bg-warning-50">
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2 text-amber-600">
+            <CardTitle className="text-base flex items-center gap-2 text-warning-600">
               <Wind className="w-4 h-4" />
               Stratégie de Ravitaillement
             </CardTitle>
@@ -236,7 +236,7 @@ export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRu
               </div>
             </div>
             {analysis.nutrition.recommendations.map((rec, i) => (
-              <div key={i} className="flex gap-2 text-xs text-amber-700/80 mt-2">
+              <div key={i} className="flex gap-2 text-xs text-warning-700/80 mt-2">
                 <span className="shrink-0">•</span>
                 <p>{rec}</p>
               </div>

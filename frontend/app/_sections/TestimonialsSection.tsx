@@ -80,7 +80,7 @@ export default function TestimonialsSection() {
   // }, []);
 
   return (
-    <section className="py-16 lg:py-24 bg-gradient-to-b from-neutral-50 to-white">
+    <section className="py-16 lg:py-24 bg-gradient-to-b from-neutral-50 to-white dark:from-background dark:to-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">

@@ -18,7 +18,7 @@ export function SimpleAnalysisCards({ analysis }: { analysis: SimpleAnalysis }) 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {analysis.tss && (
               <div className="text-center p-3 rounded-lg bg-background border border-border">
-                <p className="text-lg font-bold text-purple-400">{Math.round(toNum(analysis.tss))}</p>
+                <p className="text-lg font-bold text-secondary-400">{Math.round(toNum(analysis.tss))}</p>
                 <p className="text-xs text-muted">TSS</p>
               </div>
             )}
@@ -73,9 +73,9 @@ export function SimpleAnalysisCards({ analysis }: { analysis: SimpleAnalysis }) 
 
       {/* Nutrition */}
       {analysis.nutrition && (
-        <Card className="border-amber-500/20 bg-amber-500/5">
+        <Card className="border-warning-200 bg-warning-50">
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2 text-amber-600">
+            <CardTitle className="text-base flex items-center gap-2 text-warning-600">
               <Wind className="w-4 h-4" />
               Ravitaillement
             </CardTitle>

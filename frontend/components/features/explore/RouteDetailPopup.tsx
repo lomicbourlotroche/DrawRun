@@ -39,9 +39,9 @@ function formatDuration(seconds?: number): string {
 }
 
 const DIFFICULTY_LABELS: Record<string, { label: string; color: string }> = {
-  easy: { label: 'Facile', color: 'bg-green-100 text-green-700 border-green-300' },
-  medium: { label: 'Modéré', color: 'bg-yellow-100 text-yellow-700 border-yellow-300' },
-  hard: { label: 'Difficile', color: 'bg-red-100 text-red-700 border-red-300' },
+  easy: { label: 'Facile', color: 'bg-success-50 text-success-700 border-success-300' },
+  medium: { label: 'Modéré', color: 'bg-warning-50 text-warning-700 border-warning-300' },
+  hard: { label: 'Difficile', color: 'bg-danger-50 text-danger-700 border-danger-300' },
 };
 
 const ACTIVITY_ICONS: Record<string, string> = {

@@ -67,7 +67,7 @@ export default function RacePlanningSection() {
   }, []);
 
   return (
-    <section id="race-planning" className="py-20 lg:py-32 bg-gradient-to-b from-neutral-50 to-white overflow-hidden">
+    <section id="race-planning" className="py-20 lg:py-32 bg-gradient-to-b from-neutral-50 to-white dark:from-background dark:to-background overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>

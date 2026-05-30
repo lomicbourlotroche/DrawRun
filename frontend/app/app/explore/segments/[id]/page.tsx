@@ -197,16 +197,16 @@ export default function SegmentDetailPage() {
       {/* KOM/QOM */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {segment.kom && (
-          <Card className="bg-yellow-50 border-yellow-200">
+          <Card className="bg-warning-50 border-warning-200">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2 text-yellow-700">
+              <CardTitle className="text-sm flex items-center gap-2 text-warning-700">
                 <Trophy className="w-4 h-4" />
                 KOM (King of the Mountain)
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{segment.kom.user_name}</p>
-              <p className="text-2xl font-bold text-yellow-600">
+              <p className="text-2xl font-bold text-warning-600">
                 {formatDuration(segment.kom.elapsed_time)}
               </p>
             </CardContent>
@@ -214,16 +214,16 @@ export default function SegmentDetailPage() {
         )}
 
         {segment.qom && (
-          <Card className="bg-pink-50 border-pink-200">
+          <Card className="bg-secondary-50 border-secondary-200">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2 text-pink-700">
+              <CardTitle className="text-sm flex items-center gap-2 text-secondary-700">
                 <Trophy className="w-4 h-4" />
                 QOM (Queen of the Mountain)
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{segment.qom.user_name}</p>
-              <p className="text-2xl font-bold text-pink-600">
+              <p className="text-2xl font-bold text-secondary-600">
                 {formatDuration(segment.qom.elapsed_time)}
               </p>
             </CardContent>

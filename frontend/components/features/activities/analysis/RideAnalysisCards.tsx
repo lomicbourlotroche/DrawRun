@@ -35,13 +35,13 @@ function PowerCurveChart({ curve }: { curve: PowerCurvePoint[] }) {
 }
 
 const powerZoneColors = [
-  'bg-gray-500/10 text-gray-400',
+  'bg-muted/10 text-muted',
   'bg-success/10 text-success/80',
   'bg-primary/10 text-primary/80',
   'bg-peak/10 text-peak/80',
   'bg-danger/10 text-danger/80',
-  'bg-purple-500/10 text-purple-400',
-  'bg-pink-500/10 text-pink-400',
+  'bg-secondary-50 text-secondary-500',
+  'bg-secondary-50 text-secondary-500',
 ];
 
 function PowerZoneRow({ zone: z }: { zone: { zone: number; name: string; percent: number } }) {
@@ -95,7 +95,7 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
           <CardHeader><CardTitle className="text-base">Répartition zones cardiaques</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-5 gap-2">
-              <div className="text-center p-2 rounded-lg bg-gray-500/10"><p className="text-sm font-bold text-gray-400">{analysis.hrDistribution.zone1Percent}%</p><p className="text-xs text-muted">Z1</p></div>
+              <div className="text-center p-2 rounded-lg bg-muted/10"><p className="text-sm font-bold text-muted">{analysis.hrDistribution.zone1Percent}%</p><p className="text-xs text-muted">Z1</p></div>
               <div className="text-center p-2 rounded-lg bg-success/10"><p className="text-sm font-bold text-success/80">{analysis.hrDistribution.zone2Percent}%</p><p className="text-xs text-muted">Z2</p></div>
               <div className="text-center p-2 rounded-lg bg-primary/10"><p className="text-sm font-bold text-primary/80">{analysis.hrDistribution.zone3Percent}%</p><p className="text-xs text-muted">Z3</p></div>
               <div className="text-center p-2 rounded-lg bg-peak/10"><p className="text-sm font-bold text-peak/80">{analysis.hrDistribution.zone4Percent}%</p><p className="text-xs text-muted">Z4</p></div>
@@ -144,7 +144,7 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
               </div>
               {analysis.tss && (
                 <div className="text-center p-3 rounded-lg bg-background border border-border">
-                  <p className="text-lg font-bold text-purple-400">{Math.round(toNum(analysis.tss))}</p>
+                  <p className="text-lg font-bold text-secondary-400">{Math.round(toNum(analysis.tss))}</p>
                   <p className="text-xs text-muted">TSS</p>
                 </div>
               )}
@@ -173,7 +173,7 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
               )}
               {analysis.tssPerHour && (
                 <div className="text-center p-3 rounded-lg bg-background border border-border">
-                  <p className="text-lg font-bold text-purple-400">{analysis.tssPerHour}</p>
+                  <p className="text-lg font-bold text-secondary-400">{analysis.tssPerHour}</p>
                   <p className="text-xs text-muted">TSS/h</p>
                 </div>
               )}
@@ -257,9 +257,9 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
 
       {/* Nutrition */}
       {analysis.nutrition && (
-        <Card className="border-amber-500/20 bg-amber-500/5">
+        <Card className="border-warning-200 bg-warning-50">
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2 text-amber-600">
+            <CardTitle className="text-base flex items-center gap-2 text-warning-600">
               <Wind className="w-4 h-4" />
               Stratégie de Ravitaillement
             </CardTitle>
@@ -291,7 +291,7 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
               </div>
             </div>
             {analysis.nutrition.recommendations.map((rec, i) => (
-              <div key={i} className="flex gap-2 text-xs text-amber-700/80 mt-2">
+              <div key={i} className="flex gap-2 text-xs text-warning-700/80 mt-2">
                 <span className="shrink-0">•</span>
                 <p>{rec}</p>
               </div>

@@ -33,9 +33,9 @@ interface RouteListProps {
 }
 
 const difficultyColors: Record<string, string> = {
-  easy: 'bg-green-100 text-green-700',
-  medium: 'bg-yellow-100 text-yellow-700',
-  hard: 'bg-red-100 text-red-700',
+  easy: 'bg-success-50 text-success-700',
+  medium: 'bg-warning-50 text-warning-700',
+  hard: 'bg-danger-50 text-danger-700',
 };
 
 const difficultyLabels: Record<string, string> = {
@@ -111,7 +111,7 @@ export function RouteList({ routes, onRouteClick, isLoading, showFavoriteButton 
                   </Badge>
                   {route.difficulty && (
                     <Badge 
-                      className={difficultyColors[route.difficulty] || 'bg-gray-100'}
+                      className={difficultyColors[route.difficulty] || 'bg-muted/20'}
                       size="sm"
                     >
                       {difficultyLabels[route.difficulty] || route.difficulty}

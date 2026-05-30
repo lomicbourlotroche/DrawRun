@@ -153,7 +153,7 @@ export default function SettingsPage() {
       </div>
       <div>
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2 tracking-tight"><Settings className="w-6 h-6 text-primary-500" />Paramètres</h1>
-        <p className="text-neutral-500 mt-1.5">Configurez votre compte et vos préférences</p>
+        <p className="text-muted-foreground mt-1.5">Configurez votre compte et vos préférences</p>
       </div>
 
       <GlassCard>

@@ -192,7 +192,7 @@ export default function GearPage() {
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted ml-1">Type</label>
                 <select 
-                  className="w-full h-11 bg-background border border rounded-xl px-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full h-11 bg-background border border rounded-xl px-4 text-sm focus:ring-2 focus:ring-primary-500 outline-none"
                   value={formData.type}
                   onChange={(e) => setFormData({...formData, type: e.target.value})}
                 >

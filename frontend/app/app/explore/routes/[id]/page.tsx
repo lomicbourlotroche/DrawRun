@@ -28,9 +28,9 @@ interface RouteDetail {
 }
 
 const difficultyColors: Record<string, string> = {
-  easy: 'bg-green-100 text-green-700 border-green-300',
-  medium: 'bg-yellow-100 text-yellow-700 border-yellow-300',
-  hard: 'bg-red-100 text-red-700 border-red-300',
+  easy: 'bg-success-50 text-success-700 border-success-300',
+  medium: 'bg-warning-50 text-warning-700 border-warning-300',
+  hard: 'bg-danger-50 text-danger-700 border-danger-300',
 };
 
 const difficultyLabels: Record<string, string> = {
@@ -130,7 +130,7 @@ export default function RouteDetailPage() {
               <h1 className="text-3xl font-bold">{route.name}</h1>
               {route.difficulty && (
                 <Badge 
-                  className={difficultyColors[route.difficulty] || 'bg-gray-100'}
+                  className={difficultyColors[route.difficulty] || 'bg-muted/20'}
                 >
                   {difficultyLabels[route.difficulty] || route.difficulty}
                 </Badge>

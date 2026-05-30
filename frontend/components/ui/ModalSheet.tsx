@@ -27,7 +27,7 @@ export function ModalSheet({ open, onClose, children, className, maxWidth = 'lg'
   return (
     <div
       className={cn(
-        'fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center',
+        'fixed inset-0 bg-foreground/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center',
         dense ? 'p-4' : 'p-2 sm:p-4'
       )}
       onClick={onClose}

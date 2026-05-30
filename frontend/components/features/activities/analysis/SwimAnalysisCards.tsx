@@ -29,7 +29,7 @@ export function SwimAnalysisCards({ analysis }: { analysis: SwimAnalysis }) {
               )}
               {analysis.tss && (
                 <div className="text-center p-3 rounded-lg bg-background border border-border">
-                  <p className="text-lg font-bold text-purple-400">{Math.round(toNum(analysis.tss))}</p>
+                  <p className="text-lg font-bold text-secondary-400">{Math.round(toNum(analysis.tss))}</p>
                   <p className="text-xs text-muted">TSS</p>
                 </div>
               )}
@@ -95,7 +95,7 @@ export function SwimAnalysisCards({ analysis }: { analysis: SwimAnalysis }) {
           <CardHeader><CardTitle className="text-base">Répartition zones cardiaques</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-5 gap-2">
-              <div className="text-center p-2 rounded-lg bg-gray-500/10"><p className="text-sm font-bold text-gray-400">{analysis.hrDistribution.zone1Percent}%</p><p className="text-xs text-muted">Z1</p></div>
+              <div className="text-center p-2 rounded-lg bg-muted/10"><p className="text-sm font-bold text-muted">{analysis.hrDistribution.zone1Percent}%</p><p className="text-xs text-muted">Z1</p></div>
               <div className="text-center p-2 rounded-lg bg-success/10"><p className="text-sm font-bold text-success/80">{analysis.hrDistribution.zone2Percent}%</p><p className="text-xs text-muted">Z2</p></div>
               <div className="text-center p-2 rounded-lg bg-primary/10"><p className="text-sm font-bold text-primary/80">{analysis.hrDistribution.zone3Percent}%</p><p className="text-xs text-muted">Z3</p></div>
               <div className="text-center p-2 rounded-lg bg-peak/10"><p className="text-sm font-bold text-peak/80">{analysis.hrDistribution.zone4Percent}%</p><p className="text-xs text-muted">Z4</p></div>
@@ -113,7 +113,7 @@ export function SwimAnalysisCards({ analysis }: { analysis: SwimAnalysis }) {
             <div className="grid grid-cols-2 gap-3">
               {analysis.tss && (
                 <div className="text-center p-3 rounded-lg bg-background border border-border">
-                  <p className="text-lg font-bold text-purple-400">{Math.round(toNum(analysis.tss))}</p>
+                  <p className="text-lg font-bold text-secondary-400">{Math.round(toNum(analysis.tss))}</p>
                   <p className="text-xs text-muted">TSS Natation</p>
                 </div>
               )}

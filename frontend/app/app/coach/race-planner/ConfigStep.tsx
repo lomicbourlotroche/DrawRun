@@ -94,7 +94,7 @@ export default function ConfigStep({ params, setParams, onCalculate, isLoading, 
 
       <Card className="p-6 bg-muted/30">
         <h3 className="font-bold mb-4">Fichier sélectionné</h3>
-        <div className="flex items-center gap-3 p-3 bg-white border rounded-xl">
+        <div className="flex items-center gap-3 p-3 bg-surface border rounded-xl">
           <div className="p-2 bg-primary/10 rounded-lg text-primary text-xs font-bold">GPX</div>
           <span className="text-sm truncate font-medium">{fileName}</span>
         </div>

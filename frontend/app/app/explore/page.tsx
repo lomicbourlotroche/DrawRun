@@ -318,7 +318,7 @@ export default function ExplorePage() {
       {/* Mobile search overlay */}
       {showMobileSearch && (
         <div className="absolute inset-x-0 top-0 z-[600] sm:hidden">
-          <div className="flex items-center gap-2 p-3 bg-white/95 backdrop-blur-md border-b border-border shadow-md">
+          <div className="flex items-center gap-2 p-3 bg-surface/95 backdrop-blur-md border-b border-border shadow-md">
             <div className="flex-1">
               <LocationSearch
                 onSelectLocation={(lat, lng, label) => {
@@ -345,7 +345,7 @@ export default function ExplorePage() {
         {/* Mobile search toggle */}
         <button
           onClick={() => setShowMobileSearch(true)}
-          className="sm:hidden flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg shadow-md border bg-white/90 backdrop-blur-sm border-border hover:bg-white transition-colors text-muted-foreground"
+          className="sm:hidden flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg shadow-md border bg-surface/90 backdrop-blur-sm border-border hover:bg-surface transition-colors text-muted-foreground"
           title="Rechercher"
         >
           <Search className="w-4 h-4" />
@@ -365,7 +365,7 @@ export default function ExplorePage() {
       {/* Geolocate button */}
       <button
         onClick={handleLocateMe}
-        className="absolute max-sm:bottom-4 max-sm:right-4 sm:top-4 sm:right-16 z-[500] flex items-center justify-center min-w-[44px] min-h-[44px] bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-border hover:bg-white transition-colors"
+        className="absolute max-sm:bottom-4 max-sm:right-4 sm:top-4 sm:right-16 z-[500] flex items-center justify-center min-w-[44px] min-h-[44px] bg-surface/90 backdrop-blur-sm rounded-lg shadow-md border border-border hover:bg-surface transition-colors"
         title="Me localiser"
       >
         <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">

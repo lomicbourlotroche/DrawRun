@@ -3,17 +3,17 @@
 import { useMemo } from 'react';
 import type { TrainingPlan, TrainingSession } from '@/types';
 
-// Résolution des couleurs Tailwind → valeurs hex pour les styles inline
+// Résolution des couleurs via CSS variables
 const TW_COLORS: Record<string, string> = {
-  'hr-zone-1': '#00C853',
-  'hr-zone-3': '#FFAB00',
-  'hr-zone-4': '#FF6D00',
-  'peak': '#FF6D00',
-  'danger': '#FF5252',
-  'success': '#00C853',
-  'primary': '#0066FF',
-  'muted': '#64748B',
-  'warning': '#FFAB00',
+  'hr-zone-1': 'var(--success)',
+  'hr-zone-3': 'var(--warning)',
+  'hr-zone-4': 'var(--peak)',
+  'peak': 'var(--peak)',
+  'danger': 'var(--danger)',
+  'success': 'var(--success)',
+  'primary': 'var(--primary)',
+  'muted': 'var(--muted)',
+  'warning': 'var(--warning)',
 };
 
 function resolveColor(twClass: string, defaultFallback = '#64748B20'): string {

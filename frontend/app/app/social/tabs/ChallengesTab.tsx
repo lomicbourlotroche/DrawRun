@@ -188,7 +188,7 @@ export default function ChallengesTab() {
                           key={m.pct}
                           className={`flex-1 text-center py-1 rounded-lg text-xs transition-all ${
                             pct >= m.pct
-                              ? 'bg-warning/20 text-yellow-600 font-medium'
+                              ? 'bg-warning/20 text-warning-600 font-medium'
                               : 'bg-border/50 text-muted'
                           }`}
                         >

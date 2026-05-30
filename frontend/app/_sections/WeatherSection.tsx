@@ -36,7 +36,7 @@ export default function WeatherSection() {
   }, []);
 
   return (
-    <section id="weather" className="py-20 lg:py-32 bg-background overflow-hidden">
+    <section id="weather" className="py-20 lg:py-32 bg-neutral-900 dark:bg-background overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left Content */}

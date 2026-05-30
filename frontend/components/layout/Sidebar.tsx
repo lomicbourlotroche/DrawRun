@@ -84,7 +84,7 @@ export default function Sidebar() {
 
       <aside
         className={cn(
-          'fixed top-0 left-0 h-full bg-surface/95 backdrop-blur-md border-r border-neutral-200/60 z-50 transition-all duration-300 ease-smooth flex flex-col',
+          'fixed top-0 left-0 h-full bg-surface/95 backdrop-blur-md border-r border-border z-50 transition-all duration-300 ease-smooth flex flex-col',
           'w-full max-w-64 lg:max-w-64',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
@@ -118,7 +118,7 @@ export default function Sidebar() {
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ease-smooth relative group',
                   active
                     ? 'bg-primary-50 text-primary-700 font-semibold'
-                    : 'text-neutral-600 hover:bg-neutral-100 hover:text-foreground'
+                    : 'text-muted-foreground hover:bg-muted/20 hover:text-foreground'
                 )}
               >
                 <div className="relative flex-shrink-0">

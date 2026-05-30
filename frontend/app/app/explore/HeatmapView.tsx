@@ -52,7 +52,7 @@ export default function HeatmapView({
         className={`flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg shadow-md border transition-all ${
           showHeatmap
             ? 'bg-peak text-white border-peak'
-            : 'bg-white/90 backdrop-blur-sm border-border hover:bg-white text-muted-foreground'
+            : 'bg-surface/90 backdrop-blur-sm border-border hover:bg-surface text-muted-foreground'
         }`}
         title="Heatmap"
       >
@@ -66,8 +66,8 @@ export default function HeatmapView({
         onClick={() => setShowCommunityTraces((p) => !p)}
         className={`flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg shadow-md border transition-all ${
           showCommunityTraces
-            ? 'bg-purple-600 text-white border-purple-600'
-            : 'bg-white/90 backdrop-blur-sm border-border hover:bg-white text-muted-foreground'
+            ? 'bg-secondary-500 text-secondary-foreground border-secondary-500'
+            : 'bg-surface/90 backdrop-blur-sm border-border hover:bg-surface text-muted-foreground'
         }`}
         title="Traces de la communauté"
       >

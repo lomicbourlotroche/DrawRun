@@ -92,7 +92,7 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="h-48 bg-neutral-100 rounded-2xl animate-pulse" />
+          <div key={i} className="h-48 bg-muted/20 rounded-2xl animate-pulse" />
         ))}
       </div>
     );
@@ -121,13 +121,13 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
       {/* Filters Bar */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input
             type="text"
             placeholder="Rechercher une activité..."
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="w-full bg-surface border border-neutral-200/60 rounded-xl pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-400 transition-all duration-200 ease-smooth hover:border-neutral-300"
+            className="w-full bg-surface border border-border rounded-xl pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-400 transition-all duration-200 ease-smooth hover:border-border"
           />
         </div>
         <Select
@@ -151,12 +151,12 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
             className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 ease-smooth ${
               filter === opt.id
                 ? 'bg-primary-500 text-white shadow-sm'
-                : 'bg-surface border border-neutral-200/60 text-neutral-600 hover:bg-neutral-50 hover:border-neutral-300'
+                : 'bg-surface border border-border text-muted-foreground hover:bg-muted/10 hover:border-border'
             }`}
           >
             {opt.label}
             <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-              filter === opt.id ? 'bg-white/20' : 'bg-neutral-100'
+              filter === opt.id ? 'bg-white/20' : 'bg-muted/20'
             }`}>
               {opt.count}
             </span>
@@ -165,7 +165,7 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
       </div>
 
       {/* Results count */}
-      <p className="text-xs text-neutral-500">
+      <p className="text-xs text-muted-foreground">
         {filteredActivities.length} activité{filteredActivities.length > 1 ? 's' : ''}
         {filter !== 'all' || searchQuery ? ' (filtrées)' : ''}
       </p>
@@ -205,7 +205,7 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
                         <h3 className="font-semibold text-foreground truncate text-sm group-hover:text-primary-500 transition-colors">
                           {activity.title || activity.name || 'Activité'}
                         </h3>
-                        <p className="text-xs text-neutral-500 mt-0.5">
+                        <p className="text-xs text-muted-foreground mt-0.5">
                           {formatDate(activity.date || activity.start_date || '')}
                         </p>
                       </div>
@@ -216,16 +216,16 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
                   {/* Stats */}
                   <div className="grid grid-cols-2 gap-3 mt-4">
                     {distanceM > 0 && (
-                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-neutral-50">
+                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted/10">
                         <TrendingUp className="w-3.5 h-3.5 text-primary-500 flex-shrink-0" />
                         <div>
                           <p className="text-sm font-bold text-foreground tabular-nums">{formatDistance(distanceM)}</p>
-                          <p className="text-[10px] text-neutral-500">distance</p>
+                          <p className="text-[10px] text-muted-foreground">distance</p>
                         </div>
                       </div>
                     )}
                     {durationS > 0 && (
-                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-neutral-50">
+                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted/10">
                         <Clock className="w-3.5 h-3.5 text-primary-500 flex-shrink-0" />
                         <div>
                           <p className="text-sm font-bold text-foreground tabular-nums">
@@ -233,35 +233,35 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
                               ? `${Math.floor(durationS / 3600)}h${Math.floor((durationS % 3600) / 60).toString().padStart(2, '0')}`
                               : `${Math.floor(durationS / 60)} min`}
                           </p>
-                          <p className="text-[10px] text-neutral-500">durée</p>
+                          <p className="text-[10px] text-muted-foreground">durée</p>
                         </div>
                       </div>
                     )}
                     {avgHR > 0 && (
-                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-neutral-50">
+                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted/10">
                         <Heart className="w-3.5 h-3.5 text-danger flex-shrink-0" />
                         <div>
                           <p className="text-sm font-bold text-foreground tabular-nums">{avgHR}</p>
-                          <p className="text-[10px] text-neutral-500">FC moy</p>
+                          <p className="text-[10px] text-muted-foreground">FC moy</p>
                         </div>
                       </div>
                     )}
                     {elevation !== null && elevation !== undefined && elevation > 0 && (
-                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-neutral-50">
+                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted/10">
                         <Mountain className="w-3.5 h-3.5 text-success flex-shrink-0" />
                         <div>
                           <p className="text-sm font-bold text-foreground tabular-nums">{Math.round(elevation)} m</p>
-                          <p className="text-[10px] text-neutral-500">dénivelé</p>
+                          <p className="text-[10px] text-muted-foreground">dénivelé</p>
                         </div>
                       </div>
                     )}
                   </div>
 
                   {/* Pace + Draw Button */}
-                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-neutral-100">
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
                     <div className="flex items-center gap-3">
                       {activity.pace && (
-                        <span className="text-xs font-medium text-neutral-600">{activity.pace}/km</span>
+                        <span className="text-xs font-medium text-muted-foreground">{activity.pace}/km</span>
                       )}
                       {activity.gap && (
                         <span className="text-xs font-semibold text-primary-500">GAP {activity.gap}</span>
@@ -294,7 +294,7 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
       {hasMore && (
         <button
           onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-neutral-200/60 text-sm font-medium text-neutral-600 hover:text-foreground hover:border-primary-300 hover:bg-primary-50 transition-all duration-200 ease-smooth"
+          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:border-primary-300 hover:bg-primary-50 transition-all duration-200 ease-smooth"
         >
           <ChevronDown className="w-4 h-4" />
           Charger {Math.min(PAGE_SIZE, filteredActivities.length - visibleCount)} activités de plus

@@ -14,13 +14,13 @@ interface RecommendationCardProps {
 
 const getIntensityColor = (intensity: string) => {
   switch (intensity) {
-    case 'rest': return { bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-200' };
-    case 'easy': return { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200' };
-    case 'moderate': return { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200' };
-    case 'threshold': return { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-200' };
-    case 'hard': return { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200' };
-    case 'varied': return { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-200' };
-    default: return { bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-200' };
+    case 'rest': return { bg: 'bg-muted/20', text: 'text-muted-foreground', border: 'border-border' };
+    case 'easy': return { bg: 'bg-success-50', text: 'text-success-700', border: 'border-success-200' };
+    case 'moderate': return { bg: 'bg-primary-50', text: 'text-primary-700', border: 'border-primary-200' };
+    case 'threshold': return { bg: 'bg-peak-50', text: 'text-peak-700', border: 'border-peak-200' };
+    case 'hard': return { bg: 'bg-danger-50', text: 'text-danger-700', border: 'border-danger-200' };
+    case 'varied': return { bg: 'bg-secondary-50', text: 'text-secondary-700', border: 'border-secondary-200' };
+    default: return { bg: 'bg-muted/20', text: 'text-muted-foreground', border: 'border-border' };
   }
 };
 

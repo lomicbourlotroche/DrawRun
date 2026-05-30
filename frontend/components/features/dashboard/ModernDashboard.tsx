@@ -76,7 +76,7 @@ function StatCard({ title, value, subtitle, icon, accentColor, trend }: StatCard
                 ? 'bg-success/10 text-success'
                 : trend < 0
                 ? 'bg-danger/10 text-danger'
-                : 'bg-neutral-100 text-neutral-500'
+                : 'bg-muted/20 text-muted-foreground'
             }`}
           >
             {trend > 0 ? <ArrowUp className="w-3 h-3" /> : trend < 0 ? <ArrowDown className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
@@ -86,7 +86,7 @@ function StatCard({ title, value, subtitle, icon, accentColor, trend }: StatCard
       </div>
       <p className="text-3xl font-bold text-foreground tabular-nums tracking-tight">{value}</p>
       <p className="text-sm font-medium text-foreground mt-1">{title}</p>
-      <p className="text-xs text-neutral-500 mt-0.5">{subtitle}</p>
+      <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
     </Card>
   );
 }
@@ -103,7 +103,7 @@ function ActivityRow({ activity }: ActivityRowProps) {
   return (
     <Link
       href={`/app/activities/${activity.id}`}
-      className="flex items-center justify-between p-3.5 rounded-xl hover:bg-neutral-50 transition-all duration-200 group"
+      className="flex items-center justify-between p-3.5 rounded-xl hover:bg-muted/10 transition-all duration-200 group"
     >
       <div className="flex items-center gap-3 min-w-0">
         <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary-500 flex items-center justify-center flex-shrink-0 group-hover:bg-primary-100 transition-colors">
@@ -113,7 +113,7 @@ function ActivityRow({ activity }: ActivityRowProps) {
           <p className="text-sm font-semibold text-foreground truncate">
             {activity.title ?? 'Activité'}
           </p>
-          <p className="text-xs text-neutral-500 mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5">
             {dateStr ? formatDate(dateStr) : '—'}
             {durationS > 0 && ` · ${formatDuration(durationS)}`}
           </p>
@@ -126,14 +126,14 @@ function ActivityRow({ activity }: ActivityRowProps) {
               {formatDistance(activity.distance!)}
             </p>
             {elevation !== null && elevation !== undefined && elevation > 0 && (
-              <p className="text-xs text-neutral-500 flex items-center justify-end gap-0.5">
+              <p className="text-xs text-muted-foreground flex items-center justify-end gap-0.5">
                 <Mountain className="w-3 h-3" />
                 {Math.round(elevation)} m
               </p>
             )}
           </div>
         )}
-        <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-primary-500 transition-colors" />
+        <ChevronRight className="w-4 h-4 text-muted group-hover:text-primary-500 transition-colors" />
       </div>
     </Link>
   );
@@ -178,17 +178,17 @@ export function ModernDashboard() {
   if (isLoading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-8 w-64 bg-neutral-100 rounded-lg" />
+        <div className="h-8 w-64 bg-muted/20 rounded-lg" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-32 bg-neutral-100 rounded-2xl" />
+            <div key={i} className="h-32 bg-muted/20 rounded-2xl" />
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          <div className="lg:col-span-7 h-72 bg-neutral-100 rounded-2xl" />
+          <div className="lg:col-span-7 h-72 bg-muted/20 rounded-2xl" />
           <div className="lg:col-span-5 space-y-4">
-            <div className="h-36 bg-neutral-100 rounded-2xl" />
-            <div className="h-36 bg-neutral-100 rounded-2xl" />
+            <div className="h-36 bg-muted/20 rounded-2xl" />
+            <div className="h-36 bg-muted/20 rounded-2xl" />
           </div>
         </div>
       </div>
@@ -273,11 +273,11 @@ export function ModernDashboard() {
                 ))
               ) : (
                 <div className="flex flex-col items-center py-12 text-center">
-                  <div className="w-12 h-12 rounded-2xl bg-neutral-50 flex items-center justify-center mb-3">
-                    <Clock className="w-6 h-6 text-neutral-400" />
+                  <div className="w-12 h-12 rounded-2xl bg-muted/10 flex items-center justify-center mb-3">
+                    <Clock className="w-6 h-6 text-muted" />
                   </div>
                   <p className="text-sm font-medium text-foreground">Aucune activité récente</p>
-                  <p className="text-xs text-neutral-500 mt-1">Synchronisez vos services pour voir vos activités</p>
+                  <p className="text-xs text-muted-foreground mt-1">Synchronisez vos services pour voir vos activités</p>
                 </div>
               )}
             </CardContent>
@@ -312,12 +312,12 @@ export function ModernDashboard() {
                 ].map((m) => (
                   <div key={m.label}>
                     <div className="flex justify-between text-xs mb-1.5">
-                      <span className="text-neutral-500 font-medium">{m.label}</span>
+                      <span className="text-muted-foreground font-medium">{m.label}</span>
                       <span className="font-semibold text-foreground tabular-nums">
                         {m.label.startsWith('TSB') && pmc.tsb < 0 ? '-' : ''}{m.value}
                       </span>
                     </div>
-                    <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
+                    <div className="h-2 bg-muted/20 rounded-full overflow-hidden">
                       <div className={`h-full rounded-full ${m.color} transition-all duration-500`} style={{ width: `${Math.min(100, (m.value / m.max) * 100)}%` }} />
                     </div>
                   </div>

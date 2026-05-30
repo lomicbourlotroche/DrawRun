@@ -94,15 +94,15 @@ export function SegmentList({ segments, onSegmentClick, isLoading }: SegmentList
                   {segment.kom && (
                     <div className="flex items-center gap-1 text-xs">
                       <Trophy className="w-3.5 h-3.5 text-warning" />
-                      <span className="text-yellow-600">
+                      <span className="text-warning-600">
                         KOM: {segment.kom.user_name} • {formatDuration(segment.kom.elapsed_time)}
                       </span>
                     </div>
                   )}
                   {segment.qom && (
                     <div className="flex items-center gap-1 text-xs">
-                      <Trophy className="w-3.5 h-3.5 text-pink-500" />
-                      <span className="text-pink-600">
+                      <Trophy className="w-3.5 h-3.5 text-secondary-500" />
+                      <span className="text-secondary-600">
                         QOM: {segment.qom.user_name} • {formatDuration(segment.qom.elapsed_time)}
                       </span>
                     </div>
@@ -182,9 +182,9 @@ export function SegmentLeaderboard({ segmentId }: SegmentLeaderboardProps) {
               key={effort.id}
               className={`flex items-center gap-4 p-3 rounded-lg ${
                 effort.is_kom
-                  ? 'bg-yellow-50 border border-yellow-200'
+                  ? 'bg-warning-50 border border-warning-200'
                   : effort.is_qom
-                  ? 'bg-pink-50 border border-pink-200'
+                  ? 'bg-secondary-50 border border-secondary-200'
                   : 'bg-muted/50'
               }`}
             >

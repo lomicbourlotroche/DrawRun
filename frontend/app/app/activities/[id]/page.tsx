@@ -242,7 +242,7 @@ export default function ActivityDetailPage() {
       {/* Cadence Chart */}
       {cadData && Array.isArray(cadData) && cadData.length > 10 && (
         <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Wind className="w-4 h-4 text-purple-400" />Cadence</CardTitle></CardHeader>
+          <CardHeader>            <CardTitle className="text-base flex items-center gap-2"><Wind className="w-4 h-4 text-secondary-400" />Cadence</CardTitle></CardHeader>
           <CardContent>
             <StreamChart data={cadData} color="#A855F7" fillColor="rgba(168,85,247,0.1)" unit="spm" formatValue={v => `${Math.round(v)}`} />
           </CardContent>
@@ -321,13 +321,13 @@ export default function ActivityDetailPage() {
               )}
               {activity.running_index !== null && (
                 <div className="text-center p-3 rounded-lg bg-background border border-border">
-                  <p className="text-lg font-bold text-cyan-400">{toNum(activity.running_index).toFixed(1)}</p>
+                  <p className="text-lg font-bold text-recovery-400">{toNum(activity.running_index).toFixed(1)}</p>
                   <p className="text-xs text-muted">Running Index</p>
                 </div>
               )}
               {activity.hrv_rmssd !== null && (
                 <div className="text-center p-3 rounded-lg bg-background border border-border">
-                  <p className="text-lg font-bold text-teal-400">{toNum(activity.hrv_rmssd).toFixed(1)} ms</p>
+                  <p className="text-lg font-bold text-recovery-400">{toNum(activity.hrv_rmssd).toFixed(1)} ms</p>
                   <p className="text-xs text-muted">HRV (RMSSD)</p>
                 </div>
               )}
@@ -340,7 +340,7 @@ export default function ActivityDetailPage() {
             </div>
             {(activity.is_race || activity.is_commute) && (
               <div className="flex gap-2 mt-3">
-                {!!activity.is_race && <span className="px-2 py-1 rounded-full text-xs font-medium bg-warning/20 text-yellow-600">🏆 Course</span>}
+                {!!activity.is_race && <span className="px-2 py-1 rounded-full text-xs font-medium bg-warning/20 text-warning-600">🏆 Course</span>}
                 {!!activity.is_commute && <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary">🚴 Trajet</span>}
               </div>
             )}

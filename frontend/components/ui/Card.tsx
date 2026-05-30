@@ -23,20 +23,20 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
       ),
       glass: cn(
         'bg-surface/70 backdrop-blur-md',
-        'border border-neutral-200/60',
+        'border border-border',
         'shadow-sm rounded-xl',
         hover && 'hover:shadow-md hover:border-primary-200/50 hover:-translate-y-0.5',
         'transition-all duration-200 ease-smooth'
       ),
       'glass-subtle': cn(
         'bg-surface/50 backdrop-blur-sm',
-        'border border-neutral-200/40',
+        'border border-border/60',
         'shadow-sm rounded-xl',
         'transition-all duration-200 ease-smooth'
       ),
       'glass-elevated': cn(
         'bg-surface/80 backdrop-blur-md',
-        'border border-neutral-200/60',
+        'border border-border',
         'shadow-md rounded-xl',
         hover && 'hover:shadow-lg hover:border-primary-200/50 hover:-translate-y-0.5',
         'transition-all duration-200 ease-smooth'

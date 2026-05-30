@@ -43,7 +43,7 @@ export function NavTabs({ tabs, activeTab, onChange, className }: NavTabsProps) 
             'flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200',
             activeTab === tab.id
               ? 'bg-primary-500 text-white shadow-sm'
-              : 'text-muted hover:text-foreground hover:bg-neutral-100'
+              : 'text-muted hover:text-foreground hover:bg-muted/20'
           )}
         >
           {tab.icon && <span className="w-4 h-4">{tab.icon}</span>}

@@ -52,7 +52,7 @@ export default function LeaderboardTab() {
   if (entries.length === 0) {
     return (
       <div className="text-center py-16">
-        <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-yellow-500/20 to-amber-500/20 flex items-center justify-center">
+        <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-warning-500/20 to-peak-500/20 flex items-center justify-center">
           <Trophy className="w-12 h-12 text-warning/50" />
         </div>
         <p className="font-semibold text-lg">Aucune donnée</p>

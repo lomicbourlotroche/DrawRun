@@ -19,7 +19,7 @@ const reasons = [
   { value: 'work', label: 'Travail', icon: Briefcase, color: 'text-primary/80' },
   { value: 'travel', label: 'Voyage', icon: Plane, color: 'text-purple-400' },
   { value: 'fatigue', label: 'Fatigue', icon: CloudOff, color: 'text-warning/80' },
-  { value: 'motivation', label: 'Manque de motivation', icon: Frown, color: 'text-gray-400' },
+  { value: 'motivation', label: 'Manque de motivation', icon: Frown, color: 'text-muted' },
   { value: 'other', label: 'Autre', icon: HelpCircle, color: 'text-muted' },
 ];
 
