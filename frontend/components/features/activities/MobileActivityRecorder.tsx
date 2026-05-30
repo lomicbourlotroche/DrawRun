@@ -17,14 +17,6 @@ import { LapListSheet } from './LapListSheet';
 import { RouteSelectionSheet } from './RouteSelectionSheet';
 import { SegmentRacingPanel } from './SegmentRacingPanel';
 import { logger } from '@/lib/logger';
-interface BatteryManager extends EventTarget {
-  level: number;
-  charging: boolean;
-  chargingTime: number;
-  dischargingTime: number;
-  addEventListener: (_type: 'levelchange' | 'chargingchange' | 'chargingtimechange' | 'dischargingtimechange', _listener: () => void) => void;
-  removeEventListener: (_type: 'levelchange' | 'chargingchange' | 'chargingtimechange' | 'dischargingtimechange', _listener: () => void) => void;
-}
 interface WakeLockSentinel {
   release: () => Promise<void>;
   type: string;

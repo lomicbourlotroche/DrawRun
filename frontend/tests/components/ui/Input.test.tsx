@@ -14,9 +14,9 @@ describe('Input component', () => {
     const input = screen.getByRole('textbox');
     expect(input).toBeInTheDocument();
     expect(input).toHaveClass('w-full');
-    expect(input).toHaveClass('bg-background');
+    expect(input).toHaveClass('bg-surface');
     expect(input).toHaveClass('border');
-    expect(input).toHaveClass('rounded-md');
+    expect(input).toHaveClass('rounded-lg');
   });
 
   it('renders with label', () => {
@@ -72,7 +72,7 @@ describe('Input component', () => {
     render(<Input error="Error" />);
     
     const input = screen.getByRole('textbox');
-    expect(input).toHaveClass('border-danger');
+    expect(input).toHaveClass('border-danger-400');
   });
 
   it('applies default border style when no error', () => {

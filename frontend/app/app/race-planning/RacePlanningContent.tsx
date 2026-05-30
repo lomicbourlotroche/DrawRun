@@ -357,7 +357,7 @@ export function RacePlanningContent() {
                       <p className="text-lg font-semibold">{result.summary.ctl}</p>
                     </div>
                   )}
-                  {result.summary.tsb != null && (
+                  {result.summary.tsb !== null && result.summary.tsb !== undefined && (
                     <div className={`p-3 rounded-lg border ${result.summary.tsb < -10 ? 'bg-error/10 border-error/30' : 'bg-info/10 border-info/30'}`}>
                       <p className="text-xs text-muted">TSB (Forme)</p>
                       <p className="text-lg font-semibold">{result.summary.tsb}</p>

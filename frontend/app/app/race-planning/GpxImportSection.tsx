@@ -112,7 +112,7 @@ export function GpxImportSection({
             placeholder="04:30"
           />
         )}
-        {recommendedPace != null && (
+        {recommendedPace !== null && recommendedPace !== undefined && (
           <p className="text-xs text-primary mt-1">
             Prédiction VDOT : {recommendedPace}s/km 
             ({fmtPace(recommendedPace)}/km)

@@ -49,11 +49,12 @@ describe('GlassCard component', () => {
     expect(card.className).toContain('hover:-translate-y-0.5');
   });
 
-  it('has no hover effect by default', () => {
+  it('has hover effect by default', () => {
     render(<GlassCard>Content</GlassCard>);
     
     const card = screen.getByText('Content');
-    expect(card.className).not.toContain('hover:shadow');
+    expect(card.className).toContain('hover:shadow');
+    expect(card.className).toContain('hover:shadow-md');
   });
 
   it('disables hover effect when hover prop is false', () => {
