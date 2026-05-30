@@ -54,7 +54,7 @@ export default function StrategyResults({ strategy, formatTime, downloadCsv }: S
 
       {/* Tapering Analysis */}
       {Boolean(strategy.taper) && (
-        <TaperingChart data={strategy.taper as Record<string, unknown>} />
+        <TaperingChart data={strategy.taper as any} />
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
