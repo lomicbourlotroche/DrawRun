@@ -36,7 +36,7 @@ export default function StrategyResults({ strategy, formatTime, downloadCsv }: S
         </GlassCard>
         <GlassCard className="p-4 flex flex-col items-center text-center">
           <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Allure Moyenne</span>
-          <span className="text-2xl font-bold mt-1">{(strategy.summary as Record<string, unknown>).averagePace} /km</span>
+          <span className="text-2xl font-bold mt-1">{(strategy.summary as Record<string, unknown>).averagePace as string} /km</span>
         </GlassCard>
       </div>
 
