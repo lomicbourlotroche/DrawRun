@@ -1,202 +1,92 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { MetricCard } from '@/components/ui';
-import { Activity, HeartPulse, TrendingUp, Zap, Monitor, Trophy, CloudSun, Bell, Share2, Users } from '@/components/ui/icons';
-import { useUserCounter } from '@/hooks/useUserCounter';
+import Link from 'next/link';
+import { Zap, TrendingUp } from '@/components/ui/icons';
 
 export default function HeroSection() {
-  const [isVisible, setIsVisible] = useState(false);
-  const { count, isLoading, error } = useUserCounter(); // Compteur utilisateurs en temps réel
-
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
-
   return (
-    <section className="relative min-h-screen pt-32 pb-20 lg:pt-40 lg:pb-32 overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/30 dark:from-background dark:via-background dark:to-primary/10" />
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden px-4 py-20">
+      {/* Layer 1: Dark base */}
+      <div className="absolute inset-0 bg-background" />
+
+      {/* Layer 2: Animated gradient orbs */}
       <div className="absolute inset-0">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse-soft" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-success/10 rounded-full blur-3xl animate-pulse-soft" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[radial-gradient(ellipse_at_center,color-mix(in srgb,var(--primary),transparent 60%),transparent)] rounded-full" />
+        <div className="absolute -top-40 -left-40 w-[500px] h-[500px] bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-3xl animate-gradient-shift" />
+        <div className="absolute top-1/2 -right-40 w-[600px] h-[600px] bg-gradient-to-bl from-peak/15 to-transparent rounded-full blur-3xl animate-breathe" style={{ animationDelay: '1.5s' }} />
+        <div className="absolute -bottom-40 left-1/3 w-[400px] h-[400px] bg-gradient-to-tr from-primary/10 to-transparent rounded-full blur-3xl animate-gradient-shift" style={{ animationDelay: '3s' }} />
       </div>
 
-      {/* Grid Pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(color-mix(in srgb, var(--primary), transparent 97%)_1px,transparent_1px),linear-gradient(90deg,color-mix(in srgb, var(--primary), transparent 97%)_1px,transparent_1px)] bg-[size:60px_60px]" />
+      {/* Layer 3: Subtle grid pattern */}
+      <div
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+          backgroundSize: '60px 60px',
+        }}
+      />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          {/* Left Content */}
-          <div className={`transition-all duration-700 ease-smooth ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full mb-8">
-              <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-              <span className="text-sm font-semibold text-primary">
-                v4.1 • Coaching adaptatif + Météo + Race Planning
-              </span>
-            </div>
+      {/* Decorative geometric shapes */}
+      <div className="absolute top-20 right-20 w-32 h-32 border border-primary/10 rounded-full -z-10" />
+      <div className="absolute bottom-20 left-20 w-48 h-48 border border-peak/10 rounded-full -z-10" />
+      <div className="absolute top-1/3 left-[15%] w-16 h-16 border border-primary/10 rounded-full -z-10" />
 
-            {/* Title */}
-            <h1 className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-foreground leading-[1.1] mb-6 break-words">
-              VOTRE PERFORMANCE
-              <br />
-              <span className="bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text text-transparent">
-                SCIENTIFIQUE
-              </span>
-            </h1>
-
-            {/* Subtitle */}
-            <p className="text-lg sm:text-xl text-muted leading-relaxed mb-8 max-w-xl">
-              Coaching sportif propulsé par le moteur
-              <span className="font-semibold text-foreground"> Jack Daniels VDOT</span>,
-              des plans d&apos;entraînement adaptatifs,
-              <span className="font-semibold text-foreground"> la météo en temps réel</span> et
-              <span className="font-semibold text-foreground"> des stratégies de course</span> personnalisées.
-              15+ métriques avancées pour optimiser chaque séance.
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 mb-12">
-              <a
-                href="/login?mode=register"
-                className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-primary text-white font-semibold rounded-xl shadow-button-primary hover:shadow-button-primary-hover hover:-translate-y-0.5 transition-all duration-200 text-base"
-              >
-                <TrendingUp className="w-5 h-5 flex-shrink-0" />
-                Commencer gratuitement
-              </a>
-              <a
-                href="/login"
-                className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-surface border-2 border-surface text-muted font-semibold rounded-xl hover:border-primary/30 hover:bg-primary/10 transition-all duration-200 text-base"
-              >
-                <Monitor className="w-5 h-5 flex-shrink-0" />
-                Se connecter
-              </a>
-            </div>
-
-            {/* New Features Pills */}
-            <div className="flex flex-wrap gap-2 mb-8">
-              {[
-                { icon: Trophy, label: 'Race Planning', color: 'bg-warning/10 text-warning border-warning/20' },
-                { icon: CloudSun, label: 'Météo activités', color: 'bg-primary/10 text-primary border-primary/20' },
-                { icon: Bell, label: 'Notifications push', color: 'bg-danger/10 text-danger border-danger/20' },
-                { icon: Share2, label: 'Partage image', color: 'bg-success/10 text-success border-success/20' },
-              ].map((pill, i) => (
-                <span
-                  key={i}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-full text-xs font-semibold ${pill.color}`}
-                >
-                  <pill.icon className="w-3.5 h-3.5" />
-                  {pill.label}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Right Content - Stats Grid */}
-          <div className={`transition-all duration-700 delay-200 ease-smooth ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
-              {/* NOUVEAU: Compteur d'utilisateurs en temps réel */}
-              <div className="col-span-2 sm:col-span-2 p-4 bg-surface/60 backdrop-blur-sm border border-surface rounded-2xl">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-semibold text-muted">Utilisateurs actifs</span>
-                  <span className="flex items-center gap-1.5 text-xs font-medium text-success">
-                    <span className="w-2 h-2 bg-success rounded-full animate-pulse" />
-                    En temps réel
-                  </span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary flex items-center justify-center">
-                    <Users className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    {isLoading ? (
-                      <div className="w-20 h-8 bg-border rounded-lg animate-pulse" />
-                    ) : error ? (
-                      <div className="text-danger text-sm">{error}</div>
-                    ) : (
-                      <div className="text-4xl font-bold text-foreground tabular-nums">
-                        {count.toLocaleString()}
-                      </div>
-                    )}
-                    <div className="text-sm text-muted">athlètes connectés</div>
-                  </div>
-                </div>
-              </div>
-
-              <MetricCard
-                label="Métriques avancées"
-                value="15+"
-                icon={<Activity className="w-5 h-5" />}
-                color="primary"
-                size="md"
-              />
-              <MetricCard
-                label="Précision VDOT"
-                value="99%"
-                unit=""
-                icon={<Zap className="w-5 h-5" />}
-                color="success"
-                size="md"
-              />
-              <MetricCard
-                label="TSS Temps Réel"
-                value="Live"
-                icon={<TrendingUp className="w-5 h-5" />}
-                color="recovery"
-                size="md"
-              />
-              <MetricCard
-                label="Santé Cardiaque"
-                value="HRV"
-                icon={<HeartPulse className="w-5 h-5" />}
-                color="peak"
-                size="md"
-                className="col-span-2 sm:col-span-2"
-              />
-            </div>
-
-            {/* Mini Feature Preview (ancien aperçu BPM) */}
-            <div className="mt-6 p-4 bg-surface/60 backdrop-blur-sm border border-surface rounded-2xl">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-semibold text-muted">Aperçu en temps réel</span>
-                  <span className="flex items-center gap-1.5 text-xs font-medium text-success">
-                  <span className="w-2 h-2 bg-success rounded-full animate-pulse" />
-                  Connecté
-                </span>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="flex-1 h-12 bg-gradient-to-r from-primary/10 via-primary/20 to-primary/10 rounded-lg animate-gradient-shift bg-[length:200%_100%]"></div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-foreground">142</div>
-                  <div className="text-xs text-muted">BPM</div>
-                </div>
-              </div>
-            </div>
-          </div>
+      {/* Content */}
+      <div className="relative z-10 text-center max-w-4xl mx-auto">
+        {/* Badge */}
+        <div className="animate-fade-in inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary mb-8 animate-float">
+          <Zap className="w-3 h-3" />
+          Science Engine
         </div>
 
-        {/* Bottom Stats Bar */}
-        <div className={`mt-16 lg:mt-24 transition-all duration-700 delay-300 ease-smooth ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8">
-            {[
-              { value: '15+', label: 'Métriques scientifiques' },
-              { value: '17', label: 'Algorithmes intégrés' },
-              { value: '5', label: 'Nouvelles features v4.1' },
-              { value: '100%', label: 'Open source' },
-            ].map((stat, index) => (
-              <div key={index} className="text-center lg:text-left">
-                <div className="text-3xl lg:text-4xl font-bold text-foreground tabular-nums">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-muted mt-1">{stat.label}</div>
+        {/* Headline */}
+        <h1 className="animate-slide-up delay-100 text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-foreground leading-tight mb-6">
+          Repoussez vos limites
+          <br />
+          avec{' '}
+          <span className="bg-gradient-to-r from-primary to-peak bg-clip-text text-transparent">
+            DrawRun
+          </span>
+        </h1>
+
+        {/* Subtitle */}
+        <p className="animate-slide-up delay-200 text-lg md:text-xl text-muted max-w-2xl mx-auto leading-relaxed mb-10">
+          Analyse scientifique, plans adaptatifs et suivi de performance pour les athlètes qui veulent aller plus loin.
+        </p>
+
+        {/* CTA Buttons */}
+        <div className="animate-slide-up delay-300 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link
+            href="/login"
+            className="bg-gradient-to-r from-primary to-peak text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all inline-flex items-center gap-2"
+          >
+            <TrendingUp className="w-5 h-5" />
+            Commencer gratuitement
+          </Link>
+          <Link
+            href="/guides"
+            className="bg-surface/50 backdrop-blur-sm border border-border text-foreground font-semibold px-8 py-4 rounded-xl hover:bg-surface/80 transition-all inline-flex items-center gap-2"
+          >
+            Découvrir l&apos;app
+          </Link>
+        </div>
+
+        {/* Stats Bar */}
+        <div className="animate-fade-in delay-500 grid grid-cols-3 gap-8 max-w-lg mx-auto mt-16">
+          {[
+            { value: '15+', label: 'Métriques' },
+            { value: '2500+', label: 'Athlètes' },
+            { value: '99%', label: 'Précision' },
+          ].map((stat) => (
+            <div key={stat.label} className="text-center">
+              <div className="text-2xl md:text-3xl font-bold text-foreground tabular-nums">
+                {stat.value}
               </div>
-            ))}
-          </div>
+              <div className="text-sm text-muted mt-1">{stat.label}</div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
   );
 }
-

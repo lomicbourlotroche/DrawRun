@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
+import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
-import { AlertTriangle, CheckCircle, TrendingUp, TrendingDown, Zap, Activity } from '@/components/ui/icons';
+import { logger } from '@/lib/logger';
+import { Card, CardContent } from '@/components/ui';
+import { AlertTriangle, CheckCircle, Info, TrendingDown, Activity, Heart } from '@/components/ui/icons';
+import { cn } from '@/lib/utils';
 
 interface OvertrainingData {
   risk: 'low' | 'moderate' | 'high' | 'unknown';
@@ -19,29 +21,28 @@ export default function OvertrainingAlert() {
   const [data, setData] = useState<OvertrainingData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
       const result = await api.checkOvertraining();
       setData(result as OvertrainingData);
-    } catch {
-      /* silencieux */
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      logger.error('Failed to load overtraining data', { error: errMsg });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="p-4">
-          <div className="animate-pulse h-20 bg-surface rounded" />
-        </CardContent>
-      </Card>
+      <div className="h-16 rounded-xl bg-card border border-border overflow-hidden">
+        <div className="h-full w-full animate-shimmer bg-gradient-to-r from-transparent via-muted/20 to-transparent bg-[length:200%_100%]" />
+      </div>
     );
   }
 
@@ -49,120 +50,97 @@ export default function OvertrainingAlert() {
     return null;
   }
 
-  const riskColors = {
-    low: 'bg-success/10 border-success/20 text-success',
-    moderate: 'bg-warning/10 border-warning/20 text-warning',
-    high: 'bg-danger/10 border-danger/20 text-danger',
-    unknown: 'bg-muted border-border text-muted',
-  };
-
-  const riskLabels = {
-    low: 'Faible',
-    moderate: 'Mod\u00e9r\u00e9',
-    high: '\u00c9lev\u00e9',
-    unknown: 'Inconnu',
-  };
-
-  const riskIcons = {
-    low: CheckCircle,
-    moderate: AlertTriangle,
-    high: AlertTriangle,
-    unknown: Activity,
-  };
-
-  const RiskIcon = riskIcons[data.risk];
-
   if (data.risk === 'low') {
     return (
-      <Card className="border-success/20">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-success" />
-            </div>
-            <div>
-              <p className="font-medium text-foreground">Charge optimale</p>
-              <p className="text-sm text-muted">{data.message}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="bg-success/10 border border-success/20 text-success text-sm rounded-xl px-4 py-2 flex items-center gap-2 w-fit">
+        <CheckCircle className="w-4 h-4" />
+        <span>Tout va bien</span>
+      </div>
+    );
+  }
+
+  if (data.risk === 'moderate') {
+    return (
+      <div className="animate-slide-down bg-warning/10 border border-warning/30 text-warning rounded-xl px-5 py-3 flex items-start gap-3">
+        <Info className="w-5 h-5 mt-0.5 shrink-0" />
+        <p className="text-sm">{data.message}</p>
+      </div>
     );
   }
 
   return (
-    <Card className={`border ${riskColors[data.risk]}`}>
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <RiskIcon className={`w-5 h-5 ${riskColors[data.risk].split(' ')[2]}`} />
-          Alerte Surentra\u00eenement
-          <span className={`text-xs px-2 py-0.5 rounded-full ${riskColors[data.risk]}`}>
-            Risque {riskLabels[data.risk]}
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-sm text-muted">{data.message}</p>
-
-        {data.acwr && (
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center p-3 rounded-lg bg-surface border border-border">
-              <p className="text-2xl font-bold text-foreground">{data.acwr.toFixed(2)}</p>
-              <p className="text-xs text-muted">ACWR</p>
-            </div>
-            <div className="text-center p-3 rounded-lg bg-surface border border-border">
-              <div className="flex items-center justify-center gap-1">
-                <TrendingUp className="w-4 h-4 text-success" />
-                <p className="text-2xl font-bold text-success">{data.ctl}</p>
-              </div>
-              <p className="text-xs text-muted">Fitness (CTL)</p>
-            </div>
-            <div className="text-center p-3 rounded-lg bg-surface border border-border">
-              <div className="flex items-center justify-center gap-1">
-                <TrendingDown className="w-4 h-4 text-danger" />
-                <p className="text-2xl font-bold text-danger">{data.atl}</p>
-              </div>
-              <p className="text-xs text-muted">Fatigue (ATL)</p>
-            </div>
-          </div>
-        )}
-
-        <div className="text-center">
-          <p className="text-lg font-semibold">
-            <span className={data.tsb > 0 ? 'text-success' : data.tsb < -10 ? 'text-danger' : 'text-warning'}>
-              {data.tsb > 0 ? '+' : ''}{data.tsb}
-            </span>
-          </p>
-          <p className="text-xs text-muted">Forme (TSB)</p>
+    <div className="animate-slide-down bg-danger/10 border-2 border-danger/30 rounded-xl p-5 space-y-4">
+      <div className="flex items-center gap-3">
+        <AlertTriangle className="w-6 h-6 text-danger animate-breathe shrink-0" />
+        <div>
+          <h3 className="font-bold text-foreground">Risque de surentraînement détecté</h3>
+          <p className="text-sm text-muted mt-0.5">{data.message}</p>
         </div>
+      </div>
 
-        {data.recommendation && (
-          <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
-            <div className="flex items-start gap-2">
-              <Zap className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-foreground">Recommandation</p>
-                <p className="text-sm text-muted mt-1">{data.recommendation}</p>
-              </div>
-            </div>
-          </div>
-        )}
+      <div className="grid grid-cols-3 gap-3">
+        <MetricBadge
+          icon={<TrendingDown className="w-4 h-4" />}
+          label="Fatigue"
+          value={data.atl.toFixed(1)}
+          color="text-danger"
+        />
+        <MetricBadge
+          icon={<Activity className="w-4 h-4" />}
+          label="Fitness"
+          value={data.ctl.toFixed(1)}
+          color="text-success"
+        />
+        <MetricBadge
+          icon={<Heart className="w-4 h-4" />}
+          label="Forme (TSB)"
+          value={`${data.tsb > 0 ? '+' : ''}${data.tsb.toFixed(1)}`}
+          color={data.tsb > 0 ? 'text-success' : data.tsb < -10 ? 'text-danger' : 'text-warning'}
+        />
+      </div>
 
-        <div className="flex gap-2 text-xs text-muted">
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-success" />
-            <span>Optimal: 0.8-1.3</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-warning" />
-            <span>Mod\u00e9r\u00e9: 1.3-1.5</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-danger" />
-            <span>Risque: &gt;1.5</span>
+      {data.acwr !== null && data.acwr !== undefined && (
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-muted">ACWR: <strong className="text-foreground">{data.acwr.toFixed(2)}</strong></span>
+          <div className="flex gap-2 text-muted-foreground">
+            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-success" /> Bon</span>
+            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-warning" /> Modéré</span>
+            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-danger" /> Risque</span>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      )}
+
+      {data.recommendation && (
+        <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/10 border border-primary/20">
+          <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+          <div>
+            <p className="text-xs font-semibold text-foreground">Recommandation coach</p>
+            <p className="text-xs text-muted mt-0.5">{data.recommendation}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MetricBadge({
+  icon,
+  label,
+  value,
+  color,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  color: string;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-1 rounded-lg bg-background/50 border border-border/50 p-3">
+      <div className={cn('flex items-center gap-1', color)}>
+        {icon}
+        <span className="text-lg font-bold">{value}</span>
+      </div>
+      <span className="text-[11px] text-muted-foreground">{label}</span>
+    </div>
   );
 }

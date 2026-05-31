@@ -2582,14 +2582,58 @@
   50% { transform: none; animation-timing-function: cubic-bezier(0,0,0.2,1); }
 }
 
+@keyframes scaleIn {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideRight {
+  0% { opacity: 0; transform: translateX(-10px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideLeft {
+  0% { opacity: 0; transform: translateX(10px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes gaugeFill {
+  0% { stroke-dashoffset: var(--gauge-circumference); }
+  100% { stroke-dashoffset: var(--gauge-fill); }
+}
+
+@keyframes shimmerSlide {
+  0% { background-position: -100% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
 .animate-fade-in { animation: fadeIn 0.3s ease-out; }
 .animate-slide-up { animation: slideUp 0.3s ease-out; }
 .animate-slide-down { animation: slideDown 0.2s ease-out; }
+.animate-slide-right { animation: slideRight 0.3s ease-out; }
+.animate-slide-left { animation: slideLeft 0.3s ease-out; }
+.animate-scale-in { animation: scaleIn 0.3s ease-out; }
 .animate-pulse-soft { animation: pulseSoft 2s ease-in-out infinite; }
 .animate-shimmer { animation: shimmer 2s linear infinite; }
 .animate-float { animation: float 3s ease-in-out infinite; }
 .animate-gradient-shift { animation: gradientShift 8s ease infinite; }
 .animate-count-up { animation: countUp 0.5s ease-out; }
+.animate-gauge-fill { animation: gaugeFill 1.2s ease-out forwards; }
+.animate-shimmer-slide { animation: shimmerSlide 2s linear infinite; background-size: 200% 100%; }
+.animate-breathe { animation: breathe 3s ease-in-out infinite; }
 .animate-spin { animation: spin 1s linear infinite; }
 .animate-ping { animation: ping 1s ease-out infinite; }
 .animate-bounce { animation: bounce 1s ease-in-out infinite; }
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+.delay-700 { animation-delay: 0.7s; }
+.delay-1000 { animation-delay: 1s; }

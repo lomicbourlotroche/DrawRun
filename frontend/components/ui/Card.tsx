@@ -1,3 +1,5 @@
+'use client';
+
 import { forwardRef, type HTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -5,10 +7,21 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'elevated' | 'glass' | 'highlight' | 'bordered' | 'ghost' | 'glass-subtle' | 'glass-elevated';
   padding?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   hover?: boolean;
+  accent?: 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'peak' | 'none';
 }
 
+const accentBorder: Record<string, string> = {
+  primary: 'before:bg-primary',
+  success: 'before:bg-success',
+  warning: 'before:bg-warning',
+  danger: 'before:bg-danger',
+  info: 'before:bg-peak',
+  peak: 'before:bg-peak',
+  none: '',
+};
+
 const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant = 'default', padding = 'md', hover = false, children, ...props }, ref) => {
+  ({ className, variant = 'default', padding = 'md', hover = false, accent, children, ...props }, ref) => {
     const variants = {
       default: cn(
         'bg-surface border border-border',
@@ -25,7 +38,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
         'bg-surface/70 backdrop-blur-md',
         'border border-border',
         'shadow-sm rounded-xl',
-        hover && 'hover:shadow-md hover:border-primary-200/50 hover:-translate-y-0.5',
+        hover && 'hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5',
         'transition-all duration-200 ease-smooth'
       ),
       'glass-subtle': cn(
@@ -38,19 +51,19 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
         'bg-surface/80 backdrop-blur-md',
         'border border-border',
         'shadow-md rounded-xl',
-        hover && 'hover:shadow-lg hover:border-primary-200/50 hover:-translate-y-0.5',
+        hover && 'hover:shadow-lg hover:border-primary/20 hover:-translate-y-0.5',
         'transition-all duration-200 ease-smooth'
       ),
       highlight: cn(
-        'bg-surface border-2 border-primary-300',
+        'bg-surface border-2 border-primary',
         'shadow-card rounded-xl',
-        'ring-2 ring-primary-100/50',
+        'ring-2 ring-primary/10',
         'transition-all duration-200 ease-smooth'
       ),
       bordered: cn(
         'bg-transparent border-2 border-border',
         'rounded-xl',
-        hover && 'hover:border-primary-300 hover:bg-surface',
+        hover && 'hover:border-primary/30 hover:bg-surface',
         'transition-all duration-200 ease-smooth'
       ),
       ghost: cn(
@@ -74,7 +87,11 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          'rounded-xl transition-all duration-200 ease-smooth',
+          'rounded-xl transition-all duration-200 ease-smooth relative',
+          accent && accent !== 'none' && [
+            'before:absolute before:top-0 before:left-3 before:right-3 before:h-[3px] before:rounded-t-xl before:rounded-full',
+            accentBorder[accent],
+          ],
           variants[variant],
           paddings[padding],
           className
@@ -156,8 +173,8 @@ interface CardStatProps extends HTMLAttributes<HTMLDivElement> {
 const CardStat = forwardRef<HTMLDivElement, CardStatProps>(
   ({ className, label, value, unit, trend, trendValue, ...props }, ref) => {
     const trendColors = {
-      up: 'text-success-500',
-      down: 'text-danger-500',
+      up: 'text-success',
+      down: 'text-danger',
       neutral: 'text-muted',
     };
 
@@ -199,7 +216,7 @@ const GlassCard = forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = 'default', padding = 'md', hover = true, children, ...props }, ref) => {
     const glassVariants: Record<string, string> = {
       default: 'bg-surface/90 backdrop-blur-md border border-surface/60 shadow-sm',
-      elevated: 'bg-surface/90 backdrop-blur-md border border-surface/60 shadow-md hover:shadow-lg hover:border-primary-200/50 hover:-translate-y-0.5',
+      elevated: 'bg-surface/90 backdrop-blur-md border border-surface/60 shadow-md hover:shadow-lg hover:border-primary/20 hover:-translate-y-0.5',
       subtle: 'bg-surface/70 backdrop-blur-md border border-surface/40 shadow-sm',
     };
 
@@ -213,7 +230,7 @@ const GlassCard = forwardRef<HTMLDivElement, CardProps>(
         className={cn(
           'rounded-xl transition-all duration-300 ease-smooth',
           glassVariants[variant] || glassVariants.default,
-          hover && variant === 'default' && 'hover:shadow-md hover:border-primary-200/50 hover:-translate-y-0.5',
+          hover && variant === 'default' && 'hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5',
           paddings[padding],
           className
         )}
