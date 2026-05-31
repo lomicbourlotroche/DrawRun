@@ -4,11 +4,12 @@ import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { useUserConstantsStore } from '@/stores';
 import { PerformanceZones, PerformanceMetrics, ProgressionChart } from '@/components/features/performance';
-import { Card, Skeleton, Badge } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Skeleton, Badge } from '@/components/ui';
 import { NavTabs } from '@/components/ui/NavTabs';
 import { EliteAnalyticsSection } from './EliteAnalyticsSection';
 import { IntensityDistributionSection } from './IntensityDistributionSection';
 import { HRVRecoverySection } from './HRVRecoverySection';
+import { cn } from '@/lib/utils';
 import { Dumbbell, Bike, Waves, Activity, TrendingUp, Gauge, Zap, BarChart3, Brain, Heart, Clock } from '@/components/ui/icons';
 import type { PmcDataPoint, Activity as ActivityType, Zones } from '@/types';
 
@@ -170,25 +171,34 @@ export default function PerformanceContent() {
 
   return (
     <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
-      <div className="flex items-center justify-between pt-2">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2 tracking-tight">
-            <Activity className="w-6 h-6 text-primary" />
-            Performances
-          </h1>
-          <p className="text-muted mt-1.5">Suivez vos m\u00e9triques et progressions</p>
-        </div>
-        <button
-          onClick={handleRecalculate}
-          disabled={isRecalculating}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-all disabled:opacity-50"
-        >
-          <Activity className={`w-4 h-4 ${isRecalculating ? 'animate-spin' : ''}`} />
-          {isRecalculating ? 'Calcul...' : 'Recalculer'}
-        </button>
+      <div className={cn('animate-slide-up opacity-0 fill-mode-forwards delay-100')}>
+        <Card variant="glass" accent="primary" className="relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Activity className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground tracking-tight">Performances</h1>
+                <p className="text-sm text-muted mt-0.5">Suivez vos m\u00e9triques et progressions</p>
+              </div>
+            </div>
+            <button
+              onClick={handleRecalculate}
+              disabled={isRecalculating}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-all disabled:opacity-50"
+            >
+              <Activity className={cn('w-4 h-4', isRecalculating && 'animate-spin')} />
+              {isRecalculating ? 'Calcul...' : 'Recalculer'}
+            </button>
+          </div>
+          <div className="absolute -right-6 -bottom-6 w-32 h-32 blur-3xl rounded-full bg-primary/10" />
+        </Card>
       </div>
 
-      <NavTabs tabs={sportTabs} activeTab={sport} onChange={(id) => setSport(id as 'run' | 'bike' | 'swim')} />
+      <div className={cn('animate-slide-up opacity-0 fill-mode-forwards delay-200')}>
+        <NavTabs tabs={sportTabs} activeTab={sport} onChange={(id) => setSport(id as 'run' | 'bike' | 'swim')} />
+      </div>
 
       {isLoading ? (
         <div className="space-y-4">
@@ -198,108 +208,149 @@ export default function PerformanceContent() {
         </div>
       ) : (
         <>
-          <NavTabs tabs={tabs} activeTab={activeTab} onChange={(id) => setActiveTab(id as typeof activeTab)} />
+          <div className={cn('animate-slide-up opacity-0 fill-mode-forwards delay-300')}>
+            <div className="bg-surface/50 backdrop-blur-sm border border-border rounded-xl p-1 inline-flex w-full">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                  className={cn(
+                    'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
+                    activeTab === tab.id
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted hover:text-foreground'
+                  )}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {activeTab === 'metrics' && (
             <div className="space-y-6">
-              <PerformanceMetrics sport={sport} metrics={{
-                vma: profile?.vma ?? undefined,
-                vdot: profile?.vdot ?? undefined,
-                vo2max: profile?.fcm ? Math.round((profile.fcm - (profile.restingHR || 60)) * 0.15 + 30) : undefined,
-              }} />
-              <Card padding="none">
-                <div className="px-6 py-4 border-b border-border">
-                  <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                    <Heart className="w-5 h-5 text-danger" />
-                    M\u00e9triques cl\u00e9s
-                  </h3>
-                </div>
-                <div className="p-5">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[
-                      { value: profile?.fcm, label: 'FCM', gradient: 'from-danger/5 to-danger/10', border: 'border-danger/10' },
-                      { value: profile?.vdot, label: 'VDOT', gradient: 'from-primary/10 to-primary/20', border: 'border-primary/20' },
-                      { value: profile?.vma ? `${profile.vma.toFixed(1)}` : null, label: 'VMA km/h', gradient: 'from-success/5 to-success/10', border: 'border-success/10' },
-                      { value: profile?.fcm ? Math.round((profile.fcm - (profile.restingHR || 60)) * 0.15 + 30) : null, label: 'VO\u2082 max', gradient: 'from-warning/5 to-warning/10', border: 'border-warning/10', badge: 'Estim\u00e9' },
-                    ].map(({ value, label, gradient, border, badge }) => (
-                      <div key={label} className={`relative overflow-hidden p-4 rounded-xl bg-gradient-to-br ${gradient} ${border} text-center transition-all hover:shadow-md`}>
-                        <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
-                        <p className="text-3xl font-bold text-primary tracking-tight tabular-nums">{value ?? '--'}</p>
-                        <p className="text-xs text-muted mt-1 font-medium">{label}{badge ? <Badge variant="outline" className="text-[10px] ml-1">{badge}</Badge> : null}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </Card>
+              <div className={cn('animate-slide-up opacity-0 fill-mode-forwards delay-300')}>
+                <PerformanceMetrics sport={sport} metrics={{
+                  vma: profile?.vma ?? undefined,
+                  vdot: profile?.vdot ?? undefined,
+                  vo2max: profile?.fcm ? Math.round((profile.fcm - (profile.restingHR || 60)) * 0.15 + 30) : undefined,
+                }} />
+              </div>
+
+              <div className={cn('animate-slide-up opacity-0 fill-mode-forwards delay-400')}>
+                <Card variant="glass" accent="info" padding="none">
+                  <CardHeader className="px-6 pt-5 pb-0">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Heart className="w-5 h-5 text-danger" />
+                      M\u00e9triques cl\u00e9s
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-5">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {[
+                        { value: profile?.fcm, label: 'FCM', accent: 'danger' as const, badge: null },
+                        { value: profile?.vdot, label: 'VDOT', accent: 'primary' as const, badge: null },
+                        { value: profile?.vma ? `${profile.vma.toFixed(1)}` : null, label: 'VMA km/h', accent: 'success' as const, badge: null },
+                        { value: profile?.fcm ? Math.round((profile.fcm - (profile.restingHR || 60)) * 0.15 + 30) : null, label: 'VO\u2082 max', accent: 'warning' as const, badge: 'Estim\u00e9' },
+                      ].map(({ value, label, accent, badge }) => (
+                        <Card key={label} variant="glass-subtle" accent={accent} className="text-center">
+                          <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">{value ?? '--'}</p>
+                          <p className="text-xs text-muted mt-1 font-medium">
+                            {label}
+                            {badge && <Badge variant="outline" className="text-[10px] ml-1">{badge}</Badge>}
+                          </p>
+                        </Card>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           )}
-          {activeTab === 'zones' && <PerformanceZones zones={{
-            ...zones,
-            fcm: profile?.fcm || 0,
-            vma: profile?.vma || 0,
-            vdot: profile?.vdot || 0,
-          } as unknown as Zones} />}
+
+          {activeTab === 'zones' && (
+            <div className={cn('animate-slide-up opacity-0 fill-mode-forwards delay-300')}>
+              <PerformanceZones zones={{
+                ...zones,
+                fcm: profile?.fcm || 0,
+                vma: profile?.vma || 0,
+                vdot: profile?.vdot || 0,
+              } as unknown as Zones} />
+            </div>
+          )}
+
           {activeTab === 'progression' && (
             <div className="space-y-4">
               {activities.length === 0 ? (
-                <Card padding="lg" className="text-center">
+                <Card variant="glass" padding="lg" className="text-center">
                   <BarChart3 className="w-12 h-12 mx-auto mb-4 text-muted" />
                   <p className="text-muted">Aucune activit\u00e9 enregistr\u00e9e</p>
                   <p className="text-xs text-muted mt-1">Synchronisez vos activit\u00e9s pour voir vos statistiques.</p>
                 </Card>
               ) : (
                 <>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className={cn('grid grid-cols-2 md:grid-cols-4 gap-4 animate-slide-up opacity-0 fill-mode-forwards delay-300')}>
                     {[
-                      { icon: TrendingUp, value: computeStats(activities).totalKm.toFixed(1), label: 'km total', gradient: 'from-primary/10 to-primary/20', border: 'border-primary/20' },
-                      { icon: Clock, value: computeStats(activities).totalHours.toFixed(1), label: 'heures', gradient: 'from-primary/10 to-primary/20', border: 'border-primary/20' },
-                      { icon: TrendingUp, value: computeStats(activities).avgKm.toFixed(1), label: 'km/s\u00e9ance', gradient: 'from-success/5 to-success/10', border: 'border-success/10' },
-                      { icon: BarChart3, value: activities.length, label: 'activit\u00e9s', gradient: 'from-peak/5 to-peak/10', border: 'border-peak/10' },
-                    ].map(({ icon: Icon, value, label, gradient, border }) => (
-                      <div key={label} className={`relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br ${gradient} ${border} text-center transition-all hover:shadow-md`}>
-                        <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
-                        <Icon className="w-5 h-5 mx-auto mb-2 text-primary" />
+                      { icon: TrendingUp, value: computeStats(activities).totalKm.toFixed(1), label: 'km total', accent: 'primary' as const },
+                      { icon: Clock, value: computeStats(activities).totalHours.toFixed(1), label: 'heures', accent: 'primary' as const },
+                      { icon: TrendingUp, value: computeStats(activities).avgKm.toFixed(1), label: 'km/s\u00e9ance', accent: 'success' as const },
+                      { icon: BarChart3, value: activities.length, label: 'activit\u00e9s', accent: 'peak' as const },
+                    ].map(({ icon: Icon, value, label, accent }) => (
+                      <Card key={label} variant="glass" accent={accent} className="text-center">
+                        <Icon className="w-5 h-5 mx-auto mb-2 text-foreground" />
                         <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">{value}</p>
                         <p className="text-xs text-muted mt-1 font-medium">{label}</p>
-                      </div>
+                      </Card>
                     ))}
                   </div>
 
-                  <Card padding="none">
-                    <div className="px-6 py-4 border-b border-border">
-                      <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                        <Activity className="w-4 h-4 text-primary" />
-                        R\u00e9partition par type
-                      </h3>
-                    </div>
-                    <div className="p-5 space-y-4">
-                      {Object.entries(computeStats(activities).byType).sort((a, b) => b[1] - a[1]).map(([type, count]) => {
-                        const pct = Math.round((count / activities.length) * 100);
-                        return (
-                          <div key={type} className="space-y-2">
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="font-medium text-foreground">{type}</span>
-                              <span className="text-muted-foreground">{count} s\u00e9ance{count > 1 ? 's' : ''} ({pct}%)</span>
+                  <div className={cn('animate-slide-up opacity-0 fill-mode-forwards delay-400')}>
+                    <Card variant="glass" accent="primary" padding="none">
+                      <CardHeader className="px-6 pt-5 pb-0">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <Activity className="w-4 h-4 text-primary" />
+                          R\u00e9partition par type
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-5 space-y-4">
+                        {Object.entries(computeStats(activities).byType).sort((a, b) => b[1] - a[1]).map(([type, count]) => {
+                          const pct = Math.round((count / activities.length) * 100);
+                          return (
+                            <div key={type} className="space-y-2">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="font-medium text-foreground">{type}</span>
+                                <span className="text-muted-foreground">{count} s\u00e9ance{count > 1 ? 's' : ''} ({pct}%)</span>
+                              </div>
+                              <div className="h-2.5 bg-surface rounded-full overflow-hidden">
+                                <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                              </div>
                             </div>
-                            <div className="h-2.5 bg-surface rounded-full overflow-hidden">
-                              <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </Card>
+                          );
+                        })}
+                      </CardContent>
+                    </Card>
+                  </div>
 
-                  <ProgressionChart activities={activities} sport={sport} />
+                  <div className={cn('animate-slide-up opacity-0 fill-mode-forwards delay-500')}>
+                    <ProgressionChart activities={activities} sport={sport} />
+                  </div>
                 </>
               )}
             </div>
           )}
+
           {activeTab === 'analyse' && (
             <div className="space-y-6">
-              <IntensityDistributionSection polarization={polarization} error={polarizationError} />
-              <HRVRecoverySection hrv={hrv} error={hrvError} />
-              <EliteAnalyticsSection activities={activities} />
+              <div className={cn('animate-slide-up opacity-0 fill-mode-forwards delay-300')}>
+                <IntensityDistributionSection polarization={polarization} error={polarizationError} />
+              </div>
+              <div className={cn('animate-slide-up opacity-0 fill-mode-forwards delay-400')}>
+                <HRVRecoverySection hrv={hrv} error={hrvError} />
+              </div>
+              <div className={cn('animate-slide-up opacity-0 fill-mode-forwards delay-500')}>
+                <EliteAnalyticsSection activities={activities} />
+              </div>
             </div>
           )}
         </>

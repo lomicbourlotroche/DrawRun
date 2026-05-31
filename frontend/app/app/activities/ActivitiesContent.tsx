@@ -1,14 +1,37 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import Link from 'next/link';
 import { useAuthStore, useActivitiesStore, useSyncStore } from '@/stores';
 import { api } from '@/lib/api';
-import { ActivityList, MobileActivityRecorder } from '@/components/features/activities';
-import { Button, Modal, Input, Select } from '@/components/ui';
-import { RefreshCw, Plus, FileUp, Play } from '@/components/ui/icons';
-import Link from 'next/link';
+import { Card, CardContent, Button, Modal, Input, Select, Badge } from '@/components/ui';
+import { cn, formatDistance, formatDuration, formatDate, getSportColor } from '@/lib/utils';
+import { RefreshCw, Plus, FileUp, Play, Clock, TrendingUp, Heart, Mountain, Bike, Waves, Footprints, Dumbbell, Route, Loader2, Activity as ActivityIcon, Search } from '@/components/ui/icons';
+import { MobileActivityRecorder } from '@/components/features/activities';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { toast } from 'sonner';
+import type { Activity } from '@/types';
+
+const PAGE_SIZE = 20;
+
+const FILTER_TABS = [
+  { id: 'all', label: 'Toutes' },
+  { id: 'run', label: 'Course', icon: Footprints },
+  { id: 'ride', label: 'V\u00e9lo', icon: Bike },
+  { id: 'swim', label: 'Natation', icon: Waves },
+  { id: 'hike', label: 'Rando', icon: Mountain },
+  { id: 'workout', label: 'Training', icon: Dumbbell },
+];
+
+function getSportIcon(type: string) {
+  const t = (type || '').toLowerCase();
+  if (t.startsWith('run')) return Footprints;
+  if (t.startsWith('ride') || t.startsWith('bike') || t === 'cycling') return Bike;
+  if (t.startsWith('swim')) return Waves;
+  if (t.startsWith('hike') || t.startsWith('walk')) return Mountain;
+  if (t === 'workout' || t === 'training') return Dumbbell;
+  return ActivityIcon;
+}
 
 export default function ActivitiesContent() {
   const { t } = useLanguage();
@@ -16,6 +39,8 @@ export default function ActivitiesContent() {
   const { filteredActivities, isLoading, setActivities, setLoading } = useActivitiesStore();
   const { sync, isSyncing } = useSyncStore();
   const [isMobile, setIsMobile] = useState(false);
+  const [filter, setFilter] = useState('all');
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showRecordModal, setShowRecordModal] = useState(false);
@@ -62,6 +87,24 @@ export default function ActivitiesContent() {
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
   }, []);
+
+  const filteredAndSorted = useMemo(() => {
+    let items = filteredActivities;
+    if (filter !== 'all') {
+      items = items.filter((a) => {
+        const t = (a.type as string).toLowerCase();
+        return t === filter || t.startsWith(filter);
+      });
+    }
+    return [...items].sort(
+      (a, b) =>
+        new Date(b.date || b.start_date || 0).getTime() -
+        new Date(a.date || a.start_date || 0).getTime()
+    );
+  }, [filteredActivities, filter]);
+
+  const visibleActivities = filteredAndSorted.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredAndSorted.length;
 
   const handleSync = async () => {
     const result = await sync();
@@ -123,35 +166,177 @@ export default function ActivitiesContent() {
 
   return (
     <div className="space-y-6 animate-fade-in max-w-5xl mx-auto">
-      <div className="flex items-center justify-between pt-2">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">{t.activities.title}</h1>
-          <p className="text-muted mt-1.5">{filteredActivities.length} {t.activities.title.toLowerCase()}</p>
-        </div>
-        <div className="flex gap-2">
-          {isAuthenticated && (
-            <>
-              {isMobile && (
-                <Button onClick={() => setShowRecordModal(true)} variant="primary" leftIcon={<Play className="w-4 h-4" />}>
-                  Enregistrer
+      <Card variant="glass" accent="primary" padding="lg" className="animate-slide-up">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-primary/15 flex items-center justify-center shrink-0">
+            <Route className="w-7 h-7 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">
+              {t.activities.title}
+            </h1>
+            <p className="text-muted mt-1">
+              {filteredAndSorted.length} activit\u00e9{filteredAndSorted.length > 1 ? 's' : ''} enregistr\u00e9e{filteredAndSorted.length > 1 ? 's' : ''}
+            </p>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            {isAuthenticated && (
+              <>
+                {isMobile && (
+                  <Button onClick={() => setShowRecordModal(true)} variant="primary" size="sm" leftIcon={<Play className="w-4 h-4" />}>
+                    Enregistrer
+                  </Button>
+                )}
+                <Button onClick={() => setShowAddModal(true)} variant="glass" size="sm" leftIcon={<Plus className="w-4 h-4" />}>
+                  Ajouter
                 </Button>
-              )}
-              <Button onClick={() => setShowAddModal(true)} variant="secondary" leftIcon={<Plus className="w-4 h-4" />}>
-                Ajouter
-              </Button>
-              <Button onClick={handleSync} isLoading={isSyncing} leftIcon={<RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />}>
-                Sync
-              </Button>
-            </>
-          )}
+                <Button onClick={handleSync} isLoading={isSyncing} variant="glass" size="sm" leftIcon={<RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />}>
+                  Sync
+                </Button>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      </Card>
 
-      <ActivityList
-        activities={filteredActivities}
-        isLoading={isLoading}
-        onRefresh={loadActivities}
-      />
+      {isAuthenticated && filteredAndSorted.length > 0 && (
+        <div className="animate-slide-up delay-100">
+          <div className="bg-surface/50 backdrop-blur-sm border border-border rounded-xl p-1 inline-flex flex-wrap gap-1">
+            {FILTER_TABS.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = filter === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => { setFilter(tab.id); setVisibleCount(PAGE_SIZE); }}
+                  className={cn(
+                    'flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+                    isActive
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted hover:text-foreground hover:bg-surface/50'
+                  )}
+                >
+                  {Icon && <Icon className="w-4 h-4" />}
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-slide-up delay-200">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-36 bg-surface/50 backdrop-blur-sm border border-border rounded-xl animate-pulse" />
+          ))}
+        </div>
+      ) : visibleActivities.length > 0 ? (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {visibleActivities.map((activity, idx) => {
+              const distanceM = activity.distance ?? 0;
+              const durationS = activity.moving_time ?? activity.elapsed_time ?? 0;
+              const elevation = activity.total_elevation_gain;
+              const avgHR = activity.avgHR || activity.average_heartrate || 0;
+              const SportIcon = getSportIcon(activity.type);
+              const sportColor = getSportColor(activity.type);
+
+              return (
+                <Link
+                  key={activity.id}
+                  href={`/app/activities/${activity.id}`}
+                  className={cn(
+                    'group block animate-slide-up',
+                    idx === 0 ? 'delay-100' : idx === 1 ? 'delay-150' : idx === 2 ? 'delay-200' : idx === 3 ? 'delay-250' : ''
+                  )}
+                >
+                  <Card variant="glass" accent="primary" hover padding="md" className="relative overflow-hidden">
+                    <div className="flex items-start gap-4">
+                      <div
+                        className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: `${sportColor}15` }}
+                      >
+                        <SportIcon className="w-5 h-5" style={{ color: sportColor }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                              {activity.title || activity.name || 'Activit\u00e9'}
+                            </h3>
+                            <p className="text-xs text-muted mt-0.5">
+                              {formatDate(activity.date || activity.start_date || '')}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-3 mt-3">
+                          {distanceM > 0 && (
+                            <div className="flex items-center gap-1.5 text-xs">
+                              <TrendingUp className="w-3.5 h-3.5 text-primary" />
+                              <span className="font-semibold text-foreground tabular-nums">{formatDistance(distanceM)}</span>
+                            </div>
+                          )}
+                          {durationS > 0 && (
+                            <div className="flex items-center gap-1.5 text-xs">
+                              <Clock className="w-3.5 h-3.5 text-primary" />
+                              <span className="font-semibold text-foreground tabular-nums">{formatDuration(durationS)}</span>
+                            </div>
+                          )}
+                          {avgHR > 0 && (
+                            <div className="flex items-center gap-1.5 text-xs">
+                              <Heart className="w-3.5 h-3.5 text-danger" />
+                              <span className="font-semibold text-foreground tabular-nums">{Math.round(avgHR)} bpm</span>
+                            </div>
+                          )}
+                          {elevation !== null && elevation !== undefined && elevation > 0 && (
+                            <div className="flex items-center gap-1.5 text-xs">
+                              <Mountain className="w-3.5 h-3.5 text-success" />
+                              <span className="font-semibold text-foreground tabular-nums">+{Math.round(elevation)}m</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+
+          {hasMore && (
+            <div className="flex justify-center pt-2 animate-slide-up">
+              <Button
+                variant="glass"
+                onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+                leftIcon={<Search className="w-4 h-4" />}
+              >
+                Charger {Math.min(PAGE_SIZE, filteredAndSorted.length - visibleCount)} activit\u00e9s de plus
+              </Button>
+            </div>
+          )}
+        </>
+      ) : (
+        <Card variant="glass" padding="xl" className="text-center animate-slide-up delay-200">
+          <div className="py-8">
+            <div className="w-16 h-16 rounded-2xl bg-muted/20 flex items-center justify-center mx-auto mb-4">
+              <Search className="w-8 h-8 text-muted" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">Aucune activit\u00e9</h3>
+            <p className="text-sm text-muted max-w-sm mx-auto mb-6">
+              Synchronisez avec Strava ou Garmin pour importer vos activit\u00e9s, ou ajoutez-en une manuellement.
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <Button onClick={() => setShowAddModal(true)} variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
+                Ajouter une activit\u00e9
+              </Button>
+              <Button onClick={handleSync} isLoading={isSyncing} variant="glass" leftIcon={<RefreshCw className="w-4 h-4" />}>
+                Synchroniser
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
 
       <Link
         href="/app/record"
@@ -162,15 +347,22 @@ export default function ActivitiesContent() {
 
       <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Ajouter une activit\u00e9" size="md">
         <div className="space-y-4">
-          <div className="p-4 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer text-center"
-               onClick={() => fileInputRef.current?.click()}>
+          <div
+            className="p-4 rounded-xl border-2 border-dashed border-border bg-surface/30 hover:bg-surface/50 hover:border-primary/50 transition-all cursor-pointer text-center"
+            onClick={() => fileInputRef.current?.click()}
+          >
             <FileUp className="w-8 h-8 mx-auto mb-2 text-muted" />
             <p className="text-sm font-medium text-foreground">Importer un fichier GPX</p>
             <p className="text-xs text-muted mt-1">Le fichier sera analys\u00e9 automatiquement</p>
           </div>
           <input ref={fileInputRef} type="file" accept=".gpx" className="hidden" onChange={handleGpxImport} />
 
-          {isSubmitting && <p className="text-sm text-muted text-center">Import en cours...</p>}
+          {isSubmitting && (
+            <div className="flex items-center justify-center gap-2 text-sm text-muted">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Import en cours...
+            </div>
+          )}
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -192,7 +384,7 @@ export default function ActivitiesContent() {
           <Input label="Dur\u00e9e (secondes)" type="number" placeholder="3600" hint="ex: 3600 = 1h" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} />
           <Input label="FC moyenne (optionnel)" type="number" placeholder="145" value={form.avg_hr} onChange={(e) => setForm({ ...form, avg_hr: e.target.value })} />
           <div className="flex gap-3 pt-2">
-            <Button variant="secondary" onClick={() => setShowAddModal(false)} className="flex-1">Annuler</Button>
+            <Button variant="ghost" onClick={() => setShowAddModal(false)} className="flex-1">Annuler</Button>
             <Button onClick={handleAddActivity} isLoading={isSubmitting} className="flex-1">Ajouter</Button>
           </div>
         </div>
