@@ -147,10 +147,12 @@ async function performGarminSync(userId) {
         log(userId, 'Starting Garmin sync...');
 
         // Date de dernière sync pour récupération incrémentale
-        const lastActivity = await dbGetUser(userDb,
-            'SELECT MAX(start_date) as last_date FROM activities WHERE source = "garmin"'
-        );
-        const startDate = lastActivity?.last_date || null;
+        const lastActivity = await dbGetUser(userDb,
+            'SELECT MAX(start_date) as last_date FROM activities WHERE source = "garmin"'
+        );
+        const rawDate = lastActivity?.last_date || null;
+        // Extract YYYY-MM-DD from ISO timestamp for Python strptime format
+        const startDate = rawDate ? rawDate.split('T')[0] : null;
         const isFirstSync = !startDate;
 
         if (startDate) {

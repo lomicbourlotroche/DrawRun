@@ -2612,17 +2612,17 @@
   50% { transform: scale(1.05); opacity: 1; }
 }
 
-.animate-fade-in { animation: fadeIn 0.3s ease-out; }
-.animate-slide-up { animation: slideUp 0.3s ease-out; }
-.animate-slide-down { animation: slideDown 0.2s ease-out; }
-.animate-slide-right { animation: slideRight 0.3s ease-out; }
-.animate-slide-left { animation: slideLeft 0.3s ease-out; }
-.animate-scale-in { animation: scaleIn 0.3s ease-out; }
+.animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+.animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
+.animate-slide-down { animation: slideDown 0.2s ease-out forwards; }
+.animate-slide-right { animation: slideRight 0.3s ease-out forwards; }
+.animate-slide-left { animation: slideLeft 0.3s ease-out forwards; }
+.animate-scale-in { animation: scaleIn 0.3s ease-out forwards; }
 .animate-pulse-soft { animation: pulseSoft 2s ease-in-out infinite; }
 .animate-shimmer { animation: shimmer 2s linear infinite; }
 .animate-float { animation: float 3s ease-in-out infinite; }
 .animate-gradient-shift { animation: gradientShift 8s ease infinite; }
-.animate-count-up { animation: countUp 0.5s ease-out; }
+.animate-count-up { animation: countUp 0.5s ease-out forwards; }
 .animate-gauge-fill { animation: gaugeFill 1.2s ease-out forwards; }
 .animate-shimmer-slide { animation: shimmerSlide 2s linear infinite; background-size: 200% 100%; }
 .animate-breathe { animation: breathe 3s ease-in-out infinite; }
@@ -2630,10 +2630,12 @@
 .animate-ping { animation: ping 1s ease-out infinite; }
 .animate-bounce { animation: bounce 1s ease-in-out infinite; }
 
-.delay-100 { animation-delay: 0.1s; }
-.delay-200 { animation-delay: 0.2s; }
-.delay-300 { animation-delay: 0.3s; }
-.delay-400 { animation-delay: 0.4s; }
-.delay-500 { animation-delay: 0.5s; }
-.delay-700 { animation-delay: 0.7s; }
-.delay-1000 { animation-delay: 1s; }
+.delay-100 { animation-delay: 0.1s !important; }
+.delay-200 { animation-delay: 0.2s !important; }
+.delay-300 { animation-delay: 0.3s !important; }
+.delay-400 { animation-delay: 0.4s !important; }
+.delay-500 { animation-delay: 0.5s !important; }
+.delay-700 { animation-delay: 0.7s !important; }
+.delay-1000 { animation-delay: 1s !important; }
+
+.fill-mode-forwards { animation-fill-mode: forwards !important; }
