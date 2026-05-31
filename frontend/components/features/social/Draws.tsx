@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { 
   Heart, Users, MessageCircle, Share2, Trophy,
   Flame, TrendingUp, Award, Star
-} from 'lucide-react';
+} from '@/components/ui/icons';
 
 interface Draw {
   id: number;

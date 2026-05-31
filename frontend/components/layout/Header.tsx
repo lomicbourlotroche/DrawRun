@@ -6,7 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuthStore, useSyncStore, useNotificationsStore } from '@/stores';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { RefreshCw, Settings, LogOut, User, ChevronDown, Bell } from 'lucide-react';
+import { RefreshCw, Settings, LogOut, User, ChevronDown, Bell } from '@/components/ui/icons';
 import { toast } from 'sonner';
 
 const PAGE_TITLES: { prefix: string; label: string; exact?: boolean }[] = [
@@ -81,7 +81,7 @@ export default function Header() {
             className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted hover:text-primary hover:bg-primary-50 transition-colors disabled:opacity-50"
             aria-label="Synchroniser"
           >
-            <RefreshCw className={cn('w-4 h-4', isSyncing && 'animate-spin')} />
+            <RefreshCw size={16} className={isSyncing ? 'animate-spin' : ''} />
           </button>
 
           <div className="relative">
@@ -90,7 +90,7 @@ export default function Header() {
               className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted hover:text-primary hover:bg-primary-50 transition-colors"
               aria-label="Notifications"
             >
-              <Bell className="w-4 h-4" />
+              <Bell size={16} />
               {unreadCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-danger text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                   {unreadCount > 9 ? '9+' : unreadCount}
@@ -150,7 +150,7 @@ export default function Header() {
               <div className="w-7 h-7 rounded-full bg-primary-100 border border-primary-200 flex items-center justify-center flex-shrink-0">
                 <span className="text-[10px] font-bold text-primary-700">{initials}</span>
               </div>
-              <ChevronDown className={cn('w-3.5 h-3.5 text-muted hidden sm:block transition-transform', isUserMenuOpen && 'rotate-180')} />
+              <ChevronDown size={14} className={cn('text-muted hidden sm:block transition-transform', isUserMenuOpen && 'rotate-180')} />
             </button>
 
             {isUserMenuOpen && (
@@ -166,7 +166,7 @@ export default function Header() {
                     onClick={() => setIsUserMenuOpen(false)}
                     className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-muted hover:text-foreground hover:bg-primary-50/50 transition-colors"
                   >
-                    <User className="w-4 h-4 text-muted" />
+                    <User size={16} className="text-muted" />
                     Mon profil
                   </Link>
                   <Link
@@ -174,7 +174,7 @@ export default function Header() {
                     onClick={() => setIsUserMenuOpen(false)}
                     className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-muted hover:text-foreground hover:bg-primary-50/50 transition-colors"
                   >
-                    <Settings className="w-4 h-4 text-muted" />
+                    <Settings size={16} className="text-muted" />
                     Paramètres
                   </Link>
                   <div className="border-t border-border mt-1 pt-1">
@@ -182,7 +182,7 @@ export default function Header() {
                       onClick={handleLogout}
                       className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-danger hover:text-danger hover:bg-danger-50 transition-colors"
                     >
-                      <LogOut className="w-4 h-4" />
+                      <LogOut size={16} />
                       Déconnexion
                     </button>
                   </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
-import { Heart, Waves, Gauge } from 'lucide-react';
+import { Heart, Waves, Gauge } from '@/components/ui/icons';
 import type { SwimAnalysis } from '@/types';
 
 function toNum(val: unknown): number {

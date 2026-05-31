@@ -28,7 +28,7 @@ import {
   Heart, Sun, CloudSun, Cloud, CloudDrizzle, CloudRain, CloudSnow,
   CloudLightning, Flag, Zap,
   AlertTriangle, Gauge, ChevronRight, Ghost,
-} from 'lucide-react';
+} from '@/components/ui/icons';
 import { createGPSFilter, isSpuriousJump, type FilteredGPSPoint } from '@/lib/gpsFilter';
 import { useBluetoothHR } from '@/lib/hooks/useBluetoothHR';
 import { useScreenLock, ScreenLockOverlay } from '@/lib/screenLock';

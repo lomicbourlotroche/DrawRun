@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { SegmentList } from './Segments';
 import { RouteList } from './Routes';
 import { FilterChipGroup } from '@/components/ui/Tabs';
-import { Compass, Route, Heart, Plus, X } from 'lucide-react';
+import { Compass, Route, Heart, Plus, X } from '@/components/ui/icons';
 
 interface Segment {
   id: number;

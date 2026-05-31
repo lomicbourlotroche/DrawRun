@@ -17,7 +17,7 @@ import {
   ModernDashboard,
 } from '@/components/features/dashboard';
 import { useLanguage } from '@/components/providers/LanguageProvider';
-import { Activity, Heart, TrendingUp, Zap } from 'lucide-react';
+import { Activity, Heart, TrendingUp, Zap } from '@/components/ui/icons';
 import Link from 'next/link';
 import { Card, GradientBadge, PrimaryButton } from '@/components/ui';
 import dynamic from 'next/dynamic';
@@ -131,7 +131,7 @@ export default function DashboardContent() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground tracking-tight">{t.dashboard.title}</h1>
-            <p className="text-neutral-500 mt-1.5">{t.dashboard.subtitle}</p>
+            <p className="text-muted mt-1.5">{t.dashboard.subtitle}</p>
           </div>
           <GradientBadge variant="primary" icon={Zap} dot>
             Prêt à commencer
@@ -139,12 +139,12 @@ export default function DashboardContent() {
         </div>
 
         <Card padding="xl" className="text-center">
-          <div className="w-20 h-20 bg-gradient-to-br from-primary-100 to-primary-50 border border-primary-200/60 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-            <Activity className="w-10 h-10 text-primary-500" />
+          <div className="w-20 h-20 bg-primary/10 border border-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+            <Activity className="w-10 h-10 text-primary" />
           </div>
           
           <h2 className="text-xl font-bold text-foreground mb-2 tracking-tight">Aucune activité</h2>
-          <p className="text-neutral-500 mb-8 max-w-md mx-auto leading-relaxed">
+          <p className="text-muted mb-8 max-w-md mx-auto leading-relaxed">
             Connectez Strava ou Garmin pour importer vos activités et voir vos statistiques. 
             Vos données seront automatiquement synchronisées.
           </p>
@@ -169,9 +169,9 @@ export default function DashboardContent() {
             { title: 'Analyse avancée', desc: 'VDOT, PMC et métriques scientifiques' },
             { title: 'Coaching adaptatif', desc: 'Plans personnalisés selon vos objectifs' },
           ].map((tip, i) => (
-            <div key={i} className="bg-surface/70 backdrop-blur-sm border border-neutral-200/40 rounded-xl p-4 shadow-sm transition-all duration-200 ease-smooth hover:shadow-md hover:border-primary-200/50">
+            <div key={i} className="bg-surface/70 backdrop-blur-sm border border-border rounded-xl p-4 shadow-sm transition-all duration-200 ease-smooth hover:shadow-md hover:border-primary/20">
               <h3 className="font-semibold text-foreground text-sm mb-1">{tip.title}</h3>
-              <p className="text-xs text-neutral-500">{tip.desc}</p>
+              <p className="text-xs text-muted">{tip.desc}</p>
             </div>
           ))}
         </div>
@@ -181,7 +181,7 @@ export default function DashboardContent() {
 
   return (
     <div className="animate-fade-in">
-      <div className="fixed inset-0 bg-gradient-to-b from-neutral-50 to-white pointer-events-none" />
+      <div className="fixed inset-0 bg-gradient-to-b from-muted/5 to-background pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {onboardingChecked && showOnboarding && (

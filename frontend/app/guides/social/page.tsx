@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Users, UserPlus, Trophy, Heart, Check, Shield } from 'lucide-react';
+import { ArrowLeft, Users, UserPlus, Trophy, Heart, Check, Shield } from '@/components/ui/icons';
 
 export default function SocialGuide() {
   const router = useRouter();

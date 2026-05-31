@@ -5,7 +5,7 @@ import {
   TrendingUp,
   Download,
   Zap,
-} from 'lucide-react';
+} from '@/components/ui/icons';
 import { Button, Card } from '@/components/ui';
 import { GlassCard } from '@/components/ui';
 import { TaperingChart } from '@/components/features/coach/TaperingChart';
@@ -79,8 +79,8 @@ export default function StrategyResults({ strategy, formatTime, downloadCsv }: S
                     <td className="py-3 text-muted-foreground font-mono">{formatTime(s.cumulativeTime)}</td>
                     <td className="py-3">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        s.grade > 2 ? 'bg-danger-50 text-danger-700' :
-                        s.grade < -2 ? 'bg-success-50 text-success-700' :
+                        s.grade > 2 ? 'bg-danger/10 text-danger' :
+                        s.grade < -2 ? 'bg-success/10 text-success' :
                         'bg-muted/20 text-muted-foreground'
                       }`}>
                         {s.grade > 0 ? '+' : ''}{s.grade}%
@@ -95,7 +95,7 @@ export default function StrategyResults({ strategy, formatTime, downloadCsv }: S
 
         {/* Nutrition & Strategy */}
         <div className="space-y-6">
-          <Card className="p-6 bg-gradient-to-br from-primary-600 to-primary-700 text-white border-none shadow-xl">
+          <Card className="p-6 bg-gradient-to-br from-primary to-primary/70 text-white border-none shadow-xl">
             <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
               <Zap className="w-5 h-5" />
               Stratégie de Nutrition

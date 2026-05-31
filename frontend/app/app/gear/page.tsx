@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
 import AppLayout from '@/components/layout/AppLayout';
 import { GearCard } from '@/components/features/gear/GearCard';
-import { Plus, Package, History } from 'lucide-react';
+import { Plus, Package, History } from '@/components/ui/icons';
 import { Card, PrimaryButton, Modal, Input } from '@/components/ui';
 import { toast } from 'sonner';
 
@@ -40,7 +40,7 @@ export default function GearPage() {
       const data = await api.getGear();
       setGearList(data);
     } catch (error) {
-      toast.error('Impossible de charger le matériel');
+      toast.error('Impossible de charger le mat\u00e9riel');
     } finally {
       setIsLoading(false);
     }
@@ -55,10 +55,10 @@ export default function GearPage() {
     try {
       if (editingGear) {
         await api.updateGear(editingGear.id, formData);
-        toast.success('Matériel mis à jour');
+        toast.success('Mat\u00e9riel mis \u00e0 jour');
       } else {
         await api.createGear(formData);
-        toast.success('Nouveau matériel ajouté');
+        toast.success('Nouveau mat\u00e9riel ajout\u00e9');
       }
       setIsModalOpen(false);
       setEditingGear(null);
@@ -83,10 +83,10 @@ export default function GearPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('Voulez-vous vraiment supprimer ou archiver ce matériel ?')) {
+    if (confirm('Voulez-vous vraiment supprimer ou archiver ce mat\u00e9riel ?')) {
       try {
         await api.deleteGear(id);
-        toast.success('Action effectuée');
+        toast.success('Action effectu\u00e9e');
         fetchGear();
       } catch (error) {
         toast.error('Erreur lors de la suppression');
@@ -102,19 +102,19 @@ export default function GearPage() {
       <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
         <div className="flex justify-between items-center pt-2">
           <div>
-            <h1 className="text-3xl font-bold text-foreground tracking-tight">Mon Matériel</h1>
-            <p className="text-neutral-500 mt-1.5">Suivez l&apos;usure de vos chaussures et équipements pour prévenir les blessures.</p>
+            <h1 className="text-3xl font-bold text-foreground tracking-tight">Mon Mat\u00e9riel</h1>
+            <p className="text-muted mt-1.5">Suivez l&apos;usure de vos chaussures et \u00e9quipements pour pr\u00e9venir les blessures.</p>
           </div>
-          <PrimaryButton 
-            variant="primary" 
-            icon={Plus} 
+          <PrimaryButton
+            variant="primary"
+            icon={Plus}
             onClick={() => {
               setEditingGear(null);
               setFormData({ name: '', brand: '', model: '', type: 'shoes', max_distance: 800, initial_distance: 0 });
               setIsModalOpen(true);
             }}
           >
-            Ajouter du matériel
+            Ajouter du mat\u00e9riel
           </PrimaryButton>
         </div>
 
@@ -126,15 +126,15 @@ export default function GearPage() {
           </div>
         ) : gearList.length === 0 ? (
           <Card variant="bordered" padding="xl" className="text-center">
-            <div className="w-16 h-16 bg-neutral-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Package className="w-8 h-8 text-neutral-400" />
+            <div className="w-16 h-16 bg-surface rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Package className="w-8 h-8 text-muted" />
             </div>
-            <h3 className="text-lg font-bold text-foreground">Aucun matériel enregistré</h3>
-            <p className="text-neutral-500 mb-6 max-w-sm mx-auto">
-              Commencez par ajouter vos chaussures de running ou votre vélo pour suivre leur kilométrage.
+            <h3 className="text-lg font-bold text-foreground">Aucun mat\u00e9riel enregistr\u00e9</h3>
+            <p className="text-muted mb-6 max-w-sm mx-auto">
+              Commencez par ajouter vos chaussures de running ou votre v\u00e9lo pour suivre leur kilom\u00e9trage.
             </p>
             <PrimaryButton variant="outline" onClick={() => setIsModalOpen(true)}>
-              Ajouter ma première paire
+              Ajouter ma premi\u00e8re paire
             </PrimaryButton>
           </Card>
         ) : (
@@ -149,7 +149,7 @@ export default function GearPage() {
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-muted">
                   <History className="w-4 h-4" />
-                  <h2 className="text-sm font-bold uppercase tracking-wider">Matériel Archivé</h2>
+                  <h2 className="text-sm font-bold uppercase tracking-wider">Mat\u00e9riel Archiv\u00e9</h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {archivedGear.map(gear => (
@@ -161,29 +161,29 @@ export default function GearPage() {
           </div>
         )}
 
-        <Modal 
-          isOpen={isModalOpen} 
+        <Modal
+          isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          title={editingGear ? 'Modifier le matériel' : 'Ajouter du matériel'}
+          title={editingGear ? 'Modifier le mat\u00e9riel' : 'Ajouter du mat\u00e9riel'}
         >
           <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-            <Input 
-              label="Nom du matériel" 
-              placeholder="ex: Pegasus 40, Speed Concept..." 
+            <Input
+              label="Nom du mat\u00e9riel"
+              placeholder="ex: Pegasus 40, Speed Concept..."
               value={formData.name}
               onChange={(e) => setFormData({...formData, name: e.target.value})}
               required
             />
             <div className="grid grid-cols-2 gap-4">
-              <Input 
-                label="Marque" 
-                placeholder="ex: Nike, Trek..." 
+              <Input
+                label="Marque"
+                placeholder="ex: Nike, Trek..."
                 value={formData.brand}
                 onChange={(e) => setFormData({...formData, brand: e.target.value})}
               />
-              <Input 
-                label="Modèle" 
-                placeholder="ex: v4, 2024..." 
+              <Input
+                label="Mod\u00e8le"
+                placeholder="ex: v4, 2024..."
                 value={formData.model}
                 onChange={(e) => setFormData({...formData, model: e.target.value})}
               />
@@ -191,26 +191,26 @@ export default function GearPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted ml-1">Type</label>
-                <select 
-                  className="w-full h-11 bg-background border border rounded-xl px-4 text-sm focus:ring-2 focus:ring-primary-500 outline-none"
+                <select
+                  className="w-full h-11 bg-surface border border-border rounded-xl px-4 text-sm text-foreground focus:ring-2 focus:ring-primary outline-none"
                   value={formData.type}
                   onChange={(e) => setFormData({...formData, type: e.target.value})}
                 >
                   <option value="shoes">Chaussures</option>
-                  <option value="bike">Vélo</option>
+                  <option value="bike">V\u00e9lo</option>
                   <option value="other">Autre</option>
                 </select>
               </div>
-              <Input 
-                label="Distance max (km)" 
+              <Input
+                label="Distance max (km)"
                 type="number"
                 value={formData.max_distance}
                 onChange={(e) => setFormData({...formData, max_distance: parseInt(e.target.value)})}
               />
             </div>
             {!editingGear && (
-              <Input 
-                label="Kilométrage initial (km)" 
+              <Input
+                label="Kilom\u00e9trage initial (km)"
                 type="number"
                 value={formData.initial_distance}
                 onChange={(e) => setFormData({...formData, initial_distance: parseInt(e.target.value)})}

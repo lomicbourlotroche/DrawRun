@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
-import { Heart, Gauge, Wind } from 'lucide-react';
+import { Heart, Gauge, Wind } from '@/components/ui/icons';
 import type { SimpleAnalysis } from '@/types';
 
 function toNum(val: unknown): number {

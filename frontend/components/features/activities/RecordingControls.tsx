@@ -4,7 +4,7 @@ import {
   Play, Pause, Square, MapPin, Target, X, Save,
   Heart, BluetoothConnected, Flag, Lock, Camera, Zap,
   Eye, EyeOff,
-} from 'lucide-react';
+} from '@/components/ui/icons';
 
 type RecordingState = 'idle' | 'recording' | 'paused' | 'finished' | 'review';
 

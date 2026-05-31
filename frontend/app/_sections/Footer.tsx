@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Github, Twitter, Mail, ArrowRight, Rocket } from 'lucide-react';
+import { Github, Twitter, Mail, ArrowRight, Rocket } from '@/components/ui/icons';
 import { Button } from '@/components/ui';
 
 const footerLinks = {
@@ -23,7 +23,7 @@ const footerLinks = {
 
 export default function Footer() {
   return (
-    <footer className="bg-neutral-900 dark:bg-background border-t border-surface">
+    <footer className="bg-background border-t border-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8">
           {/* Brand */}
@@ -31,7 +31,7 @@ export default function Footer() {
             <div className="flex items-center gap-3 mb-4">
               <Image src="/logo-icon.svg" alt="DrawRun" width={40} height={40} className="rounded-xl" />
               <span className="text-xl font-bold text-white tracking-tight">
-                DRAW<span className="text-primary-400">RUN</span>
+                DRAW<span className="text-primary">RUN</span>
               </span>
             </div>
             <p className="text-muted mb-6 max-w-sm">
@@ -64,10 +64,10 @@ export default function Footer() {
 
           {/* Secondary CTA */}
           <div className="lg:col-span-5 md:col-span-2">
-            <div className="p-6 rounded-xl bg-gradient-to-r from-primary-500/10 to-secondary/10 border border-primary-500/20">
+            <div className="p-6 rounded-xl bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20">
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary-500 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
                     <Rocket className="w-6 h-6 text-white" />
                   </div>
                   <div>
@@ -139,7 +139,7 @@ export default function Footer() {
         <div className="mt-16 pt-8 border-t border-surface">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted">
-              © 2026 DrawRun • Powered by <span className="text-primary-400">ScienceEngine™</span>
+              © 2026 DrawRun • Powered by <span className="text-primary">ScienceEngine™</span>
             </p>
             <div className="flex items-center gap-6 text-sm text-muted">
               <a href="#" className="hover:text-white transition-colors">Confidentialité</a>

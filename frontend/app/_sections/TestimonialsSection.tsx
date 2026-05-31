@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { Card } from '@/components/ui';
-import { Star, User, TrendingUp, Heart, Medal } from 'lucide-react';
+import { Star, User, TrendingUp, Heart, Medal } from '@/components/ui/icons';
 
 // Données de témoignages (à remplacer par des données réelles de l'API)
 const testimonials = [
@@ -80,11 +80,11 @@ export default function TestimonialsSection() {
   // }, []);
 
   return (
-    <section className="py-16 lg:py-24 bg-gradient-to-b from-neutral-50 to-white dark:from-background dark:to-background">
+    <section className="py-16 lg:py-24 bg-gradient-to-b from-background to-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <p className="text-sm font-semibold text-primary-600 uppercase tracking-wider mb-3">
+          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">
             TÉMOIGNAGES
           </p>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-foreground tracking-tight">
@@ -99,7 +99,7 @@ export default function TestimonialsSection() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {testimonials.map((testimonial) => {
             const icon = sportIcons[testimonial.sport] || <User className="w-4 h-4" />;
-            const gradient = sportColors[testimonial.sport] || 'from-primary-500 to-secondary-500';
+            const gradient = sportColors[testimonial.sport] || 'from-primary to-secondary';
 
             return (
               <Card
@@ -132,7 +132,7 @@ export default function TestimonialsSection() {
                 {/* Auteur et amélioration */}
                 <div className="flex items-center justify-between pt-4 border-t border-border">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center font-semibold text-primary text-sm">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/10 to-primary/20 flex items-center justify-center font-semibold text-primary text-sm">
                       {testimonial.avatar}
                     </div>
                     <div>

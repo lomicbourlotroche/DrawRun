@@ -1,8 +1,3 @@
-/**
- * CoachContent - Contenu de la page Coach
- * Corrigé : utilisation de Card unifié, tokens métiers, accessibilité
- */
-
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -12,17 +7,11 @@ import type { Recommendation, TrainingPlan } from '@/types';
 import {
   Zap, TrendingUp,
   Brain, Calendar, Gauge, Trophy, Flame, Target,
-} from 'lucide-react';
+} from '@/components/ui/icons';
 import AdaptivePlanWizard from '@/components/features/coach/AdaptivePlanWizard';
-// TrainingPlanCard available for future use
-// import { TrainingPlanCard } from '@/components/features/coach/TrainingPlanCard';
 import { GanttChart } from '@/components/features/coach/GanttChart';
 import ProgressChart from '@/components/features/coach/ProgressChart';
 import GamificationWidget from '@/components/features/coach/GamificationWidget';
-
-// ============================================================================
-// TODAY TAB
-// ============================================================================
 
 function TodayTab() {
   const [rec, setRec] = useState<Recommendation | null>(null);
@@ -39,12 +28,11 @@ function TodayTab() {
     }).finally(() => setIsLoading(false));
   }, []);
 
-  // Utilisation des tokens métiers pour les couleurs d'intensité
   const intensityStyles: Record<string, { bg: string; border: string; icon: string }> = {
-    green: { bg: 'bg-success/20', border: 'border-l-success', icon: 'text-success/80' },
-    blue: { bg: 'bg-primary/20', border: 'border-l-primary', icon: 'text-primary/80' },
-    orange: { bg: 'bg-peak/20', border: 'border-l-peak', icon: 'text-peak/80' },
-    red: { bg: 'bg-danger/20', border: 'border-l-danger', icon: 'text-danger/80' },
+    green: { bg: 'bg-success/20', border: 'border-l-success', icon: 'text-success' },
+    blue: { bg: 'bg-primary/20', border: 'border-l-primary', icon: 'text-primary' },
+    orange: { bg: 'bg-peak/20', border: 'border-l-peak', icon: 'text-peak' },
+    red: { bg: 'bg-danger/20', border: 'border-l-danger', icon: 'text-danger' },
     gray: { bg: 'bg-border/20', border: 'border-l-border', icon: 'text-muted' },
   };
 
@@ -97,26 +85,26 @@ function TodayTab() {
             {rec.metrics && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 border-t border-border">
                 {rec.metrics.weeklyKm !== undefined && (
-                  <div className="text-center p-2 rounded-lg bg-muted/50">
+                  <div className="text-center p-2 rounded-lg bg-surface">
                     <p className="text-lg font-bold text-foreground">{rec.metrics.weeklyKm}</p>
                     <p className="text-xs text-muted">km/sem</p>
                   </div>
                 )}
                 {rec.metrics.vdot !== undefined && (
-                  <div className="text-center p-2 rounded-lg bg-muted/50">
-                    <p className="text-lg font-bold text-success/80">{rec.metrics.vdot}</p>
+                  <div className="text-center p-2 rounded-lg bg-surface">
+                    <p className="text-lg font-bold text-success">{rec.metrics.vdot}</p>
                     <p className="text-xs text-muted">VDOT</p>
                   </div>
                 )}
                 {rec.metrics.streak !== undefined && (
-                  <div className="text-center p-2 rounded-lg bg-muted/50">
-                    <p className="text-lg font-bold text-peak/80">{rec.metrics.streak}</p>
+                  <div className="text-center p-2 rounded-lg bg-surface">
+                    <p className="text-lg font-bold text-peak">{rec.metrics.streak}</p>
                     <p className="text-xs text-muted">Serie</p>
                   </div>
                 )}
                 {rec.metrics.activitiesCount !== undefined && (
-                  <div className="text-center p-2 rounded-lg bg-muted/50">
-                    <p className="text-lg font-bold text-primary/80">{rec.metrics.activitiesCount}</p>
+                  <div className="text-center p-2 rounded-lg bg-surface">
+                    <p className="text-lg font-bold text-primary">{rec.metrics.activitiesCount}</p>
                     <p className="text-xs text-muted">Seances</p>
                   </div>
                 )}
@@ -133,7 +121,6 @@ function TodayTab() {
         </Card>
       )}
 
-      {/* Quick Stats */}
       <Card variant="glass">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
@@ -144,25 +131,25 @@ function TodayTab() {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-center">
-              <p className="text-2xl font-bold text-primary/80">
+              <p className="text-2xl font-bold text-primary">
                 {profile?.vdot !== null && profile?.vdot !== undefined ? String(profile.vdot) : '-'}
               </p>
               <p className="text-xs text-muted">VDOT</p>
             </div>
             <div className="p-3 rounded-lg bg-danger/10 border border-danger/20 text-center">
-              <p className="text-2xl font-bold text-danger/80">
+              <p className="text-2xl font-bold text-danger">
                 {profile?.fcm !== null && profile?.fcm !== undefined ? String(profile.fcm) : '-'}
               </p>
               <p className="text-xs text-muted">FCM</p>
             </div>
             <div className="p-3 rounded-lg bg-success/10 border border-success/20 text-center">
-              <p className="text-2xl font-bold text-success/80">
+              <p className="text-2xl font-bold text-success">
                 {profile?.weeklyKm !== null && profile?.weeklyKm !== undefined ? `${profile.weeklyKm}km` : '-'}
               </p>
               <p className="text-xs text-muted">Volume/sem</p>
             </div>
             <div className="p-3 rounded-lg bg-peak/10 border border-peak/20 text-center">
-              <p className="text-2xl font-bold text-peak/80">
+              <p className="text-2xl font-bold text-peak">
                 {profile?.pace !== null && profile?.pace !== undefined ? String(profile.pace) : '-'}
               </p>
               <p className="text-xs text-muted">Allure</p>
@@ -173,10 +160,6 @@ function TodayTab() {
     </div>
   );
 }
-
-// ============================================================================
-// NO PLAN PLACEHOLDER
-// ============================================================================
 
 function NoPlanMessage({ message }: { message: string }) {
   return (
@@ -190,10 +173,6 @@ function NoPlanMessage({ message }: { message: string }) {
   );
 }
 
-// ============================================================================
-// MAIN COMPONENT
-// ============================================================================
-
 export default function CoachContent() {
   const [activeTab, setActiveTab] = useState<'today' | 'plan' | 'progress' | 'achievements'>('today');
   const [activePlan, setActivePlan] = useState<TrainingPlan | null>(null);
@@ -202,7 +181,6 @@ export default function CoachContent() {
   const loadActivePlan = useCallback(async () => {
     setIsPlanLoading(true);
     try {
-      // GET /api/coach/plan now returns { plan, sessions, planId, fullPlan }
       const data = await api.getActivePlan();
       setActivePlan((data?.fullPlan ?? null) as TrainingPlan | null);
     } catch {
@@ -232,15 +210,14 @@ export default function CoachContent() {
     <div className="space-y-6 animate-fade-in max-w-6xl mx-auto">
       <div className="pt-2">
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2 tracking-tight">
-          <Brain className="w-6 h-6 text-primary-500" />
+          <Brain className="w-6 h-6 text-primary" />
           Coach DrawRun
         </h1>
-        <p className="text-neutral-500 mt-1.5">Entrainement personnalise base sur vos donnees</p>
+        <p className="text-muted mt-1.5">Entrainement personnalise base sur vos donnees</p>
       </div>
 
       <NavTabs tabs={tabs} activeTab={activeTab} onChange={(id) => setActiveTab(id as typeof tabs[number]['id'])} />
 
-      {/* Content */}
       {activeTab === 'today' && <TodayTab />}
 
       {activeTab === 'plan' && (

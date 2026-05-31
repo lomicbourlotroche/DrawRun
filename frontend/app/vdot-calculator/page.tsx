@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import {
   ArrowLeft, Calculator, Trophy, Target, Zap, TrendingUp, Activity, ChevronRight
-} from 'lucide-react';
+} from '@/components/ui/icons';
 
 const RACE_PRESETS = [
   { label: '5K', distance: 5000, icon: '🏃' },

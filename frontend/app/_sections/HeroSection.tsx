@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { MetricCard } from '@/components/ui';
-import { Activity, HeartPulse, TrendingUp, Zap, Monitor, Trophy, CloudSun, Bell, Share2, Users } from 'lucide-react';
+import { Activity, HeartPulse, TrendingUp, Zap, Monitor, Trophy, CloudSun, Bell, Share2, Users } from '@/components/ui/icons';
 import { useUserCounter } from '@/hooks/useUserCounter';
 
 export default function HeroSection() {
@@ -16,11 +16,11 @@ export default function HeroSection() {
   return (
     <section className="relative min-h-screen pt-32 pb-20 lg:pt-40 lg:pb-32 overflow-hidden">
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 dark:from-background dark:via-background dark:to-primary-50/10" />
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/30 dark:from-background dark:via-background dark:to-primary/10" />
       <div className="absolute inset-0">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary-400/20 rounded-full blur-3xl animate-pulse-soft" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-success-400/10 rounded-full blur-3xl animate-pulse-soft" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[radial-gradient(ellipse_at_center,theme(colors.primary.100/0.4),transparent)] rounded-full" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse-soft" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-success/10 rounded-full blur-3xl animate-pulse-soft" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[radial-gradient(ellipse_at_center,color-mix(in srgb,var(--primary),transparent 60%),transparent)] rounded-full" />
       </div>
 
       {/* Grid Pattern */}
@@ -31,9 +31,9 @@ export default function HeroSection() {
           {/* Left Content */}
           <div className={`transition-all duration-700 ease-smooth ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-100 border border-primary-200 rounded-full mb-8">
-              <span className="w-2 h-2 bg-primary-600 rounded-full animate-pulse" />
-              <span className="text-sm font-semibold text-primary-700">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full mb-8">
+              <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+              <span className="text-sm font-semibold text-primary">
                 v4.1 • Coaching adaptatif + Météo + Race Planning
               </span>
             </div>
@@ -42,7 +42,7 @@ export default function HeroSection() {
             <h1 className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-foreground leading-[1.1] mb-6 break-words">
               VOTRE PERFORMANCE
               <br />
-              <span className="bg-gradient-to-r from-primary-600 via-primary-500 to-secondary bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text text-transparent">
                 SCIENTIFIQUE
               </span>
             </h1>
@@ -61,14 +61,14 @@ export default function HeroSection() {
             <div className="flex flex-col sm:flex-row gap-3 mb-12">
               <a
                 href="/login?mode=register"
-                className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-primary-600 text-white font-semibold rounded-xl shadow-button-primary hover:shadow-button-primary-hover hover:-translate-y-0.5 transition-all duration-200 text-base"
+                className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-primary text-white font-semibold rounded-xl shadow-button-primary hover:shadow-button-primary-hover hover:-translate-y-0.5 transition-all duration-200 text-base"
               >
                 <TrendingUp className="w-5 h-5 flex-shrink-0" />
                 Commencer gratuitement
               </a>
               <a
                 href="/login"
-                className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-surface border-2 border-surface text-muted font-semibold rounded-xl hover:border-primary/30 hover:bg-primary-50 transition-all duration-200 text-base"
+                className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-surface border-2 border-surface text-muted font-semibold rounded-xl hover:border-primary/30 hover:bg-primary/10 transition-all duration-200 text-base"
               >
                 <Monitor className="w-5 h-5 flex-shrink-0" />
                 Se connecter
@@ -78,10 +78,10 @@ export default function HeroSection() {
             {/* New Features Pills */}
             <div className="flex flex-wrap gap-2 mb-8">
               {[
-                { icon: Trophy, label: 'Race Planning', color: 'bg-warning-100 text-warning-700 border-warning-200' },
-                { icon: CloudSun, label: 'Météo activités', color: 'bg-primary-100 text-primary-700 border-primary-200' },
-                { icon: Bell, label: 'Notifications push', color: 'bg-danger-100 text-danger-700 border-danger-200' },
-                { icon: Share2, label: 'Partage image', color: 'bg-success-100 text-success-700 border-success-200' },
+                { icon: Trophy, label: 'Race Planning', color: 'bg-warning/10 text-warning border-warning/20' },
+                { icon: CloudSun, label: 'Météo activités', color: 'bg-primary/10 text-primary border-primary/20' },
+                { icon: Bell, label: 'Notifications push', color: 'bg-danger/10 text-danger border-danger/20' },
+                { icon: Share2, label: 'Partage image', color: 'bg-success/10 text-success border-success/20' },
               ].map((pill, i) => (
                 <span
                   key={i}
@@ -101,20 +101,20 @@ export default function HeroSection() {
               <div className="col-span-2 sm:col-span-2 p-4 bg-surface/60 backdrop-blur-sm border border-surface rounded-2xl">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-semibold text-muted">Utilisateurs actifs</span>
-                  <span className="flex items-center gap-1.5 text-xs font-medium text-success-500">
-                    <span className="w-2 h-2 bg-success-500 rounded-full animate-pulse" />
+                  <span className="flex items-center gap-1.5 text-xs font-medium text-success">
+                    <span className="w-2 h-2 bg-success rounded-full animate-pulse" />
                     En temps réel
                   </span>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary flex items-center justify-center">
                     <Users className="w-6 h-6 text-white" />
                   </div>
                   <div>
                     {isLoading ? (
                       <div className="w-20 h-8 bg-border rounded-lg animate-pulse" />
                     ) : error ? (
-                      <div className="text-danger-500 text-sm">{error}</div>
+                      <div className="text-danger text-sm">{error}</div>
                     ) : (
                       <div className="text-4xl font-bold text-foreground tabular-nums">
                         {count.toLocaleString()}
@@ -161,13 +161,13 @@ export default function HeroSection() {
             <div className="mt-6 p-4 bg-surface/60 backdrop-blur-sm border border-surface rounded-2xl">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-semibold text-muted">Aperçu en temps réel</span>
-                <span className="flex items-center gap-1.5 text-xs font-medium text-success-500">
-                  <span className="w-2 h-2 bg-success-500 rounded-full animate-pulse" />
+                  <span className="flex items-center gap-1.5 text-xs font-medium text-success">
+                  <span className="w-2 h-2 bg-success rounded-full animate-pulse" />
                   Connecté
                 </span>
               </div>
               <div className="flex items-center gap-4">
-                <div className="flex-1 h-12 bg-gradient-to-r from-primary-100 via-primary-200 to-primary-100 rounded-lg animate-gradient-shift bg-[length:200%_100%]"></div>
+                <div className="flex-1 h-12 bg-gradient-to-r from-primary/10 via-primary/20 to-primary/10 rounded-lg animate-gradient-shift bg-[length:200%_100%]"></div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-foreground">142</div>
                   <div className="text-xs text-muted">BPM</div>

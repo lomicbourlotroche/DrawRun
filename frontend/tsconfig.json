@@ -26,6 +26,12 @@
       "@/*": [
         "./src/*"
       ],
+      "@/themes": [
+        "./themes"
+      ],
+      "@/themes/*": [
+        "./themes/*"
+      ],
       "@/lib/*": [
         "./src/lib/*"
       ],

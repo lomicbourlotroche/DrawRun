@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Calculator, Target, Activity, CheckCircle2 } from 'lucide-react';
+import { Calculator, Target, Activity, CheckCircle2 } from '@/components/ui/icons';
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 
 interface VDOTDemoResult {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X } from '@/components/ui/icons';
 import Image from 'next/image';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 
@@ -39,7 +39,7 @@ export default function Navbar() {
           <a href="#" className="flex items-center gap-2.5">
             <Image src="/logo-icon.svg" alt="DrawRun" width={36} height={36} className="rounded-lg" />
             <span className="text-lg font-bold tracking-tight text-foreground transition-colors">
-              DRAW<span className="text-primary-600">RUN</span>
+              DRAW<span className="text-primary">RUN</span>
             </span>
           </a>
           
@@ -68,7 +68,7 @@ export default function Navbar() {
             </a>
             <a
               href="/login?mode=register"
-              className="px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-primary-600 text-white hover:bg-primary-700 shadow-button-primary"
+              className="px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-primary text-white hover:bg-primary/90 shadow-button-primary"
             >
               S&apos;inscrire
             </a>
@@ -114,7 +114,7 @@ export default function Navbar() {
               <a
                 href="/login?mode=register"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-4 py-3 bg-primary-600 text-white font-semibold text-center rounded-xl hover:bg-primary-700 transition-colors"
+                className="block px-4 py-3 bg-primary text-white font-semibold text-center rounded-xl hover:bg-primary/90 transition-colors"
               >
                 S&apos;inscrire
               </a>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef } from 'react';
-import { Upload } from 'lucide-react';
+import { Upload } from '@/components/ui/icons';
 import { Button, Card } from '@/components/ui';
 
 interface UploadStepProps {

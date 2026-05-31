@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check } from '@/components/ui/icons';
 
 export interface SelectOption {
   value: string;

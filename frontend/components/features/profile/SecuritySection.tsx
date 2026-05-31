@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { GlassCard, GlassCardContent, Button, Input, Modal } from '@/components/ui';
 import { useAuthStore } from '@/stores';
 import { api } from '@/lib/api';
-import { Shield, LogOut, Trash2, AlertTriangle, Lock } from 'lucide-react';
+import { Shield, LogOut, Trash2, AlertTriangle, Lock } from '@/components/ui/icons';
 import { toast } from 'sonner';
 import type { User as UserType } from '@/types';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Activity, Zap, TrendingUp, Heart, Target, BookOpen, Layers, Brain, BarChart3, Gauge } from 'lucide-react';
+import { ArrowLeft, Activity, Zap, TrendingUp, Heart, Target, BookOpen, Layers, Brain, BarChart3, Gauge } from '@/components/ui/icons';
 
 const metrics = [
   {

@@ -1,6 +1,6 @@
 'use client';
 
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown } from '@/components/ui/icons';
 
 const labels = [
   { v: -1,    label: 'Très négatif',  desc: 'Départ très lent, accélération forte' },

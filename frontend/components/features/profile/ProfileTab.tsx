@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent, Button, Input, Avatar } from '@/components/ui';
 import { useAuthStore, useUserConstantsStore } from '@/stores';
 import { api } from '@/lib/api';
-import { User, Mail, Scale, Heart, RotateCcw, Zap, Camera, ToggleLeft, ToggleRight, RefreshCw, Gift } from 'lucide-react';
+import { User, Mail, Scale, Heart, RotateCcw, Zap, Camera, ToggleLeft, ToggleRight, RefreshCw, Gift } from '@/components/ui/icons';
 import { toast } from 'sonner';
 
 export function ProfileTab({ isNewUser }: { isNewUser: boolean }) {

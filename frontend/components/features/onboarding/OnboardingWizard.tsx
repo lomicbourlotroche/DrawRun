@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardHeader, CardContent } from '@/components/ui';
 import { api } from '@/lib/api';
-import { User, Heart, Target, CheckCircle2, Zap } from 'lucide-react';
+import { User, Heart, Target, CheckCircle2, Zap } from '@/components/ui/icons';
 import { toast } from 'sonner';
 import type { OnboardingStep, OnboardingFormData, OnboardingStepStatus } from './types';
 import StepIndicator from './StepIndicator';

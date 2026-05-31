@@ -1,6 +1,6 @@
 'use client';
 
-import { BarChart3, AlertCircle } from 'lucide-react';
+import { BarChart3, AlertCircle } from '@/components/ui/icons';
 import { Card, CardHeader, CardTitle, CardContent, Skeleton } from '@/components/ui';
 
 interface PolarizationData {

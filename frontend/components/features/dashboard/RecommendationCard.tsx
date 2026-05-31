@@ -1,10 +1,9 @@
-
 'use client';
 
 import { Card, CardHeader, CardTitle, CardContent, Badge } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { Recommendation } from '@/types';
-import { ChevronRight, Activity, TrendingUp, Zap } from 'lucide-react';
+import { ChevronRight, Activity, TrendingUp, Zap } from '@/components/ui/icons';
 
 interface RecommendationCardProps {
   recommendation: Recommendation | null;
@@ -15,11 +14,11 @@ interface RecommendationCardProps {
 const getIntensityColor = (intensity: string) => {
   switch (intensity) {
     case 'rest': return { bg: 'bg-muted/20', text: 'text-muted-foreground', border: 'border-border' };
-    case 'easy': return { bg: 'bg-success-50', text: 'text-success-700', border: 'border-success-200' };
-    case 'moderate': return { bg: 'bg-primary-50', text: 'text-primary-700', border: 'border-primary-200' };
-    case 'threshold': return { bg: 'bg-peak-50', text: 'text-peak-700', border: 'border-peak-200' };
-    case 'hard': return { bg: 'bg-danger-50', text: 'text-danger-700', border: 'border-danger-200' };
-    case 'varied': return { bg: 'bg-secondary-50', text: 'text-secondary-700', border: 'border-secondary-200' };
+    case 'easy': return { bg: 'bg-success/10', text: 'text-success', border: 'border-success/20' };
+    case 'moderate': return { bg: 'bg-primary/10', text: 'text-primary', border: 'border-primary/20' };
+    case 'threshold': return { bg: 'bg-peak/10', text: 'text-peak', border: 'border-peak/20' };
+    case 'hard': return { bg: 'bg-danger/10', text: 'text-danger', border: 'border-danger/20' };
+    case 'varied': return { bg: 'bg-secondary/10', text: 'text-secondary', border: 'border-secondary/20' };
     default: return { bg: 'bg-muted/20', text: 'text-muted-foreground', border: 'border-border' };
   }
 };
@@ -29,13 +28,13 @@ export function RecommendationCard({ recommendation, isLoading, onViewDetails }:
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Entraînement recommandé</CardTitle>
+          <CardTitle>Entra\u00eenement recommand\u00e9</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="h-8 w-32 bg-background rounded animate-pulse" />
-            <div className="h-4 w-48 bg-background rounded animate-pulse" />
-            <div className="h-4 w-full bg-background rounded animate-pulse" />
+            <div className="h-8 w-32 bg-surface rounded animate-pulse" />
+            <div className="h-4 w-48 bg-surface rounded animate-pulse" />
+            <div className="h-4 w-full bg-surface rounded animate-pulse" />
           </div>
         </CardContent>
       </Card>
@@ -46,7 +45,7 @@ export function RecommendationCard({ recommendation, isLoading, onViewDetails }:
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Entraînement recommandé</CardTitle>
+          <CardTitle>Entra\u00eenement recommand\u00e9</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted text-sm">Aucune recommandation disponible</p>
@@ -61,7 +60,7 @@ export function RecommendationCard({ recommendation, isLoading, onViewDetails }:
     <Card className="group cursor-pointer hover:border-primary/50 transition-all duration-300" onClick={onViewDetails}>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>Entraînement recommandé</CardTitle>
+          <CardTitle>Entra\u00eenement recommand\u00e9</CardTitle>
           <div
             className={cn('px-2.5 py-1 rounded-full text-xs font-medium', intensityStyle.bg, intensityStyle.text)}
           >
@@ -99,14 +98,14 @@ export function RecommendationCard({ recommendation, isLoading, onViewDetails }:
         <div className="space-y-2 mb-4">
           {recommendation.structure.slice(0, 3).map((step, index) => (
             <div key={index} className="flex items-start gap-2 text-sm">
-              <span className="w-5 h-5 rounded-full bg-background flex items-center justify-center text-xs text-muted flex-shrink-0">
+              <span className="w-5 h-5 rounded-full bg-surface flex items-center justify-center text-xs text-muted flex-shrink-0">
                 {index + 1}
               </span>
               <span className="text-muted">{step}</span>
             </div>
           ))}
           {recommendation.structure.length > 3 && (
-            <p className="text-xs text-muted pl-7">+{recommendation.structure.length - 3} autres étapes</p>
+            <p className="text-xs text-muted pl-7">+{recommendation.structure.length - 3} autres \u00e9tapes</p>
           )}
         </div>
 
@@ -120,7 +119,7 @@ export function RecommendationCard({ recommendation, isLoading, onViewDetails }:
         <p className="text-sm text-muted mb-4">{recommendation.advice}</p>
 
         <div className="flex items-center justify-between pt-4 border-t border-border">
-          <span className="text-sm text-muted">Voir les détails</span>
+          <span className="text-sm text-muted">Voir les d\u00e9tails</span>
           <ChevronRight className="w-4 h-4 text-muted group-hover:translate-x-1 transition-transform" />
         </div>
       </CardContent>

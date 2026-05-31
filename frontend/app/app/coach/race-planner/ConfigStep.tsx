@@ -8,7 +8,7 @@ import {
   Timer,
   ChevronRight,
   Info,
-} from 'lucide-react';
+} from '@/components/ui/icons';
 import { Button, Card, Input } from '@/components/ui';
 
 interface ConfigStepProps {

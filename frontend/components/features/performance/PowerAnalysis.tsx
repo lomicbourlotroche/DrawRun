@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input } from '@/components/ui';
-import { Zap, TrendingUp, Activity, Battery, Gauge } from 'lucide-react';
+import { Zap, TrendingUp, Activity, Battery, Gauge } from '@/components/ui/icons';
 
 interface PowerAnalysisProps {
   activityId?: number;

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FolderOpen, MapPin, Clock, Calendar, Trash2 } from 'lucide-react';
+import { FolderOpen, MapPin, Clock, Calendar, Trash2 } from '@/components/ui/icons';
 import { Modal, Button } from '@/components/ui';
 import { formatDuration } from './race-planning.utils';
 import type { SavedRacePlan } from '@/lib/api/race-planning.api';

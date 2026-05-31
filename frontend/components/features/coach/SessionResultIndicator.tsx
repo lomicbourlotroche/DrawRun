@@ -1,7 +1,7 @@
 'use client';
 
 import type { JSX } from 'react';
-import { CheckCircle2, XCircle, AlertCircle, TrendingUp, Minus, Clock } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertCircle, TrendingUp, Minus, Clock } from '@/components/ui/icons';
 
 interface SessionResultIndicatorProps {
   result: 'success' | 'failed' | 'partial' | 'skipped' | 'on-time' | 'delayed';

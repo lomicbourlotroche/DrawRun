@@ -170,7 +170,7 @@ export function GanttChart({ plan, onSessionClick }: GanttChartProps) {
                       <div className="font-medium">{session.title}</div>
                       <div className="text-muted-foreground text-xs">{session.type}</div>
                       {session.completed && (
-                        <div className="text-success-400 text-xs">Completee</div>
+                        <div className="text-success text-xs">Completee</div>
                       )}
                     </div>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { Info } from 'lucide-react';
+import { Info } from '@/components/ui/icons';
 import { cn } from '@/lib/utils';
 import type { GpxProfile } from '@/types';
 

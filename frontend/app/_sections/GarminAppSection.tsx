@@ -10,7 +10,7 @@ import {
   Download,
   ArrowRight,
   CheckCircle
-} from 'lucide-react';
+} from '@/components/ui/icons';
 
 const garminFeatures = [
   {
@@ -47,10 +47,10 @@ const compatibleDevices = [
 ];
 
 const iconColors: Record<string, string> = {
-  primary: 'bg-primary-100 text-primary-600',
-  peak: 'bg-peak-100 text-peak-600',
-  success: 'bg-success-100 text-success-600',
-  recovery: 'bg-recovery-100 text-recovery-600',
+  primary: 'bg-primary/10 text-primary',
+  peak: 'bg-peak/10 text-peak',
+  success: 'bg-success/10 text-success',
+  recovery: 'bg-recovery/10 text-recovery',
 };
 
 export default function GarminAppSection() {
@@ -75,18 +75,18 @@ export default function GarminAppSection() {
   }, []);
 
   return (
-    <section id="garmin" className="py-20 lg:py-32 bg-gradient-to-b from-neutral-50 to-white dark:from-background dark:to-background overflow-hidden">
+    <section id="garmin" className="py-20 lg:py-32 bg-gradient-to-b from-background to-background overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <span className="inline-flex items-center gap-2 px-4 py-2 bg-peak-100 border border-peak-200 rounded-full text-sm font-semibold text-peak-700 mb-6">
+          <span className="inline-flex items-center gap-2 px-4 py-2 bg-peak/10 border border-peak/20 rounded-full text-sm font-semibold text-peak mb-6">
             <Watch className="w-4 h-4" />
             App Connect IQ
           </span>
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight mb-6">
             Votre Plan d&apos;Entraînement
             <br />
-            <span className="bg-gradient-to-r from-peak-500 to-warning-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-peak to-warning bg-clip-text text-transparent">
               Sur Votre Montre Garmin
             </span>
           </h2>
@@ -135,7 +135,7 @@ export default function GarminAppSection() {
                 key={index}
                 className="flex items-center gap-2 px-4 py-2 bg-surface border border-surface rounded-full text-sm font-medium text-muted"
               >
-                <CheckCircle className="w-4 h-4 text-success-500" />
+                <CheckCircle className="w-4 h-4 text-success" />
                 {device}
               </div>
             ))}

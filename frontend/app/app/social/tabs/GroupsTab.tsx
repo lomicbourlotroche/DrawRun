@@ -6,7 +6,7 @@ import { Button, Skeleton, GlassCard } from '@/components/ui';
 
 import CreateGroupModal from '../modals/CreateGroupModal';
 import JoinGroupModal from '../modals/JoinGroupModal';
-import { Users2, Search, Copy, Sparkles, X } from 'lucide-react';
+import { Users2, Search, Copy, Sparkles, X } from '@/components/ui/icons';
 import { toast } from 'sonner';
 import { useGroups } from '@/hooks/useSocial';
 import { GROUPS_CONSTANTS } from '@/constants/social';

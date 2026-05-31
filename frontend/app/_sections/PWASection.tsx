@@ -9,7 +9,7 @@ import {
   WifiOff, 
   Monitor,
   Zap
-} from 'lucide-react';
+} from '@/components/ui/icons';
 
 const pwaFeatures = [
   {
@@ -39,10 +39,10 @@ const pwaFeatures = [
 ];
 
 const iconColors: Record<string, string> = {
-  primary: 'bg-primary-100 text-primary-600',
-  success: 'bg-success-100 text-success-600',
-  danger: 'bg-danger-100 text-danger-600',
-  warning: 'bg-warning-100 text-warning-600',
+  primary: 'bg-primary/10 text-primary',
+  success: 'bg-success/10 text-success',
+  danger: 'bg-danger/10 text-danger',
+  warning: 'bg-warning/10 text-warning',
 };
 
 export default function PWASection() {
@@ -67,18 +67,18 @@ export default function PWASection() {
   }, []);
 
   return (
-    <section id="pwa" className="py-20 lg:py-32 bg-gradient-to-b from-white to-neutral-50 dark:from-background dark:to-background overflow-hidden">
+    <section id="pwa" className="py-20 lg:py-32 bg-gradient-to-b from-background to-background overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary-100 border border-primary-200 rounded-full text-sm font-semibold text-primary-700 mb-6">
+          <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-sm font-semibold text-primary mb-6">
             <Zap className="w-4 h-4" />
             Progressive Web App
           </span>
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight mb-6">
             Une seule app
             <br />
-            <span className="bg-gradient-to-r from-primary-600 to-secondary bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               pour tous vos écrans
             </span>
           </h2>
@@ -124,7 +124,7 @@ export default function PWASection() {
             {/* Desktop */}
             <div className="text-center">
               <div className="w-48 h-32 bg-background rounded-xl border-4 border flex items-center justify-center mx-auto mb-3">
-                <Monitor className="w-8 h-8 text-primary-400" />
+                <Monitor className="w-8 h-8 text-primary" />
               </div>
               <p className="text-sm font-medium text-muted">Desktop</p>
               <p className="text-xs text-muted">Chrome, Firefox, Safari</p>
@@ -132,7 +132,7 @@ export default function PWASection() {
             {/* Tablet */}
             <div className="text-center">
               <div className="w-28 h-40 bg-background rounded-xl border-4 border flex items-center justify-center mx-auto mb-3">
-                <Smartphone className="w-6 h-6 text-primary-400" />
+                <Smartphone className="w-6 h-6 text-primary" />
               </div>
               <p className="text-sm font-medium text-muted">Tablette</p>
               <p className="text-xs text-muted">iPad, Android</p>
@@ -140,7 +140,7 @@ export default function PWASection() {
             {/* Phone */}
             <div className="text-center">
               <div className="w-20 h-36 bg-background rounded-xl border-4 border flex items-center justify-center mx-auto mb-3">
-                <Smartphone className="w-5 h-5 text-primary-400" />
+                <Smartphone className="w-5 h-5 text-primary" />
               </div>
               <p className="text-sm font-medium text-muted">Mobile</p>
               <p className="text-xs text-muted">iOS, Android</p>
@@ -157,7 +157,7 @@ export default function PWASection() {
               { step: '2', title: 'Confirmez l\'installation', desc: 'DrawRun s\'ajoute à votre écran d\'accueil et fonctionne comme une app native.' },
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-4 p-4 bg-surface border border-surface rounded-xl">
-                <div className="w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center font-bold text-sm shrink-0">
+                <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold text-sm shrink-0">
                   {item.step}
                 </div>
                 <div>

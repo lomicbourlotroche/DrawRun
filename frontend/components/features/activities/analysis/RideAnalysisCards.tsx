@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
-import { Heart, Zap, Timer, Wind, Cpu, BarChart3, Bike } from 'lucide-react';
+import { Heart, Zap, Timer, Wind, Cpu, BarChart3, Bike } from '@/components/ui/icons';
 import type { RideAnalysis, PowerCurvePoint } from '@/types';
 
 function toNum(val: unknown): number {

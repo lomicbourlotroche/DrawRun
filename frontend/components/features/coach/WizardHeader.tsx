@@ -1,7 +1,7 @@
 'use client';
 
 import { CardTitle } from '@/components/ui';
-import { Target, Sparkles } from 'lucide-react';
+import { Target, Sparkles } from '@/components/ui/icons';
 
 interface WizardHeaderProps {
   title: string;
@@ -43,7 +43,7 @@ export default function WizardHeader({
       </div>
 
       {activitiesAnalyzed > 0 && autoFilledFieldsCount > 0 && (
-        <div className="mt-3 flex items-center gap-2 text-xs text-primary-700 bg-primary-50 border border-primary-200 rounded-lg px-3 py-2">
+        <div className="mt-3 flex items-center gap-2 text-xs text-primary bg-primary/10 border border-primary/20 rounded-lg px-3 py-2">
           <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
           <span>
             <strong>{activitiesAnalyzed} activité{activitiesAnalyzed > 1 ? 's' : ''}</strong> analysée{activitiesAnalyzed > 1 ? 's' : ''} —

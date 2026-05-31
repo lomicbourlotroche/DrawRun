@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Card, CardContent, Button, Badge } from '@/components/ui';
 import { PowerAnalysis, FTPCalculator } from '@/components/features/performance/PowerAnalysis';
 import { api } from '@/lib/api';
-import { Zap, Gauge, Activity, Loader2, Bike, ChevronDown } from 'lucide-react';
+import { Zap, Gauge, Activity, Bike, ChevronDown } from '@/components/ui/icons';
 
 interface ActivityWithPower {
   id: number;
@@ -17,6 +17,15 @@ interface ActivityWithPower {
   average_watts?: number;
   max_watts?: number;
   has_power_meter: boolean;
+}
+
+function Spinner() {
+  return (
+    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+    </svg>
+  );
 }
 
 export default function PowerAnalysisPage() {
@@ -68,14 +77,14 @@ export default function PowerAnalysisPage() {
   const selected = activities.find(a => a.id === selectedActivity);
 
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold flex items-center gap-2 mb-2">
-          <Zap className="w-8 h-8 text-warning" />
+    <div className="max-w-4xl mx-auto p-4 space-y-6">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Zap className="w-6 h-6 text-warning" />
           Analyse de Puissance
         </h1>
-        <p className="text-muted-foreground">
-          Analysez vos données de puissance et calculez votre FTP pour optimiser vos entraînements
+        <p className="text-muted">
+          Analysez vos donn\u00e9es de puissance et calculez votre FTP pour optimiser vos entra\u00eenements
         </p>
       </div>
 
@@ -83,7 +92,7 @@ export default function PowerAnalysisPage() {
         <TabsList className="grid w-full grid-cols-2 mb-6">
           <TabsTrigger value="analysis" className="flex items-center gap-2">
             <Activity className="w-4 h-4" />
-            Analyse d&apos;activité
+            Analyse d&apos;activit\u00e9
           </TabsTrigger>
           <TabsTrigger value="ftp" className="flex items-center gap-2">
             <Gauge className="w-4 h-4" />
@@ -92,57 +101,55 @@ export default function PowerAnalysisPage() {
         </TabsList>
 
         <TabsContent value="analysis">
-          {/* Activity Selector */}
           <div className="relative mb-4">
             <div className="flex gap-2">
               <button
                 onClick={() => setShowActivityList(!showActivityList)}
-                className="flex-1 flex items-center justify-between px-4 py-3 bg-card border border-border rounded-xl hover:border-primary/30 transition-colors"
+                className="flex-1 flex items-center justify-between px-4 py-3 bg-surface border border-border rounded-xl hover:border-primary/50 transition-colors"
               >
                 {selected ? (
                   <div className="flex items-center gap-3">
                     <Bike className="w-5 h-5 text-primary" />
                     <div className="text-left">
-                      <p className="font-medium text-sm">{selected.name}</p>
+                      <p className="font-medium text-sm text-foreground">{selected.name}</p>
                       <p className="text-xs text-muted">
-                        {new Date(selected.start_date_local).toLocaleDateString('fr-FR')} — {selected.average_watts}W moy.
+                        {new Date(selected.start_date_local).toLocaleDateString('fr-FR')} {'\u2014'} {selected.average_watts}W moy.
                       </p>
                     </div>
                   </div>
                 ) : (
-                  <span className="text-muted-foreground">Sélectionner une activité avec power meter...</span>
+                  <span className="text-muted">S\u00e9lectionner une activit\u00e9 avec power meter...</span>
                 )}
                 <ChevronDown className="w-4 h-4 text-muted" />
               </button>
               <Button onClick={loadActivities} disabled={isLoading} variant="outline">
-                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Actualiser'}
+                {isLoading ? <Spinner /> : 'Actualiser'}
               </Button>
             </div>
 
-            {/* Dropdown */}
             {showActivityList && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg z-10 max-h-64 overflow-y-auto">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-xl shadow-lg z-10 max-h-64 overflow-y-auto">
                 {isLoading ? (
-                  <div className="p-4 text-center text-muted-foreground">
-                    <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
-                    Chargement...
+                  <div className="p-4 text-center text-muted">
+                    <Spinner />
+                    <p className="text-sm mt-2">Chargement...</p>
                   </div>
                 ) : activities.length === 0 ? (
-                  <div className="p-4 text-center text-muted-foreground text-sm">
-                    Aucune activité avec power meter trouvée
+                  <div className="p-4 text-center text-muted text-sm">
+                    Aucune activit\u00e9 avec power meter trouv\u00e9e
                   </div>
                 ) : (
                   activities.map((activity) => (
                     <button
                       key={activity.id}
                       onClick={() => loadActivityStreams(activity.id)}
-                      className="w-full flex items-center gap-3 p-3 hover:bg-muted transition-colors text-left border-b border-border last:border-b-0"
+                      className="w-full flex items-center gap-3 p-3 hover:bg-surface transition-colors text-left border-b border-border last:border-b-0"
                     >
                       <Bike className="w-5 h-5 text-primary shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">{activity.name}</p>
+                        <p className="font-medium text-sm text-foreground truncate">{activity.name}</p>
                         <p className="text-xs text-muted">
-                          {new Date(activity.start_date_local).toLocaleDateString('fr-FR')} — {activity.average_watts}W moy.
+                          {new Date(activity.start_date_local).toLocaleDateString('fr-FR')} {'\u2014'} {activity.average_watts}W moy.
                         </p>
                       </div>
                       {activity.average_watts && (
@@ -155,15 +162,14 @@ export default function PowerAnalysisPage() {
             )}
           </div>
 
-          {/* Analysis */}
           {selected && wattsData.length > 0 ? (
             <PowerAnalysis activityId={selected.id} wattsData={wattsData} duration={selected.moving_time} />
           ) : (
             <Card>
-              <CardContent className="p-6 text-center text-muted-foreground">
+              <CardContent className="p-6 text-center text-muted">
                 <Zap className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p className="font-medium">Sélectionnez une activité pour voir l&apos;analyse</p>
-                <p className="text-sm mt-2">Les activités avec capteur de puissance (Garmin, Wahoo, etc.) affichent ici les données de puissance détaillées</p>
+                <p className="font-medium text-foreground">S\u00e9lectionnez une activit\u00e9 pour voir l&apos;analyse</p>
+                <p className="text-sm mt-2">Les activit\u00e9s avec capteur de puissance (Garmin, Wahoo, etc.) affichent ici les donn\u00e9es de puissance d\u00e9taill\u00e9es</p>
               </CardContent>
             </Card>
           )}

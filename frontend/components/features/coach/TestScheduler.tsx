@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button, Modal } from '@/components/ui';
 import { api } from '@/lib/api';
-import { Activity, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Activity, CheckCircle2, AlertTriangle } from '@/components/ui/icons';
 import { toast } from 'sonner';
 
 interface TestSchedulerProps {

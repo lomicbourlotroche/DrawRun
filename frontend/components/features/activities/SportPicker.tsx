@@ -5,7 +5,7 @@ import { SPORTS, type SportType, type SportCategoryType } from '@/types/sports';
 import {
   Footprints, Bike, Waves, Dumbbell, Snowflake, Droplets, Users,
   Mountain, CircleDot, Club, Compass, Heart, Timer, Zap, Wind, Check
-} from 'lucide-react';
+} from '@/components/ui/icons';
 
 const CATEGORY_ICONS: Record<SportCategoryType, React.ComponentType<{ className?: string }>> = {
   endurance: Footprints,

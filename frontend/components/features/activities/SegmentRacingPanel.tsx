@@ -1,5 +1,5 @@
 'use client';
-import { Upload, Plus, Ghost } from 'lucide-react';
+import { Upload, Plus, Ghost } from '@/components/ui/icons';
 
 interface Segment {
   id: string;

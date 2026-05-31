@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { BiomechanicsCard } from '@/components/features/activities/BiomechanicsCard';
-import { Heart, Gauge, Zap, Timer, Wind } from 'lucide-react';
+import { Heart, Gauge, Zap, Timer, Wind } from '@/components/ui/icons';
 import type { RunAnalysis, TrailRunAnalysis } from '@/types';
 
 function toNum(val: unknown): number {

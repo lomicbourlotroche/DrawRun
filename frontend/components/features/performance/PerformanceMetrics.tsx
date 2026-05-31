@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent, CircularProgress } from '@/components/ui';
 import { calculateReadinessColor } from '@/lib/utils';
-import { TrendingUp, Zap, Activity, Heart } from 'lucide-react';
+import { TrendingUp, Zap, Activity, Heart } from '@/components/ui/icons';
 
 interface PerformanceMetricsProps {
   sport: 'run' | 'bike' | 'swim';

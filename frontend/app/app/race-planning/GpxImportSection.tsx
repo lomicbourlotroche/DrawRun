@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Upload, MapPin } from 'lucide-react';
+import { Upload, MapPin } from '@/components/ui/icons';
 import { Button, Input } from '@/components/ui';
 import { GpxProfileBadge } from './GpxProfileBadge';
 import { fmtPace } from './race-planning.utils';

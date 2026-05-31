@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, TrendingUp, BarChart3, Activity, Heart, Target, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, TrendingUp, BarChart3, Activity, Heart, Target, Clock, AlertTriangle, CheckCircle } from '@/components/ui/icons';
 
 export default function PMCGuide() {
   const router = useRouter();

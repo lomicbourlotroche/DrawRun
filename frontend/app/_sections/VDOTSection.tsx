@@ -8,7 +8,7 @@ import {
   Target, 
   Zap, 
   Calculator
-} from 'lucide-react';
+} from '@/components/ui/icons';
 
 const vdotFeatures = [
   {
@@ -60,7 +60,7 @@ export default function VDOTSection() {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left Content */}
           <div className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
-            <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary-100 border border-primary-200 rounded-full text-sm font-semibold text-primary-700 mb-6">
+            <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-sm font-semibold text-primary mb-6">
               <Calculator className="w-4 h-4" />
               Jack Daniels VDOT V6.4
             </span>
@@ -69,7 +69,7 @@ export default function VDOTSection() {
               LA SCIENCE
               <br />
               DERRIÈRE LA{' '}
-              <span className="bg-gradient-to-r from-primary-600 to-secondary bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                 VITESSE
               </span>
             </h2>
@@ -88,8 +88,8 @@ export default function VDOTSection() {
                     key={index}
                     className="flex items-start gap-4 p-4 bg-background border border-surface rounded-xl hover:bg-surface transition-colors"
                   >
-                    <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center shrink-0">
-                      <Icon className="w-5 h-5 text-primary-600" />
+                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
+                      <Icon className="w-5 h-5 text-primary" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground mb-1">{feature.title}</h3>

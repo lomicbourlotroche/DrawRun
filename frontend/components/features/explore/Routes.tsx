@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { Card, CardContent, Button, Badge } from '@/components/ui';
-import { Map, Heart, Clock, TrendingUp, Star, ChevronRight, Navigation } from 'lucide-react';
+import { Map, Heart, Clock, TrendingUp, Star, ChevronRight, Navigation } from '@/components/ui/icons';
 import { formatDuration } from '@/lib/utils';
 
 interface Route {

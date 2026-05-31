@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from '@/components/ui';
-import { Navigation, Heart, ChevronLeft, Share2, Star } from 'lucide-react';
+import { Navigation, Heart, ChevronLeft, Share2, Star } from '@/components/ui/icons';
 import { formatDuration } from '@/lib/utils';
 import { toast } from 'sonner';
 

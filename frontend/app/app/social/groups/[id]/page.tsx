@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Avatar, Skeleton } from '@/components/ui';
 import type { Activity } from '@/types';
 import { NavTabs } from '@/components/ui/NavTabs';
-import { Users, Settings, Activity as ActivityIcon, Trophy, ChevronLeft, Copy, Trash2, Edit2, UserX, Crown, Shield, Flame, Save, Eye, Sparkles } from 'lucide-react';
+import { Users, Settings, Activity as ActivityIcon, Trophy, ChevronLeft, Copy, Trash2, Edit2, UserX, Crown, Shield, Flame, Save, Eye, Sparkles } from '@/components/ui/icons';
 import ChallengeWizard from '../../modals/ChallengeWizard';
 import { getModeInfo, getTypeInfo } from '../../tabs/challenge-constants';
 import { useGroupDetail } from '@/hooks/useGroupDetail';

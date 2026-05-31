@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
-import { Activity, Info, Zap } from 'lucide-react';
+import { Activity, Info, Zap } from '@/components/ui/icons';
 
 interface BiomechanicsMetrics {
   verticalOscillation: number;

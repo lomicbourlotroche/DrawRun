@@ -108,6 +108,11 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/logo-icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/logo-icon.svg" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <script dangerouslySetInnerHTML={{
+          __html: `(function(){try{var c=JSON.parse(localStorage.getItem('drawrun-theme-config')||'{}');var t=c.theme||'trail';var m=c.mode||'dark';document.documentElement.setAttribute('data-theme',t);if(m==='dark')document.documentElement.classList.add('dark')}catch(e){}})()`
+        }} />
       </head>
       <body suppressHydrationWarning>
         <Providers>

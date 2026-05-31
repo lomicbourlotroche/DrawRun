@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button, Avatar, Skeleton, GlassCard } from '@/components/ui';
-import { Users, UserPlus, Search, Check, X, Loader2 } from 'lucide-react';
+import { Users, UserPlus, Search, Check, X, Loader2 } from '@/components/ui/icons';
 import { toast } from 'sonner';
 import { useFriends } from '@/hooks/useSocial';
 import { FRIENDS_CONSTANTS } from '@/constants/social';

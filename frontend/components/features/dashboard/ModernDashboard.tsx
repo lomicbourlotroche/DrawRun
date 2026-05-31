@@ -14,7 +14,7 @@ import {
   Mountain,
   ChevronRight,
   Flame,
-} from 'lucide-react';
+} from '@/components/ui/icons';
 import { useAuthStore, useDashboardStore } from '@/stores';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { ReadinessCard } from './ReadinessCard';
@@ -103,19 +103,19 @@ function ActivityRow({ activity }: ActivityRowProps) {
   return (
     <Link
       href={`/app/activities/${activity.id}`}
-      className="flex items-center justify-between p-3.5 rounded-xl hover:bg-muted/10 transition-all duration-200 group"
+      className="flex items-center justify-between p-3.5 rounded-xl hover:bg-surface transition-all duration-200 group"
     >
       <div className="flex items-center gap-3 min-w-0">
-        <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary-500 flex items-center justify-center flex-shrink-0 group-hover:bg-primary-100 transition-colors">
+        <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
           {getActivityIcon(activity.type)}
         </div>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-foreground truncate">
-            {activity.title ?? 'Activité'}
+            {activity.title ?? 'Activit\u00e9'}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {dateStr ? formatDate(dateStr) : '—'}
-            {durationS > 0 && ` · ${formatDuration(durationS)}`}
+            {dateStr ? formatDate(dateStr) : '\u2014'}
+            {durationS > 0 && ` \u00b7 ${formatDuration(durationS)}`}
           </p>
         </div>
       </div>
@@ -133,7 +133,7 @@ function ActivityRow({ activity }: ActivityRowProps) {
             )}
           </div>
         )}
-        <ChevronRight className="w-4 h-4 text-muted group-hover:text-primary-500 transition-colors" />
+        <ChevronRight className="w-4 h-4 text-muted group-hover:text-primary transition-colors" />
       </div>
     </Link>
   );
@@ -172,23 +172,23 @@ export function ModernDashboard() {
   const monthly = getMonthlyStats(recentActivities);
 
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
-  const firstName = user?.name?.split(' ')[0] ?? 'Athlète';
+  const greeting = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon apr\u00e8s-midi' : 'Bonsoir';
+  const firstName = user?.name?.split(' ')[0] ?? 'Athl\u00e8te';
 
   if (isLoading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-8 w-64 bg-muted/20 rounded-lg" />
+        <div className="h-8 w-64 bg-surface rounded-lg" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-32 bg-muted/20 rounded-2xl" />
+            <div key={i} className="h-32 bg-surface rounded-2xl" />
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          <div className="lg:col-span-7 h-72 bg-muted/20 rounded-2xl" />
+          <div className="lg:col-span-7 h-72 bg-surface rounded-2xl" />
           <div className="lg:col-span-5 space-y-4">
-            <div className="h-36 bg-muted/20 rounded-2xl" />
-            <div className="h-36 bg-muted/20 rounded-2xl" />
+            <div className="h-36 bg-surface rounded-2xl" />
+            <div className="h-36 bg-surface rounded-2xl" />
           </div>
         </div>
       </div>
@@ -197,7 +197,6 @@ export function ModernDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Greeting */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground tracking-tight">{greeting}, {firstName}</h1>
@@ -206,26 +205,25 @@ export function ModernDashboard() {
           </p>
         </div>
         <div className="flex items-center gap-3 text-sm text-muted">
-          <span className="flex items-center gap-1.5"><Flame className="w-4 h-4 text-primary-500" />{monthly.count} activités</span>
+          <span className="flex items-center gap-1.5"><Flame className="w-4 h-4 text-primary" />{monthly.count} activit\u00e9s</span>
           {monthly.totalDistance > 0 && (
             <span className="flex items-center gap-1.5"><TrendingUp className="w-4 h-4 text-success" />{formatDistance(monthly.totalDistance)}</span>
           )}
         </div>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Activités"
+          title="Activit\u00e9s"
           value={String(monthly.count)}
           subtitle="ce mois-ci"
           icon={<Activity className="w-5 h-5 text-white" />}
-          accentColor="bg-primary-500"
+          accentColor="bg-primary"
           trend={null}
         />
         <StatCard
           title="Distance"
-          value={monthly.totalDistance > 0 ? formatDistance(monthly.totalDistance) : '—'}
+          value={monthly.totalDistance > 0 ? formatDistance(monthly.totalDistance) : '\u2014'}
           subtitle="ce mois-ci"
           icon={<TrendingUp className="w-5 h-5 text-white" />}
           accentColor="bg-success"
@@ -233,7 +231,7 @@ export function ModernDashboard() {
         />
         <StatCard
           title="CTL"
-          value={pmc ? String(pmc.ctl) : '—'}
+          value={pmc ? String(pmc.ctl) : '\u2014'}
           subtitle="charge chronique"
           icon={<BarChart3 className="w-5 h-5 text-white" />}
           accentColor="bg-secondary"
@@ -241,25 +239,23 @@ export function ModernDashboard() {
         />
         <StatCard
           title="TSB"
-          value={pmc ? String(pmc.tsb) : '—'}
-          subtitle={pmc ? (pmc.tsb > 5 ? 'Bien reposé' : pmc.tsb < -10 ? 'Fatigué' : 'Équilibré') : 'données PMC'}
+          value={pmc ? String(pmc.tsb) : '\u2014'}
+          subtitle={pmc ? (pmc.tsb > 5 ? 'Bien repos\u00e9' : pmc.tsb < -10 ? 'Fatigu\u00e9' : '\u00c9quilibr\u00e9') : 'donn\u00e9es PMC'}
           icon={pmc && pmc.tsb < -10 ? <TrendingDown className="w-5 h-5 text-white" /> : <TrendingUp className="w-5 h-5 text-white" />}
-          accentColor={pmc && pmc.tsb > 5 ? 'bg-success' : pmc && pmc.tsb < -10 ? 'bg-warning' : 'bg-primary-500'}
+          accentColor={pmc && pmc.tsb > 5 ? 'bg-success' : pmc && pmc.tsb < -10 ? 'bg-warning' : 'bg-primary'}
           trend={pmc?.tsbTrend ?? null}
         />
       </div>
 
-      {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Recent Activities */}
         <div className="lg:col-span-7">
           <Card padding="none">
             <CardHeader className="px-5 py-4 border-b border-border">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Activités récentes</CardTitle>
+                <CardTitle className="text-base">Activit\u00e9s r\u00e9centes</CardTitle>
                 <Link
                   href="/app/activities"
-                  className="text-sm font-medium text-primary hover:text-primary-600 transition-colors flex items-center gap-1"
+                  className="text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
                 >
                   Voir tout
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -273,18 +269,17 @@ export function ModernDashboard() {
                 ))
               ) : (
                 <div className="flex flex-col items-center py-12 text-center">
-                  <div className="w-12 h-12 rounded-2xl bg-muted/10 flex items-center justify-center mb-3">
+                  <div className="w-12 h-12 rounded-2xl bg-surface flex items-center justify-center mb-3">
                     <Clock className="w-6 h-6 text-muted" />
                   </div>
-                  <p className="text-sm font-medium text-foreground">Aucune activité récente</p>
-                  <p className="text-xs text-muted-foreground mt-1">Synchronisez vos services pour voir vos activités</p>
+                  <p className="text-sm font-medium text-foreground">Aucune activit\u00e9 r\u00e9cente</p>
+                  <p className="text-xs text-muted-foreground mt-1">Synchronisez vos services pour voir vos activit\u00e9s</p>
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Side Panel */}
         <div className="lg:col-span-5 space-y-4">
           <ReadinessCard readiness={readiness} isLoading={isLoading} />
 
@@ -302,13 +297,13 @@ export function ModernDashboard() {
           {!recommendation && pmc && (
             <Card padding="none">
               <CardHeader className="px-5 py-4 border-b border-border">
-                <CardTitle className="text-sm">Métriques PMC</CardTitle>
+                <CardTitle className="text-sm">M\u00e9triques PMC</CardTitle>
               </CardHeader>
               <CardContent className="p-5 space-y-4">
                 {[
-                  { label: 'CTL — Forme', value: pmc.ctl, color: 'bg-primary-500', max: 150 },
-                  { label: 'ATL — Fatigue', value: pmc.atl, color: 'bg-danger', max: 150 },
-                  { label: 'TSB — Fraîcheur', value: Math.abs(pmc.tsb), color: pmc.tsb >= 0 ? 'bg-success' : 'bg-warning', max: 50 },
+                  { label: 'CTL \u2014 Forme', value: pmc.ctl, color: 'bg-primary', max: 150 },
+                  { label: 'ATL \u2014 Fatigue', value: pmc.atl, color: 'bg-danger', max: 150 },
+                  { label: 'TSB \u2014 Fra\u00eecheur', value: Math.abs(pmc.tsb), color: pmc.tsb >= 0 ? 'bg-success' : 'bg-warning', max: 50 },
                 ].map((m) => (
                   <div key={m.label}>
                     <div className="flex justify-between text-xs mb-1.5">
@@ -317,7 +312,7 @@ export function ModernDashboard() {
                         {m.label.startsWith('TSB') && pmc.tsb < 0 ? '-' : ''}{m.value}
                       </span>
                     </div>
-                    <div className="h-2 bg-muted/20 rounded-full overflow-hidden">
+                    <div className="h-2 bg-surface rounded-full overflow-hidden">
                       <div className={`h-full rounded-full ${m.color} transition-all duration-500`} style={{ width: `${Math.min(100, (m.value / m.max) * 100)}%` }} />
                     </div>
                   </div>

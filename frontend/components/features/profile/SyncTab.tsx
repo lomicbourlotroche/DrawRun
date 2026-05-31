@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent, Button, GradientBadge, Modal, Input } from '@/components/ui';
 import { useAuthStore, useSyncStore } from '@/stores';
 import { api } from '@/lib/api';
-import { Watch, CheckCircle, XCircle, Mail, Lock, Eye, EyeOff, RefreshCw } from 'lucide-react';
+import { Watch, CheckCircle, XCircle, Mail, Lock, Eye, EyeOff, RefreshCw } from '@/components/ui/icons';
 import { toast } from 'sonner';
 
 export function ServiceCard({

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button, Input } from '@/components/ui';
 import { ModalSheet } from '@/components/ui/ModalSheet';
-import { X, Trophy, Check, Loader2 } from 'lucide-react';
+import { X, Trophy, Check, Loader2 } from '@/components/ui/icons';
 import { toast } from 'sonner';
 import { SOCIAL_ERRORS } from '@/constants/social';
 import {

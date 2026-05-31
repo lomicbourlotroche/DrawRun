@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle2 } from '@/components/ui/icons';
 import { Button } from '@/components/ui';
 
 interface NavigationButtonsProps {

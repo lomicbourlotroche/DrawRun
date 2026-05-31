@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, Button, Badge, Modal } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { TrainingPlan, TrainingSession } from '@/types';
-import { Calendar, ChevronRight, ChevronLeft, Target, MessageSquare } from 'lucide-react';
+import { Calendar, ChevronRight, ChevronLeft, Target, MessageSquare } from '@/components/ui/icons';
 import SessionFeedback from './SessionFeedback';
 import SessionResultIndicator from './SessionResultIndicator';
 

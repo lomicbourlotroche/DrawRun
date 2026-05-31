@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Progress } from '@/components/ui';
 import { api } from '@/lib/api';
-import { MessageSquare, Frown, Meh, Smile, ArrowRight } from 'lucide-react';
+import { MessageSquare, Frown, Meh, Smile, ArrowRight } from '@/components/ui/icons';
 import { toast } from 'sonner';
 import SessionResultIndicator from './SessionResultIndicator';
 

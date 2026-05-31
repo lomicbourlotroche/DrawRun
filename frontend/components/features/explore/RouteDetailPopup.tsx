@@ -1,6 +1,6 @@
 'use client';
 
-import { X, MapPin, Mountain, Clock, Star, TrendingUp } from 'lucide-react';
+import { X, MapPin, Mountain, Clock, Star, TrendingUp } from '@/components/ui/icons';
 import { Button, Badge } from '@/components/ui';
 
 interface RouteDetail {

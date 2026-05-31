@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
 import type { SegmentLeaderboardEntry } from '@/lib/api/types';
 import { Card, CardContent, CardHeader, CardTitle, Badge } from '@/components/ui';
-import { Trophy, MapPin, TrendingUp, Users, ChevronRight } from 'lucide-react';
+import { Trophy, MapPin, TrendingUp, Users, ChevronRight } from '@/components/ui/icons';
 import { formatDuration } from '@/lib/utils';
 
 interface Segment {

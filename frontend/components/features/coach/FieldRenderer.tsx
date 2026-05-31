@@ -1,6 +1,6 @@
 'use client';
 
-import { Sparkles } from 'lucide-react';
+import { Sparkles } from '@/components/ui/icons';
 
 export interface Field {
   name: string;
@@ -31,7 +31,7 @@ export default function FieldRenderer({
 
   const isAutoFilled = autoFilledFields.has(field.name);
   const autoFilledBadge = isAutoFilled ? (
-    <span className="inline-flex items-center gap-1 text-xs text-primary-600 bg-primary-50 border border-primary-200 rounded-full px-2 py-0.5 ml-2">
+    <span className="inline-flex items-center gap-1 text-xs text-primary bg-primary/10 border border-primary/20 rounded-full px-2 py-0.5 ml-2">
       <Sparkles className="w-3 h-3" />
       Auto
     </span>
@@ -39,7 +39,7 @@ export default function FieldRenderer({
 
   const inputClass = `w-full bg-background border rounded-lg px-4 py-2.5 text-foreground transition-colors ${
     isAutoFilled
-      ? 'border-primary-300 bg-primary-50/30 focus:border-primary-500 focus:ring-2 focus:ring-primary-100'
+      ? 'border-primary/30 bg-primary/5 focus:border-primary focus:ring-2 focus:ring-primary/20'
       : 'border-border focus:border-primary focus:ring-2 focus:ring-primary/10'
   }`;
 

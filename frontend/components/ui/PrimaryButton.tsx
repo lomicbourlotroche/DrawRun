@@ -1,13 +1,13 @@
 'use client';
 
-import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode, type ComponentType } from 'react';
 import { cn } from '@/lib/utils';
-import { LucideIcon } from 'lucide-react';
+import type { IconProps } from '@/components/ui/icons';
 
 export interface PrimaryButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
-  icon?: LucideIcon;
+  icon?: ComponentType<IconProps>;
   iconPosition?: 'left' | 'right';
   loading?: boolean;
   fullWidth?: boolean;
@@ -147,7 +147,7 @@ PrimaryButton.displayName = 'PrimaryButton';
  * LinkButton - Bouton style lien avec icône
  */
 interface LinkButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  icon?: LucideIcon;
+  icon?: ComponentType<IconProps>;
   children: ReactNode;
 }
 

@@ -1,13 +1,13 @@
 'use client';
 
-import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
+import { forwardRef, type HTMLAttributes, type ReactNode, type ComponentType } from 'react';
 import { cn } from '@/lib/utils';
-import { LucideIcon } from 'lucide-react';
+import type { IconProps } from '@/components/ui/icons';
 
 export interface GradientBadgeProps extends HTMLAttributes<HTMLSpanElement> {
   variant?: 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral';
   size?: 'sm' | 'md' | 'lg';
-  icon?: LucideIcon;
+  icon?: ComponentType<IconProps>;
   dot?: boolean;
   dotColor?: string;
   children: ReactNode;

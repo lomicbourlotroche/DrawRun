@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent, StatCard } from '@/components/ui';
-import { TrendingUp, TrendingDown, Activity, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, Target } from '@/components/ui/icons';
 
 interface QuickStatsProps {
   stats: {
@@ -20,7 +20,7 @@ export function QuickStats({ stats, isLoading }: QuickStatsProps) {
         {[1, 2, 3, 4].map((i) => (
           <Card key={i}>
             <CardContent className="pt-6">
-              <div className="h-16 bg-background rounded animate-pulse" />
+              <div className="h-16 bg-surface rounded animate-pulse" />
             </CardContent>
           </Card>
         ))}
@@ -51,14 +51,14 @@ export function QuickStats({ stats, isLoading }: QuickStatsProps) {
         icon={<TrendingUp className="w-5 h-5" />}
         color="var(--primary)"
       />
-      
+
       <StatCard
         label="ATL (Fatigue)"
         value={stats.atl?.toFixed(1) || '-'}
         icon={<Activity className="w-5 h-5" />}
         color="var(--danger)"
       />
-      
+
       <StatCard
         label="TSB (Forme)"
         value={stats.tsb?.toFixed(1) || '-'}
@@ -66,7 +66,7 @@ export function QuickStats({ stats, isLoading }: QuickStatsProps) {
         icon={stats.tsb && stats.tsb >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
         color={stats.tsb && stats.tsb >= 0 ? 'var(--success)' : 'var(--danger)'}
       />
-      
+
       <StatCard
         label="ACWR"
         value={stats.acwr?.toFixed(2) || '-'}

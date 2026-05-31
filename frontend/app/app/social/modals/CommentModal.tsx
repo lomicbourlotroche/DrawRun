@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Avatar } from '@/components/ui';
 import { ModalSheet } from '@/components/ui/ModalSheet';
 import { api } from '@/lib/api';
-import { MessageCircle, X, Loader2 } from 'lucide-react';
+import { MessageCircle, X, Loader2 } from '@/components/ui/icons';
 import { toast } from 'sonner';
 
 interface CommentModalProps {

@@ -10,7 +10,7 @@ import {
   Sparkles,
   Shield,
   Lock
-} from 'lucide-react';
+} from '@/components/ui/icons';
 
 const steps = [
   {
@@ -37,9 +37,9 @@ const steps = [
 ];
 
 const iconColors: Record<string, string> = {
-  primary: 'bg-primary-100 text-primary-600',
-  success: 'bg-success-100 text-success-600',
-  recovery: 'bg-recovery-100 text-recovery-600',
+  primary: 'bg-primary/10 text-primary',
+  success: 'bg-success/10 text-success',
+  recovery: 'bg-recovery/10 text-recovery',
 };
 
 export default function HowItWorksSection() {
@@ -68,14 +68,14 @@ export default function HowItWorksSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <span className="inline-flex items-center gap-2 px-4 py-2 bg-recovery-100 border border-recovery-200 rounded-full text-sm font-semibold text-recovery-700 mb-6">
+          <span className="inline-flex items-center gap-2 px-4 py-2 bg-recovery/10 border border-recovery/20 rounded-full text-sm font-semibold text-recovery mb-6">
             <Sparkles className="w-4 h-4" />
             Simple et rapide
           </span>
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight mb-6">
             Comment ça
             <br />
-            <span className="bg-gradient-to-r from-recovery-500 to-primary-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-recovery to-primary bg-clip-text text-transparent">
               Marche ?
             </span>
           </h2>

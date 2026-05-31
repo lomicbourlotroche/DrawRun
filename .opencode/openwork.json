@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "workspace": {
+    "name": "DrawRun-New",
+    "createdAt": 1780225893106,
+    "preset": "starter"
+  },
+  "authorizedRoots": [
+    "\\\\?\\C:\\Users\\lomic\\Dev\\DrawRun-New"
+  ]
+}

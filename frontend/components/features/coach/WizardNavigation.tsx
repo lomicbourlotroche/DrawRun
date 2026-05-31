@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui';
-import { CheckCircle2, ChevronRight, ChevronLeft } from 'lucide-react';
+import { CheckCircle2, ChevronRight, ChevronLeft } from '@/components/ui/icons';
 
 interface WizardNavigationProps {
   isFirstStep: boolean;

@@ -10,7 +10,7 @@ import {
   ArrowRight,
   Smartphone,
   Heart
-} from 'lucide-react';
+} from '@/components/ui/icons';
 
 const iosFeatures = [
   {
@@ -40,10 +40,10 @@ const iosFeatures = [
 ];
 
 const iconColors: Record<string, string> = {
-  primary: 'bg-primary-100 text-primary-600',
-  danger: 'bg-danger-100 text-danger-600',
-  success: 'bg-success-100 text-success-600',
-  recovery: 'bg-recovery-100 text-recovery-600',
+  primary: 'bg-primary/10 text-primary',
+  danger: 'bg-danger/10 text-danger',
+  success: 'bg-success/10 text-success',
+  recovery: 'bg-recovery/10 text-recovery',
 };
 
 export default function IOSAppSection() {
@@ -68,7 +68,7 @@ export default function IOSAppSection() {
   }, []);
 
   return (
-    <section id="ios" className="py-20 lg:py-32 bg-neutral-900 dark:bg-background overflow-hidden">
+    <section id="ios" className="py-20 lg:py-32 bg-background overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left Content */}
@@ -81,7 +81,7 @@ export default function IOSAppSection() {
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6">
               DrawRun
               <br />
-              <span className="bg-gradient-to-r from-primary-400 to-recovery-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary to-recovery bg-clip-text text-transparent">
                 Sur Votre iPhone
               </span>
             </h2>
@@ -153,8 +153,8 @@ export default function IOSAppSection() {
             {/* HealthKit Integration Preview */}
             <div className="mt-6 p-4 bg-surface/5 border border-white/10 rounded-2xl">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-danger-500/20 rounded-lg flex items-center justify-center">
-                  <Heart className="w-5 h-5 text-danger-400" />
+                <div className="w-10 h-10 bg-danger/20 rounded-lg flex items-center justify-center">
+                  <Heart className="w-5 h-5 text-danger" />
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-white">HealthKit Intégré</div>
@@ -163,7 +163,7 @@ export default function IOSAppSection() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="flex-1 h-2 bg-surface/10 rounded-full overflow-hidden">
-                  <div className="h-full w-3/4 bg-gradient-to-r from-danger-500 to-primary-500 rounded-full" />
+                  <div className="h-full w-3/4 bg-gradient-to-r from-danger to-primary rounded-full" />
                 </div>
                 <span className="text-xs text-muted">75% objectif quotidien</span>
               </div>

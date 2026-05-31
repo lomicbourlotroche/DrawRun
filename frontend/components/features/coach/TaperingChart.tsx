@@ -12,7 +12,7 @@ import {
   ReferenceLine
 } from 'recharts';
 import { Card } from '@/components/ui';
-import { Zap, Calendar, TrendingDown } from 'lucide-react';
+import { Zap, Calendar, TrendingDown } from '@/components/ui/icons';
 
 /**
  * Data point for tapering plan chart

@@ -1,6 +1,6 @@
 'use client';
 
-import { Map, Mountain, Satellite } from 'lucide-react';
+import { Map, Mountain, Satellite } from '@/components/ui/icons';
 
 interface MapLayerSwitcherProps {
   activeLayer: string;

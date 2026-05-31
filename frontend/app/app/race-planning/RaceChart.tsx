@@ -1,6 +1,6 @@
 'use client';
 
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp } from '@/components/ui/icons';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { fmtPace } from './race-planning.utils';
 import {

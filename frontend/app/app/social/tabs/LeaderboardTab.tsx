@@ -3,7 +3,7 @@
 import React from 'react';
 import { useEffect } from 'react';
 import { Skeleton, GlassCard } from '@/components/ui';
-import { Trophy, MapPin, Clock, Activity } from 'lucide-react';
+import { Trophy, MapPin, Clock, Activity } from '@/components/ui/icons';
 import { Avatar } from '@/components/ui';
 import { useLeaderboard } from '@/hooks/useSocial';
 import { LEADERBOARD_CATEGORIES, LEADERBOARD_PERIODS, PODIUM_STYLES } from '@/constants/social';

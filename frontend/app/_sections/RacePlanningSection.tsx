@@ -9,7 +9,7 @@ import {
   Droplets, 
   ArrowRight,
   TrendingUp
-} from 'lucide-react';
+} from '@/components/ui/icons';
 
 const raceFeatures = [
   {
@@ -39,10 +39,10 @@ const raceFeatures = [
 ];
 
 const iconColors: Record<string, string> = {
-  primary: 'bg-primary-100 text-primary-600',
-  danger: 'bg-danger-100 text-danger-600',
-  success: 'bg-success-100 text-success-600',
-  warning: 'bg-warning-100 text-warning-600',
+  primary: 'bg-primary/10 text-primary',
+  danger: 'bg-danger/10 text-danger',
+  success: 'bg-success/10 text-success',
+  warning: 'bg-warning/10 text-warning',
 };
 
 export default function RacePlanningSection() {
@@ -67,18 +67,18 @@ export default function RacePlanningSection() {
   }, []);
 
   return (
-    <section id="race-planning" className="py-20 lg:py-32 bg-gradient-to-b from-neutral-50 to-white dark:from-background dark:to-background overflow-hidden">
+    <section id="race-planning" className="py-20 lg:py-32 bg-gradient-to-b from-background to-background overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <span className="inline-flex items-center gap-2 px-4 py-2 bg-warning-100 border border-warning-200 rounded-full text-sm font-semibold text-warning-700 mb-6">
+          <span className="inline-flex items-center gap-2 px-4 py-2 bg-warning/10 border border-warning/20 rounded-full text-sm font-semibold text-warning mb-6">
             <Trophy className="w-4 h-4" />
             NOUVEAU — Race Planning
           </span>
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight mb-6">
             Préparez votre
             <br />
-            <span className="bg-gradient-to-r from-warning-500 to-primary-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-warning to-primary bg-clip-text text-transparent">
               stratégie de course
             </span>
           </h2>
@@ -123,7 +123,7 @@ export default function RacePlanningSection() {
           <Card variant="elevated" className="max-w-3xl mx-auto overflow-hidden">
             <div className="bg-background text-white p-4">
               <div className="flex items-center gap-2 mb-1">
-                <Trophy className="w-4 h-4 text-warning-400" />
+                <Trophy className="w-4 h-4 text-warning" />
                 <span className="text-sm font-semibold">Plan de course — Semi-marathon</span>
               </div>
               <div className="flex items-center gap-6 text-xs text-muted">

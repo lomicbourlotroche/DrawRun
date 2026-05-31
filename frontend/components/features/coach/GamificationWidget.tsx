@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Badge } from '@/components/ui';
 import { api } from '@/lib/api';
-import { Trophy, Flame, Star, Target, Medal, Crown, Zap, Activity } from 'lucide-react';
+import { Trophy, Flame, Star, Target, Medal, Crown, Zap, Activity } from '@/components/ui/icons';
 import type { IconType } from 'react-icons';
 
 /**
@@ -218,7 +218,7 @@ export default function GamificationWidget({ planId }: GamificationWidgetProps) 
                 return (
                   <div
                     key={badge.id}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-warning-500/20 to-peak-500/20 border border-warning/30"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-warning/20 to-peak/20 border border-warning/30"
                     title={badge.description}
                   >
                     <Icon className="w-4 h-4 text-warning/80" />

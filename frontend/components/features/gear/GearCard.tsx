@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card } from '@/components/ui';
-import { Footprints, Bike, Settings, Trash2, AlertCircle } from 'lucide-react';
+import { Footprints, Bike, Settings, Trash2, AlertCircle } from '@/components/ui/icons';
 
 interface Gear {
   id: number;

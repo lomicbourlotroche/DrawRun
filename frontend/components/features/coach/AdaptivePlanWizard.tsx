@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardContent } from '@/components/ui';
 import { api } from '@/lib/api';
-import { Loader2 } from 'lucide-react';
+import { Loader2 } from '@/components/ui/icons';
 import { toast } from 'sonner';
 import FieldRenderer, { type Field } from './FieldRenderer';
 import WizardHeader from './WizardHeader';

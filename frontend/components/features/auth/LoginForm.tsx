@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/stores';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Activity, ArrowLeft, Eye, EyeOff, Zap, TrendingUp, Heart, Target } from 'lucide-react';
+import { Activity, ArrowLeft, Eye, EyeOff, Zap, TrendingUp, Heart, Target } from '@/components/ui/icons';
 
 type AuthMode = 'login' | 'register' | 'forgot' | 'reset';
 
@@ -62,7 +62,7 @@ function PasswordField({ label, value, onChange, placeholder }: {
 
 function FeaturePanel() {
   return (
-    <div className="hidden lg:flex lg:flex-1 relative overflow-hidden bg-gradient-to-br from-neutral-900 to-neutral-800 p-12 flex-col justify-between">
+    <div className="hidden lg:flex lg:flex-1 relative overflow-hidden bg-gradient-to-br from-background to-background/80 p-12 flex-col justify-between">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(77,151,247,0.15),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(77,151,247,0.1),transparent_50%)]" />
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px]" />
       <div className="relative z-10">

@@ -7,25 +7,25 @@ import { cn } from '@/lib/utils';
 import { useAuthStore, useNotificationsStore } from '@/stores';
 import {
   LayoutDashboard,
-  BookOpen,
   Activity,
   Dumbbell,
-  User,
+  Brain,
+  Target,
+  MapPin,
   Users,
+  User,
   LogOut,
   Menu,
   X,
-  Trophy,
-  Compass,
-} from 'lucide-react';
+} from '@/components/ui/icons';
 
 const navItems = [
   { href: '/app', label: 'Tableau de bord', icon: LayoutDashboard, exact: true },
-  { href: '/app/activities', label: 'Activités', icon: BookOpen },
-  { href: '/app/performance', label: 'Performance', icon: Activity },
-  { href: '/app/coach', label: 'Coach', icon: Dumbbell },
-  { href: '/app/race-planning', label: 'Race Planning', icon: Trophy },
-  { href: '/app/explore', label: 'Explorer', icon: Compass },
+  { href: '/app/activities', label: 'Activités', icon: Activity },
+  { href: '/app/performance', label: 'Performance', icon: Dumbbell },
+  { href: '/app/coach', label: 'Coach', icon: Brain },
+  { href: '/app/race-planning', label: 'Race Planning', icon: Target },
+  { href: '/app/explore', label: 'Explorer', icon: MapPin },
   { href: '/app/social', label: 'Social', icon: Users },
   { href: '/app/profile', label: 'Profil', icon: User },
 ];
@@ -84,17 +84,19 @@ export default function Sidebar() {
 
       <aside
         className={cn(
-          'fixed top-0 left-0 h-full bg-surface/95 backdrop-blur-md border-r border-border z-50 transition-all duration-300 ease-smooth flex flex-col',
+          'fixed top-0 left-0 h-full bg-surface/95 backdrop-blur-md border-r border-border z-50 transition-all duration-300 flex flex-col',
           'w-full max-w-64 lg:max-w-64',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
         <div className="flex items-center h-16 px-4 border-b border-border/60 flex-shrink-0">
           <Link href="/app" className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
               <span className="text-white font-bold text-sm">DR</span>
             </div>
-            <span className="text-base font-bold text-foreground tracking-tight truncate">DrawRun</span>
+            <span className="text-base font-bold text-foreground tracking-tight truncate" style={{ fontFamily: 'var(--font-display)' }}>
+              DrawRun
+            </span>
           </Link>
           <button
             onClick={() => setIsMobileOpen(false)}
@@ -115,15 +117,16 @@ export default function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ease-smooth relative group',
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group',
                   active
                     ? 'bg-primary-50 text-primary-700 font-semibold'
-                    : 'text-muted-foreground hover:bg-muted/20 hover:text-foreground'
+                    : 'text-muted hover:bg-muted/20 hover:text-foreground'
                 )}
               >
                 <div className="relative flex-shrink-0">
                   <item.icon
-                    className={cn('w-5 h-5', active ? 'text-primary-600' : 'text-muted group-hover:text-muted')}
+                    size={20}
+                    className={cn(active ? 'text-primary' : 'text-muted group-hover:text-foreground')}
                   />
                   {hasNotifications && (
                     <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-danger rounded-full flex items-center justify-center text-[8px] font-bold text-white leading-none">
@@ -135,7 +138,7 @@ export default function Sidebar() {
                   {item.label}
                 </span>
                 {active && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary-500 rounded-r-full" />
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-r-full" />
                 )}
               </Link>
             );
@@ -157,7 +160,7 @@ export default function Sidebar() {
           <button
             onClick={handleLogout}
             className={cn(
-              'flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-muted hover:text-danger-600 hover:bg-danger-50 transition-all duration-150'
+              'flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-muted hover:text-danger hover:bg-danger-50 transition-all duration-150'
             )}
           >
             <LogOut className="w-4 h-4 flex-shrink-0" />

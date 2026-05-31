@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import { Trophy, Loader2 } from 'lucide-react';
+import { Trophy, Loader2 } from '@/components/ui/icons';
 
 interface DrawButtonProps {
   activityId: number;

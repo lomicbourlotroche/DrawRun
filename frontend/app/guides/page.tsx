@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Activity, Calendar, Trophy, TrendingUp, Heart, CloudSun, Users, ArrowRight } from 'lucide-react';
+import { ArrowLeft, Activity, Calendar, Trophy, TrendingUp, Heart, CloudSun, Users, ArrowRight } from '@/components/ui/icons';
 
 const guides = [
   {

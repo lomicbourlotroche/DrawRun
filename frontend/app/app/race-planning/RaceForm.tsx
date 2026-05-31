@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MapPin } from 'lucide-react';
+import { MapPin } from '@/components/ui/icons';
 import { Button, Input } from '@/components/ui';
 import type { RacePlanningRequest } from '@/types';
 

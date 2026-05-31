@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { api, exploreApi } from '@/lib/api';
 import { Button, Input, Badge } from '@/components/ui';
-import { X, Undo2, Save, Trash2, Map, Navigation, Repeat, Redo2, Loader2 } from 'lucide-react';
+import { X, Undo2, Save, Trash2, Map, Navigation, Repeat, Redo2, Loader2 } from '@/components/ui/icons';
 import { toast } from 'sonner';
 import { encodePolyline } from '@/lib/utils';
 import ElevationProfile from './ElevationProfile';

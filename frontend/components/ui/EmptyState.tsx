@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Activity, Calendar, Users, Trophy, BarChart3, Heart, TrendingUp, Clock, HelpCircle } from 'lucide-react';
+import { Activity, Calendar, Users, Trophy, BarChart3, Heart, TrendingUp, Clock, HelpCircle } from '@/components/ui/icons';
 
 export interface EmptyStateProps {
   type?: 'activities' | 'dashboard' | 'performance' | 'coach' | 'social' | 'friends' | 'feed' | 'leaderboard' | 'plans' | 'data' | 'generic';

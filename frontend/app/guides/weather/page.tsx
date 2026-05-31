@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, CloudSun, Thermometer, Wind, Droplets, Sun, CloudRain, Snowflake } from 'lucide-react';
+import { ArrowLeft, CloudSun, Thermometer, Wind, Droplets, Sun, CloudRain, Snowflake } from '@/components/ui/icons';
 
 export default function WeatherGuide() {
   const router = useRouter();

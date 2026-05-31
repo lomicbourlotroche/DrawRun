@@ -9,7 +9,7 @@ import {
 } from 'recharts';
 import { 
   TrendingUp, Calendar, Activity as ActivityIcon 
-} from 'lucide-react';
+} from '@/components/ui/icons';
 
 interface ProgressionData {
   date: string;

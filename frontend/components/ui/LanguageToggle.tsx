@@ -1,7 +1,7 @@
 'use client';
 
 import { useLanguage } from '../providers/LanguageProvider';
-import { Globe, Check } from 'lucide-react';
+import { Globe, Check } from '@/components/ui/icons';
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import type { Language } from '@/lib/i18n';

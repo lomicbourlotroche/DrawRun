@@ -1,6 +1,6 @@
 'use client';
 
-import { Heart, Droplets, Zap } from 'lucide-react';
+import { Heart, Droplets, Zap } from '@/components/ui/icons';
 import { Card, CardHeader, CardTitle, CardContent, Badge } from '@/components/ui';
 import { formatDuration, fmtPace } from './race-planning.utils';
 import { cn } from '@/lib/utils';

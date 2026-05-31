@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Heart, Activity, Target, Thermometer, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Heart, Activity, Target, Thermometer, TrendingUp } from '@/components/ui/icons';
 
 export default function HRZonesGuide() {
   const router = useRouter();

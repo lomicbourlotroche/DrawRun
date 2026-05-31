@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button, Modal } from '@/components/ui';
 import { api } from '@/lib/api';
-import { AlertTriangle, Activity, Briefcase, Plane, CloudOff, Frown, HelpCircle } from 'lucide-react';
+import { AlertTriangle, Activity, Briefcase, Plane, CloudOff, Frown, HelpCircle } from '@/components/ui/icons';
 import { toast } from 'sonner';
 
 interface MissedSessionDialogProps {
@@ -17,7 +17,7 @@ const reasons = [
   { value: 'injury', label: 'Blessure', icon: AlertTriangle, color: 'text-danger/80' },
   { value: 'illness', label: 'Maladie', icon: Activity, color: 'text-peak/80' },
   { value: 'work', label: 'Travail', icon: Briefcase, color: 'text-primary/80' },
-  { value: 'travel', label: 'Voyage', icon: Plane, color: 'text-purple-400' },
+  { value: 'travel', label: 'Voyage', icon: Plane, color: 'text-muted-foreground' },
   { value: 'fatigue', label: 'Fatigue', icon: CloudOff, color: 'text-warning/80' },
   { value: 'motivation', label: 'Manque de motivation', icon: Frown, color: 'text-muted' },
   { value: 'other', label: 'Autre', icon: HelpCircle, color: 'text-muted' },

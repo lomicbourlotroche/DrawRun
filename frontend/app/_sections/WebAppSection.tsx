@@ -10,7 +10,7 @@ import {
   LineChart,
   Target,
   Zap
-} from 'lucide-react';
+} from '@/components/ui/icons';
 
 export default function WebAppSection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -37,7 +37,7 @@ export default function WebAppSection() {
     <section id="webapp" className="relative py-20 lg:py-32 bg-background overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-600/20 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-secondary/20 rounded-full blur-3xl" />
       </div>
 
@@ -53,7 +53,7 @@ export default function WebAppSection() {
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight mb-6">
               Votre Performance,
               <br />
-              <span className="bg-gradient-to-r from-primary-400 to-secondary bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                 Accessible Partout
               </span>
             </h2>
@@ -77,8 +77,8 @@ export default function WebAppSection() {
                     key={index}
                     className="flex items-center gap-3 p-3 bg-surface/5 border border-white/10 rounded-xl"
                   >
-                    <div className="w-10 h-10 bg-primary-500/20 rounded-lg flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-primary-400" />
+                    <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
+                      <Icon className="w-5 h-5 text-primary" />
                     </div>
                     <span className="text-sm font-medium text-foreground">{item.label}</span>
                   </div>
@@ -112,9 +112,9 @@ export default function WebAppSection() {
               <div className="bg-surface/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl">
                 {/* Window Controls */}
                 <div className="flex items-center gap-2 mb-6">
-                  <div className="w-3 h-3 rounded-full bg-danger-500" />
-                  <div className="w-3 h-3 rounded-full bg-warning-500" />
-                  <div className="w-3 h-3 rounded-full bg-success-500" />
+                  <div className="w-3 h-3 rounded-full bg-danger" />
+                  <div className="w-3 h-3 rounded-full bg-warning" />
+                  <div className="w-3 h-3 rounded-full bg-success" />
                   <div className="ml-4 text-sm text-muted">drawrun.app/dashboard</div>
                 </div>
 
@@ -122,18 +122,18 @@ export default function WebAppSection() {
                 <div className="grid grid-cols-3 gap-3 mb-4">
                   <div className="bg-surface/50 rounded-xl p-4">
                     <div className="text-xs text-muted mb-1">CTL</div>
-                    <div className="text-2xl font-bold text-primary-400">45</div>
-                    <div className="text-xs text-success-400 mt-1">↑ +3</div>
+                    <div className="text-2xl font-bold text-primary">45</div>
+                    <div className="text-xs text-success mt-1">↑ +3</div>
                   </div>
                   <div className="bg-surface/50 rounded-xl p-4">
                     <div className="text-xs text-muted mb-1">ATL</div>
-                    <div className="text-2xl font-bold text-warning-400">38</div>
+                    <div className="text-2xl font-bold text-warning">38</div>
                     <div className="text-xs text-muted mt-1">→ stable</div>
                   </div>
                   <div className="bg-surface/50 rounded-xl p-4">
                     <div className="text-xs text-muted mb-1">TSB</div>
-                    <div className="text-2xl font-bold text-success-400">+7</div>
-                    <div className="text-xs text-success-400 mt-1">✓ Optimal</div>
+                    <div className="text-2xl font-bold text-success">+7</div>
+                    <div className="text-xs text-success mt-1">✓ Optimal</div>
                   </div>
                 </div>
 
@@ -142,12 +142,12 @@ export default function WebAppSection() {
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-medium text-foreground">PMC 30 jours</span>
                     <div className="flex items-center gap-3 text-xs">
-                      <span className="flex items-center gap-1 text-primary-400">
-                        <span className="w-2 h-2 rounded-full bg-primary-400" />
+                      <span className="flex items-center gap-1 text-primary">
+                        <span className="w-2 h-2 rounded-full bg-primary" />
                         Fitness
                       </span>
-                      <span className="flex items-center gap-1 text-warning-400">
-                        <span className="w-2 h-2 rounded-full bg-warning-400" />
+                      <span className="flex items-center gap-1 text-warning">
+                        <span className="w-2 h-2 rounded-full bg-warning" />
                         Fatigue
                       </span>
                     </div>
@@ -183,21 +183,21 @@ export default function WebAppSection() {
                 <div className="flex items-center justify-between pt-4 border-t border-white/10">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <Target className="w-4 h-4 text-success-400" />
+                      <Target className="w-4 h-4 text-success" />
                       <span className="text-sm text-foreground">Objectif: Marathon</span>
                     </div>
                   </div>
-                  <span className="text-sm text-primary-400 font-medium">Voir tout →</span>
+                  <span className="text-sm text-primary font-medium">Voir tout →</span>
                 </div>
               </div>
 
               {/* Floating Elements */}
-              <div className="absolute -top-4 -right-4 bg-success-500 text-foreground text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-float">
+              <div className="absolute -top-4 -right-4 bg-success text-foreground text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-float">
                 En forme!
               </div>
               <div className="absolute -bottom-4 -left-4 bg-surface text-foreground text-xs font-semibold px-4 py-2 rounded-xl shadow-lg">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-success-500" />
+                  <TrendingUp className="w-4 h-4 text-success" />
                   <span>+12% cette semaine</span>
                 </div>
               </div>

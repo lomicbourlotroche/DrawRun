@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button, Input, Modal } from '@/components/ui';
 import { api } from '@/lib/api';
-import { Calendar, Trophy, Plane, AlertCircle, Briefcase, Plus } from 'lucide-react';
+import { Calendar, Trophy, Plane, AlertCircle, Briefcase, Plus } from '@/components/ui/icons';
 import { toast } from 'sonner';
 
 interface ExternalEventFormProps {
@@ -15,7 +15,7 @@ const eventTypes = [
   { value: 'competition', label: 'Compétition', icon: Trophy, color: 'bg-warning/20 text-warning/80 border-warning/30' },
   { value: 'vacation', label: 'Vacances', icon: Plane, color: 'bg-primary/20 text-primary/80 border-primary/30' },
   { value: 'illness', label: 'Maladie', icon: AlertCircle, color: 'bg-danger/20 text-danger/80 border-danger/30' },
-  { value: 'work_trip', label: 'Voyage travail', icon: Briefcase, color: 'bg-secondary-500/20 text-secondary-400 border-secondary-500/30' },
+  { value: 'work_trip', label: 'Voyage travail', icon: Briefcase, color: 'bg-secondary/20 text-secondary border-secondary/30' },
   { value: 'other', label: 'Autre', icon: Calendar, color: 'bg-muted/20 text-muted border-muted/30' },
 ];
 

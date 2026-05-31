@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent, Button } from '@/components/ui';
 import { api } from '@/lib/api';
-import { Bell, BellOff } from 'lucide-react';
+import { Bell, BellOff } from '@/components/ui/icons';
 import { toast } from 'sonner';
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {

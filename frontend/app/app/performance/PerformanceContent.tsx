@@ -9,7 +9,7 @@ import { NavTabs } from '@/components/ui/NavTabs';
 import { EliteAnalyticsSection } from './EliteAnalyticsSection';
 import { IntensityDistributionSection } from './IntensityDistributionSection';
 import { HRVRecoverySection } from './HRVRecoverySection';
-import { Dumbbell, Bike, Waves, Activity, TrendingUp, Gauge, Zap, BarChart3, Brain, Heart, MapPin, Clock } from 'lucide-react';
+import { Dumbbell, Bike, Waves, Activity, TrendingUp, Gauge, Zap, BarChart3, Brain, Heart, Clock } from '@/components/ui/icons';
 import type { PmcDataPoint, Activity as ActivityType, Zones } from '@/types';
 
 interface PolarizationData {
@@ -104,10 +104,10 @@ export default function PerformanceContent() {
           const polData = await api.getAlgoPolarization(activitiesWithZones);
           setPolarization(polData);
         } else {
-          setPolarizationError('Pas assez de données FC pour calculer la polarisation');
+          setPolarizationError('Pas assez de donn\u00e9es FC pour calculer la polarisation');
         }
       } catch {
-        setPolarizationError('Données de polarisation non disponibles');
+        setPolarizationError('Donn\u00e9es de polarisation non disponibles');
       }
 
       try {
@@ -133,10 +133,10 @@ export default function PerformanceContent() {
           });
           setHrv(hrvData);
         } else {
-          setHrvError('Pas assez d\'activités récentes pour estimer le HRV');
+          setHrvError('Pas assez d\'activit\u00e9s r\u00e9centes pour estimer le HRV');
         }
       } catch {
-        setHrvError('Données HRV non disponibles');
+        setHrvError('Donn\u00e9es HRV non disponibles');
       }
 
     } catch { /* silent */ }
@@ -157,12 +157,12 @@ export default function PerformanceContent() {
 
   const sportTabs = [
     { id: 'run', label: 'Course', icon: <Dumbbell className="w-4 h-4" /> },
-    { id: 'bike', label: 'Vélo', icon: <Bike className="w-4 h-4" /> },
+    { id: 'bike', label: 'V\u00e9lo', icon: <Bike className="w-4 h-4" /> },
     { id: 'swim', label: 'Natation', icon: <Waves className="w-4 h-4" /> },
   ];
 
   const tabs = [
-    { id: 'metrics', label: 'Métriques', icon: <Gauge className="w-4 h-4" /> },
+    { id: 'metrics', label: 'M\u00e9triques', icon: <Gauge className="w-4 h-4" /> },
     { id: 'zones', label: 'Zones', icon: <Zap className="w-4 h-4" /> },
     { id: 'progression', label: 'Progression', icon: <TrendingUp className="w-4 h-4" /> },
     { id: 'analyse', label: 'Analyse', icon: <Brain className="w-4 h-4" /> },
@@ -173,15 +173,15 @@ export default function PerformanceContent() {
       <div className="flex items-center justify-between pt-2">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2 tracking-tight">
-            <Activity className="w-6 h-6 text-primary-500" />
+            <Activity className="w-6 h-6 text-primary" />
             Performances
           </h1>
-          <p className="text-neutral-500 mt-1.5">Suivez vos métriques et progressions</p>
+          <p className="text-muted mt-1.5">Suivez vos m\u00e9triques et progressions</p>
         </div>
         <button
           onClick={handleRecalculate}
           disabled={isRecalculating}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-primary-50 text-primary-600 hover:bg-primary-100 transition-all disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-all disabled:opacity-50"
         >
           <Activity className={`w-4 h-4 ${isRecalculating ? 'animate-spin' : ''}`} />
           {isRecalculating ? 'Calcul...' : 'Recalculer'}
@@ -208,24 +208,24 @@ export default function PerformanceContent() {
                 vo2max: profile?.fcm ? Math.round((profile.fcm - (profile.restingHR || 60)) * 0.15 + 30) : undefined,
               }} />
               <Card padding="none">
-                <div className="px-6 py-4 border-b border-neutral-200/60">
+                <div className="px-6 py-4 border-b border-border">
                   <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
                     <Heart className="w-5 h-5 text-danger" />
-                    Métriques clés
+                    M\u00e9triques cl\u00e9s
                   </h3>
                 </div>
                 <div className="p-5">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[
                       { value: profile?.fcm, label: 'FCM', gradient: 'from-danger/5 to-danger/10', border: 'border-danger/10' },
-                      { value: profile?.vdot, label: 'VDOT', gradient: 'from-primary-50 to-primary-100/50', border: 'border-primary-200/30' },
+                      { value: profile?.vdot, label: 'VDOT', gradient: 'from-primary/10 to-primary/20', border: 'border-primary/20' },
                       { value: profile?.vma ? `${profile.vma.toFixed(1)}` : null, label: 'VMA km/h', gradient: 'from-success/5 to-success/10', border: 'border-success/10' },
-                      { value: profile?.fcm ? Math.round((profile.fcm - (profile.restingHR || 60)) * 0.15 + 30) : null, label: 'VO₂ max', gradient: 'from-warning/5 to-warning/10', border: 'border-warning/10', badge: 'Estimé' },
+                      { value: profile?.fcm ? Math.round((profile.fcm - (profile.restingHR || 60)) * 0.15 + 30) : null, label: 'VO\u2082 max', gradient: 'from-warning/5 to-warning/10', border: 'border-warning/10', badge: 'Estim\u00e9' },
                     ].map(({ value, label, gradient, border, badge }) => (
                       <div key={label} className={`relative overflow-hidden p-4 rounded-xl bg-gradient-to-br ${gradient} ${border} text-center transition-all hover:shadow-md`}>
-                        <div className="absolute top-0 left-0 w-full h-1 bg-primary-500" />
-                        <p className="text-3xl font-bold text-primary-500 tracking-tight tabular-nums">{value ?? '--'}</p>
-                        <p className="text-xs text-neutral-500 mt-1 font-medium">{label}{badge ? <Badge variant="outline" className="text-[10px] ml-1">{badge}</Badge> : null}</p>
+                        <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
+                        <p className="text-3xl font-bold text-primary tracking-tight tabular-nums">{value ?? '--'}</p>
+                        <p className="text-xs text-muted mt-1 font-medium">{label}{badge ? <Badge variant="outline" className="text-[10px] ml-1">{badge}</Badge> : null}</p>
                       </div>
                     ))}
                   </div>
@@ -243,33 +243,33 @@ export default function PerformanceContent() {
             <div className="space-y-4">
               {activities.length === 0 ? (
                 <Card padding="lg" className="text-center">
-                  <BarChart3 className="w-12 h-12 mx-auto mb-4 text-neutral-300" />
-                  <p className="text-neutral-500">Aucune activité enregistrée</p>
-                  <p className="text-xs text-neutral-400 mt-1">Synchronisez vos activités pour voir vos statistiques.</p>
+                  <BarChart3 className="w-12 h-12 mx-auto mb-4 text-muted" />
+                  <p className="text-muted">Aucune activit\u00e9 enregistr\u00e9e</p>
+                  <p className="text-xs text-muted mt-1">Synchronisez vos activit\u00e9s pour voir vos statistiques.</p>
                 </Card>
               ) : (
                 <>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[
-                      { icon: MapPin, value: computeStats(activities).totalKm.toFixed(1), label: 'km total', gradient: 'from-primary-50 to-primary-100/50', border: 'border-primary-200/30' },
-                      { icon: Clock, value: computeStats(activities).totalHours.toFixed(1), label: 'heures', gradient: 'from-primary-50 to-primary-100/50', border: 'border-primary-200/30' },
-                      { icon: TrendingUp, value: computeStats(activities).avgKm.toFixed(1), label: 'km/séance', gradient: 'from-success/5 to-success/10', border: 'border-success/10' },
-                      { icon: BarChart3, value: activities.length, label: 'activités', gradient: 'from-peak/5 to-peak/10', border: 'border-peak/10' },
+                      { icon: TrendingUp, value: computeStats(activities).totalKm.toFixed(1), label: 'km total', gradient: 'from-primary/10 to-primary/20', border: 'border-primary/20' },
+                      { icon: Clock, value: computeStats(activities).totalHours.toFixed(1), label: 'heures', gradient: 'from-primary/10 to-primary/20', border: 'border-primary/20' },
+                      { icon: TrendingUp, value: computeStats(activities).avgKm.toFixed(1), label: 'km/s\u00e9ance', gradient: 'from-success/5 to-success/10', border: 'border-success/10' },
+                      { icon: BarChart3, value: activities.length, label: 'activit\u00e9s', gradient: 'from-peak/5 to-peak/10', border: 'border-peak/10' },
                     ].map(({ icon: Icon, value, label, gradient, border }) => (
                       <div key={label} className={`relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br ${gradient} ${border} text-center transition-all hover:shadow-md`}>
-                        <div className="absolute top-0 left-0 w-full h-1 bg-primary-500" />
-                        <Icon className="w-5 h-5 mx-auto mb-2 text-primary-500" />
+                        <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
+                        <Icon className="w-5 h-5 mx-auto mb-2 text-primary" />
                         <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">{value}</p>
-                        <p className="text-xs text-neutral-500 mt-1 font-medium">{label}</p>
+                        <p className="text-xs text-muted mt-1 font-medium">{label}</p>
                       </div>
                     ))}
                   </div>
 
                   <Card padding="none">
-                    <div className="px-6 py-4 border-b border-neutral-200/60">
+                    <div className="px-6 py-4 border-b border-border">
                       <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-                        <Activity className="w-4 h-4 text-primary-500" />
-                        Répartition par type
+                        <Activity className="w-4 h-4 text-primary" />
+                        R\u00e9partition par type
                       </h3>
                     </div>
                     <div className="p-5 space-y-4">
@@ -279,10 +279,10 @@ export default function PerformanceContent() {
                           <div key={type} className="space-y-2">
                             <div className="flex items-center justify-between text-sm">
                               <span className="font-medium text-foreground">{type}</span>
-                              <span className="text-muted-foreground">{count} séance{count > 1 ? 's' : ''} ({pct}%)</span>
+                              <span className="text-muted-foreground">{count} s\u00e9ance{count > 1 ? 's' : ''} ({pct}%)</span>
                             </div>
-                            <div className="h-2.5 bg-muted/20 rounded-full overflow-hidden">
-                              <div className="h-full bg-primary-500 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                            <div className="h-2.5 bg-surface rounded-full overflow-hidden">
+                              <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                             </div>
                           </div>
                         );

@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
-import { Mountain } from 'lucide-react';
+import { Mountain } from '@/components/ui/icons';
 import { RunAnalysisCards } from './RunAnalysisCards';
 import type { TrailRunAnalysis } from '@/types';
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { api } from '@/lib/api';
-import { AlertTriangle, CheckCircle, TrendingUp, TrendingDown, Zap, Activity } from 'lucide-react';
+import { AlertTriangle, CheckCircle, TrendingUp, TrendingDown, Zap, Activity } from '@/components/ui/icons';
 
 interface OvertrainingData {
   risk: 'low' | 'moderate' | 'high' | 'unknown';
@@ -29,7 +29,7 @@ export default function OvertrainingAlert() {
       const result = await api.checkOvertraining();
       setData(result as OvertrainingData);
     } catch {
-      /* silencieux — overtraining data non disponible */
+      /* silencieux */
     } finally {
       setIsLoading(false);
     }
@@ -39,7 +39,7 @@ export default function OvertrainingAlert() {
     return (
       <Card>
         <CardContent className="p-4">
-          <div className="animate-pulse h-20 bg-muted rounded" />
+          <div className="animate-pulse h-20 bg-surface rounded" />
         </CardContent>
       </Card>
     );
@@ -50,24 +50,24 @@ export default function OvertrainingAlert() {
   }
 
   const riskColors = {
-    low: 'bg-success/10 border-success/20 text-success/80',
-    moderate: 'bg-warning/10 border-warning/20 text-warning/80',
-    high: 'bg-danger/10 border-danger/20 text-danger/80',
-    unknown: 'bg-muted border-border text-muted'
+    low: 'bg-success/10 border-success/20 text-success',
+    moderate: 'bg-warning/10 border-warning/20 text-warning',
+    high: 'bg-danger/10 border-danger/20 text-danger',
+    unknown: 'bg-muted border-border text-muted',
   };
 
   const riskLabels = {
     low: 'Faible',
-    moderate: 'Modéré',
-    high: 'Élevé',
-    unknown: 'Inconnu'
+    moderate: 'Mod\u00e9r\u00e9',
+    high: '\u00c9lev\u00e9',
+    unknown: 'Inconnu',
   };
 
   const riskIcons = {
     low: CheckCircle,
     moderate: AlertTriangle,
     high: AlertTriangle,
-    unknown: Activity
+    unknown: Activity,
   };
 
   const RiskIcon = riskIcons[data.risk];
@@ -78,7 +78,7 @@ export default function OvertrainingAlert() {
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-success/80" />
+              <CheckCircle className="w-5 h-5 text-success" />
             </div>
             <div>
               <p className="font-medium text-foreground">Charge optimale</p>
@@ -91,11 +91,11 @@ export default function OvertrainingAlert() {
   }
 
   return (
-    <Card className={`border ${riskColors[data.risk].split(' ')[1]}`}>
+    <Card className={`border ${riskColors[data.risk]}`}>
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
           <RiskIcon className={`w-5 h-5 ${riskColors[data.risk].split(' ')[2]}`} />
-          Alerte Surentraînement
+          Alerte Surentra\u00eenement
           <span className={`text-xs px-2 py-0.5 rounded-full ${riskColors[data.risk]}`}>
             Risque {riskLabels[data.risk]}
           </span>
@@ -106,21 +106,21 @@ export default function OvertrainingAlert() {
 
         {data.acwr && (
           <div className="grid grid-cols-3 gap-4">
-            <div className="text-center p-3 rounded-lg bg-background border border-border">
+            <div className="text-center p-3 rounded-lg bg-surface border border-border">
               <p className="text-2xl font-bold text-foreground">{data.acwr.toFixed(2)}</p>
               <p className="text-xs text-muted">ACWR</p>
             </div>
-            <div className="text-center p-3 rounded-lg bg-background border border-border">
+            <div className="text-center p-3 rounded-lg bg-surface border border-border">
               <div className="flex items-center justify-center gap-1">
-                <TrendingUp className="w-4 h-4 text-success/80" />
-                <p className="text-2xl font-bold text-success/80">{data.ctl}</p>
+                <TrendingUp className="w-4 h-4 text-success" />
+                <p className="text-2xl font-bold text-success">{data.ctl}</p>
               </div>
               <p className="text-xs text-muted">Fitness (CTL)</p>
             </div>
-            <div className="text-center p-3 rounded-lg bg-background border border-border">
+            <div className="text-center p-3 rounded-lg bg-surface border border-border">
               <div className="flex items-center justify-center gap-1">
-                <TrendingDown className="w-4 h-4 text-danger/80" />
-                <p className="text-2xl font-bold text-danger/80">{data.atl}</p>
+                <TrendingDown className="w-4 h-4 text-danger" />
+                <p className="text-2xl font-bold text-danger">{data.atl}</p>
               </div>
               <p className="text-xs text-muted">Fatigue (ATL)</p>
             </div>
@@ -129,7 +129,7 @@ export default function OvertrainingAlert() {
 
         <div className="text-center">
           <p className="text-lg font-semibold">
-            <span className={data.tsb > 0 ? 'text-success/80' : data.tsb < -10 ? 'text-danger/80' : 'text-warning/80'}>
+            <span className={data.tsb > 0 ? 'text-success' : data.tsb < -10 ? 'text-danger' : 'text-warning'}>
               {data.tsb > 0 ? '+' : ''}{data.tsb}
             </span>
           </p>
@@ -150,16 +150,16 @@ export default function OvertrainingAlert() {
 
         <div className="flex gap-2 text-xs text-muted">
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-success/80" />
+            <div className="w-2 h-2 rounded-full bg-success" />
             <span>Optimal: 0.8-1.3</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-warning/80" />
-            <span>Modéré: 1.3-1.5</span>
+            <div className="w-2 h-2 rounded-full bg-warning" />
+            <span>Mod\u00e9r\u00e9: 1.3-1.5</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-danger/80" />
-            <span>Risque: {'>'}1.5</span>
+            <div className="w-2 h-2 rounded-full bg-danger" />
+            <span>Risque: &gt;1.5</span>
           </div>
         </div>
       </CardContent>

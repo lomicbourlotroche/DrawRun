@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, LegacyTabs as Tabs } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { Zones, HRZone, SpeedZone } from '@/types';
-import { Activity, Timer, TrendingUp } from 'lucide-react';
+import { Activity, Timer, TrendingUp } from '@/components/ui/icons';
 
 const ZONE_COLORS = [
   'var(--muted)', // Zone 1 - Gray

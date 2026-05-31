@@ -1,12 +1,10 @@
 'use client';
 
-import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent, CircularProgress } from '@/components/ui';
+import React, { useState } from 'react';
+import { Card, CardHeader, CardTitle, CardContent, CircularProgress, Modal, Input, Button } from '@/components/ui';
 import { calculateReadinessColor } from '@/lib/utils';
 import type { Readiness } from '@/types';
-import { Heart, Brain, Moon, Activity, Plus } from 'lucide-react';
-import { useState } from 'react';
-import { Modal, Input, Button } from '@/components/ui';
+import { Heart, Brain, Moon, Activity, Plus } from '@/components/ui/icons';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { useDashboardStore } from '@/stores';
@@ -29,13 +27,12 @@ export function ReadinessCard({ readiness, isLoading }: ReadinessCardProps) {
     try {
       if (hrvValue) await api.logHrv(parseFloat(hrvValue));
       if (sleepValue) await api.logSleep(parseFloat(sleepValue));
-      
-      toast.success('Données vitales enregistrées');
+
+      toast.success('Donn\u00e9es vitales enregistr\u00e9es');
       setIsModalOpen(false);
       setHrvValue('');
       setSleepValue('');
-      
-      // Refresh dashboard data
+
       fetchPmcData();
     } catch (error) {
       toast.error('Erreur lors de l\'enregistrement');
@@ -52,10 +49,10 @@ export function ReadinessCard({ readiness, isLoading }: ReadinessCardProps) {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-6">
-            <div className="w-28 h-28 rounded-full bg-background animate-pulse" />
+            <div className="w-28 h-28 rounded-full bg-surface animate-pulse" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 w-24 bg-background rounded animate-pulse" />
-              <div className="h-3 w-32 bg-background rounded animate-pulse" />
+              <div className="h-4 w-24 bg-surface rounded animate-pulse" />
+              <div className="h-3 w-32 bg-surface rounded animate-pulse" />
             </div>
           </div>
         </CardContent>
@@ -70,7 +67,7 @@ export function ReadinessCard({ readiness, isLoading }: ReadinessCardProps) {
           <CardTitle>Readiness</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted text-sm">Données non disponibles</p>
+          <p className="text-muted text-sm">Donn\u00e9es non disponibles</p>
         </CardContent>
       </Card>
     );
@@ -93,13 +90,13 @@ export function ReadinessCard({ readiness, isLoading }: ReadinessCardProps) {
   ];
 
   return (
-    <Card className="relative overflow-hidden group">
+    <Card className="relative overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle>Readiness</CardTitle>
-        <button 
+        <button
           onClick={() => setIsModalOpen(true)}
           type="button"
-          className="p-1.5 rounded-full bg-primary-50 text-primary-600 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary-100"
+          className="p-1.5 rounded-full bg-primary/10 text-primary opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/20"
           title="Enregistrer HRV / Sommeil"
         >
           <Plus className="w-4 h-4" />
@@ -115,12 +112,12 @@ export function ReadinessCard({ readiness, isLoading }: ReadinessCardProps) {
             color={color}
             label={statusLabels[readiness.status]}
           />
-          
+
           <div className="flex-1 grid grid-cols-2 gap-3">
             {factors.map((factor) => (
               <div
                 key={factor.label}
-                className="flex items-center gap-2 p-2 rounded-lg bg-background"
+                className="flex items-center gap-2 p-2 rounded-lg bg-surface"
               >
                 <factor.icon className="w-4 h-4" style={{ color: factor.color }} />
                 <div>
@@ -162,9 +159,9 @@ export function ReadinessCard({ readiness, isLoading }: ReadinessCardProps) {
               <Button variant="ghost" type="button" onClick={() => setIsModalOpen(false)}>
                 Annuler
               </Button>
-              <Button 
-                variant="primary" 
-                type="submit" 
+              <Button
+                variant="primary"
+                type="submit"
                 isLoading={isSubmitting}
                 disabled={!hrvValue && !sleepValue}
               >

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Card, Select, EmptyState } from '@/components/ui';
 import { formatDate, formatDistance, getSportColor } from '@/lib/utils';
 import type { Activity } from '@/types';
-import { Clock, Heart, TrendingUp, ChevronRight, Search, RefreshCw, ChevronDown, Mountain } from 'lucide-react';
+import { Clock, Heart, TrendingUp, ChevronRight, Search, RefreshCw, ChevronDown, Mountain } from '@/components/ui/icons';
 import { DrawButton } from '@/components/features/social/DrawButton';
 
 const PAGE_SIZE = 20;

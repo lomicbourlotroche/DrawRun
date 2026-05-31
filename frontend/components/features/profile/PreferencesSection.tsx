@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent, Button } from '@/components/ui';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { api } from '@/lib/api';
-import { Sun, Moon, Monitor, Globe, Layout } from 'lucide-react';
+import { Sun, Moon, Monitor, Globe, Layout } from '@/components/ui/icons';
 import { toast } from 'sonner';
 
 export function PreferencesSection() {

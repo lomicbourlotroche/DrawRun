@@ -1,6 +1,6 @@
 'use client';
 
-import { Heart, AlertCircle } from 'lucide-react';
+import { Heart, AlertCircle } from '@/components/ui/icons';
 import { Card, CardHeader, CardTitle, CardContent, Badge, Skeleton, Progress } from '@/components/ui';
 
 interface HRVData {

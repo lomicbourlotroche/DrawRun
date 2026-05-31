@@ -1,21 +1,21 @@
 'use client';
 
 import { useTheme } from '../providers/ThemeProvider';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon } from '@/components/ui/icons';
 
 export function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme();
+  const { mode, toggleMode } = useTheme();
 
   return (
     <button
-      onClick={toggleTheme}
-      className="p-2 rounded-lg hover:bg-surface transition-colors"
-      title={theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
+      onClick={toggleMode}
+      className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted hover:text-primary hover:bg-primary-50 transition-colors"
+      title={mode === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
     >
-      {theme === 'dark' ? (
-        <Sun className="w-5 h-5 text-foreground" />
+      {mode === 'dark' ? (
+        <Sun className="w-4 h-4" />
       ) : (
-        <Moon className="w-5 h-5 text-foreground" />
+        <Moon className="w-4 h-4" />
       )}
     </button>
   );

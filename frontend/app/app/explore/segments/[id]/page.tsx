@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from '@/components/ui';
-import { Trophy, Timer, ChevronLeft, Share2 } from 'lucide-react';
+import { Trophy, Timer, ChevronLeft, Share2 } from '@/components/ui/icons';
 import { toast } from 'sonner';
 import { formatDuration } from '@/lib/utils';
 import { SegmentLeaderboard } from '@/components/features/explore/Segments';

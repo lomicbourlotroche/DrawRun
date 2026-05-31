@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button, Skeleton, GlassCard, GlassCardContent } from '@/components/ui';
 import { api } from '@/lib/api';
-import { Trophy, Sparkles } from 'lucide-react';
+import { Trophy, Sparkles } from '@/components/ui/icons';
 import { toast } from 'sonner';
 import {
   getModeInfo,

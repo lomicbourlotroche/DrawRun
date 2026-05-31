@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button, Avatar, Skeleton, GlassCard, GlassCardContent } from '@/components/ui';
 import type { SocialFeedItem } from '@/types';
 import CommentModal from '../modals/CommentModal';
-import { Flame, MapPin, Clock, TrendingUp, Heart, MessageCircle, ChevronRight } from 'lucide-react';
+import { Flame, MapPin, Clock, TrendingUp, Heart, MessageCircle, ChevronRight } from '@/components/ui/icons';
 import { toast } from 'sonner';
 import { useFeed, getSportGradient, formatPace } from '@/hooks/useSocial';
 import { SOCIAL_FEED_CONSTANTS } from '@/constants/social';

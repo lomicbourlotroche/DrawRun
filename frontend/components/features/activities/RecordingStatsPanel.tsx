@@ -1,5 +1,5 @@
 'use client';
-import { Mountain, TrendingUp, Heart, Gauge, Flag } from 'lucide-react';
+import { Mountain, TrendingUp, Heart, Gauge, Flag } from '@/components/ui/icons';
 import type { FilteredGPSPoint } from '@/lib/gpsFilter';
 import type { LapData } from '@/lib/offlineQueue';
 

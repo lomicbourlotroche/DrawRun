@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft } from '@/components/ui/icons';
 import { Button } from '@/components/ui';
 import { api } from '@/lib/api';
 import UploadStep from './UploadStep';

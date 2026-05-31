@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Calendar, Brain, TrendingUp, Target, Heart, Award, BarChart3, CheckCircle, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Calendar, Brain, TrendingUp, Target, Heart, Award, BarChart3, CheckCircle, AlertTriangle } from '@/components/ui/icons';
 
 export default function CoachingAdaptatifGuide() {
   const router = useRouter();
