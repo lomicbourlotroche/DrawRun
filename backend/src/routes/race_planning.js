@@ -628,9 +628,61 @@ router.post('/save', verifyToken, async (req, res) => {
 
         const { name, distance, targetPace, totalTime, elevationProfile, fatigue, splits, nutritionStrategy } = req.body;
 
-        if (!distance || !targetPace || !splits) {
+        // Validation
 
-            return res.status(400).json({ error: 'Distance, targetPace, and splits are required' });
+        const errors = [];
+
+        if (!distance || distance <= 0 || distance > 200) {
+
+            errors.push('Distance must be between 0.1 and 200 km');
+
+        }
+
+        if (!targetPace || targetPace <= 0 || targetPace > 600) {
+
+            errors.push('Target pace must be between 1 and 600 seconds per km');
+
+        }
+
+        if (!splits || !Array.isArray(splits) || splits.length === 0) {
+
+            errors.push('Splits must be a non-empty array');
+
+        } else {
+
+            // Validate each split
+
+            for (let i = 0; i < splits.length; i++) {
+
+                const split = splits[i];
+
+                if (!split.km || !split.pace || !split.splitTime) {
+
+                    errors.push(`Split ${i + 1} is missing required fields (km, pace, splitTime)`);
+
+                    break;
+
+                }
+
+            }
+
+        }
+
+        if (fatigue !== undefined && (fatigue < 0 || fatigue > 10)) {
+
+            errors.push('Fatigue must be between 0 and 10');
+
+        }
+
+        if (elevationProfile && !['flat', 'rolling', 'mountainous'].includes(elevationProfile)) {
+
+            errors.push('Elevation profile must be flat, rolling, or mountainous');
+
+        }
+
+        if (errors.length > 0) {
+
+            return res.status(400).json({ error: 'Validation failed', details: errors });
 
         }
 
@@ -682,7 +734,7 @@ router.post('/save', verifyToken, async (req, res) => {
 
  * GET /api/race-planning/list
 
- * List all saved race plans for the user
+ * List all saved race plans for the user with pagination
 
  */
 
@@ -692,15 +744,33 @@ router.get('/list', verifyToken, async (req, res) => {
 
         const userId = req.user.id;
 
-        const { getUserDb, dbAllUser } = require('../database');
+        const { getUserDb, dbAllUser, dbGetUser } = require('../database');
 
         const userDb = await getUserDb(userId);
 
-        const plans = await dbAllUser(userDb, `
+        // Pagination parameters
 
-            SELECT * FROM race_plans WHERE user_id = ? ORDER BY created_at DESC
+        const page = parseInt(req.query.page) || 1;
+
+        const limit = parseInt(req.query.limit) || 20;
+
+        const offset = (page - 1) * limit;
+
+        // Get total count for pagination
+
+        const countResult = await dbGetUser(userDb, `
+
+            SELECT COUNT(*) as total FROM race_plans WHERE user_id = ?
 
         `, [userId]);
+
+        const total = countResult?.total || 0;
+
+        const plans = await dbAllUser(userDb, `
+
+            SELECT * FROM race_plans WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?
+
+        `, [userId, limit, offset]);
 
         const parsedPlans = plans.map(p => ({
 
@@ -712,7 +782,27 @@ router.get('/list', verifyToken, async (req, res) => {
 
         }));
 
-        res.json(parsedPlans);
+        res.json({
+
+            plans: parsedPlans,
+
+            pagination: {
+
+                page,
+
+                limit,
+
+                total,
+
+                pages: Math.ceil(total / limit),
+
+                hasNext: offset + limit < total,
+
+                hasPrev: page > 1,
+
+            },
+
+        });
 
     } catch (error) {
 

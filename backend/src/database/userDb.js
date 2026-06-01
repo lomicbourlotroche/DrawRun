@@ -346,6 +346,25 @@ function initUserSchema(userDb) {
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
+
+    userDb.run(`
+        CREATE TABLE IF NOT EXISTS race_plans (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            distance REAL NOT NULL,
+            target_pace REAL NOT NULL,
+            total_time REAL,
+            elevation_profile TEXT DEFAULT 'flat',
+            fatigue REAL DEFAULT 0,
+            splits TEXT NOT NULL,
+            nutrition_strategy TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    userDb.run('CREATE INDEX IF NOT EXISTS idx_race_plans_user ON race_plans(user_id)');
 }
 
 // Ensure user schema compatibility

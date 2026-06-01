@@ -215,6 +215,7 @@ function formatTime(seconds: number): string {
  * @returns Formatted pace string
  */
 function formatPace(pace: number): string {
+  if (!pace || pace <= 0) return '--:--';
   const mins = Math.floor(pace / 60);
   const secs = Math.round(pace % 60);
   return `${mins}:${secs.toString().padStart(2, '0')}/km`;

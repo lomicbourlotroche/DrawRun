@@ -41,7 +41,7 @@ jest.mock('../src/services/userConstants.service', () => ({
     resolveUserConstants: jest.fn(() => Promise.resolve(mockConstants)),
 }));
 
-const { getUserDb, dbAllUser, dbRunUser, dbGetMain } = require('../src/database');
+const { getUserDb, dbAllUser, dbRunUser, dbGetMain, dbGetUser } = require('../src/database');
 const { resolveUserConstants } = require('../src/services/userConstants.service');
 
 const app = express();
@@ -199,7 +199,23 @@ describe('Race Planning Routes', () => {
                 .post('/api/race-planning/save')
                 .send({});
             expect(res.status).toBe(400);
-            expect(res.body.error).toContain('Distance');
+            expect(res.body.error).toContain('Validation failed');
+        });
+
+        test('should return 400 when distance is invalid', async () => {
+            const res = await request(app)
+                .post('/api/race-planning/save')
+                .send({ distance: 0, targetPace: 270, splits: [] });
+            expect(res.status).toBe(400);
+            expect(res.body.details).toContain('Distance must be between 0.1 and 200 km');
+        });
+
+        test('should return 400 when splits are invalid', async () => {
+            const res = await request(app)
+                .post('/api/race-planning/save')
+                .send({ distance: 10, targetPace: 270, splits: [] });
+            expect(res.status).toBe(400);
+            expect(res.body.details).toContain('Splits must be a non-empty array');
         });
 
         test('should save a race plan', async () => {
@@ -218,17 +234,39 @@ describe('Race Planning Routes', () => {
     });
 
     describe('GET /api/race-planning/list', () => {
-        test('should list saved race plans', async () => {
+        test('should list saved race plans with pagination', async () => {
             getUserDb.mockResolvedValue({});
+            dbGetUser.mockResolvedValue({ total: 1 });
             dbAllUser.mockResolvedValue([
                 { id: 1, user_id: 1, name: 'Plan 10km', distance: 10, target_pace: 270, total_time: 2700, elevation_profile: 'flat', fatigue: 0, splits: JSON.stringify([{ km: 1 }]), nutrition_strategy: null, created_at: '2026-01-01' },
             ]);
             const res = await request(app)
                 .get('/api/race-planning/list');
             expect(res.status).toBe(200);
-            expect(Array.isArray(res.body)).toBe(true);
-            expect(res.body.length).toBe(1);
-            expect(res.body[0].splits).toBeDefined();
+            expect(res.body.plans).toBeDefined();
+            expect(Array.isArray(res.body.plans)).toBe(true);
+            expect(res.body.plans.length).toBe(1);
+            expect(res.body.plans[0].splits).toBeDefined();
+            expect(res.body.pagination).toBeDefined();
+            expect(res.body.pagination.page).toBe(1);
+            expect(res.body.pagination.limit).toBe(20);
+            expect(res.body.pagination.total).toBe(1);
+        });
+
+        test('should list saved race plans with custom pagination', async () => {
+            getUserDb.mockResolvedValue({});
+            dbGetUser.mockResolvedValue({ total: 25 });
+            dbAllUser.mockResolvedValue([
+                { id: 1, user_id: 1, name: 'Plan 1', distance: 10, target_pace: 270, total_time: 2700, elevation_profile: 'flat', fatigue: 0, splits: JSON.stringify([{ km: 1 }]), nutrition_strategy: null, created_at: '2026-01-01' },
+                { id: 2, user_id: 1, name: 'Plan 2', distance: 21, target_pace: 300, total_time: 4200, elevation_profile: 'rolling', fatigue: 2, splits: JSON.stringify([{ km: 1 }]), nutrition_strategy: null, created_at: '2026-01-02' },
+            ]);
+            const res = await request(app)
+                .get('/api/race-planning/list?page=1&limit=10');
+            expect(res.status).toBe(200);
+            expect(res.body.pagination.page).toBe(1);
+            expect(res.body.pagination.limit).toBe(10);
+            expect(res.body.pagination.pages).toBe(3);
+            expect(res.body.pagination.hasNext).toBe(true);
         });
     });
 

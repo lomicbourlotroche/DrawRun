@@ -170,11 +170,3 @@ export function encodePolyline(
 
   return result;
 }
-
-
-
-
-
-
-
-

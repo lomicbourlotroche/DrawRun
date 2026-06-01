@@ -45,7 +45,7 @@ describe('GlassCard component', () => {
     
     const card = screen.getByText('Content');
     expect(card.className).toContain('hover:shadow-lg');
-    expect(card.className).toContain('hover:border-primary-200/50');
+    expect(card.className).toContain('hover:border-primary/20');
     expect(card.className).toContain('hover:-translate-y-0.5');
   });
 
