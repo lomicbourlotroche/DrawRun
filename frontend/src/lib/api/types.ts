@@ -73,11 +73,17 @@ export interface SyncSourceStatus {
 
 export interface SyncStatus {
   garmin?: SyncSourceStatus;
+  decathlon?: SyncSourceStatus;
+  suunto?: SyncSourceStatus;
   available?: {
     garmin: boolean;
   };
   garmin_status?: 'idle' | 'syncing' | 'error';
   garmin_last_sync?: string | null;
+  decathlon_status?: 'idle' | 'syncing' | 'error';
+  decathlon_last_sync?: string | null;
+  suunto_status?: 'idle' | 'syncing' | 'error';
+  suunto_last_sync?: string | null;
 }
 
 // 

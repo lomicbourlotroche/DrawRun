@@ -71,10 +71,10 @@ describe('RouteDetailPopup', () => {
     expect(onViewDetails).toHaveBeenCalledOnce();
   });
 
-  it('calls onClose when X button clicked', () => {
+  it('calls onClose when Fermer button clicked', () => {
     const onClose = vi.fn();
     render(<RouteDetailPopup route={mockRoute} onClose={onClose} onViewDetails={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: '' }));
+    fireEvent.click(screen.getByRole('button', { name: /Fermer/i }));
     expect(onClose).toHaveBeenCalledOnce();
   });
 

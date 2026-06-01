@@ -60,17 +60,19 @@ export default function RouteDetailPopup({
   const diff = DIFFICULTY_LABELS[route.difficulty || 'medium'];
 
   return (
-    <div className="absolute top-20 left-4 right-4 sm:left-4 sm:w-72 sm:right-auto z-[600] bg-surface/95 backdrop-blur-md rounded-xl shadow-xl border border-border overflow-hidden">
+    <div className="absolute top-20 left-4 right-4 sm:left-4 sm:w-72 sm:right-auto z-[600] bg-surface/95 backdrop-blur-md rounded-xl shadow-xl border border-border overflow-hidden" role="dialog" aria-labelledby="route-detail-title" aria-modal="false">
       <div className="flex items-center justify-between p-3 border-b border-border">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-lg">{ACTIVITY_ICONS[route.activity_type] || '📍'}</span>
-          <h3 className="font-semibold text-sm truncate">{route.name}</h3>
+          <span className="text-lg" aria-hidden="true">{ACTIVITY_ICONS[route.activity_type] || '📍'}</span>
+          <h3 id="route-detail-title" className="font-semibold text-sm truncate">{route.name}</h3>
         </div>
         <button
           onClick={onClose}
-          className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-surface transition-colors shrink-0"
+          className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-surface transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-primary/50"
+          aria-label="Fermer"
+          type="button"
         >
-          <X className="w-4 h-4 text-muted-foreground" />
+          <X className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
         </button>
       </div>
 

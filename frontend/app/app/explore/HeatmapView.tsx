@@ -55,8 +55,10 @@ export default function HeatmapView({
             : 'bg-surface/90 backdrop-blur-sm border-border hover:bg-surface text-muted-foreground'
         }`}
         title="Heatmap"
+        aria-label={showHeatmap ? 'Désactiver la heatmap' : 'Activer la heatmap'}
+        aria-pressed={showHeatmap}
       >
-        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
           <circle cx="12" cy="12" r="3" />
           <circle cx="12" cy="12" r="6" strokeDasharray="2 2" />
           <circle cx="12" cy="12" r="10" strokeDasharray="2 4" />
@@ -70,8 +72,10 @@ export default function HeatmapView({
             : 'bg-surface/90 backdrop-blur-sm border-border hover:bg-surface text-muted-foreground'
         }`}
         title="Traces de la communauté"
+        aria-label={showCommunityTraces ? 'Masquer les traces de la communauté' : 'Afficher les traces de la communauté'}
+        aria-pressed={showCommunityTraces}
       >
-        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 5h16M4 12h16M4 19h7" />
         </svg>
       </button>

@@ -13,8 +13,8 @@ interface RouteDetail {
   name: string;
   description?: string;
   distance: number;
-  elevation_gain: number;
-  elevation_loss: number;
+  elevation_gain?: number;
+  elevation_loss?: number;
   activity_type: string;
   estimated_duration?: number;
   difficulty?: string;
@@ -119,8 +119,9 @@ export default function RouteDetailPage() {
           variant="ghost" 
           className="mb-4"
           onClick={() => window.history.back()}
+          aria-label="Retour à la page précédente"
         >
-          <ChevronLeft className="w-4 h-4 mr-2" />
+          <ChevronLeft className="w-4 h-4 mr-2" aria-hidden="true" />
           Retour
         </Button>
 
@@ -149,16 +150,17 @@ export default function RouteDetailPage() {
               variant={isFavorited ? 'default' : 'outline'} 
               size="sm"
               onClick={handleFavoriteToggle}
+              aria-label={isFavorited ? 'Retirer des favoris' : 'Ajouter aux favoris'}
             >
-              <Heart className={`w-4 h-4 mr-2 ${isFavorited ? 'fill-current' : ''}`} />
+              <Heart className={`w-4 h-4 mr-2 ${isFavorited ? 'fill-current' : ''}`} aria-hidden="true" />
               {isFavorited ? 'Favori' : 'Ajouter aux favoris'}
             </Button>
             <Button variant="outline" size="sm" onClick={() => {
               const url = `${window.location.origin}/app/explore/routes/${routeId}`;
               navigator.clipboard.writeText(url);
               toast.success('Lien copié');
-            }}>
-              <Share2 className="w-4 h-4 mr-2" />
+            }} aria-label="Partager ce parcours">
+              <Share2 className="w-4 h-4 mr-2" aria-hidden="true" />
               Partager
             </Button>
           </div>
@@ -235,8 +237,8 @@ export default function RouteDetailPage() {
 
       {/* Actions */}
       <div className="flex gap-4">
-        <Button size="lg" className="flex-1" onClick={handleUseRoute}>
-          <Navigation className="w-5 h-5 mr-2" />
+        <Button size="lg" className="flex-1" onClick={handleUseRoute} aria-label="Utiliser ce parcours">
+          <Navigation className="w-5 h-5 mr-2" aria-hidden="true" />
           Utiliser ce parcours
         </Button>
       </div>

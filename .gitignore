@@ -141,4 +141,10 @@ frontend/src/NUL
 page-snapshot.md
 snapshot-home.txt
 
+# Zip archives
+*.zip
+
+# YAML config files (temporary)
+login-page.yml
+
 node_modules

@@ -228,6 +228,12 @@ function initUserSchema(userDb) {
             warmup_time INTEGER,
             main_time INTEGER,
             cooldown_time INTEGER,
+            expected_tss REAL,
+            progression_factor REAL DEFAULT 1.0,
+            phase TEXT,
+            scheduled_date DATETIME,
+            status TEXT,
+            adapted INTEGER DEFAULT 0,
             completed INTEGER DEFAULT 0,
             completion_date DATETIME,
             actual_distance REAL,
@@ -378,6 +384,29 @@ function ensureUserSchemaCompatibility(userDb) {
             read_at DATETIME,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )`,
+        `CREATE TABLE IF NOT EXISTS activity_streams (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            activity_id INTEGER NOT NULL,
+            stream_type TEXT NOT NULL,
+            data BLOB,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(activity_id, stream_type)
+        )`,
+        `CREATE TABLE IF NOT EXISTS activity_splits (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            activity_id INTEGER NOT NULL,
+            split_number INTEGER NOT NULL,
+            distance REAL,
+            elapsed_time INTEGER,
+            moving_time INTEGER,
+            average_speed REAL,
+            average_heartrate REAL,
+            max_heartrate REAL,
+            elevation_difference REAL,
+            pace_zone TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(activity_id, split_number)
+        )`,
     ];
 
     for (const stmt of missingTables) {
@@ -389,6 +418,15 @@ function ensureUserSchemaCompatibility(userDb) {
     try { userDb.run('ALTER TABLE notifications ADD COLUMN title TEXT'); } catch (_) {}
     try { userDb.run('ALTER TABLE activities ADD COLUMN gear_id INTEGER'); } catch (_) {}
     try { userDb.run('ALTER TABLE activities ADD COLUMN efficiency_factor REAL'); } catch (_) {}
+    try { userDb.run('ALTER TABLE activities ADD COLUMN share_to_friends INTEGER DEFAULT 0'); } catch (_) {}
+    try { userDb.run('ALTER TABLE activities ADD COLUMN share_to_groups TEXT'); } catch (_) {}
+    try { userDb.run('ALTER TABLE activities ADD COLUMN shared_data_fields TEXT'); } catch (_) {}
+    try { userDb.run('ALTER TABLE training_sessions ADD COLUMN expected_tss REAL'); } catch (_) {}
+    try { userDb.run('ALTER TABLE training_sessions ADD COLUMN progression_factor REAL DEFAULT 1.0'); } catch (_) {}
+    try { userDb.run('ALTER TABLE training_sessions ADD COLUMN phase TEXT'); } catch (_) {}
+    try { userDb.run('ALTER TABLE training_sessions ADD COLUMN scheduled_date DATETIME'); } catch (_) {}
+    try { userDb.run('ALTER TABLE training_sessions ADD COLUMN status TEXT'); } catch (_) {}
+    try { userDb.run('ALTER TABLE training_sessions ADD COLUMN adapted INTEGER DEFAULT 0'); } catch (_) {}
 
     try {
         const checkStmt = userDb.prepare(

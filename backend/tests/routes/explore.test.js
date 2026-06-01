@@ -70,7 +70,14 @@ describe('Explore Routes', () => {
                 const response = await request(app)
                     .post('/api/explore/segments')
                     .set('Authorization', 'Bearer test-token')
-                    .send({ name: 'Test' });
+                    .send({
+                        name: 'Test Segment',
+                        start_lat: 48.8566,
+                        start_lng: 2.3522,
+                        end_lat: 48.8570,
+                        end_lng: 2.3526,
+                        distance: 100,
+                    });
 
                 expect(response.status).toBe(400);
                 expect(response.body.success).toBe(false);

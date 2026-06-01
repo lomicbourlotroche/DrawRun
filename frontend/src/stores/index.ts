@@ -36,6 +36,8 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   has_garmin: boolean;
+  has_decathlon: boolean;
+  has_suunto: boolean;
   
   login: (email: string, password: string, totpCode?: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
@@ -54,6 +56,8 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       error: null,
       has_garmin: false,
+      has_decathlon: false,
+      has_suunto: false,
 
       login: async (email: string, password: string, totpCode?: string) => {
         set({ isLoading: true, error: null });
@@ -72,13 +76,16 @@ export const useAuthStore = create<AuthState>()(
 
           const hasGarmin =
             response.has_garmin !== undefined ? !!response.has_garmin : !!response.user?.has_garmin;
+          const hasDecathlon =
+            response.has_decathlon !== undefined ? !!response.has_decathlon : !!response.user?.has_decathlon;
 
-          let syncStatus = { has_garmin: hasGarmin };
+          let syncStatus = { has_garmin: hasGarmin, has_decathlon: hasDecathlon };
 
           try {
             const status = await api.getSyncStatus();
             syncStatus = {
               has_garmin: hasGarmin || !!status.garmin_last_sync,
+              has_decathlon: hasDecathlon || !!status.decathlon_last_sync,
             };
           } catch (syncError) {
             logger.warn('Could not fetch sync status after login', {
@@ -89,6 +96,7 @@ export const useAuthStore = create<AuthState>()(
           const userWithSyncFlags = {
             ...response.user,
             has_garmin: syncStatus.has_garmin,
+            has_decathlon: syncStatus.has_decathlon,
           };
 
           set({
@@ -135,6 +143,8 @@ export const useAuthStore = create<AuthState>()(
           user: null,
           token: null,
           has_garmin: false,
+          has_decathlon: false,
+          has_suunto: false,
         });
       },
 
@@ -147,7 +157,7 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      setSyncStatus: (status: { has_garmin: boolean }) => {
+      setSyncStatus: (status: { has_garmin: boolean; has_decathlon?: boolean; has_suunto?: boolean }) => {
         set(status);
       },
     }),
@@ -159,6 +169,8 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         token: state.token,
         has_garmin: state.has_garmin,
+        has_decathlon: state.has_decathlon,
+        has_suunto: state.has_suunto,
       }),
       onRehydrateStorage: () => (state) => {
         if (state?.token) {

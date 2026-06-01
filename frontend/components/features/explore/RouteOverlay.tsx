@@ -49,6 +49,17 @@ export default function RouteOverlay({ map, routes }: RouteOverlayProps) {
 
       layersRef.current.set(`route_${route.id}`, polyline);
     });
+
+    // Cleanup all route layers on unmount
+    return () => {
+      layersRef.current.forEach((layer, key) => {
+        if (key.startsWith('route_')) {
+          map.removeLayer(layer);
+          layersRef.current.delete(key);
+        }
+      });
+      layersRef.current.clear();
+    };
   }, [routes, map]);
 
   return null;

@@ -1,13 +1,13 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent, Button, Input, Modal } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Modal } from '@/components/ui';
 import { useAuthStore } from '@/stores';
 import { api } from '@/lib/api';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import type { User as UserType } from '@/types';
-import { LogOut, Trash2, AlertTriangle, Lock, Shield, Monitor, Moon, Sun, Globe, Layout, Bell, BellOff, Settings, ChevronLeft, Check, Flag } from '@/components/ui/icons';
+import { LogOut, Trash2, AlertTriangle, Lock, Shield, Monitor, Moon, Sun, Globe, Layout, Bell, BellOff, Settings, ChevronLeft, Check, Flag, RefreshCw, Watch } from '@/components/ui/icons';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
@@ -35,6 +35,8 @@ export default function SettingsPage() {
   const [twoFACode, setTwoFACode] = useState('');
   const [is2FALoading, setIs2FALoading] = useState(false);
   const [twoFAStep, setTwoFAStep] = useState<'setup' | 'verify' | 'disable'>('setup');
+  const [syncStatus, setSyncStatus] = useState<{ lastSync?: string; provider?: string; status?: string; garmin_status?: string } | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const loadPreferences = useCallback(async () => {
     try { const profile = await api.getProfile(); setTwoFAEnabled(!!(profile as UserType).twofa_enabled); } catch {}
@@ -55,6 +57,10 @@ export default function SettingsPage() {
       try { const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription(); setPushEnabled(!!sub); setPushSubscription(sub); } catch {}
     };
     check();
+  }, []);
+
+  useEffect(() => {
+    api.getSyncStatus().then((s) => setSyncStatus(s as unknown as { lastSync?: string; provider?: string; status?: string; garmin_status?: string })).catch(() => {});
   }, []);
 
   function urlBase64ToUint8Array(base64String: string): Uint8Array {
@@ -143,21 +149,84 @@ export default function SettingsPage() {
     catch { toast.error('Code invalide'); } finally { setIs2FALoading(false); }
   };
 
-  return (
-    <div className="space-y-6 animate-fade-in max-w-3xl mx-auto pb-8">
-      <div className="flex items-center gap-3 pt-2">
-        <Link href="/app/profile" className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200">
-          <ChevronLeft className="w-4 h-4" />Retour au profil
-        </Link>
-      </div>
-      <div>
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2 tracking-tight"><Settings className="w-6 h-6 text-primary" />Param\u00e8tres</h1>
-        <p className="text-muted-foreground mt-1.5">Configurez votre compte et vos pr\u00e9f\u00e9rences</p>
-      </div>
+  const handleFullResync = async () => {
+    setIsSyncing(true);
+    try {
+      await api.sync(undefined, undefined, undefined, 730);
+      toast.success('R\u00e9-synchronisation compl\u00e8te lanc\u00e9e (2 ans d\'historique)');
+      const status = await api.getSyncStatus();
+      setSyncStatus(status as unknown as { lastSync?: string; provider?: string; status?: string; garmin_status?: string });
+    } catch {
+      toast.error('Erreur de synchronisation');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
-      <GlassCard>
-        <GlassCardHeader><GlassCardTitle className="flex items-center gap-2"><Monitor className="w-5 h-5 text-primary" />Apparence</GlassCardTitle></GlassCardHeader>
-        <GlassCardContent className="space-y-6">
+  const isSyncingGarmin = syncStatus?.garmin_status === 'syncing' || isSyncing;
+  const hasProvider = syncStatus?.provider || (syncStatus as Record<string, unknown>)?.garmin_last_sync;
+  const lastSyncDate = syncStatus?.lastSync || (syncStatus as Record<string, unknown>)?.garmin_last_sync as string | undefined;
+
+  return (
+    <div className="animate-fade-in max-w-4xl mx-auto space-y-5 pb-8">
+      <Card variant="glass" accent="primary" className="animate-slide-up delay-100">
+        <div className="flex items-center gap-3">
+          <Link href="/app/profile" className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors duration-200">
+            <ChevronLeft className="w-4 h-4" />Retour au profil
+          </Link>
+        </div>
+        <div className="flex items-center gap-3 mt-3">
+          <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+            <Settings className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">Param\u00e8tres</h1>
+            <p className="text-muted-foreground text-sm mt-0.5">Configurez votre compte et vos pr\u00e9f\u00e9rences</p>
+          </div>
+        </div>
+      </Card>
+
+      {/* Synchronisation */}
+      <Card variant="glass" accent="primary" className="animate-slide-up delay-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><RefreshCw className={`w-5 h-5 ${isSyncingGarmin ? 'animate-spin text-primary' : 'text-primary'}`} />Synchronisation</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 rounded-xl bg-surface border border-border">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/10">
+                <Watch className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-medium text-sm text-foreground">Garmin</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className={`w-2 h-2 rounded-full ${isSyncingGarmin ? 'bg-primary animate-pulse' : syncStatus?.garmin_status === 'error' ? 'bg-danger' : 'bg-success'}`} />
+                  <p className="text-xs text-muted">
+                    {isSyncingGarmin
+                      ? 'Synchronisation en cours...'
+                      : syncStatus?.garmin_status === 'error'
+                        ? 'Erreur de synchronisation'
+                        : lastSyncDate
+                          ? `Derni\u00e8re sync : ${new Date(lastSyncDate).toLocaleString('fr-FR')}`
+                          : 'Jamais synchronis\u00e9'}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <Button variant="secondary" size="sm" onClick={handleFullResync} isLoading={isSyncingGarmin}>
+              <RefreshCw className={`w-4 h-4 ${isSyncingGarmin ? 'animate-spin' : ''} mr-1.5`} />
+              R\u00e9-sync complet
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Apparence */}
+      <Card variant="glass" accent="primary" className="animate-slide-up delay-300">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Monitor className="w-5 h-5 text-primary" />Apparence</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
           <div>
             <div className="flex items-center justify-between mb-3">
               <label className="text-sm font-medium text-foreground">Th\u00e8me</label>
@@ -191,16 +260,6 @@ export default function SettingsPage() {
             </div>
           </div>
           <div>
-            <label className="text-sm font-medium mb-3 block text-foreground flex items-center gap-2"><Globe className="w-4 h-4 text-muted" />Langue</label>
-            <div className="grid grid-cols-2 gap-3">
-              {([{ id: 'fr', label: 'Fran\u00e7ais', flag: <Flag className="w-5 h-5 text-primary" /> }, { id: 'en', label: 'English', flag: <Globe className="w-5 h-5 text-muted" /> }]).map(l => (
-                <button key={l.id} onClick={() => handleLanguageChange(l.id)} className={`p-4 rounded-xl border-2 transition-all text-left ${language === l.id ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/40'}`}>
-                  <div className="flex items-center justify-between"><div className="flex items-center gap-2"><span className="text-lg">{l.flag}</span><p className="text-sm font-medium text-foreground">{l.label}</p></div>{language === l.id && <Check className="w-4 h-4 text-primary" />}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
             <label className="text-sm font-medium mb-3 block text-foreground flex items-center gap-2"><Layout className="w-4 h-4 text-muted" />Densit\u00e9 de l&apos;interface</label>
             <div className="grid grid-cols-3 gap-3">
               {([{ id: 'compact' as const, label: 'Compact', sub: "Plus d'infos" }, { id: 'normal' as const, label: 'Normal', sub: '\u00c9quilibr\u00e9' }, { id: 'comfortable' as const, label: 'A\u00e9r\u00e9', sub: "Plus d'espace" }]).map(d => (
@@ -210,12 +269,31 @@ export default function SettingsPage() {
               ))}
             </div>
           </div>
-        </GlassCardContent>
-      </GlassCard>
+        </CardContent>
+      </Card>
 
-      <GlassCard>
-        <GlassCardHeader><GlassCardTitle className="flex items-center gap-2"><Bell className="w-5 h-5 text-primary" />Notifications</GlassCardTitle></GlassCardHeader>
-        <GlassCardContent>
+      {/* Langue */}
+      <Card variant="glass" accent="info" className="animate-slide-up delay-400">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Globe className="w-5 h-5 text-peak" />Langue</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-3">
+            {([{ id: 'fr', label: 'Fran\u00e7ais', flag: <Flag className="w-5 h-5 text-primary" /> }, { id: 'en', label: 'English', flag: <Globe className="w-5 h-5 text-muted" /> }]).map(l => (
+              <button key={l.id} onClick={() => handleLanguageChange(l.id)} className={`p-4 rounded-xl border-2 transition-all text-left ${language === l.id ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/40'}`}>
+                <div className="flex items-center justify-between"><div className="flex items-center gap-2"><span className="text-lg">{l.flag}</span><p className="text-sm font-medium text-foreground">{l.label}</p></div>{language === l.id && <Check className="w-4 h-4 text-primary" />}</div>
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Notifications */}
+      <Card variant="glass" accent="primary" className="animate-slide-up delay-500">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Bell className="w-5 h-5 text-primary" />Notifications</CardTitle>
+        </CardHeader>
+        <CardContent>
           <div className="flex items-center justify-between p-4 rounded-xl bg-surface border border-border">
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-xl ${pushEnabled ? 'bg-success/10' : 'bg-border'}`}>{pushEnabled ? <Bell className="w-5 h-5 text-success" /> : <BellOff className="w-5 h-5 text-muted" />}</div>
@@ -226,12 +304,15 @@ export default function SettingsPage() {
             </button>
           </div>
           <p className="text-xs text-muted mt-3">Recevez des alertes en temps r\u00e9el pour les demandes d&apos;ami, draws et commentaires.</p>
-        </GlassCardContent>
-      </GlassCard>
+        </CardContent>
+      </Card>
 
-      <GlassCard>
-        <GlassCardHeader><GlassCardTitle className="flex items-center gap-2"><Shield className="w-5 h-5 text-primary" />S\u00e9curit\u00e9</GlassCardTitle></GlassCardHeader>
-        <GlassCardContent className="space-y-3">
+      {/* S\u00e9curit\u00e9 */}
+      <Card variant="glass" accent="primary" className="animate-slide-up delay-600">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Shield className="w-5 h-5 text-primary" />S\u00e9curit\u00e9</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
           <div className="flex items-center justify-between p-4 rounded-xl bg-surface border border-border">
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-xl ${twoFAEnabled ? 'bg-success/10' : 'bg-border'}`}><Shield className={`w-5 h-5 ${twoFAEnabled ? 'text-success' : 'text-muted'}`} /></div>
@@ -245,12 +326,15 @@ export default function SettingsPage() {
             <div className="flex-1"><p className="font-medium text-sm text-foreground">Changer le mot de passe</p><p className="text-xs text-muted">Modifier votre mot de passe de connexion</p></div>
             <ChevronLeft className="w-4 h-4 text-muted rotate-180" />
           </button>
-        </GlassCardContent>
-      </GlassCard>
+        </CardContent>
+      </Card>
 
-      <GlassCard>
-        <GlassCardHeader><GlassCardTitle className="text-foreground">Compte</GlassCardTitle></GlassCardHeader>
-        <GlassCardContent className="space-y-3">
+      {/* Compte / Danger zone */}
+      <Card variant="glass" accent="danger" className="animate-slide-up delay-700">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-danger"><AlertTriangle className="w-5 h-5" />Compte</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
           <button onClick={handleLogout} className="w-full flex items-center gap-3 p-4 rounded-xl bg-surface border border-border hover:border-primary/40 transition-all text-left">
             <div className="p-2 rounded-xl bg-border"><LogOut className="w-5 h-5 text-muted" /></div>
             <p className="font-medium text-sm text-foreground">D\u00e9connexion</p>
@@ -259,8 +343,8 @@ export default function SettingsPage() {
             <div className="p-2 rounded-xl bg-danger/10"><Trash2 className="w-5 h-5 text-danger" /></div>
             <div><p className="font-medium text-sm text-danger">Supprimer le compte</p><p className="text-xs text-muted">Action irr\u00e9versible</p></div>
           </button>
-        </GlassCardContent>
-      </GlassCard>
+        </CardContent>
+      </Card>
 
       <Modal isOpen={show2FAModal} onClose={() => { setShow2FAModal(false); setTwoFACode(''); }} title="Authentification 2 facteurs" size="sm">
         <div className="space-y-4">

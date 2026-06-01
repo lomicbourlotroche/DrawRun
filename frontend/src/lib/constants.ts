@@ -9,6 +9,10 @@ export const API_ENDPOINTS = {
     register: '/api/auth/register',
     forgotPassword: '/api/auth/forgot-password/request',
     resetPassword: '/api/auth/forgot-password/confirm',
+    credentialsDecathlon: '/api/auth/credentials/decathlon',
+    disconnectDecathlon: '/api/auth/disconnect/decathlon',
+    credentialsSuunto: '/api/auth/credentials/suunto',
+    disconnectSuunto: '/api/auth/disconnect/suunto',
   },
   profile: {
     get: '/api/profile',

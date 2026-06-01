@@ -62,12 +62,12 @@ const otpLimiter = rateLimit({
 
 /**
  * Rate limiter for sync operations (POST /api/sync — triggers actual sync).
- * Limits to 10 syncs per hour per user.
+ * Limits to 30 syncs per hour per user/IP.
  */
 const syncLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
-    max: 10,
-    keyGenerator: (req) => req.ip || req.connection?.remoteAddress || 'unknown',
+    max: 30,
+    keyGenerator: (req) => `${req.ip || 'unknown'}_${req.user?.id || 'anon'}`,
     validate: { keyGeneratorIpFallback: false },
     message: { error: 'Trop de synchronisations, veuillez réessayer dans 1 heure' },
     standardHeaders: true,

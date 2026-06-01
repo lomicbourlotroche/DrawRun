@@ -2,8 +2,14 @@
 
 const { logger } = require('../../utils/logger');
 
+// Open Elevation API configuration
+const OPEN_ELEVATION_API_URL = process.env.OPEN_ELEVATION_API_URL || 'https://api.open-elevation.com/api/v1/lookup';
+const OPEN_ELEVATION_API_KEY = process.env.OPEN_ELEVATION_API_KEY || null;
+
 /**
  * Fetch elevation profile for a set of coordinates using Open Elevation API.
+ * Uses environment variable OPEN_ELEVATION_API_KEY if configured.
+ * Falls back to public API if no key is provided.
  * @param {Array<{lat: number, lng: number}>} locations
  * @returns {Promise<Array<{distance: number, elevation: number, lat: number, lng: number}>>}
  */
@@ -20,20 +26,29 @@ async function getElevationProfile(locations) {
             }))
         };
 
-        const response = await fetch('https://api.open-elevation.com/api/v1/lookup', {
+        const headers = { 'Content-Type': 'application/json' };
+        
+        // Add API key to headers if configured
+        if (OPEN_ELEVATION_API_KEY) {
+            headers['Authorization'] = `Bearer ${OPEN_ELEVATION_API_KEY}`;
+        }
+
+        const response = await fetch(OPEN_ELEVATION_API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify(body),
             signal: AbortSignal.timeout(10000)
         });
 
         if (!response.ok) {
-            throw new Error(`Open Elevation API returned ${response.status}`);
+            const errorText = await response.text().catch(() => 'Unknown error');
+            throw new Error(`Open Elevation API returned ${response.status}: ${errorText}`);
         }
 
         const data = await response.json();
 
         if (!data.results || data.results.length === 0) {
+            logger.warn('Open Elevation API returned no results, falling back to simulation');
             return [];
         }
 

@@ -509,6 +509,152 @@ const MIGRATIONS = [
             db.run('CREATE INDEX IF NOT EXISTS idx_user_credentials_provider ON user_credentials(provider)');
         },
     },
+    {
+        version: '029_fix_explore_cascade_delete',
+        description: 'Add ON DELETE CASCADE to segments and routes foreign keys for proper cleanup',
+        up: (db) => {
+            // First, create temporary tables to preserve data
+            try {
+                db.run(`
+                    CREATE TABLE IF NOT EXISTS segments_backup_029 (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL,
+                        description TEXT DEFAULT '',
+                        created_by INTEGER NOT NULL,
+                        start_lat REAL NOT NULL,
+                        start_lng REAL NOT NULL,
+                        end_lat REAL NOT NULL,
+                        end_lng REAL NOT NULL,
+                        distance REAL NOT NULL,
+                        elevation_gain REAL DEFAULT 0,
+                        elevation_loss REAL DEFAULT 0,
+                        avg_grade REAL,
+                        max_grade REAL,
+                        polyline TEXT,
+                        activity_type TEXT DEFAULT 'Run',
+                        is_public INTEGER DEFAULT 1,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )
+                `);
+                db.run('INSERT INTO segments_backup_029 SELECT * FROM segments');
+                db.run('DROP TABLE segments');
+                db.run(`
+                    CREATE TABLE segments (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL,
+                        description TEXT DEFAULT '',
+                        created_by INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        start_lat REAL NOT NULL,
+                        start_lng REAL NOT NULL,
+                        end_lat REAL NOT NULL,
+                        end_lng REAL NOT NULL,
+                        distance REAL NOT NULL,
+                        elevation_gain REAL DEFAULT 0,
+                        elevation_loss REAL DEFAULT 0,
+                        avg_grade REAL,
+                        max_grade REAL,
+                        polyline TEXT,
+                        activity_type TEXT DEFAULT 'Run',
+                        is_public INTEGER DEFAULT 1,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )
+                `);
+                db.run('INSERT INTO segments SELECT * FROM segments_backup_029');
+                db.run('DROP TABLE segments_backup_029');
+            } catch (e) {
+                try { db.run('DROP TABLE IF EXISTS segments_backup_029'); } catch (_) {}
+            }
+
+            // Same for routes table
+            try {
+                db.run(`
+                    CREATE TABLE IF NOT EXISTS routes_backup_029 (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL,
+                        description TEXT DEFAULT '',
+                        created_by INTEGER NOT NULL,
+                        distance REAL NOT NULL,
+                        elevation_gain REAL DEFAULT 0,
+                        elevation_loss REAL DEFAULT 0,
+                        polyline TEXT,
+                        activity_type TEXT DEFAULT 'Run',
+                        estimated_duration INTEGER,
+                        difficulty TEXT,
+                        tags TEXT DEFAULT '[]',
+                        usage_count INTEGER DEFAULT 0,
+                        avg_rating REAL DEFAULT 0,
+                        rating_count INTEGER DEFAULT 0,
+                        is_public INTEGER DEFAULT 1,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )
+                `);
+                db.run('INSERT INTO routes_backup_029 SELECT * FROM routes');
+                db.run('DROP TABLE routes');
+                db.run(`
+                    CREATE TABLE routes (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL,
+                        description TEXT DEFAULT '',
+                        created_by INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        distance REAL NOT NULL,
+                        elevation_gain REAL DEFAULT 0,
+                        elevation_loss REAL DEFAULT 0,
+                        polyline TEXT,
+                        activity_type TEXT DEFAULT 'Run',
+                        estimated_duration INTEGER,
+                        difficulty TEXT,
+                        tags TEXT DEFAULT '[]',
+                        usage_count INTEGER DEFAULT 0,
+                        avg_rating REAL DEFAULT 0,
+                        rating_count INTEGER DEFAULT 0,
+                        is_public INTEGER DEFAULT 1,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )
+                `);
+                db.run('INSERT INTO routes SELECT * FROM routes_backup_029');
+                db.run('DROP TABLE routes_backup_029');
+            } catch (e) {
+                try { db.run('DROP TABLE IF EXISTS routes_backup_029'); } catch (_) {}
+            }
+        },
+    },
+    {
+        version: '030_add_activity_shares_table',
+        description: 'Add activity_shares table for tracking share events',
+        up: (db) => {
+            db.run(`
+                CREATE TABLE IF NOT EXISTS activity_shares (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                    activity_id INTEGER NOT NULL,
+                    share_type TEXT NOT NULL,
+                    platform TEXT,
+                    metadata TEXT,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    ip_address TEXT,
+                    user_agent TEXT
+                )
+            `);
+            db.run('CREATE INDEX IF NOT EXISTS idx_activity_shares_user ON activity_shares(user_id)');
+            db.run('CREATE INDEX IF NOT EXISTS idx_activity_shares_activity ON activity_shares(activity_id)');
+            db.run('CREATE INDEX IF NOT EXISTS idx_activity_shares_type ON activity_shares(share_type)');
+            db.run('CREATE INDEX IF NOT EXISTS idx_activity_shares_created ON activity_shares(created_at)');
+            db.run('CREATE INDEX IF NOT EXISTS idx_activity_shares_user_activity ON activity_shares(user_id, activity_id)');
+        },
+    },
+    {
+        version: '031_add_default_shared_fields_to_users',
+        description: 'Add default_shared_fields column to users table for share settings',
+        up: (db) => {
+            try { 
+                db.run('ALTER TABLE users ADD COLUMN default_shared_fields TEXT DEFAULT \'["distance","time","pace","elevation","map"]\''); 
+            } catch (_) { /* Column may already exist */ }
+        },
+    },
 ];
 
 async function runMigrations(db) {

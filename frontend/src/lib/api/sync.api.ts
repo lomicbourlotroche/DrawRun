@@ -13,8 +13,11 @@ export interface SyncJob {
 }
 
 export const syncApi = {
-  startSync(): Promise<{ jobId: string; status: string; message: string }> {
-    return client.request('/api/sync', { method: 'POST' });
+  startSync(days?: number): Promise<{ jobId: string; status: string; message: string }> {
+    return client.request('/api/sync', {
+      method: 'POST',
+      ...(days ? { body: JSON.stringify({ days }) } : {}),
+    });
   },
 
   getSyncJob(jobId: string): Promise<SyncJob> {
@@ -24,9 +27,10 @@ export const syncApi = {
   async sync(
     onProgress?: (_job: SyncJob) => void,
     intervalMs = 5000,
-    timeoutMs = 5 * 60 * 1000
+    timeoutMs = 5 * 60 * 1000,
+    days?: number
   ): Promise<SyncResult> {
-    const { jobId } = await syncApi.startSync();
+    const { jobId } = await syncApi.startSync(days);
 
     const deadline = Date.now() + timeoutMs;
 

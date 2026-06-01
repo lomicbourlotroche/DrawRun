@@ -188,7 +188,7 @@ router.post('/avatar', verifyToken, async (req, res) => {
         const filepath = path.join(UPLOAD_DIR, filename);
         await fs.writeFile(filepath, buffer);
 
-        const avatarUrl = `/uploads/avatars/${filename}`;
+        const avatarUrl = `/api/profile/avatar/serve/${filename}`;
 
         const currentUser = await dbGetMain('SELECT profile_data FROM users WHERE id = ?', [req.user.id]);
         let profileData = {};
@@ -199,10 +199,10 @@ router.post('/avatar', verifyToken, async (req, res) => {
         }
 
         if (profileData.avatar_url) {
-            // Validate path to prevent traversal
             const avatarRelPath = profileData.avatar_url;
-            if (avatarRelPath && !avatarRelPath.includes('..') && avatarRelPath.startsWith('/uploads/avatars/')) {
-                const oldPath = path.join(__dirname, '..', '..', avatarRelPath);
+            const filename = avatarRelPath?.split('/').pop();
+            if (filename && /^avatar_\d+_\d+\.(jpg|png|webp|gif)$/.test(filename)) {
+                const oldPath = path.join(UPLOAD_DIR, filename);
                 try {
                     await fs.unlink(oldPath);
                 } catch {

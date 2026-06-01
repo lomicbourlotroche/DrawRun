@@ -36,8 +36,20 @@ jest.mock('../../src/services/explore/heatmap.service', () => ({
   updateHeatmap: jest.fn().mockResolvedValue(),
 }));
 
+// Mock the new unified activity parser
+jest.mock('../../src/services/activityParser.service', () => ({
+  parseActivityFile: jest.fn(),
+}));
+
+// Mock sync utils for file upload processing
+jest.mock('../../src/services/sync/utils', () => ({
+  processUploadedActivityFile: jest.fn(),
+}));
+
 const { getUserDb, dbGetUser, dbAllUser, dbRunUser } = require('../../src/database');
 const { parseGpx } = require('../../src/services/activities/gpx.service');
+const { parseActivityFile } = require('../../src/services/activityParser.service');
+const { processUploadedActivityFile } = require('../../src/services/sync/utils');
 
 describe('Activities Routes', () => {
   let app;
@@ -147,19 +159,24 @@ describe('Activities Routes', () => {
     it('should import a valid GPX file', async () => {
       getUserDb.mockResolvedValue({});
       dbRunUser.mockResolvedValue({ lastID: 456 });
-      parseGpx.mockReturnValue({
+      // Mock the new unified parser for GPX files
+      parseActivityFile.mockResolvedValue({
+        source: 'gpx',
+        source_id: 'gpx-2024-01-01T10-00-00Z',
+        name: 'Activité GPX',
+        type: 'run',
+        start_date: '2024-01-01T10:00:00Z',
         distance: 5000,
-        duration: 1800,
-        elevGain: 50,
-        elevLoss: 10,
-        elevMin: 100,
-        elevMax: 150,
-        avgHR: 145,
-        maxHR: 170,
-        avgSpeed: 2.78,
-        startDate: '2024-01-01T10:00:00Z',
-        mapPolyline: '[[48.85,2.29],[48.86,2.30]]',
-        streams: {
+        moving_time: 1800,
+        elapsed_time: 1800,
+        total_elevation_gain: 50,
+        elev_high: 150,
+        elev_low: 100,
+        average_heartrate: 145,
+        max_heartrate: 170,
+        average_speed: 2.78,
+        map_polyline: '[[48.85,2.29],[48.86,2.30]]',
+        _streams: {
           latlng: [[48.85,2.29],[48.86,2.30]],
           distance: [0, 5000],
           time: [0, 1800],
@@ -167,6 +184,7 @@ describe('Activities Routes', () => {
           heartrate: [145, 170],
           cadence: [],
         },
+        _splits: []
       });
 
       const response = await request(app)
@@ -185,7 +203,7 @@ describe('Activities Routes', () => {
       expect(response.body.duration).toBe(1800);
       expect(response.body.trackpoints).toBe(2);
 
-      expect(parseGpx).toHaveBeenCalledWith(expect.stringContaining('<gpx>'));
+      expect(parseActivityFile).toHaveBeenCalledWith('gpx_upload', expect.stringContaining('<gpx>'));
       expect(dbRunUser).toHaveBeenCalledWith(
         expect.any(Object),
         expect.stringContaining('INSERT INTO activities'),
@@ -203,7 +221,7 @@ describe('Activities Routes', () => {
         .send({ name: 'Test', type: 'run' });
 
       expect(response.status).toBe(400);
-      expect(response.body.error).toBe('gpxData is required');
+      expect(response.body.error).toBe('gpxData or file is required');
     });
 
     it('should reject oversized GPX data', async () => {

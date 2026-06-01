@@ -18,6 +18,9 @@
 
 export { ApiError } from './types';
 export type {
+  ShareImageSize,
+  ShareStats,
+  ShareEventParams,
   SyncResult,
   SyncStatus,
   AlgoZonesParams,
@@ -161,6 +164,10 @@ export const api = {
   deleteAccount: authApi.deleteAccount,
   connectGarmin: authApi.connectGarmin,
   disconnectGarmin: () => authApi.disconnectService('garmin'),
+  connectSuunto: authApi.connectSuunto,
+  disconnectSuunto: authApi.disconnectSuunto,
+  saveDecathlonCredentials: authApi.saveDecathlonCredentials,
+  disconnectDecathlon: authApi.disconnectDecathlon,
 
   getUserCount: userCounterApi.getUserCount,
   subscribeToUserCount: userCounterApi.subscribeToUserCount,
@@ -373,9 +380,13 @@ export const api = {
 
   // Share endpoints
   getActivityShareImage: shareApi.getActivityShareImage,
+  getShareImageAsBase64: shareApi.getShareImageAsBase64,
   downloadShareImage: shareApi.downloadShareImage,
   shareActivity: shareApi.shareActivity,
   copyActivityLink: shareApi.copyActivityLink,
+  logShareEvent: shareApi.logShareEvent,
+  getShareStats: shareApi.getShareStats,
+  openShareModal: shareApi.openShareModal,
 
   // User Constants endpoint
   getUserConstants: userConstantsApi.get,

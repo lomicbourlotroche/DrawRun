@@ -254,6 +254,20 @@ app.use((req, res, next) => {
         
         app.use('/api/algo', apiRoutes);
         
+        // Serve avatar images publicly (no auth — img tags don't send Authorization headers)
+        const _fs = require('fs');
+        app.get('/api/profile/avatar/serve/:filename', async (req, res) => {
+            const filename = req.params.filename;
+            if (!/^avatar_\d+_\d+\.(jpg|png|webp|gif)$/.test(filename)) {
+                return res.status(400).json({ error: 'Invalid filename' });
+            }
+            const filepath = path.join(__dirname, 'uploads', 'avatars', filename);
+            if (!_fs.existsSync(filepath)) {
+                return res.status(404).json({ error: 'Avatar not found' });
+            }
+            res.sendFile(filepath);
+        });
+
         // Feature routes - using user-based rate limiting + cache
         // Routes avec cache long (données qui changent peu)
         app.use('/api/profile', verifyToken, sensitiveUserLimiter, cacheMiddleware(600), profileRoutes);

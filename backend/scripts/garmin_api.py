@@ -134,11 +134,12 @@ def main():
     parser = argparse.ArgumentParser(description="Garmin Data Harvester")
     parser.add_argument("--creds", type=str, required=True, help="'-' pour lire le JSON via stdin")
     parser.add_argument("--tokenstore", type=str, default="~/.garmin_tokens")
-    parser.add_argument("--mode", type=str, default="all", choices=["activities", "health", "all", "metrics"])
-    parser.add_argument("--days", type=int, default=7, help="Nombre de jours à récupérer")
+    parser.add_argument("--mode", type=str, default="all", choices=["activities", "health", "all", "metrics", "streams"])
+    parser.add_argument("--days", type=int, default=365, help="Nombre de jours à récupérer")
     parser.add_argument("--start", type=str, help="Date de début YYYY-MM-DD")
     parser.add_argument("--start_date", type=str, help="Alias date de début")
     parser.add_argument("--limit", type=int, default=100)
+    parser.add_argument("--id", type=str, help="Activity ID (pour mode streams)")
 
     args = parser.parse_args()
 
@@ -158,6 +159,11 @@ def main():
             result = fetch_full_data(garmin, start_date, end_date, days_list, args.limit)
         elif args.mode == "activities":
             result = garmin.get_activities_by_date(start_date, end_date)
+        elif args.mode == "streams":
+            if not args.id:
+                print(json.dumps({"error": "Parameter --id is required for streams mode"}), file=sys.stderr)
+                sys.exit(1)
+            result = garmin.get_activity_details(args.id)
         elif args.mode == "metrics":
             result = garmin.get_max_metrics()
         else:

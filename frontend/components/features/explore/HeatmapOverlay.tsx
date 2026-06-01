@@ -46,6 +46,14 @@ export default function HeatmapOverlay({ map, heatmapData, showHeatmap }: Heatma
         layerRef.current = heat as unknown as L.HeatLayer;
       }
     }
+
+    // Cleanup heatmap layer on unmount
+    return () => {
+      if (layerRef.current) {
+        map.removeLayer(layerRef.current as unknown as L.Layer);
+        layerRef.current = null;
+      }
+    };
   }, [showHeatmap, heatmapData, map]);
 
   return null;

@@ -849,7 +849,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       if (currentGPS) {
         const result = await api.getNearbySegments(currentGPS.latitude, currentGPS.longitude, 50000);
         if (result?.segments) {
-          setNearbySegments((result.segments as Array<Record<string, unknown>>).map((s: Record<string, unknown>) => ({
+          setNearbySegments((result.segments as unknown as Array<Record<string, unknown>>).map((s) => ({
             id: String(s.id),
             name: String(s.name || ''),
             description: s.description as string | undefined,

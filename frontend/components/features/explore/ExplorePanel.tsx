@@ -16,7 +16,7 @@ interface Segment {
   elevation_loss?: number;
   avg_grade?: number;
   activity_type: string;
-  effort_count: number;
+  effort_count?: number;
   creator_name?: string;
   total_efforts?: number;
   unique_athletes?: number;
@@ -74,6 +74,12 @@ const DIFFICULTIES = [
   { id: 'hard', label: 'Difficile' },
 ];
 
+// Focus styles base classes
+const focusClasses = 'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface';
+
+// Button base classes with focus
+const buttonBaseClasses = `flex items-center justify-center gap-2 px-3 min-h-[44px] rounded-lg transition-colors hover:bg-surface ${focusClasses}`;
+
 export default function ExplorePanel({
   segments,
   segmentsLoading,
@@ -94,115 +100,143 @@ export default function ExplorePanel({
 
   return (
     <>
-      {/* Toggle button */}
+      {/* Toggle button - Always visible, accessible */}
       <button
         onClick={onToggle}
-        className="absolute top-4 left-4 z-[500] flex items-center gap-2 px-3 min-h-[44px] bg-surface/90 backdrop-blur-sm rounded-lg shadow-md border border-border text-sm font-medium hover:bg-surface transition-colors"
+        className="absolute top-4 left-4 z-[500] flex items-center gap-2 px-3 min-h-[44px] bg-surface/90 backdrop-blur-sm rounded-lg shadow-md border border-border text-sm font-medium hover:bg-surface transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface"
+        aria-label={isOpen ? 'Fermer le panneau Explorer' : 'Ouvrir le panneau Explorer'}
+        aria-expanded={isOpen}
+        aria-controls="explore-panel-content"
+        type="button"
       >
-        {isOpen ? <X className="w-4 h-4" /> : <Compass className="w-4 h-4" />}
+        {isOpen ? (
+          <X className="w-4 h-4" aria-hidden="true" />
+        ) : (
+          <Compass className="w-4 h-4" aria-hidden="true" />
+        )}
         <span className="hidden sm:inline">{isOpen ? 'Fermer' : 'Explorer'}</span>
       </button>
 
-      {/* Panel */}
+      {/* Panel - Responsive width + Accessible */}
       <div
-        className={`absolute top-0 left-0 z-[400] h-full bg-surface/95 backdrop-blur-md border-r border-border
-                    shadow-lg transition-all duration-300 flex flex-col
-                    ${isOpen ? 'w-full sm:w-96 translate-x-0' : 'w-96 -translate-x-full'}`}
+        id="explore-panel-content"
+        className={`absolute top-0 left-0 z-[400] h-full bg-surface/95 backdrop-blur-md border-r border-border shadow-lg transition-all duration-300 flex flex-col
+                    ${isOpen ? 'w-full sm:w-96 md:w-80 translate-x-0' : 'w-full sm:w-96 md:w-80 -translate-x-full'}`}
+        aria-hidden={!isOpen}
+        aria-labelledby="explore-panel-title"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="text-lg font-bold flex items-center gap-2">
-            <Compass className="w-5 h-5 text-primary" />
+          <h2
+            id="explore-panel-title"
+            className="text-lg font-bold flex items-center gap-2"
+          >
+            <Compass className="w-5 h-5 text-primary" aria-hidden="true" />
             Explorer
           </h2>
           <button
             onClick={onToggle}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-surface transition-colors sm:hidden"
+            className={`min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-surface transition-colors ${focusClasses}`}
+            aria-label="Fermer le panneau"
+            type="button"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs - Accessible tablist */}
         <div className="flex-1 flex flex-col overflow-hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="px-4 pt-3 pb-2 border-b border-border">
-              <TabsList className="w-full">
-                <TabsTrigger value="segments" className="text-xs">
-                  <Compass className="w-3.5 h-3.5" />
-                  Segments
-                </TabsTrigger>
-                <TabsTrigger value="routes" className="text-xs">
-                  <Route className="w-3.5 h-3.5" />
-                  Parcours
-                </TabsTrigger>
-                <TabsTrigger value="favorites" className="text-xs">
-                  <Heart className="w-3.5 h-3.5" />
-                  Favoris
-                </TabsTrigger>
-              </TabsList>
+              <div role="tablist" aria-label="Onglets Explorer">
+                <TabsList className="w-full">
+                  <TabsTrigger value="segments" className="text-xs">
+                    <Compass className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>Segments</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="routes" className="text-xs">
+                    <Route className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>Parcours</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="favorites" className="text-xs">
+                    <Heart className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>Favoris</span>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
             </div>
 
+            {/* Tab Panels - Semantic lists */}
             <div className="flex-1 overflow-y-auto p-4">
-              <TabsContent value="segments">
-                <div className="space-y-3">
-                  <SegmentList
-                    segments={segments}
-                    isLoading={segmentsLoading}
-                    onSegmentClick={onSegmentClick}
-                  />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="routes">
-                <div className="space-y-3">
-                  {/* Filters */}
-                  <div className="space-y-2 pb-2">
-                    <FilterChipGroup
-                      options={ACTIVITY_TYPES}
-                      activeFilter={activeFilter.type || 'all'}
-                      onFilterChange={(type) => {
-                        onFilterChange({ ...activeFilter, type: type === 'all' ? '' : type });
-                      }}
-                    />
-                    <FilterChipGroup
-                      options={DIFFICULTIES}
-                      activeFilter={activeFilter.difficulty || 'all'}
-                      onFilterChange={(diff) => {
-                        onFilterChange({ ...activeFilter, difficulty: diff === 'all' ? '' : diff });
-                      }}
+              <div id="segments-panel" role="tabpanel" aria-labelledby="segments-tab">
+                <TabsContent value="segments">
+                  <div className="space-y-3">
+                    <SegmentList
+                      segments={segments}
+                      isLoading={segmentsLoading}
+                      onSegmentClick={onSegmentClick}
                     />
                   </div>
-                  <RouteList
-                    routes={routes}
-                    isLoading={routesLoading}
-                    onRouteClick={onRouteClick}
-                  />
-                </div>
-              </TabsContent>
+                </TabsContent>
+              </div>
 
-              <TabsContent value="favorites">
-                <div className="space-y-3">
-                  <RouteList
-                    routes={favorites}
-                    isLoading={favoritesLoading}
-                    onRouteClick={onFavoriteClick}
-                    showFavoriteButton={false}
-                  />
-                </div>
-              </TabsContent>
+              <div id="routes-panel" role="tabpanel" aria-labelledby="routes-tab">
+                <TabsContent value="routes">
+                  <div className="space-y-3">
+                    {/* Filters */}
+                    <div className="space-y-2 pb-2">
+                      <FilterChipGroup
+                        options={ACTIVITY_TYPES}
+                        activeFilter={activeFilter.type || 'all'}
+                        onFilterChange={(type) => {
+                          onFilterChange({ ...activeFilter, type: type === 'all' ? '' : type });
+                        }}
+                        aria-label="Filtrer par type d'activité"
+                      />
+                      <FilterChipGroup
+                        options={DIFFICULTIES}
+                        activeFilter={activeFilter.difficulty || 'all'}
+                        onFilterChange={(diff) => {
+                          onFilterChange({ ...activeFilter, difficulty: diff === 'all' ? '' : diff });
+                        }}
+                        aria-label="Filtrer par difficulté"
+                      />
+                    </div>
+                    <RouteList
+                      routes={routes}
+                      isLoading={routesLoading}
+                      onRouteClick={onRouteClick}
+                    />
+                  </div>
+                </TabsContent>
+              </div>
+
+              <div id="favorites-panel" role="tabpanel" aria-labelledby="favorites-tab">
+                <TabsContent value="favorites">
+                  <div className="space-y-3">
+                    <RouteList
+                      routes={favorites}
+                      isLoading={favoritesLoading}
+                      onRouteClick={onFavoriteClick}
+                      showFavoriteButton={false}
+                    />
+                  </div>
+                </TabsContent>
+              </div>
             </div>
           </Tabs>
         </div>
 
-        {/* Bottom action */}
+        {/* Bottom action - Responsive padding */}
         <div className="p-4 pb-[env(safe-area-inset-bottom,16px)] border-t border-border">
           <button
             onClick={onOpenRoutePlanner}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-foreground rounded-lg font-medium text-sm hover:bg-primary/90 transition-colors shadow-sm"
+            className={`w-full ${buttonBaseClasses} bg-primary text-foreground rounded-lg font-medium text-sm shadow-sm`}
+            type="button"
+            aria-label="Créer un parcours"
           >
-            <Plus className="w-4 h-4" />
-            Créer un parcours
+            <Plus className="w-4 h-4" aria-hidden="true" />
+            <span>Créer un parcours</span>
           </button>
         </div>
       </div>

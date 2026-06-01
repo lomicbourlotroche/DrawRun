@@ -54,7 +54,7 @@ export default function SegmentOverlay({ map, segments }: SegmentOverlayProps) {
         polyline.on('click', segment.onClick);
       }
 
-      const markerSize = window.innerWidth < 640 ? 14 : 10;
+      const markerSize = (typeof window !== 'undefined' && window.innerWidth < 640) ? 14 : 10;
       const startIcon = L.divIcon({
         className: 'segment-marker-start',
         html: `<div style="width:${markerSize}px;height:${markerSize}px;background:var(--success);border:2px solid var(--surface);border-radius:50%;"></div>`,
@@ -75,6 +75,17 @@ export default function SegmentOverlay({ map, segments }: SegmentOverlayProps) {
 
       layersRef.current.set(`segment_${segment.id}`, polyline);
     });
+
+    // Cleanup all segment layers on unmount
+    return () => {
+      layersRef.current.forEach((layer, key) => {
+        if (key.startsWith('segment_')) {
+          map.removeLayer(layer);
+          layersRef.current.delete(key);
+        }
+      });
+      layersRef.current.clear();
+    };
   }, [segments, map]);
 
   return null;

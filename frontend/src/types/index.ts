@@ -34,6 +34,8 @@ export interface User {
   ftp?: number | null;
   weight?: number | null;
   has_garmin?: number | boolean;
+  has_decathlon?: number | boolean;
+  has_suunto?: number | boolean;
   twofa_enabled?: number | boolean;
   createdAt?: string;
   dateOfBirth?: string;

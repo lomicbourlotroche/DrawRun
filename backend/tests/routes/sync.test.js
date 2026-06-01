@@ -1,13 +1,16 @@
+/* eslint-disable unused-imports/no-unused-vars, security/detect-non-literal-fs-filename, security/detect-non-literal-require */
 /**
  * ============================================================
- * SYNC ROUTES TESTS — Garmin-only
+ * SYNC ROUTES TESTS — Garmin, Decathlon & Suunto
  * ============================================================
  * Vérifie que :
  * - POST /api/sync crée un job et répond immédiatement
  * - GET /api/sync/job/:id retourne le statut du job
- * - GET /api/sync/status ne retourne QUE garmin (pas strava/suunto/decathlon)
+ * - GET /api/sync/status retourne garmin, decathlon et suunto
  * - POST /api/sync/garmin/clear-tokens fonctionne
- * - Les anciens endpoints strava/suunto/decathlon sont 404
+ * - POST /api/sync/decathlon/clear-tokens fonctionne
+ * - POST /api/sync/suunto/clear-tokens fonctionne
+ * - Les anciens endpoints strava sont 404
  * - POST /healthconnect fonctionne
  */
 
@@ -23,6 +26,30 @@ jest.mock('../../src/services/sync/garmin', () => ({
     clearGarminTokens: jest.fn().mockResolvedValue({ success: true }),
     callGarminApi: jest.fn(),
     triggerManualSync: jest.fn(),
+}));
+
+jest.mock('../../src/services/sync/decathlon', () => ({
+    performDecathlonSync: jest.fn().mockResolvedValue({ success: true, imported: 3 }),
+    getDecathlonSyncStatus: jest.fn().mockResolvedValue({
+        source: 'decathlon',
+        last_sync: null,
+        status: 'idle',
+        configured: false,
+        app_configured: false
+    }),
+    clearDecathlonTokens: jest.fn().mockResolvedValue({ success: true }),
+}));
+
+jest.mock('../../src/services/sync/suunto', () => ({
+    performSuuntoSync: jest.fn().mockResolvedValue({ success: true, imported: 2 }),
+    getSuuntoSyncStatus: jest.fn().mockResolvedValue({
+        source: 'suunto',
+        last_sync: null,
+        status: 'idle',
+        configured: false,
+        app_configured: true
+    }),
+    clearSuuntoTokens: jest.fn().mockResolvedValue({ success: true }),
 }));
 
 jest.mock('../../src/database', () => ({
@@ -64,7 +91,7 @@ jest.mock('../../src/routes/auth', () => {
 const request = require('supertest');
 const express = require('express');
 
-describe('Sync Routes — Garmin-only', () => {
+describe('Sync Routes — Garmin, Decathlon & Suunto', () => {
     let app;
 
     beforeEach(() => {
@@ -133,7 +160,7 @@ describe('Sync Routes — Garmin-only', () => {
     // ====================================================================
 
     describe('GET /api/sync/status', () => {
-        test('returns only garmin status (no strava/suunto/decathlon)', async () => {
+        test('returns garmin, decathlon and suunto status', async () => {
             const res = await request(app).get('/api/sync/status');
 
             expect(res.status).toBe(200);
@@ -141,16 +168,18 @@ describe('Sync Routes — Garmin-only', () => {
             expect(res.body.garmin).toHaveProperty('source', 'garmin');
             expect(res.body.garmin).toHaveProperty('configured');
             expect(res.body.garmin).toHaveProperty('last_sync');
+            expect(res.body).toHaveProperty('decathlon');
+            expect(res.body.decathlon).toHaveProperty('source', 'decathlon');
+            expect(res.body.decathlon).toHaveProperty('configured');
+            expect(res.body).toHaveProperty('suunto');
+            expect(res.body.suunto).toHaveProperty('source', 'suunto');
+            expect(res.body.suunto).toHaveProperty('configured');
             expect(res.body).toHaveProperty('available');
-            expect(res.body.available).toEqual({ garmin: true });
+            expect(res.body.available).toEqual({ garmin: true, decathlon: true, suunto: true });
 
             // Vérifier l'absence des anciens providers
             expect(res.body).not.toHaveProperty('strava');
-            expect(res.body).not.toHaveProperty('suunto');
-            expect(res.body).not.toHaveProperty('decathlon');
             expect(res.body.available).not.toHaveProperty('strava');
-            expect(res.body.available).not.toHaveProperty('suunto');
-            expect(res.body.available).not.toHaveProperty('decathlon');
         });
 
         test('garmin status includes all required fields', async () => {
@@ -165,6 +194,26 @@ describe('Sync Routes — Garmin-only', () => {
             if (res.body.garmin.has_tokens !== undefined) {
                 expect(typeof res.body.garmin.has_tokens).toBe('boolean');
             }
+        });
+
+        test('decathlon status includes all required fields', async () => {
+            const res = await request(app).get('/api/sync/status');
+
+            expect(res.body.decathlon).toMatchObject({
+                source: 'decathlon',
+                status: expect.stringMatching(/^(idle|syncing|error)$/),
+                configured: expect.any(Boolean),
+            });
+        });
+
+        test('suunto status includes all required fields', async () => {
+            const res = await request(app).get('/api/sync/status');
+
+            expect(res.body.suunto).toMatchObject({
+                source: 'suunto',
+                status: expect.stringMatching(/^(idle|syncing|error)$/),
+                configured: expect.any(Boolean),
+            });
         });
     });
 
@@ -189,6 +238,44 @@ describe('Sync Routes — Garmin-only', () => {
     });
 
     // ====================================================================
+    // POST /api/sync/decathlon/clear-tokens
+    // ====================================================================
+
+    describe('POST /api/sync/decathlon/clear-tokens', () => {
+        test('clears Decathlon tokens successfully', async () => {
+            const res = await request(app)
+                .post('/api/sync/decathlon/clear-tokens');
+            expect(res.status).toBe(200);
+            expect(res.body).toEqual({ success: true });
+        });
+
+        test('calls clearDecathlonTokens from decathlon service', async () => {
+            const { clearDecathlonTokens } = require('../../src/services/sync/decathlon');
+            await request(app).post('/api/sync/decathlon/clear-tokens');
+            expect(clearDecathlonTokens).toHaveBeenCalledWith(1);
+        });
+    });
+
+    // ====================================================================
+    // POST /api/sync/suunto/clear-tokens
+    // ====================================================================
+
+    describe('POST /api/sync/suunto/clear-tokens', () => {
+        test('clears Suunto tokens successfully', async () => {
+            const res = await request(app)
+                .post('/api/sync/suunto/clear-tokens');
+            expect(res.status).toBe(200);
+            expect(res.body).toEqual({ success: true });
+        });
+
+        test('calls clearSuuntoTokens from suunto service', async () => {
+            const { clearSuuntoTokens } = require('../../src/services/sync/suunto');
+            await request(app).post('/api/sync/suunto/clear-tokens');
+            expect(clearSuuntoTokens).toHaveBeenCalledWith(1);
+        });
+    });
+
+    // ====================================================================
     // Removed endpoints — doivent être 404
     // ====================================================================
 
@@ -199,33 +286,9 @@ describe('Sync Routes — Garmin-only', () => {
             expect(res.status).toBe(404);
         });
 
-        test('POST /api/sync/suunto/clear-token returns 404', async () => {
-            const res = await request(app)
-                .post('/api/sync/suunto/clear-token');
-            expect(res.status).toBe(404);
-        });
-
         test('GET /api/sync/strava/url returns 404', async () => {
             const res = await request(app)
                 .get('/api/sync/strava/url');
-            expect(res.status).toBe(404);
-        });
-
-        test('GET /api/sync/decathlon/url returns 404', async () => {
-            const res = await request(app)
-                .get('/api/sync/decathlon/url');
-            expect(res.status).toBe(404);
-        });
-
-        test('POST /api/sync/decathlon/clear-token returns 404', async () => {
-            const res = await request(app)
-                .post('/api/sync/decathlon/clear-token');
-            expect(res.status).toBe(404);
-        });
-
-        test('GET /api/sync/decathlon/callback returns 404', async () => {
-            const res = await request(app)
-                .get('/api/sync/decathlon/callback');
             expect(res.status).toBe(404);
         });
 

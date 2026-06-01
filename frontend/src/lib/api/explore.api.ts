@@ -15,8 +15,84 @@ import type {
   CreateSegmentParams,
   CreateSegmentEffortParams,
   CreateRouteParams,
+  SegmentLeaderboardEntry,
 } from './types';
 import { client } from './client';
+
+// Segment types for responses
+export interface Segment {
+  id: number;
+  name: string;
+  description?: string;
+  distance: number;
+  elevation_gain: number;
+  elevation_loss?: number;
+  avg_grade?: number;
+  max_grade?: number;
+  polyline?: string;
+  activity_type: string;
+  start_lat?: number;
+  start_lng?: number;
+  end_lat?: number;
+  end_lng?: number;
+  effort_count?: number;
+  creator_name?: string;
+  is_public?: boolean;
+  created_at?: string;
+}
+
+// Route types for responses
+export interface Route {
+  id: number;
+  name: string;
+  description?: string;
+  distance: number;
+  elevation_gain: number;
+  elevation_loss?: number;
+  polyline: string;
+  activity_type: string;
+  estimated_duration?: number;
+  difficulty?: string;
+  tags?: string[];
+  avg_rating?: number;
+  rating_count: number;
+  usage_count: number;
+  creator_name?: string;
+  is_favorited?: boolean;
+  is_public?: boolean;
+  created_at?: string;
+}
+
+// Heatmap types
+export interface HeatmapDataPoint {
+  lat: number;
+  lng: number;
+  intensity: number;
+}
+
+// Community trace types
+export interface CommunityTrace {
+  id: number;
+  polyline: string;
+  distance: number;
+  activity_type: string;
+  difficulty?: string;
+  elevation_gain?: number;
+}
+
+// Elevation profile types
+export interface ElevationPoint {
+  distance: number;
+  elevation: number;
+  lat: number;
+  lng: number;
+}
+
+export interface ElevationStats {
+  total_gain: number;
+  max_elevation: number;
+  min_elevation: number;
+}
 
 export const exploreApi = {
   // ============================================================================
@@ -41,23 +117,7 @@ export const exploreApi = {
     type?: string
   ): Promise<{
     success: boolean;
-    segments: Array<{
-      id: number;
-      name: string;
-      distance: number;
-      elevation_gain: number;
-      elevation_loss?: number;
-      start_lat: number;
-      start_lng: number;
-      end_lat: number;
-      end_lng: number;
-      avg_grade?: number;
-      max_grade?: number;
-      polyline?: string;
-      activity_type: string;
-      effort_count: number;
-      pr_time?: number;
-    }>;
+    segments: Segment[];
   }> {
     const query = new URLSearchParams();
     query.set('lat', String(lat));
@@ -69,31 +129,18 @@ export const exploreApi = {
 
   getPublicSegments(): Promise<{
     success: boolean;
-    segments: Array<unknown>;
+    segments: Segment[];
   }> {
     return client.request('/api/explore/segments');
   },
 
   getSegment(segmentId: number): Promise<{
     success: boolean;
-    segment: {
-      id: number;
-      name: string;
-      description?: string;
-      distance: number;
-      elevation_gain: number;
-      elevation_loss: number;
-      avg_grade: number;
-      max_grade: number;
-      activity_type: string;
-      polyline?: string;
-      creator_name?: string;
-      total_efforts: number;
-      unique_athletes: number;
-      start_lat?: number;
-      start_lng?: number;
-      end_lat?: number;
-      end_lng?: number;
+    segment: Segment & {
+      total_efforts?: number;
+      unique_athletes?: number;
+      kom?: { user_name: string; elapsed_time: number };
+      qom?: { user_name: string; elapsed_time: number };
     };
   }> {
     return client.request(`/api/explore/segments/${segmentId}`);
@@ -101,15 +148,7 @@ export const exploreApi = {
 
   getSegmentLeaderboard(segmentId: number): Promise<{
     success: boolean;
-    leaderboard: Array<{
-      id: number;
-      user_id: number;
-      user_name: string;
-      elapsed_time: number;
-      rank: number;
-      is_kom: boolean;
-      is_qom: boolean;
-    }>;
+    leaderboard: SegmentLeaderboardEntry[];
   }> {
     return client.request(`/api/explore/segments/${segmentId}/leaderboard`);
   },
@@ -139,6 +178,7 @@ export const exploreApi = {
       max_watts?: number;
       avg_heartrate?: number;
       max_heartrate?: number;
+      activity_name?: string;
     }>;
   }> {
     return client.request(`/api/explore/segments/${segmentId}/efforts/me`);
@@ -168,7 +208,7 @@ export const exploreApi = {
 
   getPublicRoutes(type?: string, difficulty?: string): Promise<{
     success: boolean;
-    routes: Array<unknown>;
+    routes: Route[];
   }> {
     const query = new URLSearchParams();
     if (type) query.set('type', type);
@@ -178,24 +218,7 @@ export const exploreApi = {
 
   getRoute(routeId: number): Promise<{
     success: boolean;
-    route: {
-      id: number;
-      name: string;
-      description?: string;
-      distance: number;
-      elevation_gain: number;
-      elevation_loss: number;
-      activity_type: string;
-      estimated_duration?: number;
-      difficulty?: string;
-      tags?: string[];
-      avg_rating?: number;
-      rating_count: number;
-      usage_count: number;
-      polyline: string;
-      creator_name?: string;
-      is_favorited?: boolean;
-    };
+    route: Route;
   }> {
     return client.request(`/api/explore/routes/${routeId}`);
   },
@@ -214,28 +237,14 @@ export const exploreApi = {
 
   getMyRoutes(): Promise<{
     success: boolean;
-    routes: Array<{
-      id: number;
-      name: string;
-      description?: string;
-      polyline: string;
-      distance: number;
-      elevation_gain: number;
-      elevation_loss?: number;
-      activity_type?: string;
-      estimated_duration?: number;
-      difficulty?: string;
-      tags?: string[];
-      is_public: boolean;
-      created_at: string;
-    }>;
+    routes: Route[];
   }> {
     return client.request('/api/explore/routes/my');
   },
 
   getFavoriteRoutes(): Promise<{
     success: boolean;
-    routes: Array<unknown>;
+    routes: Route[];
   }> {
     return client.request('/api/explore/routes/favorites');
   },
@@ -270,7 +279,7 @@ export const exploreApi = {
     type?: string
   ): Promise<{
     success: boolean;
-    heatmap: Array<{ lat: number; lng: number; intensity: number }>;
+    heatmap: HeatmapDataPoint[];
   }> {
     const query = new URLSearchParams();
     query.set('lat', String(lat));
@@ -302,14 +311,7 @@ export const exploreApi = {
     limit?: number
   ): Promise<{
     success: boolean;
-    traces: Array<{
-      id: number;
-      polyline: string;
-      distance: number;
-      activity_type: string;
-      difficulty?: string;
-      elevation_gain?: number;
-    }>;
+    traces: CommunityTrace[];
     total: number;
   }> {
     const query = new URLSearchParams();
@@ -326,12 +328,8 @@ export const exploreApi = {
     locations: Array<{ lat: number; lng: number }>
   ): Promise<{
     success: boolean;
-    profile: Array<{ distance: number; elevation: number; lat: number; lng: number }>;
-    stats: {
-      total_gain: number;
-      max_elevation: number;
-      min_elevation: number;
-    };
+    profile: ElevationPoint[];
+    stats: ElevationStats;
   }> {
     return client.request('/api/explore/elevation', {
       method: 'POST',

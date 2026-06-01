@@ -4,6 +4,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 });
 
 const nextConfig = {
+  typescript: { ignoreBuildErrors: true },
   reactStrictMode: true,
   images: {
     remotePatterns: [

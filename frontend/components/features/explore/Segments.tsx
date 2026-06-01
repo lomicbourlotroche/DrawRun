@@ -16,7 +16,7 @@ interface Segment {
   elevation_loss?: number;
   avg_grade?: number;
   activity_type: string;
-  effort_count: number;
+  effort_count?: number;
   creator_name?: string;
   total_efforts?: number;
   unique_athletes?: number;

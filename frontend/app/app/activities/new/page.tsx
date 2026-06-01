@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import ActivityMap from '@/components/ui/ActivityMap';
-import { Upload, FileText, X } from '@/components/ui/icons';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/Card';
+import { Upload, FileText, X, Activity, AlertCircle } from '@/components/ui/icons';
 import { toast } from 'sonner';
 
 const ACTIVITY_TYPES = [
@@ -175,48 +176,67 @@ export default function NewActivityPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Enregistrer une activit\u00e9</h1>
-        <div className="flex bg-surface p-1 rounded-xl text-sm">
-          <button
-            type="button"
-            onClick={() => { setGpxMode(false); setGpxPreview(null); }}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-all ${!gpxMode ? 'bg-surface text-primary shadow-sm' : 'text-muted'}`}
-          >
-            Manuel
-          </button>
-          <button
-            type="button"
-            onClick={() => setGpxMode(true)}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1 ${gpxMode ? 'bg-surface text-primary shadow-sm' : 'text-muted'}`}
-          >
-            <Upload className="w-3.5 h-3.5" />
-            Import GPX
-          </button>
-        </div>
-      </div>
+    <div className="animate-fade-in max-w-3xl mx-auto space-y-5">
 
-      {error && (
-        <div className="bg-danger/10 border border-danger text-danger px-4 py-3 rounded">
-          {error}
+      {/* Hero header */}
+      <Card variant="glass" padding="lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <Activity className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">Nouvelle activit\u00e9</h1>
+              <p className="text-sm text-muted">Enregistrez ou importez une s\u00e9ance</p>
+            </div>
+          </div>
+          <div className="flex bg-surface p-0.5 rounded-xl text-sm">
+            <button
+              type="button"
+              onClick={() => { setGpxMode(false); setGpxPreview(null); }}
+              className={`px-3 py-1.5 rounded-lg font-medium transition-all ${!gpxMode ? 'bg-surface text-primary shadow-sm' : 'text-muted'}`}
+            >
+              Manuel
+            </button>
+            <button
+              type="button"
+              onClick={() => setGpxMode(true)}
+              className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1 ${gpxMode ? 'bg-surface text-primary shadow-sm' : 'text-muted'}`}
+            >
+              <Upload className="w-3.5 h-3.5" />
+              Import GPX
+            </button>
+          </div>
         </div>
+      </Card>
+
+      {/* Error */}
+      {error && (
+        <Card variant="glass" accent="danger" padding="sm">
+          <div className="flex items-center gap-2 text-danger">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span className="text-sm font-medium">{error}</span>
+          </div>
+        </Card>
       )}
 
+      {/* GPX upload / preview */}
       {gpxMode && (
-        <div className="space-y-4">
+        <Card variant="glass" accent="info" padding="lg">
           {!gpxPreview ? (
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-border hover:border-primary/50 rounded-xl p-10 text-center cursor-pointer transition-all"
-            >
-              <Upload className="w-10 h-10 mx-auto mb-3 text-muted" />
-              <p className="font-medium text-foreground">Cliquez pour importer un fichier GPX</p>
-              <p className="text-xs text-muted mt-1">Garmin, Strava, Komoot, Suunto\u2026</p>
-              <input ref={fileInputRef} type="file" accept=".gpx" className="hidden" onChange={handleGpxFile} />
-            </div>
+            <>
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed border-border hover:border-primary/50 rounded-xl p-10 text-center cursor-pointer transition-all"
+              >
+                <Upload className="w-10 h-10 mx-auto mb-3 text-muted" />
+                <p className="font-medium text-foreground">Cliquez pour importer un fichier GPX</p>
+                <p className="text-xs text-muted mt-1">Garmin, Strava, Komoot, Suunto\u2026</p>
+                <input ref={fileInputRef} type="file" accept=".gpx" className="hidden" onChange={handleGpxFile} />
+              </div>
+            </>
           ) : (
-            <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-3">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <FileText className="w-5 h-5 text-primary" />
@@ -227,9 +247,18 @@ export default function NewActivityPage() {
                 </button>
               </div>
               <div className="grid grid-cols-3 gap-2 text-xs text-center">
-                <div className="bg-surface rounded-lg p-2"><p className="font-bold text-lg text-foreground">{gpxPreview.distanceKm}</p><p className="text-muted">km</p></div>
-                <div className="bg-surface rounded-lg p-2"><p className="font-bold text-lg text-foreground">{gpxPreview.durationMin}</p><p className="text-muted">min</p></div>
-                <div className="bg-surface rounded-lg p-2"><p className="font-bold text-lg text-success">+{gpxPreview.elevGain}m</p><p className="text-muted">D+</p></div>
+                <div className="bg-surface/60 backdrop-blur-sm rounded-lg p-2">
+                  <p className="font-bold text-lg text-foreground">{gpxPreview.distanceKm}</p>
+                  <p className="text-muted">km</p>
+                </div>
+                <div className="bg-surface/60 backdrop-blur-sm rounded-lg p-2">
+                  <p className="font-bold text-lg text-foreground">{gpxPreview.durationMin}</p>
+                  <p className="text-muted">min</p>
+                </div>
+                <div className="bg-surface/60 backdrop-blur-sm rounded-lg p-2">
+                  <p className="font-bold text-lg text-success">+{gpxPreview.elevGain}m</p>
+                  <p className="text-muted">D+</p>
+                </div>
               </div>
               {gpxPreview.latlng.length > 0 && (
                 <div className="rounded-lg overflow-hidden border border-border">
@@ -238,100 +267,143 @@ export default function NewActivityPage() {
               )}
             </div>
           )}
-        </div>
+        </Card>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Nom de l&apos;activit\u00e9 *</label>
-          <Input
-            value={form.name}
-            onChange={e => { setForm({ ...form, name: e.target.value }); setFieldErrors(f => ({ ...f, name: '' })); }}
-            placeholder="Morning Run"
-            required
-            className={fieldErrors.name ? 'border-danger' : ''}
-          />
-          {fieldErrors.name && <p className="text-xs text-danger mt-1">{fieldErrors.name}</p>}
-        </div>
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <Card variant="glass" accent="primary" padding="lg">
+          <div className="space-y-4">
 
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Type d&apos;activit\u00e9</label>
-          <Select value={form.type} onChange={v => setForm({ ...form, type: v })} options={ACTIVITY_TYPES} />
-        </div>
+            {/* Name + Type */}
+            <Card variant="glass-subtle" accent="primary" padding="md">
+              <CardTitle className="text-sm flex items-center gap-2 mb-3">
+                <FileText className="w-4 h-4 text-primary" />
+                Informations
+              </CardTitle>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Nom de l&apos;activit\u00e9 *</label>
+                  <Input
+                    value={form.name}
+                    onChange={e => { setForm({ ...form, name: e.target.value }); setFieldErrors(f => ({ ...f, name: '' })); }}
+                    placeholder="Morning Run"
+                    required
+                    className={fieldErrors.name ? 'border-danger' : ''}
+                  />
+                  {fieldErrors.name && <p className="text-xs text-danger mt-1">{fieldErrors.name}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Type d&apos;activit\u00e9</label>
+                  <Select value={form.type} onChange={v => setForm({ ...form, type: v })} options={ACTIVITY_TYPES} />
+                </div>
+              </div>
+            </Card>
 
-        {!gpxMode && (
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Date et heure</label>
-            <Input type="datetime-local" value={form.start_date} onChange={e => { setForm({ ...form, start_date: e.target.value }); setFieldErrors(f => ({ ...f, start_date: '' })); }} required className={fieldErrors.start_date ? 'border-danger' : ''} />
-            {fieldErrors.start_date && <p className="text-xs text-danger mt-1">{fieldErrors.start_date}</p>}
+            {/* Date */}
+            {!gpxMode && (
+              <Card variant="glass-subtle" accent="info" padding="md">
+                <CardTitle className="text-sm mb-3">Date et heure</CardTitle>
+                <div>
+                  <Input type="datetime-local" value={form.start_date} onChange={e => { setForm({ ...form, start_date: e.target.value }); setFieldErrors(f => ({ ...f, start_date: '' })); }} required className={fieldErrors.start_date ? 'border-danger' : ''} />
+                  {fieldErrors.start_date && <p className="text-xs text-danger mt-1">{fieldErrors.start_date}</p>}
+                </div>
+              </Card>
+            )}
+
+            {/* Distance + Duration */}
+            <Card variant="glass-subtle" accent="success" padding="md">
+              <CardTitle className="text-sm mb-3">Performance</CardTitle>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Distance (km)</label>
+                  <Input type="number" step="0.01" value={form.distance} onChange={e => setForm({ ...form, distance: e.target.value })} placeholder="5.0" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Dur\u00e9e (minutes)</label>
+                  <Input type="number" value={form.moving_time} onChange={e => setForm({ ...form, moving_time: e.target.value })} placeholder="30" />
+                </div>
+              </div>
+            </Card>
+
+            {/* Speed + Elevation */}
+            {!gpxMode && (
+              <Card variant="glass-subtle" accent="warning" padding="md">
+                <CardTitle className="text-sm mb-3">D\u00e9tails</CardTitle>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">Vitesse moyenne (km/h)</label>
+                    <Input type="number" step="0.1" value={form.average_speed} onChange={e => setForm({ ...form, average_speed: e.target.value })} placeholder="10.0" />
+                    {computedAvgSpeed && !form.average_speed && (
+                      <p className="text-xs text-primary mt-1">Auto-calcul\u00e9e: {computedAvgSpeed} km/h</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">D\u00e9nivel\u00e9 (m)</label>
+                    <Input type="number" value={form.total_elevation_gain} onChange={e => setForm({ ...form, total_elevation_gain: e.target.value })} placeholder="100" />
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {/* Heart rate */}
+            {!gpxMode && (
+              <Card variant="glass-subtle" accent="danger" padding="md">
+                <CardTitle className="text-sm mb-3">Fr\u00e9quence cardiaque</CardTitle>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">FC moyenne</label>
+                    <Input type="number" value={form.average_heartrate} onChange={e => setForm({ ...form, average_heartrate: e.target.value })} placeholder="150" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">FC max</label>
+                    <Input type="number" value={form.max_heartrate} onChange={e => setForm({ ...form, max_heartrate: e.target.value })} placeholder="175" />
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {/* Calories */}
+            {!gpxMode && (
+              <Card variant="glass-subtle" accent="peak" padding="md">
+                <CardTitle className="text-sm mb-3">D\u00e9pense \u00e9nerg\u00e9tique</CardTitle>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">Calories</label>
+                  <Input type="number" value={form.calories} onChange={e => setForm({ ...form, calories: e.target.value })} placeholder="300" />
+                </div>
+              </Card>
+            )}
+
+            {/* Notes */}
+            <Card variant="glass-subtle" padding="md">
+              <CardTitle className="text-sm mb-3">Notes</CardTitle>
+              <div>
+                <textarea
+                  value={form.notes}
+                  onChange={e => setForm({ ...form, notes: e.target.value })}
+                  className="w-full p-2 border border-border rounded-lg bg-surface text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  rows={3}
+                  placeholder="Notes sur l'activit\u00e9..."
+                />
+              </div>
+            </Card>
+
           </div>
-        )}
+        </Card>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Distance (km)</label>
-            <Input type="number" step="0.01" value={form.distance} onChange={e => setForm({ ...form, distance: e.target.value })} placeholder="5.0" />
+        {/* Submit area */}
+        <Card variant="glass" padding="lg">
+          <div className="flex gap-4">
+            <Button type="submit" isLoading={isLoading} className="flex-1">
+              {gpxMode ? 'Importer l\'activit\u00e9 GPX' : 'Enregistrer'}
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => router.back()}>
+              Annuler
+            </Button>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Dur\u00e9e (minutes)</label>
-            <Input type="number" value={form.moving_time} onChange={e => setForm({ ...form, moving_time: e.target.value })} placeholder="30" />
-          </div>
-        </div>
-
-        {!gpxMode && (
-          <>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Vitesse moyenne (km/h)</label>
-                <Input type="number" step="0.1" value={form.average_speed} onChange={e => setForm({ ...form, average_speed: e.target.value })} placeholder="10.0" />
-                {computedAvgSpeed && !form.average_speed && (
-                  <p className="text-xs text-primary mt-1">Auto-calcul\u00e9e: {computedAvgSpeed} km/h</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">D\u00e9nivel\u00e9 (m)</label>
-                <Input type="number" value={form.total_elevation_gain} onChange={e => setForm({ ...form, total_elevation_gain: e.target.value })} placeholder="100" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">FC moyenne</label>
-                <Input type="number" value={form.average_heartrate} onChange={e => setForm({ ...form, average_heartrate: e.target.value })} placeholder="150" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1">FC max</label>
-                <Input type="number" value={form.max_heartrate} onChange={e => setForm({ ...form, max_heartrate: e.target.value })} placeholder="175" />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Calories</label>
-              <Input type="number" value={form.calories} onChange={e => setForm({ ...form, calories: e.target.value })} placeholder="300" />
-            </div>
-          </>
-        )}
-
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Notes</label>
-          <textarea
-            value={form.notes}
-            onChange={e => setForm({ ...form, notes: e.target.value })}
-            className="w-full p-2 border border-border rounded-lg bg-surface text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
-            rows={3}
-            placeholder="Notes sur l'activit\u00e9..."
-          />
-        </div>
-
-        <div className="flex gap-4 pt-2">
-          <Button type="submit" isLoading={isLoading} className="flex-1">
-            {gpxMode ? 'Importer l\'activit\u00e9 GPX' : 'Enregistrer'}
-          </Button>
-          <Button type="button" variant="secondary" onClick={() => router.back()}>
-            Annuler
-          </Button>
-        </div>
+        </Card>
       </form>
+
     </div>
   );
 }

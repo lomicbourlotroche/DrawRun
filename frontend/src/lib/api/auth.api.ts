@@ -26,6 +26,7 @@ export interface LoginResponse {
   user: User;
   /** Whether the user has Garmin credentials stored (from login response) */
   has_garmin?: boolean;
+  has_decathlon?: boolean;
   twofa_enabled?: boolean;
 }
 
@@ -145,11 +146,12 @@ export const authApi = {
   },
 
   /**
-   * Déconnexion d'un service (Garmin)
+   * Déconnexion d'un service (Garmin, Decathlon)
    */
   disconnectService(service: string): Promise<{ success: boolean }> {
     const endpoints: Record<string, string> = {
       garmin: '/api/auth/disconnect/garmin',
+      decathlon: '/api/auth/disconnect/decathlon',
     };
     const endpoint = endpoints[service.toLowerCase()];
     if (!endpoint) throw new Error(`Unknown service: ${service}`);
@@ -164,6 +166,40 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
+  },
+
+  /**
+   * Sauvegarder les credentials Decathlon (email + mot de passe pour Playwright)
+   */
+  saveDecathlonCredentials(email: string, password: string): Promise<{ message: string }> {
+    return client.request('/api/auth/credentials/decathlon', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+  },
+
+  /**
+   * Déconnecter Decathlon
+   */
+  disconnectDecathlon(): Promise<{ success: boolean; message?: string }> {
+    return client.request('/api/auth/disconnect/decathlon', { method: 'POST' });
+  },
+
+  /**
+   * Connexion Suunto avec credentials
+   */
+  connectSuunto(email: string, password: string): Promise<{ success: boolean; message?: string }> {
+    return client.request('/api/auth/credentials/suunto', {
+      method: 'POST',
+      body: JSON.stringify({ username: email, password }),
+    });
+  },
+
+  /**
+   * Déconnecter Suunto
+   */
+  disconnectSuunto(): Promise<{ success: boolean; message?: string }> {
+    return client.request('/api/auth/disconnect/suunto', { method: 'POST' });
   },
 
 };

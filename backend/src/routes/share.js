@@ -6,7 +6,7 @@ const express = require('express');
 const router = express.Router({ mergeParams: true });
 const { verifyToken } = require('./auth');
 const { logger } = require('../utils/logger');
-const { getUserDb, dbGetUser, dbRunUser } = require('../database');
+const { getUserDb, dbGetUser, dbRunUser, dbRunMain } = require('../database');
 const { createCanvas } = require('canvas');
 const fs = require('fs');
 const path = require('path');
@@ -14,21 +14,273 @@ const path = require('path');
 const CACHE_DIR = path.join(__dirname, '../../tmp/share-images');
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
+// Available image sizes
+const IMAGE_SIZES = {
+  small: { width: 512, height: 512 },
+  medium: { width: 1080, height: 1080 },
+  large: { width: 2048, height: 2048 },
+};
+
+// Default size
+const DEFAULT_SIZE = 'medium';
+
 // Ensure cache directory exists
 if (!fs.existsSync(CACHE_DIR)) {
   fs.mkdirSync(CACHE_DIR, { recursive: true });
 }
 
 /**
+ * Clean up expired cache files
+ * Called periodically and on startup
+ */
+function cleanupCache() {
+  try {
+    const files = fs.readdirSync(CACHE_DIR);
+    const now = Date.now();
+    let deletedCount = 0;
+
+    files.forEach(file => {
+      try {
+        const filePath = path.join(CACHE_DIR, file);
+        const stats = fs.statSync(filePath);
+        const age = now - stats.mtime.getTime();
+
+        if (age > CACHE_TTL_MS) {
+          fs.unlinkSync(filePath);
+          deletedCount++;
+        }
+      } catch (err) {
+        // File may have been deleted or inaccessible
+        logger.warn('Cache cleanup error for file:', { file, error: err.message });
+      }
+    });
+
+    if (deletedCount > 0) {
+      logger.info('Cache cleanup completed', { deletedFiles: deletedCount });
+    }
+  } catch (err) {
+    logger.error('Cache cleanup failed:', { error: err.message });
+  }
+}
+
+// Setup periodic cleanup (every hour)
+setInterval(cleanupCache, CACHE_TTL_MS);
+
+// Initial cleanup on startup
+cleanupCache();
+
+/**
+ * Log an activity share event to the database
+ */
+async function logShareEvent(userId, activityId, shareType, metadata = {}) {
+  try {
+    await dbRunMain(`
+      INSERT INTO activity_shares (user_id, activity_id, share_type, metadata, created_at)
+      VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `, [userId, activityId, shareType, JSON.stringify(metadata)]);
+    logger.info('Activity share logged', { userId, activityId, shareType });
+  } catch (err) {
+    logger.error('Failed to log share event:', { error: err.message });
+  }
+}
+
+/**
+ * Generate share image canvas
+ * @param {Object} activity - Activity data
+ * @param {string} size - 'small', 'medium', 'large'
+ * @returns {canvas} Canvas object
+ */
+function generateShareCanvas(activity, size = DEFAULT_SIZE) {
+  const dimensions = IMAGE_SIZES[size] || IMAGE_SIZES[DEFAULT_SIZE];
+  const canvas = createCanvas(dimensions.width, dimensions.height);
+  const ctx = canvas.getContext('2d');
+
+  // Determine gradient colors based on activity type
+  const typeColors = {
+    'Run': { start: '#3b82f6', end: '#1d4ed8' },
+    'Ride': { start: '#f97316', end: '#c2410c' },
+    'Swim': { start: '#06b6d4', end: '#0e7490' },
+    'Hike': { start: '#10b981', end: '#059669' },
+    'Walk': { start: '#8b5cf6', end: '#6d28d9' },
+    'default': { start: '#8b5cf6', end: '#6d28d9' },
+  };
+
+  const colors = typeColors[activity[9]] || typeColors.default;
+
+  // Draw gradient background
+  const gradient = ctx.createLinearGradient(0, 0, dimensions.width, dimensions.height);
+  gradient.addColorStop(0, colors.start);
+  gradient.addColorStop(1, colors.end);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, dimensions.width, dimensions.height);
+
+  // Draw decorative circles (scaled)
+  const circleScale = dimensions.width / 1080;
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+  ctx.beginPath();
+  ctx.arc(dimensions.width, 0, 400 * circleScale, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(0, dimensions.height, 300 * circleScale, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Draw logo/header (scaled)
+  const logoScale = dimensions.width / 1080;
+  ctx.fillStyle = 'white';
+  ctx.font = `bold ${40 * logoScale}px Arial`;
+  ctx.textAlign = 'left';
+  ctx.fillText('DR', 60 * logoScale, 80 * logoScale);
+
+  ctx.font = `${24 * logoScale}px Arial`;
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+  ctx.fillText('DrawRun', 120 * logoScale, 80 * logoScale);
+
+  // Draw activity name (scaled)
+  const textScale = dimensions.width / 1080;
+  ctx.font = `bold ${56 * textScale}px Arial`;
+  ctx.fillStyle = 'white';
+  ctx.textAlign = 'left';
+
+  // Truncate long names
+  let displayName = activity[1] || 'Activité';
+  const maxWidth = dimensions.width - (120 * textScale);
+  if (ctx.measureText(displayName).width > maxWidth) {
+    while (ctx.measureText(displayName + '...').width > maxWidth && displayName.length > 0) {
+      displayName = displayName.slice(0, -1);
+    }
+    displayName += '...';
+  }
+  ctx.fillText(displayName, 60 * textScale, 200 * textScale);
+
+  // Draw date
+  const date = new Date(activity[8]);
+  const dateStr = date.toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+  ctx.font = `${28 * textScale}px Arial`;
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+  ctx.fillText(dateStr, 60 * textScale, 250 * textScale);
+
+  // Draw main stats (scaled)
+  const statsY = 400 * textScale;
+  const statSpacing = (dimensions.width - 120 * textScale) / 3;
+
+  // Helper function to draw stat
+  const drawStat = (value, label, xOffset, yOffset) => {
+    ctx.textAlign = 'center';
+    ctx.font = `bold ${72 * textScale}px Arial`;
+    ctx.fillStyle = 'white';
+    ctx.fillText(value, 60 * textScale + xOffset * statSpacing, yOffset);
+    
+    ctx.font = `${24 * textScale}px Arial`;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.fillText(label, 60 * textScale + xOffset * statSpacing, yOffset + 40 * textScale);
+    ctx.textAlign = 'left';
+  };
+
+  // Distance
+  const distanceKm = (activity[2] / 1000).toFixed(2);
+  drawStat(distanceKm, 'km', 0, statsY);
+
+  // Duration
+  const duration = activity[3] || activity[4] || 0;
+  const hours = Math.floor(duration / 3600);
+  const mins = Math.floor((duration % 3600) / 60);
+  const secs = duration % 60;
+  const timeStr = hours > 0
+    ? `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+    : `${mins}:${secs.toString().padStart(2, '0')}`;
+  drawStat(timeStr, 'durée', 1, statsY);
+
+  // Pace
+  let paceStr = '--';
+  if (activity[6]) {
+    const paceSecPerKm = 3600 / activity[6];
+    const paceMins = Math.floor(paceSecPerKm / 60);
+    const paceSecs = Math.round(paceSecPerKm % 60);
+    paceStr = `${paceMins}:${paceSecs.toString().padStart(2, '0')}`;
+  }
+  drawStat(paceStr, '/km', 2, statsY);
+
+  // Draw divider line
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.lineWidth = 2 * textScale;
+  ctx.beginPath();
+  ctx.moveTo(60 * textScale, 500 * textScale);
+  ctx.lineTo(dimensions.width - 60 * textScale, 500 * textScale);
+  ctx.stroke();
+
+  // Draw additional stats
+  const addStatsY = 600 * textScale;
+
+  // Elevation
+  if (activity[5]) {
+    ctx.textAlign = 'left';
+    ctx.font = `${36 * textScale}px Arial`;
+    ctx.fillStyle = 'white';
+    ctx.fillText(`+${Math.round(activity[5])} m`, 60 * textScale, addStatsY);
+    ctx.font = `${20 * textScale}px Arial`;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.fillText('Dénivelé', 60 * textScale, addStatsY + 30 * textScale);
+  }
+
+  // Heart rate
+  if (activity[7]) {
+    ctx.textAlign = 'right';
+    ctx.font = `${36 * textScale}px Arial`;
+    ctx.fillStyle = 'white';
+    ctx.fillText(`${Math.round(activity[7])} bpm`, dimensions.width - 60 * textScale, addStatsY);
+    ctx.font = `${20 * textScale}px Arial`;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.fillText('FC moyenne', dimensions.width - 60 * textScale, addStatsY + 30 * textScale);
+  }
+
+  // Draw athlete name
+  if (activity[10]) {
+    ctx.textAlign = 'center';
+    ctx.font = `${32 * textScale}px Arial`;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fillText(activity[10], dimensions.width / 2, dimensions.height - 180 * textScale);
+  }
+
+  // Draw footer
+  ctx.textAlign = 'center';
+  ctx.font = `${24 * textScale}px Arial`;
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+  ctx.fillText('drawrun.fr', dimensions.width / 2, dimensions.height - 80 * textScale);
+
+  return canvas;
+}
+
+/**
+ * Generate cache filename based on parameters
+ */
+function getCacheFilename(activityId, userId, size) {
+  return `activity-${activityId}-user-${userId}-${size}.png`;
+}
+
+/**
  * GET /api/activities/:id/share-image
  * Generate a shareable image for an activity
  * @route GET /api/activities/:id/share-image
+ * @query {string} size - 'small' (512x512), 'medium' (1080x1080), 'large' (2048x2048)
+ * @query {boolean} download - If true, force download (default: true)
  * @returns {image/png} Generated activity summary image
  */
 router.get('/share-image', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const activityId = parseInt(req.params.id);
+    const { size = DEFAULT_SIZE, download = true } = req.query;
+
+    // Validate size
+    const validSizes = Object.keys(IMAGE_SIZES);
+    const actualSize = validSizes.includes(size) ? size : DEFAULT_SIZE;
 
     if (!activityId || isNaN(activityId)) {
       return res.status(400).json({ error: 'Invalid activity ID' });
@@ -36,7 +288,7 @@ router.get('/share-image', verifyToken, async (req, res) => {
 
     const userDb = await getUserDb(userId);
 
-    // Get activity details using sql.js API
+    // Get activity details
     const activityRow = await dbGetUser(userDb, `
       SELECT 
         a.id,
@@ -80,7 +332,7 @@ router.get('/share-image', verifyToken, async (req, res) => {
     ];
 
     // Check cache
-    const cacheFileName = `activity-${activityId}-user-${userId}.png`;
+    const cacheFileName = getCacheFilename(activityId, userId, actualSize);
     const cachePath = path.join(CACHE_DIR, cacheFileName);
     
     let useCache = false;
@@ -89,7 +341,7 @@ router.get('/share-image', verifyToken, async (req, res) => {
       const age = Date.now() - stats.mtime.getTime();
       if (age < CACHE_TTL_MS) {
         useCache = true;
-        logger.info('[ShareImage] Cache hit', { activityId });
+        logger.info('[ShareImage] Cache hit', { activityId, size: actualSize });
       }
     } catch {
       // Cache miss or file doesn't exist
@@ -97,187 +349,227 @@ router.get('/share-image', verifyToken, async (req, res) => {
 
     if (useCache) {
       res.setHeader('Content-Type', 'image/png');
-      res.setHeader('Content-Disposition', `attachment; filename="drawrun-activity-${activityId}.png"`);
+      if (download !== 'false') {
+        const dimensions = IMAGE_SIZES[actualSize];
+        res.setHeader('Content-Disposition', `attachment; filename="drawrun-activity-${activityId}-${actualSize}.png"`);
+      }
       return fs.createReadStream(cachePath).pipe(res);
     }
 
     // Generate new image
-    const canvas = createCanvas(1080, 1080);
-    const ctx = canvas.getContext('2d');
-
-    // Determine gradient colors based on activity type
-    const typeColors = {
-      'Run': { start: '#3b82f6', end: '#1d4ed8' },
-      'Ride': { start: '#f97316', end: '#c2410c' },
-      'Swim': { start: '#06b6d4', end: '#0e7490' },
-      'default': { start: '#8b5cf6', end: '#6d28d9' },
-    };
-    
-    const colors = typeColors[activity[9]] || typeColors.default;
-
-    // Draw gradient background
-    const gradient = ctx.createLinearGradient(0, 0, 1080, 1080);
-    gradient.addColorStop(0, colors.start);
-    gradient.addColorStop(1, colors.end);
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 1080, 1080);
-
-    // Draw decorative circles
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-    ctx.beginPath();
-    ctx.arc(1080, 0, 400, 0, Math.PI * 2);
-    ctx.fill();
-    
-    ctx.beginPath();
-    ctx.arc(0, 1080, 300, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Draw logo/header
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 40px Arial';
-    ctx.textAlign = 'left';
-    ctx.fillText('DR', 60, 80);
-    
-    ctx.font = '24px Arial';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    ctx.fillText('DrawRun', 120, 80);
-
-    // Draw activity name
-    ctx.font = 'bold 56px Arial';
-    ctx.fillStyle = 'white';
-    ctx.textAlign = 'left';
-    
-    // Truncate long names
-    let displayName = activity[1];
-    if (ctx.measureText(displayName).width > 960) {
-      while (ctx.measureText(displayName + '...').width > 960 && displayName.length > 0) {
-        displayName = displayName.slice(0, -1);
-      }
-      displayName += '...';
-    }
-    ctx.fillText(displayName, 60, 200);
-
-    // Draw date
-    const date = new Date(activity[8]);
-    const dateStr = date.toLocaleDateString('fr-FR', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
-    
-    ctx.font = '28px Arial';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-    ctx.fillText(dateStr, 60, 250);
-
-    // Draw main stats
-    const statsY = 400;
-    const statSpacing = 320;
-    
-    // Distance
-    ctx.textAlign = 'center';
-    ctx.font = 'bold 72px Arial';
-    ctx.fillStyle = 'white';
-    ctx.fillText((activity[2] / 1000).toFixed(2), 60 + statSpacing * 0, statsY);
-    ctx.font = '24px Arial';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-    ctx.fillText('km', 60 + statSpacing * 0, statsY + 40);
-
-    // Duration
-    const duration = activity[3] || activity[4] || 0;
-    const hours = Math.floor(duration / 3600);
-    const mins = Math.floor((duration % 3600) / 60);
-    const secs = duration % 60;
-    const timeStr = hours > 0 
-      ? `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-      : `${mins}:${secs.toString().padStart(2, '0')}`;
-    
-    ctx.font = 'bold 72px Arial';
-    ctx.fillStyle = 'white';
-    ctx.fillText(timeStr, 60 + statSpacing * 1, statsY);
-    ctx.font = '24px Arial';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-    ctx.fillText('durée', 60 + statSpacing * 1, statsY + 40);
-
-    // Pace
-    let paceStr = '--';
-    if (activity[6]) {
-      const paceSecPerKm = 3600 / activity[6];
-      const paceMins = Math.floor(paceSecPerKm / 60);
-      const paceSecs = Math.round(paceSecPerKm % 60);
-      paceStr = `${paceMins}:${paceSecs.toString().padStart(2, '0')}`;
-    }
-    
-    ctx.font = 'bold 72px Arial';
-    ctx.fillStyle = 'white';
-    ctx.fillText(paceStr, 60 + statSpacing * 2, statsY);
-    ctx.font = '24px Arial';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-    ctx.fillText('/km', 60 + statSpacing * 2, statsY + 40);
-
-    // Draw divider line
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(60, 500);
-    ctx.lineTo(1020, 500);
-    ctx.stroke();
-
-    // Draw additional stats
-    const addStatsY = 600;
-    
-    // Elevation
-    if (activity[5]) {
-      ctx.textAlign = 'left';
-      ctx.font = '36px Arial';
-      ctx.fillStyle = 'white';
-      ctx.fillText(`+${Math.round(activity[5])} m`, 60, addStatsY);
-      ctx.font = '20px Arial';
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-      ctx.fillText('Dénivelé', 60, addStatsY + 30);
-    }
-
-    // Heart rate
-    if (activity[7]) {
-      ctx.textAlign = 'right';
-      ctx.font = '36px Arial';
-      ctx.fillStyle = 'white';
-      ctx.fillText(`${Math.round(activity[7])} bpm`, 1020, addStatsY);
-      ctx.font = '20px Arial';
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-      ctx.fillText('FC moyenne', 1020, addStatsY + 30);
-    }
-
-    // Draw athlete name
-    if (activity[10]) {
-      ctx.textAlign = 'center';
-      ctx.font = '32px Arial';
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.fillText(activity[10], 540, 900);
-    }
-
-    // Draw footer
-    ctx.textAlign = 'center';
-    ctx.font = '24px Arial';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-    ctx.fillText('drawrun.fr', 540, 1000);
-
-    // Export to PNG
+    const canvas = generateShareCanvas(activity, actualSize);
     const buffer = canvas.toBuffer('image/png');
     
     // Cache the image
     fs.writeFileSync(cachePath, buffer);
 
+    // Log the share event
+    await logShareEvent(userId, activityId, 'image_generation', {
+      size: actualSize,
+      download: download !== 'false',
+    });
+
     // Send response
     res.setHeader('Content-Type', 'image/png');
-    res.setHeader('Content-Disposition', `attachment; filename="drawrun-activity-${activityId}.png"`);
+    if (download !== 'false') {
+      const dimensions = IMAGE_SIZES[actualSize];
+      res.setHeader('Content-Disposition', `attachment; filename="drawrun-activity-${activityId}-${actualSize}.png"`);
+    }
     res.send(buffer);
 
-    logger.info('[ShareImage] Generated image', { activityId, userId });
+    logger.info('[ShareImage] Generated image', { activityId, userId, size: actualSize });
 
   } catch (error) {
     logger.error('[ShareImage] Error generating image', { error: error.message });
     res.status(500).json({ error: 'Failed to generate share image' });
+  }
+});
+
+/**
+ * GET /api/activities/:id/share-image/preview
+ * Get share image URL for preview (no download header)
+ * @route GET /api/activities/:id/share-image/preview
+ * @query {string} size - 'small', 'medium', 'large'
+ * @returns {image/png} Image for preview
+ */
+router.get('/share-image/preview', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const activityId = parseInt(req.params.id);
+    const { size = DEFAULT_SIZE } = req.query;
+
+    // Validate size
+    const validSizes = Object.keys(IMAGE_SIZES);
+    const actualSize = validSizes.includes(size) ? size : DEFAULT_SIZE;
+
+    if (!activityId || isNaN(activityId)) {
+      return res.status(400).json({ error: 'Invalid activity ID' });
+    }
+
+    // Reuse the main share-image endpoint logic but without download header
+    const userDb = await getUserDb(userId);
+
+    const activityRow = await dbGetUser(userDb, `
+      SELECT 
+        a.id,
+        a.name,
+        a.distance,
+        a.moving_time,
+        a.elapsed_time,
+        a.total_elevation_gain,
+        a.average_speed,
+        a.average_heartrate,
+        a.start_date,
+        a.type
+      FROM activities a
+      WHERE a.id = ?
+    `, [activityId]);
+
+    if (!activityRow) {
+      return res.status(404).json({ error: 'Activité non trouvée' });
+    }
+
+    const { dbGetMain } = require('../database');
+    const userRow = await dbGetMain('SELECT profile_data FROM users WHERE id = ?', [userId]);
+    let athleteName = null;
+    if (userRow?.profile_data) {
+      try { athleteName = JSON.parse(userRow.profile_data).name || null; } catch { /* ignore */ }
+    }
+
+    const activity = [
+      activityRow.id,
+      activityRow.name,
+      activityRow.distance,
+      activityRow.moving_time,
+      activityRow.elapsed_time,
+      activityRow.total_elevation_gain,
+      activityRow.average_speed,
+      activityRow.average_heartrate,
+      activityRow.start_date,
+      activityRow.type,
+      athleteName,
+    ];
+
+    // Check cache
+    const cacheFileName = getCacheFilename(activityId, userId, actualSize);
+    const cachePath = path.join(CACHE_DIR, cacheFileName);
+    
+    let useCache = false;
+    try {
+      const stats = fs.statSync(cachePath);
+      const age = Date.now() - stats.mtime.getTime();
+      if (age < CACHE_TTL_MS) {
+        useCache = true;
+      }
+    } catch {
+      // Cache miss
+    }
+
+    if (useCache) {
+      res.setHeader('Content-Type', 'image/png');
+      return fs.createReadStream(cachePath).pipe(res);
+    }
+
+    // Generate new image
+    const canvas = generateShareCanvas(activity, actualSize);
+    const buffer = canvas.toBuffer('image/png');
+    
+    // Cache the image
+    fs.writeFileSync(cachePath, buffer);
+
+    res.setHeader('Content-Type', 'image/png');
+    res.send(buffer);
+
+  } catch (error) {
+    logger.error('[ShareImage] Preview error', { error: error.message });
+    res.status(500).json({ error: 'Failed to generate preview' });
+  }
+});
+
+/**
+ * POST /api/activities/:id/share
+ * Log a share event (for analytics)
+ * @route POST /api/activities/:id/share
+ * @body {string} share_type - Type of share: 'social', 'link', 'image', 'story'
+ * @body {string} platform - Optional platform: 'twitter', 'facebook', 'instagram', 'whatsapp', 'native'
+ * @returns {object} Success confirmation
+ */
+router.post('/share', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const activityId = parseInt(req.params.id);
+    const { share_type, platform } = req.body;
+
+    if (!activityId || isNaN(activityId)) {
+      return res.status(400).json({ error: 'Invalid activity ID' });
+    }
+
+    if (!share_type) {
+      return res.status(400).json({ error: 'share_type is required' });
+    }
+
+    // Verify activity exists and belongs to user
+    const userDb = await getUserDb(userId);
+    const activity = await dbGetUser(userDb, 'SELECT id FROM activities WHERE id = ?', [activityId]);
+    
+    if (!activity) {
+      return res.status(404).json({ error: 'Activité non trouvée' });
+    }
+
+    // Log the share event
+    await logShareEvent(userId, activityId, share_type, {
+      platform: platform || null,
+      user_agent: req.headers['user-agent'] || null,
+    });
+
+    res.json({ success: true, message: 'Share event logged' });
+  } catch (error) {
+    logger.error('[Share] Error logging share', { error: error.message });
+    res.status(500).json({ error: 'Failed to log share event' });
+  }
+});
+
+/**
+ * GET /api/activities/:id/share/stats
+ * Get share statistics for an activity
+ * @route GET /api/activities/:id/share/stats
+ * @returns {object} Share statistics
+ */
+router.get('/share/stats', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const activityId = parseInt(req.params.id);
+
+    if (!activityId || isNaN(activityId)) {
+      return res.status(400).json({ error: 'Invalid activity ID' });
+    }
+
+    // Verify activity exists
+    const userDb = await getUserDb(userId);
+    const activity = await dbGetUser(userDb, 'SELECT id FROM activities WHERE id = ?', [activityId]);
+    
+    if (!activity) {
+      return res.status(404).json({ error: 'Activité non trouvée' });
+    }
+
+    // Get share stats from main DB
+    const { dbAllMain } = require('../database');
+    const stats = await dbAllMain(
+      'SELECT share_type, platform, COUNT(*) as count, MAX(created_at) as last_shared FROM activity_shares WHERE user_id = ? AND activity_id = ? GROUP BY share_type, platform',
+      [userId, activityId]
+    );
+
+    const totalShares = stats.reduce((sum, s) => sum + s.count, 0);
+
+    res.json({
+      success: true,
+      total_shares: totalShares,
+      shares_by_type: stats,
+      activity_id: activityId,
+    });
+  } catch (error) {
+    logger.error('[Share] Error getting stats', { error: error.message });
+    res.status(500).json({ error: 'Failed to get share statistics' });
   }
 });
 

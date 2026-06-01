@@ -37,15 +37,35 @@ function log(userId, message, ...args) {
  * Utilise un tokenstore par utilisateur pour persister les tokens OAuth (garth).
  * Les credentials sont passés via stdin (jamais en argument de ligne de commande).
  */
-async function callGarminApi(userId, options = {}) {
-    const creds = await dbGetMain(
-        'SELECT username, password FROM user_credentials WHERE user_id = ? AND provider = ? AND enabled = 1',
-        [userId, 'garmin']
-    );
-
-    if (!creds || !creds.username) {
-        throw new Error('Garmin credentials not configured');
-    }
+async function callGarminApi(userId, options = {}) {
+
+    let creds = await dbGetMain(
+        'SELECT username, password FROM user_credentials WHERE user_id = ? AND provider = ? AND enabled = 1',
+        [userId, 'garmin']
+    );
+
+    if (!creds || !creds.username) {
+        // Fallback: read from legacy users.garmin_username / garmin_password columns
+        const user = await dbGetMain(
+            'SELECT garmin_username, garmin_password FROM users WHERE id = ? AND garmin_username IS NOT NULL',
+            [userId]
+        );
+        if (user?.garmin_username) {
+            creds = { username: user.garmin_username, password: user.garmin_password };
+            // Migrate to user_credentials for next time
+            try {
+                await dbRunMain(
+                    `INSERT OR REPLACE INTO user_credentials (user_id, provider, username, password, enabled, updated_at)
+                     VALUES (?, 'garmin', ?, ?, 1, CURRENT_TIMESTAMP)`,
+                    [userId, user.garmin_username, user.garmin_password]
+                );
+            } catch (_) { /* non-critical */ }
+        }
+    }
+
+    if (!creds || !creds.username) {
+        throw new Error('Garmin credentials not configured');
+    }
 
     const password = decrypt(creds.password) || creds.password;
     const tokenstore = path.join(GARMIN_TOKEN_DIR, String(userId));
@@ -128,7 +148,7 @@ async function callGarminApi(userId, options = {}) {
  *   4. Composition corporelle (poids, masse grasse)
  *   5. Métriques avancées (VO2max, training status)
  */
-async function performGarminSync(userId) {
+async function performGarminSync(userId, options = {}) {
     const startTime = Date.now();
 
     try {
@@ -151,24 +171,31 @@ async function performGarminSync(userId) {
             'SELECT MAX(start_date) as last_date FROM activities WHERE source = "garmin"'
         );
         const rawDate = lastActivity?.last_date || null;
-        // Extract YYYY-MM-DD from ISO timestamp for Python strptime format
-        const startDate = rawDate ? rawDate.split('T')[0] : null;
-        const isFirstSync = !startDate;
-
-        if (startDate) {
-            log(userId, `Incremental sync from ${startDate}`);
-        } else {
-            log(userId, 'Full initial sync (no previous Garmin activities) — fetching all history');
-        }
-
-        // === Phase 1: Activities List ===
-        // Premier sync : pas de limite pour récupérer tout l'historique
-        // Sync incrémental : limite à 100 pour les nouvelles activités récentes
-        const activitiesResponse = await callGarminApi(userId, {
-            mode: 'activities',
-            start_date: startDate,
-            ...(isFirstSync ? {} : { limit: 100 })
-        });
+        // Extract YYYY-MM-DD from various timestamp formats (ISO: '2026-05-30T14:30:00.000Z' or SQL: '2026-05-30 14:30:00')
+        const startDate = rawDate ? rawDate.split(/[T ]/)[0] : null;
+        const isFirstSync = !startDate;
+
+        // Allow forced full resync via options.days (overrides incremental logic)
+        const forceDays = options?.days;
+        const useStartDate = forceDays ? null : startDate;
+
+        if (forceDays) {
+            log(userId, `Forced full resync: fetching ${forceDays} days of history`);
+        } else if (startDate) {
+            log(userId, `Incremental sync from ${startDate}`);
+        } else {
+            log(userId, 'Full initial sync (no previous Garmin activities) — fetching all history');
+        }
+
+        // === Phase 1: Activities List ===
+        // Premier sync : pas de limite pour récupérer tout l'historique
+        // Sync incrémental : limite à 100 pour les nouvelles activités récentes
+
+        const activitiesResponse = await callGarminApi(userId, {
+            mode: 'activities',
+            start_date: useStartDate,
+            ...(forceDays ? { days: forceDays } : (isFirstSync ? { days: 730 } : { limit: 100 }))
+        });
 
         // Le script Python retourne { activities: [...] } pour le mode 'activities'
         const activityList = Array.isArray(activitiesResponse)
@@ -209,13 +236,96 @@ async function performGarminSync(userId) {
             });
         }
 
-        // Batch process (check existing + insert new + fetch details with GPS streams)
-        const result = await processActivityList(userDb, 'garmin', activitiesToProcess, 
-            (sourceId) => callGarminApi(userId, { mode: 'streams', id: sourceId })
-        );
-
-        importedCount = result.imported;
-        detailCount = result.details;
+        // Batch process (check existing + insert new + fetch details with GPS streams)
+
+        const result = await processActivityList(userDb, 'garmin', activitiesToProcess, 
+
+            (sourceId) => callGarminApi(userId, { mode: 'streams', id: sourceId })
+
+        );
+
+
+
+        importedCount = result.imported;
+
+        detailCount = result.details;
+
+
+
+        // On forced full resync: re-fetch details and streams for ALL Garmin activities from DB
+        if (forceDays) {
+            const allGarminActivities = await dbAllUser(userDb,
+                'SELECT id, source_id FROM activities WHERE source = ? ORDER BY start_date DESC',
+                ['garmin']
+            );
+            log(userId, `Full resync: fetching/updating details for all ${allGarminActivities.length} activities from DB...`);
+            for (const act of allGarminActivities) {
+                const sourceId = act.source_id;
+                if (!sourceId) continue;
+                try {
+                    const details = await callGarminApi(userId, { mode: 'streams', id: sourceId });
+                    if (details && typeof details === 'object') {
+                        const activityId = act.id;
+                        // Store GPS polyline
+                        const geo = details.geoPolylineDTO;
+                        if (geo?.polyline) {
+                            await dbRunUser(userDb,
+                                'UPDATE activities SET map_polyline = ? WHERE id = ?',
+                                [JSON.stringify(geo.polyline), activityId]
+                            );
+                        }
+                        // Store streams
+                        if (details.activityDetailMetrics && details.metricDescriptors) {
+                            const { extractGarminStreams } = require('./utils');
+                            const streams = extractGarminStreams(details);
+                            if (streams) {
+                                for (const [streamType, streamData] of Object.entries(streams)) {
+                                    if (!streamData) continue;
+                                    try {
+                                        await dbRunUser(userDb, `
+                                            INSERT OR REPLACE INTO activity_streams (activity_id, stream_type, data)
+                                            VALUES (?, ?, ?)
+                                        `, [activityId, streamType, JSON.stringify(streamData)]);
+                                    } catch (e) { /* skip */ }
+                                }
+                            }
+                        }
+                        // Store splits
+                        if (Array.isArray(details.splitSummaries) && details.splitSummaries.length > 0) {
+                            for (const [i, s] of details.splitSummaries.entries()) {
+                                try {
+                                    await dbRunUser(userDb, `
+                                        INSERT OR IGNORE INTO activity_splits
+                                        (activity_id, split_number, distance, elapsed_time, moving_time,
+                                         average_speed, average_heartrate, max_heartrate, elevation_difference, pace_zone)
+                                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    `, [
+                                        activityId, i + 1, s.distance || 0, s.duration || 0,
+                                        s.movingDuration || s.duration || 0, s.averageSpeed || null,
+                                        s.averageHR || null, s.maxHR || null,
+                                        s.elevationGain || null, s.paceZone || null,
+                                    ]);
+                                } catch (e) { /* skip */ }
+                            }
+                        }
+                        detailCount++;
+                        log(userId, `  OK source_id=${sourceId} (${detailCount}/${allGarminActivities.length})`);
+                    }
+                } catch (err) {
+                    log(userId, `  FAIL source_id=${sourceId}: ${err.message}`);
+                    // If rate limited, wait before retrying
+                    if (err.message.includes('429') || err.message.includes('rate')) {
+                        log(userId, 'Rate limited by Garmin — waiting 60s before next attempt...');
+                        await sleep(60000);
+                    }
+                }
+                // Delay between API calls to prevent rate limiting
+                if (detailCount < allGarminActivities.length) {
+                    await sleep(2000);
+                }
+            }
+            log(userId, `Details updated for ${detailCount}/${allGarminActivities.length} activities`);
+        }
 
         log(userId, `Imported ${importedCount} activities (${detailCount} with details)`);
 

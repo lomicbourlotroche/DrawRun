@@ -15,26 +15,26 @@ interface SegmentDetail {
   name: string;
   description?: string;
   distance: number;
-  elevation_gain: number;
-  elevation_loss: number;
-  avg_grade: number;
-  max_grade: number;
+  elevation_gain?: number;
+  elevation_loss?: number;
+  avg_grade?: number;
+  max_grade?: number;
   activity_type: string;
   polyline?: string;
   creator_name?: string;
-  total_efforts: number;
-  unique_athletes: number;
+  total_efforts?: number;
+  unique_athletes?: number;
   start_lat?: number;
   start_lng?: number;
   end_lat?: number;
   end_lng?: number;
   kom?: {
-    user_name: string;
-    elapsed_time: number;
+    user_name?: string;
+    elapsed_time?: number;
   };
   qom?: {
-    user_name: string;
-    elapsed_time: number;
+    user_name?: string;
+    elapsed_time?: number;
   };
 }
 
@@ -120,8 +120,9 @@ export default function SegmentDetailPage() {
           variant="ghost" 
           className="mb-4"
           onClick={() => window.history.back()}
+          aria-label="Retour à la page précédente"
         >
-          <ChevronLeft className="w-4 h-4 mr-2" />
+          <ChevronLeft className="w-4 h-4 mr-2" aria-hidden="true" />
           Retour
         </Button>
 
@@ -140,8 +141,8 @@ export default function SegmentDetailPage() {
             const url = `${window.location.origin}/app/explore/segments/${segmentId}`;
             navigator.clipboard.writeText(url);
             toast.success('Lien copié');
-          }}>
-            <Share2 className="w-4 h-4 mr-2" />
+          }} aria-label="Partager ce segment">
+            <Share2 className="w-4 h-4 mr-2" aria-hidden="true" />
             Partager
           </Button>
         </div>
@@ -207,7 +208,7 @@ export default function SegmentDetailPage() {
             <CardContent>
               <p className="font-semibold">{segment.kom.user_name}</p>
               <p className="text-2xl font-bold text-warning-600">
-                {formatDuration(segment.kom.elapsed_time)}
+                {formatDuration(segment.kom.elapsed_time || 0)}
               </p>
             </CardContent>
           </Card>
@@ -224,7 +225,7 @@ export default function SegmentDetailPage() {
             <CardContent>
               <p className="font-semibold">{segment.qom.user_name}</p>
               <p className="text-2xl font-bold text-secondary-600">
-                {formatDuration(segment.qom.elapsed_time)}
+                {formatDuration(segment.qom.elapsed_time || 0)}
               </p>
             </CardContent>
           </Card>

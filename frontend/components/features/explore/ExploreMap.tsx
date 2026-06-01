@@ -1,7 +1,7 @@
 'use client';
 
 import 'leaflet/dist/leaflet.css';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { DrawRunMap } from '@/types/leaflet';
 import MapController from './MapController';
 import RouteOverlay from './RouteOverlay';

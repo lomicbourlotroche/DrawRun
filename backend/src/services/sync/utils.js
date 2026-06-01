@@ -7,6 +7,7 @@
 
 const { logger } = require('../../utils/logger');
 const { dbAllUser, dbRunUser } = require('../../database');
+const { parseActivityFile } = require('../activityParser.service');
 
 /**
  * Check which source_ids already exist in the activities table.
@@ -305,12 +306,237 @@ async function processActivityList(userDb, source, activityList, detailFetcher =
  * Merge detail data into an activity object.
  * @param {object} activity - Activity to enrich (mutated in place)
  * @param {object} details - Raw detail response from the source API
- * @param {string} source - Source name (only 'garmin' supported)
+ * @param {string} source - Source name ('garmin' or 'decathlon' supported)
  */
 function mergeDetails(activity, details, source) {
     if (source === 'garmin') {
         mergeGarminDetails(activity, details);
+    } else if (source === 'decathlon') {
+        mergeDecathlonDetails(activity, details);
     }
+}
+
+function mergeDecathlonDetails(act, d) {
+    const summaries = d.dataSummaries || {};
+    const locations = d.locations || {};
+    const datastream = d.datastream || {};
+
+    // Update fields from dataSummaries
+    if (summaries[5]) act.distance = summaries[5]; // metres
+    if (summaries[24]) {
+        act.moving_time = summaries[24];
+        act.elapsed_time = summaries[24];
+    }
+    if (summaries[23]) act.calories = summaries[23];
+    if (summaries[9]) act.average_speed = summaries[9] / 3600; // m/h to m/s
+    if (summaries[7]) act.max_speed = summaries[7] / 3600; // m/h to m/s
+    if (summaries[4]) act.average_heartrate = summaries[4];
+    if (summaries[3]) act.max_heartrate = summaries[3];
+    if (summaries[10] || summaries[103]) act.average_cadence = summaries[10] || summaries[103];
+    if (summaries[15]) act.elev_high = summaries[15];
+    if (summaries[16]) act.elev_low = summaries[16];
+    if (summaries[18]) act.total_elevation_gain = summaries[18];
+    if (summaries[19]) act.total_elevation_loss = summaries[19];
+    
+    // Device info
+    if (d.userDevice) {
+        const deviceId = extractIdFromDecathlonUrl(d.userDevice);
+        if (deviceId) act.device_name = String(deviceId);
+    }
+    
+    // GPS polyline from locations
+    if (locations && Object.keys(locations).length > 0) {
+        const coords = Object.values(locations)
+            .filter(loc => loc && loc.latitude !== undefined && loc.longitude !== undefined)
+            .map(loc => [loc.longitude, loc.latitude]); // GPX format: [lng, lat]
+        
+        if (coords.length > 0) {
+            act.map_polyline = JSON.stringify(coords);
+        }
+    }
+    
+    // Streams from datastream
+    if (datastream && Object.keys(datastream).length > 0) {
+        const streams = extractDecathlonStreams(datastream, d.locations);
+        if (streams) act._streams = streams;
+    }
+    
+    // Splits from datastream
+    if (datastream && Object.keys(datastream).length > 0) {
+        const splits = extractDecathlonSplits(datastream);
+        if (splits) act._splits = splits;
+    }
+    
+    // Fallback to name from activity if not set
+    if (!act.name && d.name) {
+        act.name = d.name;
+    }
+    
+    // Fallback to start_date
+    if (!act.start_date && d.startdate) {
+        act.start_date = d.startdate;
+    }
+    
+    // Manual flag
+    if (d.manual !== undefined) {
+        act.is_manual = d.manual ? 1 : 0;
+    }
+}
+
+/**
+ * Extract ID from Decathlon URL (e.g., "/v2/sports/121" -> 121)
+ */
+function extractIdFromDecathlonUrl(url) {
+    if (!url) return null;
+    const match = url.match(/\/v2\/(\w+)\/(\d+)$/);
+    return match ? parseInt(match[2], 10) : null;
+}
+
+/**
+ * Extract streams from Decathlon datastream
+ */
+function extractDecathlonStreams(datastream, locations) {
+    const timestamps = Object.keys(datastream).map(Number).sort((a, b) => a - b);
+    
+    if (timestamps.length === 0) {
+        return null;
+    }
+    
+    const streams = {};
+    
+    // Decathlon datatype IDs
+    const DATATYPE_MAP = {
+        1: 'heartrate',       // HR current (bpm)
+        3: 'max_heartrate',   // HR max
+        4: 'average_heartrate', // HR avg
+        5: 'distance',        // Distance (m)
+        6: 'velocity_smooth', // Speed current (m/h)
+        7: 'max_speed',       // Speed max (m/h)
+        9: 'average_speed',   // Speed avg (m/h)
+        10: 'cadence',        // Cadence current (steps/min)
+        14: 'altitude',       // Elevation current (m)
+        15: 'elev_high',      // Elevation max
+        16: 'elev_low',       // Elevation min
+        18: 'total_elevation_gain',
+        19: 'total_elevation_loss',
+        20: 'lap',            // Lap marker (bool)
+        100: 'watts',         // Power current
+        101: 'max_power',     // Power max
+        103: 'average_power'  // Power avg
+    };
+    
+    // Extract each datatype
+    for (const [dtId, streamName] of Object.entries(DATATYPE_MAP)) {
+        const id = parseInt(dtId, 10);
+        
+        // Skip if not a standard stream field
+        if (streamName.startsWith('elev_') || streamName === 'distance' || streamName === 'lap') {
+            continue;
+        }
+        
+        const values = timestamps.map(t => {
+            const data = datastream[t];
+            if (data && data[id] !== undefined && data[id] !== null) {
+                // Convert speed from m/h to m/s
+                if ((id === 6 || id === 7 || id === 9) && data[id] !== 0) {
+                    return data[id] / 3600;
+                }
+                return data[id];
+            }
+            return null;
+        }).filter(v => v !== null);
+        
+        if (values.length > 0) {
+            streams[streamName] = values;
+        }
+    }
+    
+    // Extract GPS from locations
+    if (locations && Object.keys(locations).length > 0) {
+        const gpsTimestamps = Object.keys(locations).map(Number).sort((a, b) => a - b);
+        const lats = [];
+        const lngs = [];
+        const alts = [];
+        
+        for (const t of gpsTimestamps) {
+            const loc = locations[t];
+            if (loc && loc.latitude !== undefined && loc.longitude !== undefined) {
+                lats.push(loc.latitude);
+                lngs.push(loc.longitude);
+                alts.push(loc.elevation || 0);
+            }
+        }
+        
+        if (lats.length > 0) {
+            streams.latlng = lats.map((lat, i) => [lat, lngs[i]]);
+            streams.altitude = alts;
+        }
+    }
+    
+    return Object.keys(streams).length > 0 ? streams : null;
+}
+
+/**
+ * Extract splits/laps from Decathlon datastream
+ */
+function extractDecathlonSplits(datastream) {
+    const timestamps = Object.keys(datastream).map(Number).sort((a, b) => a - b);
+    
+    if (timestamps.length === 0) {
+        return null;
+    }
+    
+    const splits = [];
+    let currentLapStart = 0;
+    let currentLapDist = 0;
+    let currentLapStartAlt = 0;
+    
+    for (let i = 0; i < timestamps.length; i++) {
+        const t = timestamps[i];
+        const data = datastream[t];
+        
+        // Lap detected (datatype 20 = bool Lap)
+        if (data && data[20] === 1) {
+            if (i > 0) {
+                const endTime = t;
+                const lapDuration = endTime - currentLapStart;
+                
+                // Get lap distance
+                let lapDistance = 0;
+                const startData = datastream[currentLapStart];
+                const endData = data;
+                
+                if (startData && startData[5] !== undefined && endData && endData[5] !== undefined) {
+                    lapDistance = endData[5] - startData[5];
+                }
+                
+                // Get lap elevation
+                let lapElevation = 0;
+                if (startData && startData[14] !== undefined && endData && endData[14] !== undefined) {
+                    lapElevation = endData[14] - startData[14];
+                }
+                
+                splits.push({
+                    split_number: splits.length + 1,
+                    distance: lapDistance || 0,
+                    elapsed_time: lapDuration,
+                    moving_time: lapDuration,
+                    average_speed: null,
+                    average_heartrate: null,
+                    max_heartrate: null,
+                    elevation_difference: lapElevation || null,
+                    pace_zone: null
+                });
+            }
+            
+            // Start new lap
+            currentLapStart = t;
+            currentLapDist = datastream[t] && datastream[t][5] ? datastream[t][5] : 0;
+            currentLapStartAlt = datastream[t] && datastream[t][14] ? datastream[t][14] : 0;
+        }
+    }
+    
+    return splits.length > 0 ? splits : null;
 }
 
 function mergeGarminDetails(act, d) {
@@ -406,9 +632,94 @@ function extractGarminStreams(d) {
     return Object.keys(streams).length > 0 ? streams : null;
 }
 
+/**
+ * Parse an uploaded activity file (GPX, TCX, or FIT) and return normalized activity data
+ * @param {string} filename - Original filename
+ * @param {Buffer} fileBuffer - File content as Buffer
+ * @returns {Promise<Object|null>} Parsed activity data or null if unparseable
+ */
+async function parseUploadedActivityFile(filename, fileBuffer) {
+    try {
+        const activity = await parseActivityFile(filename, fileBuffer);
+        
+        if (!activity) {
+            logger.warn('[SyncUtils] Failed to parse uploaded file', { filename });
+            return null;
+        }
+
+        // Ensure required fields for processActivityList
+        activity.source = 'file_upload';
+        if (!activity.source_id) {
+            activity.source_id = `${filename}_${Date.now()}`;
+        }
+        if (!activity.name) {
+            activity.name = filename.split('.')[0] || 'Imported Activity';
+        }
+        if (!activity.type) {
+            activity.type = 'run';
+        }
+        if (!activity.start_date) {
+            activity.start_date = new Date().toISOString();
+        }
+
+        logger.info('[SyncUtils] Successfully parsed uploaded file', {
+            filename,
+            format: activity.source,
+            source_id: activity.source_id,
+            distance: activity.distance,
+            duration: activity.moving_time
+        });
+
+        return activity;
+    } catch (error) {
+        logger.error('[SyncUtils] Error parsing uploaded file', {
+            filename,
+            error: error.message,
+            stack: error.stack
+        });
+        return null;
+    }
+}
+
+/**
+ * Process an uploaded activity file and insert into database
+ * @param {object} userDb - sql.js DB instance
+ * @param {string} filename - Original filename
+ * @param {Buffer} fileBuffer - File content as Buffer
+ * @returns {Promise<{success: boolean, activity?: object, error?: string}>}
+ */
+async function processUploadedActivityFile(userDb, filename, fileBuffer) {
+    // Parse the file
+    const activity = await parseUploadedActivityFile(filename, fileBuffer);
+    
+    if (!activity) {
+        return { success: false, error: 'Failed to parse activity file' };
+    }
+
+    // Process as a single-activity list
+    const result = await processActivityList(userDb, 'file_upload', [activity]);
+
+    if (result.imported > 0) {
+        logger.info('[SyncUtils] Imported uploaded activity', {
+            source_id: activity.source_id,
+            filename
+        });
+        return { success: true, activity };
+    }
+
+    return { success: false, error: 'Activity already exists or import failed' };
+}
+
 module.exports = {
     batchCheckExisting,
     batchInsertActivities,
     processActivityList,
     mergeDetails,
+    mergeGarminDetails,
+    mergeDecathlonDetails,
+    extractIdFromDecathlonUrl,
+    extractDecathlonStreams,
+    extractDecathlonSplits,
+    parseUploadedActivityFile,
+    processUploadedActivityFile
 };

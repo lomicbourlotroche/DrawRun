@@ -125,12 +125,20 @@ router.post('/login', async (req, res) => {
             triggerBackgroundSync(user.id, hasGarmin);
         }
         
+        // Check if user has Decathlon credentials
+        const decAuthCred = await dbGet(
+            'SELECT id FROM user_credentials WHERE user_id = ? AND provider = ? AND enabled = 1',
+            [user.id, 'decathlon_login']
+        );
+        const hasDecathlon = !!decAuthCred;
+        
         res.json({
             token,
             refreshToken,
             expiresIn: 900,
             userId: user.id,
             has_garmin: hasGarmin,
+            has_decathlon: hasDecathlon,
             twofa_enabled: user.twofa_enabled === 1,
             message: 'Login successful',
             user: {
@@ -145,6 +153,7 @@ router.post('/login', async (req, res) => {
                 age: profileData.age || null,
                 garmin_enabled: hasGarmin,
                 has_garmin: hasGarmin,
+                has_decathlon: hasDecathlon,
                 created_at: user.created_at,
                 last_login: user.last_login
             }
@@ -603,6 +612,44 @@ router.post('/disconnect/suunto', verifyToken, async (req, res) => {
     }
 });
 
+// Save Decathlon credentials (login credentials for Playwright-based sync)
+router.post('/credentials/decathlon', verifyToken, async (req, res) => {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password required' });
+    }
+    
+    try {
+        await dbRun(
+            `INSERT OR REPLACE INTO user_credentials 
+             (user_id, provider, username, password, enabled, updated_at) 
+             VALUES (?, 'decathlon_login', ?, ?, 1, CURRENT_TIMESTAMP)`,
+            [req.user.id, email, encrypt(password)]
+        );
+        
+        res.json({ message: 'Decathlon credentials saved successfully' });
+    } catch (error) {
+        logger.error('Save Decathlon credentials error:', error);
+        res.status(500).json({ error: 'Failed to save Decathlon credentials' });
+    }
+});
+
+// Disconnect Decathlon
+router.post('/disconnect/decathlon', verifyToken, async (req, res) => {
+    try {
+        const { disconnectDecathlon } = require('../services/sync/decathlon');
+        await disconnectDecathlon(req.user.id);
+        
+        res.json({ success: true, message: 'Decathlon disconnected' });
+    } catch (error) {
+        logger.error('Disconnect Decathlon error:', error);
+        res.status(500).json({ error: 'Failed to disconnect Decathlon' });
+    }
+});
+
+
+
 // Get profile
 router.get('/profile', verifyToken, async (req, res) => {
     try {
@@ -624,12 +671,21 @@ router.get('/profile', verifyToken, async (req, res) => {
         );
         const hasGarmin = !!garminCreds;
         
+        // Check if user has Decathlon credentials
+        const decathlonCreds = await dbGet(
+            'SELECT id FROM user_credentials WHERE user_id = ? AND provider = ? AND enabled = 1',
+            [req.user.id, 'decathlon_login']
+        );
+        const hasDecathlon = !!decathlonCreds;
+        
         res.json({
             id: user.id,
             email: user.email,
             ...profileData,
             garmin_enabled: hasGarmin,
+            decathlon_enabled: hasDecathlon,
             has_garmin: hasGarmin,
+            has_decathlon: hasDecathlon,
             created_at: user.created_at,
             last_login: user.last_login
         });

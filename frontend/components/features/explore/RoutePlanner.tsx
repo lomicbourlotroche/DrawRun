@@ -89,11 +89,51 @@ export default function RoutePlanner({
     pushHistory([]);
   }, [onWaypointsChange, pushHistory]);
 
+  // Validate waypoints
+  const validateWaypoints = useCallback((points: Waypoint[]): { valid: boolean; error?: string } => {
+    if (points.length < 2) {
+      return { valid: false, error: 'At least 2 waypoints are required' };
+    }
+    
+    for (const point of points) {
+      if (typeof point.lat !== 'number' || typeof point.lng !== 'number') {
+        return { valid: false, error: 'Each waypoint must have lat and lng as numbers' };
+      }
+      
+      if (point.lat < -90 || point.lat > 90) {
+        return { valid: false, error: 'Latitude must be between -90 and 90' };
+      }
+      
+      if (point.lng < -180 || point.lng > 180) {
+        return { valid: false, error: 'Longitude must be between -180 and 180' };
+      }
+    }
+    
+    // Check minimum distance between waypoints (10m)
+    if (points.length >= 2) {
+      for (let i = 1; i < points.length; i++) {
+        const dist = haversineDistance(points[i - 1], points[i]);
+        if (dist < 10) {
+          return { valid: false, error: `Waypoints ${i} and ${i + 1} are too close (minimum 10m apart)` };
+        }
+      }
+    }
+    
+    return { valid: true };
+  }, []);
+
   // Fetch real elevation data from API
   useEffect(() => {
     if (waypoints.length < 2) {
       setElevationData([]);
       setElevationStats({ total_gain: 0, max_elevation: 0, min_elevation: 0 });
+      return;
+    }
+
+    // Validate waypoints before fetching elevation
+    const validation = validateWaypoints(waypoints);
+    if (!validation.valid) {
+      console.warn('Invalid waypoints:', validation.error);
       return;
     }
 
@@ -157,6 +197,14 @@ export default function RoutePlanner({
       toast.error('Veuillez donner un nom au parcours');
       return;
     }
+    
+    // Validate waypoints
+    const validation = validateWaypoints(waypoints);
+    if (!validation.valid) {
+      toast.error(validation.error || 'Waypoints invalides');
+      return;
+    }
+    
     if (waypoints.length < 2) {
       toast.error('Ajoutez au moins 2 points sur la carte');
       return;

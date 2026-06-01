@@ -1,7 +1,7 @@
 /**
  * Record Activity Page - Mobile-only GPS recording
  * =====================================================
- * Page complète pour enregistrer une activité avec GPS en temps réel.
+ * Page compl\u00e8te pour enregistrer une activit\u00e9 avec GPS en temps r\u00e9el.
  * Visible uniquement sur mobile. Redirige le desktop vers /app/activities/new.
  */
 
@@ -40,14 +40,20 @@ export default function RecordActivityPage() {
 
   if (isMobile === null) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex flex-col items-center justify-center gap-4">
-        <div className="w-12 h-12 rounded-full border-4 border-primary/30 border-t-blue-500 animate-spin" />
-        <div className="text-muted text-sm font-medium">Préparation de l&apos;enregistrement...</div>
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-full border-4 border-primary/30 border-t-primary animate-spin mx-auto mb-4" />
+          <div className="text-muted text-sm font-medium">Pr\u00e9paration...</div>
+        </div>
       </div>
     );
   }
 
   if (!isMobile) return null;
 
-  return <MobileActivityRecorder onSave={handleSave} onCancel={handleCancel} />;
+  return (
+    <div className="min-h-screen bg-background">
+      <MobileActivityRecorder onSave={handleSave} onCancel={handleCancel} />
+    </div>
+  );
 }

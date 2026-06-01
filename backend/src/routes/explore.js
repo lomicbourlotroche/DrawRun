@@ -1,19 +1,39 @@
 'use strict';
 
-/* eslint-disable unused-imports/no-unused-vars */
-
 const express = require('express');
 const { verifyToken } = require('./auth');
 const segments = require('../services/explore/segments.service');
 const routes = require('../services/explore/routes.service');
-const { dbGetMain, dbAllMain } = require('../database');
+const heatmapService = require('../services/explore/heatmap.service');
 const elevationService = require('../services/explore/elevation.service');
 const { logger } = require('../utils/logger');
+const {
+    validateSegmentBody,
+    validateRouteBody,
+    validateSegmentEffortBody,
+    validateLocationParams,
+    validateRating,
+} = require('../utils/validators');
 
 const router = express.Router();
 
-const dbGet = (q, p) => dbGetMain(q, p);
-const dbAll = (q, p) => dbAllMain(q, p);
+// Validation helper for query params
+const validateQuery = (validator, query) => {
+    const result = validator(query);
+    if (!result.valid) {
+        return { error: 'Invalid query parameters', details: result.errors };
+    }
+    return null;
+};
+
+// Validation helper for body
+const validateRequestBody = (validator, body) => {
+    const result = validator(body);
+    if (!result.valid) {
+        return { error: 'Validation failed', details: result.errors };
+    }
+    return null;
+};
 
 // ============================================================================
 // SEGMENTS
@@ -30,6 +50,11 @@ const dbAll = (q, p) => dbAllMain(q, p);
  */
 router.post('/segments', verifyToken, async (req, res) => {
     try {
+        const validationError = validateRequestBody(validateSegmentBody, req.body);
+        if (validationError) {
+            return res.status(400).json(validationError);
+        }
+
         const result = await segments.createSegment(req.user.id, req.body);
         if (result.success) {
             res.status(201).json(result);
@@ -55,7 +80,13 @@ router.get('/segments', verifyToken, async (req, res) => {
     try {
         const { lat, lng, radius, type } = req.query;
         
+        // Validate location params if provided
         if (lat && lng) {
+            const validationError = validateQuery(validateLocationParams, { lat, lng, radius });
+            if (validationError) {
+                return res.status(400).json(validationError);
+            }
+            
             const nearby = await segments.getNearbySegments(
                 parseFloat(lat), 
                 parseFloat(lng), 
@@ -84,7 +115,12 @@ router.get('/segments', verifyToken, async (req, res) => {
  */
 router.get('/segments/:id', verifyToken, async (req, res) => {
     try {
-        const segment = await segments.getSegment(parseInt(req.params.id));
+        const segmentId = parseInt(req.params.id);
+        if (isNaN(segmentId) || segmentId <= 0) {
+            return res.status(400).json({ error: 'Invalid segment ID' });
+        }
+        
+        const segment = await segments.getSegment(segmentId);
         if (!segment) {
             return res.status(404).json({ error: 'Segment not found' });
         }
@@ -106,7 +142,12 @@ router.get('/segments/:id', verifyToken, async (req, res) => {
  */
 router.get('/segments/:id/leaderboard', verifyToken, async (req, res) => {
     try {
-        const leaderboard = await segments.getSegmentLeaderboard(parseInt(req.params.id));
+        const segmentId = parseInt(req.params.id);
+        if (isNaN(segmentId) || segmentId <= 0) {
+            return res.status(400).json({ error: 'Invalid segment ID' });
+        }
+        
+        const leaderboard = await segments.getSegmentLeaderboard(segmentId);
         res.json({ success: true, leaderboard });
     } catch (error) {
         logger.error('Get leaderboard error:', error);
@@ -125,6 +166,11 @@ router.get('/segments/:id/leaderboard', verifyToken, async (req, res) => {
  */
 router.post('/segments/:id/efforts', verifyToken, async (req, res) => {
     try {
+        const validationError = validateRequestBody(validateSegmentEffortBody, req.body);
+        if (validationError) {
+            return res.status(400).json(validationError);
+        }
+
         const result = await segments.createSegmentEffort(
             req.user.id,
             parseInt(req.params.id),
@@ -153,7 +199,12 @@ router.post('/segments/:id/efforts', verifyToken, async (req, res) => {
  */
 router.get('/segments/:id/efforts/me', verifyToken, async (req, res) => {
     try {
-        const efforts = await segments.getUserSegmentEfforts(req.user.id, parseInt(req.params.id));
+        const segmentId = parseInt(req.params.id);
+        if (isNaN(segmentId) || segmentId <= 0) {
+            return res.status(400).json({ error: 'Invalid segment ID' });
+        }
+        
+        const efforts = await segments.getUserSegmentEfforts(req.user.id, segmentId);
         res.json({ success: true, efforts });
     } catch (error) {
         logger.error('Get user efforts error:', error);
@@ -172,7 +223,12 @@ router.get('/segments/:id/efforts/me', verifyToken, async (req, res) => {
  */
 router.delete('/segments/:id', verifyToken, async (req, res) => {
     try {
-        const result = await segments.deleteSegment(req.user.id, parseInt(req.params.id));
+        const segmentId = parseInt(req.params.id);
+        if (isNaN(segmentId) || segmentId <= 0) {
+            return res.status(400).json({ error: 'Invalid segment ID' });
+        }
+        
+        const result = await segments.deleteSegment(req.user.id, segmentId);
         if (result.success) {
             res.json(result);
         } else if (result.error === 'Segment not found') {
@@ -203,6 +259,11 @@ router.delete('/segments/:id', verifyToken, async (req, res) => {
  */
 router.post('/routes', verifyToken, async (req, res) => {
     try {
+        const validationError = validateRequestBody(validateRouteBody, req.body);
+        if (validationError) {
+            return res.status(400).json(validationError);
+        }
+
         const result = await routes.createRoute(req.user.id, req.body);
         if (result.success) {
             res.status(201).json(result);
@@ -227,11 +288,23 @@ router.post('/routes', verifyToken, async (req, res) => {
 router.get('/routes', verifyToken, async (req, res) => {
     try {
         const { type, difficulty, limit, offset } = req.query;
+        
+        // Validate limit and offset
+        const limitNum = limit ? parseInt(limit) : 50;
+        const offsetNum = offset ? parseInt(offset) : 0;
+        
+        if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
+            return res.status(400).json({ error: 'limit must be between 1 and 100' });
+        }
+        if (isNaN(offsetNum) || offsetNum < 0) {
+            return res.status(400).json({ error: 'offset must be a positive number' });
+        }
+
         const publicRoutes = await routes.getPublicRoutes(
             type,
             difficulty,
-            limit ? parseInt(limit) : 50,
-            offset ? parseInt(offset) : 0
+            limitNum,
+            offsetNum
         );
         res.json({ success: true, routes: publicRoutes });
     } catch (error) {
@@ -251,7 +324,12 @@ router.get('/routes', verifyToken, async (req, res) => {
  */
 router.get('/routes/:id', verifyToken, async (req, res) => {
     try {
-        const route = await routes.getRoute(parseInt(req.params.id), req.user.id);
+        const routeId = parseInt(req.params.id);
+        if (isNaN(routeId) || routeId <= 0) {
+            return res.status(400).json({ error: 'Invalid route ID' });
+        }
+        
+        const route = await routes.getRoute(routeId, req.user.id);
         if (!route) {
             return res.status(404).json({ error: 'Route not found' });
         }
@@ -273,7 +351,12 @@ router.get('/routes/:id', verifyToken, async (req, res) => {
  */
 router.post('/routes/:id/favorite', verifyToken, async (req, res) => {
     try {
-        const result = await routes.addToFavorites(req.user.id, parseInt(req.params.id));
+        const routeId = parseInt(req.params.id);
+        if (isNaN(routeId) || routeId <= 0) {
+            return res.status(400).json({ error: 'Invalid route ID' });
+        }
+        
+        const result = await routes.addToFavorites(req.user.id, routeId);
         if (result.success) {
             res.json(result);
         } else {
@@ -296,7 +379,12 @@ router.post('/routes/:id/favorite', verifyToken, async (req, res) => {
  */
 router.delete('/routes/:id/favorite', verifyToken, async (req, res) => {
     try {
-        const result = await routes.removeFromFavorites(req.user.id, parseInt(req.params.id));
+        const routeId = parseInt(req.params.id);
+        if (isNaN(routeId) || routeId <= 0) {
+            return res.status(400).json({ error: 'Invalid route ID' });
+        }
+        
+        const result = await routes.removeFromFavorites(req.user.id, routeId);
         if (result.success) {
             res.json(result);
         } else {
@@ -319,7 +407,12 @@ router.delete('/routes/:id/favorite', verifyToken, async (req, res) => {
  */
 router.post('/routes/:id/use', verifyToken, async (req, res) => {
     try {
-        const result = await routes.incrementRouteUsage(parseInt(req.params.id));
+        const routeId = parseInt(req.params.id);
+        if (isNaN(routeId) || routeId <= 0) {
+            return res.status(400).json({ error: 'Invalid route ID' });
+        }
+        
+        const result = await routes.incrementRouteUsage(routeId);
         if (result.success) {
             res.json(result);
         } else {
@@ -380,7 +473,12 @@ router.get('/routes/favorites', verifyToken, async (req, res) => {
  */
 router.delete('/routes/:id', verifyToken, async (req, res) => {
     try {
-        const result = await routes.deleteRoute(req.user.id, parseInt(req.params.id));
+        const routeId = parseInt(req.params.id);
+        if (isNaN(routeId) || routeId <= 0) {
+            return res.status(400).json({ error: 'Invalid route ID' });
+        }
+        
+        const result = await routes.deleteRoute(req.user.id, routeId);
         if (result.success) {
             res.json(result);
         } else if (result.error === 'Route not found') {
@@ -409,11 +507,18 @@ router.post('/routes/:id/rate', verifyToken, async (req, res) => {
     try {
         const { rating } = req.body;
         
-        if (typeof rating !== 'number' || rating < 1 || rating > 5) {
-            return res.status(400).json({ error: 'Rating must be a number between 1 and 5' });
+        const ratingValidation = validateRating(rating);
+        if (!ratingValidation.valid) {
+            return res.status(400).json({ error: ratingValidation.error });
         }
         
         const routeId = parseInt(req.params.id);
+        
+        // Validate routeId is a valid number
+        if (isNaN(routeId) || routeId <= 0) {
+            return res.status(400).json({ error: 'Invalid route ID' });
+        }
+        
         const route = await routes.getRoute(routeId, req.user.id);
         
         if (!route) {
@@ -472,34 +577,32 @@ router.get('/heatmap', verifyToken, async (req, res) => {
     try {
         const { lat, lng, radius = 5000, type = 'Run' } = req.query;
         
+        // Validate location params
+        const validationError = validateQuery(validateLocationParams, { lat, lng, radius });
+        if (validationError) {
+            return res.status(400).json(validationError);
+        }
+        
         if (!lat || !lng) {
             return res.status(400).json({ error: 'Latitude and longitude required' });
         }
         
-        // Calculate bounding box
-        const latDelta = radius / 111000;
-        const lngDelta = radius / (111000 * Math.cos(parseFloat(lat) * Math.PI / 180));
+        // Validate type
+        const ALLOWED_TYPES = ['Run', 'Bike', 'Swim', 'Hike', 'Walk'];
+        if (!ALLOWED_TYPES.includes(type)) {
+            return res.status(400).json({ error: `type must be one of: ${ALLOWED_TYPES.join(', ')}` });
+        }
         
-        const heatmapData = await dbGetMain(`
-            SELECT lat, lng, SUM(intensity) as intensity
-            FROM heatmap_data
-            WHERE lat BETWEEN ? AND ?
-              AND lng BETWEEN ? AND ?
-              AND activity_type = ?
-            GROUP BY lat, lng
-            ORDER BY intensity DESC
-            LIMIT 1000
-        `, [
-            parseFloat(lat) - latDelta,
-            parseFloat(lat) + latDelta,
-            parseFloat(lng) - lngDelta,
-            parseFloat(lng) + lngDelta,
+        const heatmapData = await heatmapService.getHeatmap(
+            parseFloat(lat),
+            parseFloat(lng),
+            parseInt(radius),
             type
-        ]);
+        );
         
         res.json({
             success: true,
-            heatmap: heatmapData || []
+            heatmap: heatmapData
         });
     } catch (error) {
         logger.error('Get heatmap error:', error);
@@ -520,17 +623,14 @@ router.get('/heatmap/popular', verifyToken, async (req, res) => {
     try {
         const { type = 'Run', limit = 50 } = req.query;
         
-        const popularLocations = await dbAllMain(`
-            SELECT lat, lng, intensity, activity_type
-            FROM heatmap_data
-            WHERE activity_type = ?
-            ORDER BY intensity DESC
-            LIMIT ?
-        `, [type, parseInt(limit)]);
+        const popularLocations = await heatmapService.getPopularLocations(
+            type,
+            parseInt(limit)
+        );
         
         res.json({
             success: true,
-            locations: popularLocations || []
+            locations: popularLocations
         });
     } catch (error) {
         logger.error('Get popular locations error:', error);
@@ -565,14 +665,31 @@ router.post('/elevation', verifyToken, async (req, res) => {
     try {
         const { locations } = req.body;
 
-        if (!locations || !Array.isArray(locations) || locations.length < 2) {
+        if (!locations) {
+            return res.status(400).json({ error: 'locations is required' });
+        }
+        if (!Array.isArray(locations)) {
+            return res.status(400).json({ error: 'locations must be an array' });
+        }
+        if (locations.length < 2) {
             return res.status(400).json({ error: 'At least 2 locations required' });
+        }
+        if (locations.length > 500) {
+            return res.status(400).json({ error: 'Maximum 500 locations allowed' });
         }
 
         // Validate coordinate format
         for (const loc of locations) {
             if (typeof loc.lat !== 'number' || typeof loc.lng !== 'number') {
                 return res.status(400).json({ error: 'Each location must have lat and lng as numbers' });
+            }
+            
+            // Validate coordinate ranges
+            if (loc.lat < -90 || loc.lat > 90) {
+                return res.status(400).json({ error: 'lat must be between -90 and 90' });
+            }
+            if (loc.lng < -180 || loc.lng > 180) {
+                return res.status(400).json({ error: 'lng must be between -180 and 180' });
             }
         }
 
@@ -617,10 +734,25 @@ router.post('/elevation', verifyToken, async (req, res) => {
 router.get('/community/traces', verifyToken, async (req, res) => {
     try {
         const { type, limit } = req.query;
+        
+        // Validate limit
+        const limitNum = limit ? parseInt(limit) : 200;
+        if (isNaN(limitNum) || limitNum < 1 || limitNum > 500) {
+            return res.status(400).json({ error: 'limit must be between 1 and 500' });
+        }
+        
+        // Validate type
+        if (type) {
+            const ALLOWED_TYPES = ['Run', 'Bike', 'Swim', 'Hike', 'Walk'];
+            if (!ALLOWED_TYPES.includes(type)) {
+                return res.status(400).json({ error: `type must be one of: ${ALLOWED_TYPES.join(', ')}` });
+            }
+        }
+        
         const traces = await routes.getCommunityTraces(
             null,
             type || null,
-            limit ? parseInt(limit) : 200
+            limitNum
         );
         res.json({
             success: true,

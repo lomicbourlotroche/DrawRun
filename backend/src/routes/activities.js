@@ -22,6 +22,18 @@ const { logger } = require('../utils/logger');
 const { enrichActivitiesWithDraws } = require('../services/queryOptimizer');
 const heatmapService = require('../services/explore/heatmap.service');
 const { parseGpx } = require('../services/activities/gpx.service');
+const { parseActivityFile, parsePolarCSV, parseStravaZip } = require('../services/activityParser.service');
+const { processUploadedActivityFile } = require('../services/sync/utils');
+const multer = require('multer');
+
+// List of supported activity file formats
+const SUPPORTED_FORMATS = [
+    { extension: '.gpx', name: 'GPX', description: 'GPS Exchange Format (XML)', mime: 'application/gpx+xml' },
+    { extension: '.tcx', name: 'TCX', description: 'Training Center XML (Garmin)', mime: 'application/vnd.garmin.tcx+xml' },
+    { extension: '.fit', name: 'FIT', description: 'Flexible and Interoperable Data Transfer (Garmin binary)', mime: 'application/octet-stream' },
+    { extension: '.csv', name: 'Polar CSV', description: 'Polar export format (CSV)', mime: 'text/csv' },
+    { extension: '.zip', name: 'ZIP', description: 'Bulk export (Strava ZIP, Garmin export, etc.)', mime: 'application/zip' },
+];
 
 const router = express.Router();
 
@@ -548,15 +560,182 @@ router.get('/:id/analysis', verifyToken, async (req, res) => {
     }
 });
 
-// POST /api/activities/import/gpx — import d'un fichier GPX
-router.post('/import/gpx', verifyToken, async (req, res) => {
+// Multer configuration for file uploads
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 50 * 1024 * 1024, // 50MB max file size (for ZIP files)
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedExtensions = ['.gpx', '.tcx', '.fit', '.csv', '.zip'];
+        const ext = file.originalname.toLowerCase().slice(file.originalname.lastIndexOf('.'));
+        if (allowedExtensions.includes(ext)) {
+            cb(null, true);
+        } else {
+            cb(new Error(`Invalid file type. Allowed: ${allowedExtensions.join(', ')}`), false);
+        }
+    },
+});
+
+/**
+ * GET /api/activities/import/formats
+ * List all supported activity file formats
+ * 
+ * @swagger
+ * /activities/import/formats:
+ *   get:
+ *     summary: List supported activity file formats
+ *     description: Returns a list of all supported activity file formats with their details
+ *     tags: [Activities]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of supported formats
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 formats:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       extension:
+ *                         type: string
+ *                         example: ".gpx"
+ *                       name:
+ *                         type: string
+ *                         example: "GPX"
+ *                       description:
+ *                         type: string
+ *                         example: "GPS Exchange Format (XML)"
+ *                       mime:
+ *                         type: string
+ *                         example: "application/gpx+xml"
+ *                       maxSize:
+ *                         type: string
+ *                         example: "50MB"
+ *                 singleFileUpload:
+ *                   type: boolean
+ *                   description: Whether single file upload is supported
+ *                   example: true
+ *                 bulkUpload:
+ *                   type: boolean
+ *                   description: Whether bulk/ZIP upload is supported
+ *                   example: true
+ */
+router.get('/import/formats', verifyToken, (req, res) => {
+    res.json({
+        formats: SUPPORTED_FORMATS.map(f => ({
+            extension: f.extension,
+            name: f.name,
+            description: f.description,
+            mime: f.mime,
+            maxSize: '50MB'
+        })),
+        singleFileUpload: true,
+        bulkUpload: true,
+        endpoints: {
+            singleFile: 'POST /api/activities/import/file',
+            zipBulk: 'POST /api/activities/import/zip',
+            formats: 'GET /api/activities/import/formats'
+        }
+    });
+});
+
+/**
+ * POST /api/activities/import/file
+ * Import any activity file (GPX, TCX, FIT, CSV, or ZIP)
+ * 
+ * @swagger
+ * /activities/import/file:
+ *   post:
+ *     summary: Import activity file
+ *     description: Import a single activity file in various formats (GPX, TCX, FIT, Polar CSV, or ZIP)
+ *     tags: [Activities]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Activity file to import (GPX, TCX, FIT, CSV, or ZIP)
+ *               name:
+ *                 type: string
+ *                 description: Optional custom activity name
+ *                 example: "My Morning Run"
+ *               type:
+ *                 type: string
+ *                 description: Activity type (run, ride, swim, hike, etc.)
+ *                 example: "run"
+ *     responses:
+ *       200:
+ *         description: Activity imported successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 id:
+ *                   type: integer
+ *                   description: Database ID of the imported activity
+ *                 source_id:
+ *                   type: string
+ *                   description: Unique source identifier
+ *                 name:
+ *                   type: string
+ *                   description: Activity name
+ *                 type:
+ *                   type: string
+ *                   description: Activity type
+ *                 distance:
+ *                   type: number
+ *                   description: Distance in meters
+ *                 duration:
+ *                   type: number
+ *                   description: Duration in seconds
+ *                 elevationGain:
+ *                   type: number
+ *                   description: Total elevation gain in meters
+ *                 trackpoints:
+ *                   type: integer
+ *                   description: Number of GPS trackpoints
+ *       400:
+ *         description: Invalid file or parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No file uploaded"
+ *       413:
+ *         description: File too large (max 50MB)
+ *       500:
+ *         description: Server error during import
+ */
+router.post('/import/file', verifyToken, upload.single('file'), async (req, res) => {
     try {
-        const { name, gpxData, type } = req.body;
-        if (!gpxData) {
-            return res.status(400).json({ error: 'gpxData is required' });
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        // Validate activity type
+        const { name: customName, type: customType } = req.body;
+
+        // Validate activity type if provided
         const ALLOWED_TYPES = [
             'run', 'trail_run', 'race_walk', 'walk', 'hike',
             'bike', 'mountain_bike', 'gravel_bike', 'indoor_cycling', 'virtual_ride',
@@ -570,23 +749,296 @@ router.post('/import/gpx', verifyToken, async (req, res) => {
             'climbing', 'via_ferrata', 'mountaineering', 'land_sailing',
             'other',
         ];
-        if (type && !ALLOWED_TYPES.includes(type)) {
-            return res.status(400).json({ error: `Invalid activity type: ${type}` });
+        
+        if (customType && !ALLOWED_TYPES.includes(customType)) {
+            return res.status(400).json({ error: `Invalid activity type: ${customType}` });
+        }
+
+        const userDb = await getUserDb(req.user.id);
+
+        // Parse and import the file
+        const result = await processUploadedActivityFile(
+            userDb,
+            req.file.originalname,
+            req.file.buffer
+        );
+
+        if (!result.success) {
+            return res.status(400).json({ error: result.error || 'Failed to import activity file' });
+        }
+
+        const activity = result.activity;
+
+        // Apply custom name and type if provided
+        const activityId = await dbGetUser(userDb,
+            'SELECT id FROM activities WHERE source = ? AND source_id = ? ORDER BY id DESC LIMIT 1',
+            ['file_upload', activity.source_id]
+        );
+
+        if (activityId && activityId.id) {
+            // Update with custom fields
+            const updates = [];
+            const values = [];
+
+            if (customName) {
+                updates.push('name = ?');
+                values.push(customName);
+            }
+            if (customType) {
+                updates.push('type = ?');
+                values.push(customType);
+            }
+
+            if (updates.length > 0) {
+                values.push(activityId.id);
+                await dbRunUser(userDb, `UPDATE activities SET ${updates.join(', ')} WHERE id = ?`, values);
+            }
+
+            // Recalculer les métriques
+            try {
+                await metrics.calculateAndStoreMetrics(req.user.id, userDb);
+            } catch { /* non-bloquant */ }
+
+            // Update heatmap if we have GPS data
+            if (activity._streams?.latlng) {
+                const act = await dbGetUser(userDb, 'SELECT type FROM activities WHERE id = ?', [activityId.id]);
+                heatmapService.updateHeatmap(activity._streams.latlng, act?.type || 'run').catch(e => 
+                    logger.warn('Heatmap update failed', { error: e.message })
+                );
+            }
+
+            res.json({
+                success: true,
+                id: activityId.id,
+                source_id: activity.source_id,
+                name: customName || activity.name,
+                type: customType || activity.type,
+                distance: activity.distance,
+                duration: activity.moving_time || activity.elapsed_time,
+                elevationGain: activity.total_elevation_gain,
+                trackpoints: activity._streams?.latlng ? activity._streams.latlng.length : 0,
+            });
+        } else {
+            res.status(500).json({ error: 'Activity was imported but could not be retrieved' });
+        }
+    } catch (error) {
+        logger.error('Activity file import error', { 
+            error: error.message,
+            stack: error.stack
+        });
+        res.status(500).json({ error: 'Failed to import activity file' });
+    }
+});
+
+/**
+ * POST /api/activities/import/zip
+ * Import a ZIP file containing activity files (Strava bulk export or single activity ZIP)
+ * 
+ * @swagger
+ * /activities/import/zip:
+ *   post:
+ *     summary: Import ZIP file with activities
+ *     description: Import a ZIP file containing multiple activity files. Supports Strava bulk exports (activities/ folder with .fit.gz, .gpx.gz files) or single activity ZIPs.
+ *     tags: [Activities]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: ZIP file containing activity files
+ *               extractAll:
+ *                 type: boolean
+ *                 description: Extract all activities from ZIP (default: true for bulk import)
+ *                 example: true
+ *     responses:
+ *       200:
+ *         description: Activities imported successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 imported:
+ *                   type: integer
+ *                   description: Number of activities imported
+ *                   example: 5
+ *                 activities:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       name:
+ *                         type: string
+ *                       distance:
+ *                         type: number
+ *                       duration:
+ *                         type: number
+ *       400:
+ *         description: Invalid ZIP file or no activities found
+ *       413:
+ *         description: File too large (max 50MB)
+ *       500:
+ *         description: Server error during import
+ */
+router.post('/import/zip', verifyToken, upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No ZIP file uploaded' });
+        }
+
+        const { extractAll = true } = req.body;
+        const userDb = await getUserDb(req.user.id);
+
+        // Parse the ZIP file
+        const parseOptions = extractAll ? { extractAllFromZip: true } : {};
+        const parsed = await parseActivityFile(req.file.originalname, req.file.buffer, parseOptions);
+
+        if (!parsed) {
+            return res.status(400).json({ error: 'No valid activities found in ZIP file' });
+        }
+
+        // Handle both single activity and multiple activities
+        const activities = Array.isArray(parsed) ? parsed : [parsed];
+        const results = [];
+
+        // Prepare activities for batch processing
+        const activitiesToImport = activities.map((act, idx) => {
+            // Ensure proper source
+            act.source = 'file_upload';
+            if (!act.source_id) {
+                act.source_id = `${req.file.originalname}_${idx}_${Date.now()}`;
+            }
+            if (!act.name) {
+                act.name = `Activity from ${req.file.originalname}`;
+            }
+            if (!act.type) {
+                act.type = 'run';
+            }
+            if (!act.start_date) {
+                act.start_date = new Date().toISOString();
+            }
+            return act;
+        });
+
+        // Process all activities at once using existing batch processor
+        const { processActivityList } = require('../services/sync/utils');
+        const result = await processActivityList(userDb, 'file_upload', activitiesToImport);
+
+        // Get details of imported activities for response
+        if (result.imported > 0) {
+            for (const act of activitiesToImport) {
+                const dbAct = await dbGetUser(userDb,
+                    'SELECT id, name, type, distance, moving_time FROM activities WHERE source = ? AND source_id = ?',
+                    ['file_upload', act.source_id]
+                );
+                if (dbAct) {
+                    results.push({
+                        id: dbAct.id,
+                        source_id: act.source_id,
+                        name: dbAct.name || act.name,
+                        type: dbAct.type || act.type,
+                        distance: dbAct.distance || act.distance,
+                        duration: dbAct.moving_time || act.moving_time || 0
+                    });
+                }
+            }
+        }
+
+        // Recalculer les métriques
+        try {
+            await metrics.calculateAndStoreMetrics(req.user.id, userDb);
+        } catch { /* non-bloquant */ }
+
+        res.json({
+            success: true,
+            imported: result.imported,
+            detailsFetched: result.details,
+            activities: results
+        });
+    } catch (error) {
+        logger.error('ZIP import error', { 
+            error: error.message,
+            stack: error.stack
+        });
+        res.status(500).json({ error: 'Failed to import ZIP file' });
+    }
+});
+
+/**
+ * POST /api/activities/import/gpx — import d'un fichier GPX (legacy, now uses unified parser)
+ * @deprecated Use /import/file instead for all formats
+ */
+router.post('/import/gpx', verifyToken, upload.single('gpxFile'), async (req, res) => {
+    try {
+        // Support both old (gpxData in body) and new (file upload) formats
+        let gpxData = req.body.gpxData;
+        let filename = 'gpx_upload';
+        
+        if (req.file) {
+            // New format: file upload
+            gpxData = req.file.buffer.toString('utf8');
+            filename = req.file.originalname;
+        }
+        
+        if (!gpxData) {
+            return res.status(400).json({ error: 'gpxData or file is required' });
+        }
+
+        const { name: customName, type: customType } = req.body;
+
+        // Validate activity type if provided
+        const ALLOWED_TYPES = [
+            'run', 'trail_run', 'race_walk', 'walk', 'hike',
+            'bike', 'mountain_bike', 'gravel_bike', 'indoor_cycling', 'virtual_ride',
+            'swim', 'open_water_swim',
+            'triathlon', 'duathlon', 'aquathlon',
+            'crossfit', 'weight_training', 'strength_training', 'cardio_training', 'hiit', 'circuit_training', 'pilates', 'yoga',
+            'rowing', 'kayak', 'canoe', 'stand_up_paddle',
+            'ski_alpine', 'ski_touring', 'ski_cross_country', 'snowboard', 'roller_ski',
+            'tennis', 'badminton', 'squash',
+            'basketball', 'football', 'soccer', 'rugby', 'volleyball', 'handball', 'golf',
+            'climbing', 'via_ferrata', 'mountaineering', 'land_sailing',
+            'other',
+        ];
+        
+        const activityType = customType || req.body.type || 'run';
+        if (!ALLOWED_TYPES.includes(activityType)) {
+            return res.status(400).json({ error: `Invalid activity type: ${activityType}` });
         }
 
         // GPX size protection
-        const GPX_MAX_SIZE = 5 * 1024 * 1024; // 5MB
-        if (gpxData.length > GPX_MAX_SIZE) {
+        if (gpxData.length > 5 * 1024 * 1024) { // 5MB
             return res.status(413).json({ error: 'GPX file too large (max 5MB)' });
         }
 
-        const parsed = parseGpx(gpxData);
+        // Use the new unified parser
+        const parsed = await parseActivityFile(filename, gpxData);
+        
         if (!parsed) {
             return res.status(400).json({ error: 'Invalid GPX file or no trackpoints found' });
         }
 
-        const activityName = name || 'Activité GPX';
-        const activityType = req.body.type || 'run'; // allow caller to specify type
+        // Override with source info for backwards compatibility
+        parsed.source = 'gpx';
+        if (!parsed.source_id) {
+            parsed.source_id = 'gpx-' + Date.now();
+        }
+        parsed.is_manual = 1;
+
+        const activityName = customName || 'Activité GPX';
         const userDb = await getUserDb(req.user.id);
 
         const result = await dbRunUser(userDb, `
@@ -596,35 +1048,27 @@ router.post('/import/gpx', verifyToken, async (req, res) => {
                         elev_high, elev_low, map_polyline, is_manual)
             VALUES ('gpx', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
         `, [
-            'gpx-' + Date.now(),
+            parsed.source_id,
             activityName,
             activityType,
-            parsed.startDate,
+            parsed.start_date,
             parsed.distance,
-            parsed.duration,
-            parsed.duration, // elapsed_time = duration for GPX
-            Math.round(parsed.avgSpeed * 100) / 100,
-            parsed.avgHR,
-            parsed.maxHR,
-            parsed.elevGain,
-            parsed.elevMax,
-            parsed.elevMin,
-            parsed.mapPolyline,
+            parsed.moving_time || parsed.elapsed_time || 0,
+            parsed.elapsed_time || parsed.moving_time || 0,
+            Math.round(parsed.average_speed * 100) / 100,
+            parsed.average_heartrate,
+            parsed.max_heartrate,
+            parsed.total_elevation_gain,
+            parsed.elev_high,
+            parsed.elev_low,
+            parsed.map_polyline,
         ]);
 
         const activityId = result.lastID;
 
-        // Stocker les streams dans activity_streams
-        if (activityId) {
-            const streamTypes = {
-                latlng: parsed.streams.latlng,
-                distance: parsed.streams.distance,
-                time: parsed.streams.time,
-                altitude: parsed.streams.altitude,
-                heartrate: parsed.streams.heartrate.length > 0 ? parsed.streams.heartrate : null,
-                cadence: parsed.streams.cadence.length > 0 ? parsed.streams.cadence : null,
-            };
-            for (const [streamType, data] of Object.entries(streamTypes)) {
+        // Store streams
+        if (activityId && parsed._streams) {
+            for (const [streamType, data] of Object.entries(parsed._streams)) {
                 if (data && (Array.isArray(data) ? data.length > 0 : true)) {
                     try {
                         await dbRunUser(userDb, `
@@ -644,8 +1088,8 @@ router.post('/import/gpx', verifyToken, async (req, res) => {
         } catch { /* non-bloquant */ }
 
         // Update heatmap
-        if (parsed.streams && parsed.streams.latlng) {
-            heatmapService.updateHeatmap(parsed.streams.latlng, activityType).catch(e => 
+        if (parsed._streams?.latlng) {
+            heatmapService.updateHeatmap(parsed._streams.latlng, activityType).catch(e => 
                 logger.warn('Heatmap update failed', { error: e.message })
             );
         }
@@ -654,9 +1098,9 @@ router.post('/import/gpx', verifyToken, async (req, res) => {
             success: true,
             id: activityId,
             distance: parsed.distance,
-            duration: parsed.duration,
-            elevationGain: parsed.elevGain,
-            trackpoints: parsed.streams.latlng.length,
+            duration: parsed.moving_time || parsed.elapsed_time,
+            elevationGain: parsed.total_elevation_gain,
+            trackpoints: parsed._streams?.latlng ? parsed._streams.latlng.length : 0,
         });
     } catch (error) {
         logger.error('GPX import error', { error: error.message });

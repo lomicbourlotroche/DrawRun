@@ -1,6 +1,6 @@
 'use strict';
 
-const { dbRunMain } = require('../../database');
+const { dbRunMain, dbGetMain, dbAllMain } = require('../../database');
 const { logger } = require('../../utils/logger');
 
 /**
@@ -39,6 +39,61 @@ async function updateHeatmap(points, activityType = 'Run') {
     }
 }
 
+/**
+ * Get heatmap data for a specific area and activity type
+ */
+async function getHeatmap(lat, lng, radius = 5000, type = 'Run') {
+    try {
+        // Calculate bounding box
+        const latDelta = parseFloat(radius) / 111000;
+        const lngDelta = parseFloat(radius) / (111000 * Math.cos(parseFloat(lat) * Math.PI / 180));
+
+        const heatmapData = await dbAllMain(`
+            SELECT lat, lng, SUM(intensity) as intensity
+            FROM heatmap_data
+            WHERE lat BETWEEN ? AND ?
+              AND lng BETWEEN ? AND ?
+              AND activity_type = ?
+            GROUP BY lat, lng
+            ORDER BY intensity DESC
+            LIMIT 1000
+        `, [
+            parseFloat(lat) - latDelta,
+            parseFloat(lat) + latDelta,
+            parseFloat(lng) - lngDelta,
+            parseFloat(lng) + lngDelta,
+            type
+        ]);
+
+        return heatmapData || [];
+    } catch (error) {
+        logger.error('Get heatmap error:', error);
+        return [];
+    }
+}
+
+/**
+ * Get most popular locations for a specific activity type
+ */
+async function getPopularLocations(type = 'Run', limit = 50) {
+    try {
+        const popularLocations = await dbAllMain(`
+            SELECT lat, lng, intensity, activity_type
+            FROM heatmap_data
+            WHERE activity_type = ?
+            ORDER BY intensity DESC
+            LIMIT ?
+        `, [type, parseInt(limit)]);
+
+        return popularLocations || [];
+    } catch (error) {
+        logger.error('Get popular locations error:', error);
+        return [];
+    }
+}
+
 module.exports = {
-    updateHeatmap
+    updateHeatmap,
+    getHeatmap,
+    getPopularLocations
 };

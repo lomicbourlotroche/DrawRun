@@ -90,8 +90,34 @@ export default function ActivityDetailPage() {
     }
   };
 
-  if (isLoading) return <div className="space-y-6 max-w-4xl mx-auto"><Skeleton className="h-10 w-48" /><Skeleton className="h-32 w-full" /><Skeleton className="h-40 w-full" /></div>;
-  if (!activity) return <div className="text-center py-12"><ActivityIcon className="w-12 h-12 mx-auto mb-4 text-muted opacity-50" /><p className="text-muted">Activit\u00e9 non trouv\u00e9e</p><Button variant="secondary" onClick={() => router.push('/app/activities')} className="mt-4">Retour</Button></div>;
+  if (isLoading) {
+    return (
+      <div className="space-y-5 max-w-5xl mx-auto animate-fade-in">
+        <Skeleton className="h-12 w-64" />
+        <Skeleton className="h-64 w-full rounded-xl" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Skeleton className="h-28 rounded-xl" />
+          <Skeleton className="h-28 rounded-xl" />
+          <Skeleton className="h-28 rounded-xl" />
+          <Skeleton className="h-28 rounded-xl" />
+        </div>
+        <Skeleton className="h-48 w-full rounded-xl" />
+        <Skeleton className="h-48 w-full rounded-xl" />
+      </div>
+    );
+  }
+    
+  if (!activity) {
+    return (
+      <div className="animate-fade-in max-w-5xl mx-auto text-center py-12">
+        <Card variant="glass" padding="xl" className="text-center">
+          <ActivityIcon className="w-12 h-12 mx-auto mb-4 text-muted opacity-50" />
+          <p className="text-muted mb-4">Activit\u00e9 non trouv\u00e9e</p>
+          <Button variant="glass" onClick={() => router.push('/app/activities')}>Retour</Button>
+        </Card>
+      </div>
+    );
+  }
 
   const src = activity.source || 'manual';
   const srcLabel = src === 'garmin' ? 'Garmin' : src === 'strava' ? 'Strava' : 'Manuel';
@@ -120,340 +146,426 @@ export default function ActivityDetailPage() {
   const maxHR = activity.max_heartrate;
   const fcm = (analysis?.profileFcm as number) || (avgHR ? Math.round(avgHR / 0.85) : null);
 
+  const sportIcon = activity.type === 'Run' || activity.type === 'TrailRun' ? '🏃' :
+    activity.type === 'Ride' || activity.type === 'VirtualRide' ? '🚴' :
+    activity.type === 'Swim' ? '🏊' : '🏋️';
+
   return (
-    <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
-      <div className="flex items-start gap-4">
-        <Button variant="ghost" size="sm" onClick={() => router.push('/app/activities')} className="mt-1"><ArrowLeft className="w-4 h-4" /></Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
+    <div className="animate-fade-in max-w-5xl mx-auto space-y-5">
+
+      {/* TOP BAR */}
+      <div className="animate-slide-up flex items-start gap-4">
+        <button
+          onClick={() => router.push('/app/activities')}
+          className="bg-surface/80 backdrop-blur-xl border border-border rounded-xl p-2.5 hover:bg-surface transition-colors shrink-0 mt-1"
+          aria-label="Retour"
+        >
+          <ArrowLeft className="w-4 h-4 text-foreground" />
+        </button>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1.5">
             <Badge variant={srcColor}>{srcLabel}</Badge>
             <Badge variant="default">{activity.type}</Badge>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">{activity.name}</h1>
-          <p className="text-muted">{activity.start_date_local?.split('T')[0]} {'\u2022'} {activity.start_date_local?.split(' ')[1] || ''}</p>
+          <h1 className="text-2xl font-bold text-foreground truncate">
+            <span className="mr-2">{sportIcon}</span>
+            {activity.name}
+          </h1>
+          <p className="text-muted text-sm mt-0.5">
+            {activity.start_date_local?.split('T')[0]} {'\u2022'} {activity.start_date_local?.split(' ')[1] || ''}
+          </p>
         </div>
       </div>
 
-      {(activity.map_polyline || (latlngData && latlngData.length > 0)) ? (
-        <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><MapPin className="w-4 h-4 text-primary" />Parcours</CardTitle></CardHeader>
-          <CardContent>
-            <ActivityMap
-              polyline={activity.map_polyline || undefined}
-              latlng={latlngData || undefined}
-              className="h-64"
-              color="#3B82F6"
-            />
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><MapPin className="w-4 h-4 text-muted" />Parcours</CardTitle></CardHeader>
-          <CardContent className="p-8 text-center">
-            <div className="text-muted">
-              <MapPin className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p>Aucune trace GPS disponible</p>
-              <p className="text-xs mt-1">L&apos;activit\u00e9 ne contient pas de donn\u00e9es de parcours</p>
-              <p className="text-xs text-muted mt-1">Cette activit\u00e9 n&apos;a pas \u00e9t\u00e9 synchronis\u00e9e avec GPS ou le service ne fournit pas de trace</p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="p-4 rounded-xl bg-surface border border-border">
-          <div className="flex items-center gap-2 mb-1"><Gauge className="w-4 h-4 text-primary" /><span className="text-xs text-muted uppercase">Distance</span></div>
-          <p className="text-xl font-bold text-foreground">{activity.distance > 1000 ? `${(activity.distance / 1000).toFixed(2)} km` : `${Math.round(activity.distance)} m`}</p>
-        </div>
-        <div className="p-4 rounded-xl bg-surface border border-border">
-          <div className="flex items-center gap-2 mb-1"><Timer className="w-4 h-4 text-primary" /><span className="text-xs text-muted uppercase">Dur\u00e9e</span></div>
-          <p className="text-xl font-bold text-foreground">{fmt(activity.moving_time)}</p>
-          {activity.elapsed_time && activity.elapsed_time > activity.moving_time && <p className="text-xs text-muted">Temps: {fmt(activity.elapsed_time)}</p>}
-        </div>
-        <div className="p-4 rounded-xl bg-surface border border-border">
-          <div className="flex items-center gap-2 mb-1"><Zap className="w-4 h-4 text-primary" /><span className="text-xs text-muted uppercase">Allure moy.</span></div>
-          <p className="text-xl font-bold text-foreground">{pace(activity.average_speed)}</p>
-          <p className="text-xs text-muted">/km</p>
-        </div>
-        {avgHR && <div className="p-4 rounded-xl bg-surface border border-border">
-          <div className="flex items-center gap-2 mb-1"><Heart className="w-4 h-4 text-danger" /><span className="text-xs text-muted uppercase">FC moy.</span></div>
-          <p className="text-xl font-bold text-foreground">{Math.round(avgHR)}</p>
-          <p className="text-xs text-muted">{maxHR ? `Max: ${Math.round(maxHR)} bpm` : 'bpm'}</p>
-        </div>}
-      </div>
-
-      <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-        {activity.max_speed && <div className="text-center p-3 rounded-lg bg-surface border border-border"><p className="text-sm font-bold text-foreground">{pace(activity.max_speed)}</p><p className="text-xs text-muted">Allure max</p></div>}
-        {activity.max_heartrate && <div className="text-center p-3 rounded-lg bg-surface border border-border"><p className="text-sm font-bold text-danger">{Math.round(activity.max_heartrate)}</p><p className="text-xs text-muted">FC max</p></div>}
-        {activity.total_elevation_gain && <div className="text-center p-3 rounded-lg bg-surface border border-border"><p className="text-sm font-bold text-success">+{Math.round(activity.total_elevation_gain)}m</p><p className="text-xs text-muted">D\u00e9nivel\u00e9</p></div>}
-        {activity.tss && <div className="text-center p-3 rounded-lg bg-surface border border-border"><p className="text-sm font-bold text-primary">{Math.round(activity.tss)}</p><p className="text-xs text-muted">TSS</p></div>}
-        {activity.calories && <div className="text-center p-3 rounded-lg bg-surface border border-border"><p className="text-sm font-bold text-warning">{Math.round(activity.calories)}</p><p className="text-xs text-muted">kcal</p></div>}
-        {activity.average_cadence && <div className="text-center p-3 rounded-lg bg-surface border border-border"><p className="text-sm font-bold text-foreground">{Math.round(activity.average_cadence)}</p><p className="text-xs text-muted">Cadence</p></div>}
-      </div>
-
-      {hrData && Array.isArray(hrData) && hrData.length > 10 && (
-        <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Heart className="w-4 h-4 text-danger" />Fr\u00e9quence Cardiaque</CardTitle></CardHeader>
-          <CardContent>
-            <StreamChart data={hrData} color="#EF4444" fillColor="rgba(239,68,68,0.1)" unit="bpm" min={fcm ? fcm * 0.5 : undefined} max={fcm || undefined} formatValue={v => `${Math.round(v)}`} />
-            <div className="grid grid-cols-3 gap-2 mt-3 text-center">
-              <div className="p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-danger">{Math.round(avgHR || 0)}</p><p className="text-xs text-muted">Moyenne</p></div>
-              <div className="p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-danger">{Math.round(maxHR || 0)}</p><p className="text-xs text-muted">Max</p></div>
-              <div className="p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-danger">{Math.min(...hrData)}</p><p className="text-xs text-muted">Min</p></div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {spdData && Array.isArray(spdData) && spdData.length > 10 && (
-        <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Zap className="w-4 h-4 text-primary" />Vitesse</CardTitle></CardHeader>
-          <CardContent>
-            <StreamChart
-              data={spdData.map((v: number) => paceFromMs(v) || 0).filter((v: number) => v > 0)}
-              color="#3B82F6"
-              fillColor="rgba(59,130,246,0.1)"
-              unit="min/km"
-              formatValue={v => `${Math.floor(v)}'${String(Math.round((v % 1) * 60)).padStart(2, '0')}`}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {altData && Array.isArray(altData) && altData.length > 10 && (
-        <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Mountain className="w-4 h-4 text-success" />Altitude</CardTitle></CardHeader>
-          <CardContent>
-            <StreamChart data={altData} color="#22C55E" fillColor="rgba(34,197,94,0.1)" unit="m" formatValue={v => `${Math.round(v)}m`} />
-          </CardContent>
-        </Card>
-      )}
-
-      {cadData && Array.isArray(cadData) && cadData.length > 10 && (
-        <Card>
-          <CardHeader>            <CardTitle className="text-base flex items-center gap-2"><Wind className="w-4 h-4 text-muted" />Cadence</CardTitle></CardHeader>
-          <CardContent>
-            <StreamChart data={cadData} color="#A855F7" fillColor="rgba(168,85,247,0.1)" unit="spm" formatValue={v => `${Math.round(v)}`} />
-          </CardContent>
-        </Card>
-      )}
-
-      {wattsData && Array.isArray(wattsData) && wattsData.length > 10 && (
-        <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Zap className="w-4 h-4 text-peak" />Puissance</CardTitle></CardHeader>
-          <CardContent>
-            <StreamChart
-              data={wattsData}
-              color="#F97316"
-              fillColor="rgba(249,115,22,0.1)"
-              unit="W"
-              min={Math.max(0, Math.min(...wattsData) - 20)}
-              max={Math.max(...wattsData) + 20}
-              formatValue={v => `${Math.round(v)}W`}
-            />
-            <div className="grid grid-cols-3 gap-2 mt-3 text-center">
-              {(activity.average_watts || activity.average_power) && (
-                <div className="p-2 rounded-lg bg-peak/10">
-                  <p className="text-sm font-bold text-peak">{Math.round(activity.average_watts || activity.average_power || 0)}W</p>
-                  <p className="text-xs text-muted">Moyenne</p>
-                </div>
-              )}
-              {(activity.normalized_power || activity.np) && (
-                <div className="p-2 rounded-lg bg-peak/10">
-                  <p className="text-sm font-bold text-peak">{Math.round(activity.normalized_power || activity.np || 0)}W</p>
-                  <p className="text-xs text-muted">NP</p>
-                </div>
-              )}
-              {activity.variability_index && (
-                <div className="p-2 rounded-lg bg-peak/10">
-                  <p className="text-sm font-bold text-peak">{toNum(activity.variability_index).toFixed(2)}</p>
-                  <p className="text-xs text-muted">VI</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {analysis && (
-        isRunAnalysis(analysis) ? (
-          <RunAnalysisCards analysis={analysis} />
-        ) : isRideAnalysis(analysis) ? (
-          <RideAnalysisCards analysis={analysis} />
-        ) : isSwimAnalysis(analysis) ? (
-          <SwimAnalysisCards analysis={analysis} />
-        ) : isTrailRunAnalysis(analysis) ? (
-          <TrailRunAnalysisCards analysis={analysis} />
-        ) : (
-          <SimpleAnalysisCards analysis={analysis} />
-        )
-      )}
-
-      {(activity.elev_high !== null || activity.elev_low !== null || activity.running_index !== null || activity.hrv_rmssd !== null || activity.is_race || activity.is_commute || activity.device_name) && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-primary" />
-              M\u00e9triques avanc\u00e9es
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {activity.elev_low !== null && activity.elev_high !== null && (
-                <div className="text-center p-3 rounded-lg bg-surface border border-border">
-                  <p className="text-lg font-bold text-foreground">{Math.round(toNum(activity.elev_low))}m {'\u2013'} {Math.round(toNum(activity.elev_high))}m</p>
-                  <p className="text-xs text-muted">Altitude min {'\u2013'} max</p>
-                </div>
-              )}
-              {activity.running_index !== null && (
-                <div className="text-center p-3 rounded-lg bg-surface border border-border">
-                  <p className="text-lg font-bold text-foreground">{toNum(activity.running_index).toFixed(1)}</p>
-                  <p className="text-xs text-muted">Running Index</p>
-                </div>
-              )}
-              {activity.hrv_rmssd !== null && (
-                <div className="text-center p-3 rounded-lg bg-surface border border-border">
-                  <p className="text-lg font-bold text-foreground">{toNum(activity.hrv_rmssd).toFixed(1)} ms</p>
-                  <p className="text-xs text-muted">HRV (RMSSD)</p>
-                </div>
-              )}
-              {activity.device_name && (
-                <div className="text-center p-3 rounded-lg bg-surface border border-border">
-                  <p className="text-sm font-bold text-foreground truncate">{toStr(activity.device_name)}</p>
-                  <p className="text-xs text-muted">Appareil</p>
-                </div>
-              )}
-            </div>
-            {(activity.is_race || activity.is_commute) && (
-              <div className="flex gap-2 mt-3">
-                {!!activity.is_race && <span className="px-2 py-1 rounded-full text-xs font-medium bg-warning/20 text-warning flex items-center gap-1"><Flag className="w-3 h-3" /> Course</span>}
-                {!!activity.is_commute && <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary flex items-center gap-1"><ActivityIcon className="w-3 h-3" /> Trajet</span>}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Pencil className="w-4 h-4 text-muted" />
-              Notes
-            </CardTitle>
-            {!editingNotes && (
-              <Button variant="ghost" size="sm" onClick={() => { setNotesValue(activity.notes || activity.description || ''); setEditingNotes(true); }}>
-                <Pencil className="w-3.5 h-3.5 mr-1" />
-                Modifier
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          {editingNotes ? (
-            <div className="space-y-3">
-              <textarea
-                value={notesValue}
-                onChange={e => setNotesValue(e.target.value)}
-                className="w-full p-3 rounded-lg border border-border bg-surface text-foreground text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
-                rows={4}
-                placeholder="Ajouter des notes sur cette activit\u00e9\u2026"
-                autoFocus
+      {/* MAP */}
+      <div className="animate-slide-up delay-100">
+        {(activity.map_polyline || (latlngData && latlngData.length > 0)) ? (
+          <Card variant="glass" accent="primary">
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><MapPin className="w-4 h-4 text-primary" />Parcours</CardTitle></CardHeader>
+            <CardContent>
+              <ActivityMap
+                polyline={activity.map_polyline || undefined}
+                latlng={latlngData || undefined}
+                className="h-64"
+                color="#3B82F6"
               />
-              <div className="flex gap-2 justify-end">
-                <Button variant="ghost" size="sm" onClick={() => setEditingNotes(false)} disabled={savingNotes}>
-                  <X className="w-3.5 h-3.5 mr-1" />
-                  Annuler
-                </Button>
-                <Button size="sm" onClick={saveNotes} isLoading={savingNotes}>
-                  <Check className="w-3.5 h-3.5 mr-1" />
-                  Sauvegarder
-                </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card variant="glass-subtle">
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><MapPin className="w-4 h-4 text-muted" />Parcours</CardTitle></CardHeader>
+            <CardContent className="p-8 text-center">
+              <div className="text-muted">
+                <MapPin className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p>Aucune trace GPS disponible</p>
+                <p className="text-xs mt-1">L&apos;activit\u00e9 ne contient pas de donn\u00e9es de parcours</p>
+                <p className="text-xs text-muted mt-1">Cette activit\u00e9 n&apos;a pas \u00e9t\u00e9 synchronis\u00e9e avec GPS ou le service ne fournit pas de trace</p>
               </div>
-            </div>
-          ) : (
-            <p className="text-sm text-muted whitespace-pre-wrap">
-              {activity.notes || activity.description
-                ? (activity.notes || activity.description)
-                : <span className="italic opacity-50">Aucune note {'\u2014'} cliquez sur Modifier pour en ajouter.</span>
-              }
-            </p>
-          )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
-      {splits && splits.splits && splits.splits.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Clock className="w-4 h-4 text-primary" />
-              Splits ({splits.summary.unit === 'mi' ? 'miles' : 'kilom\u00e8tres'})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-4 mb-4 p-3 bg-surface rounded-lg text-sm">
-              <div><span className="text-muted">D\u00e9nivel\u00e9:</span> <span className="font-medium">{splits.summary.elevationGain || 0}m</span></div>
-              <div><span className="text-muted">FC moy:</span> <span className="font-medium">{splits.summary.averageHR || '-'}</span></div>
-              {splits.summary.maxHR && <div><span className="text-muted">FC max:</span> <span className="font-medium">{splits.summary.maxHR}</span></div>}
-              {splits.summary.averageCadence && <div><span className="text-muted">Cadence:</span> <span className="font-medium">{splits.summary.averageCadence}</span></div>}
-              {splits.summary.averageWatts && <div><span className="text-muted">Watts:</span> <span className="font-medium">{splits.summary.averageWatts}</span></div>}
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-muted">
-                    <th className="py-2 text-left">Km</th>
-                    <th className="py-2 text-right">Temps</th>
-                    <th className="py-2 text-right">Allure</th>
-                    <th className="py-2 text-right text-primary">GAP</th>
-                    <th className="py-2 text-right">Vitesse</th>
-                    <th className="py-2 text-right">FC moy</th>
-                    <th className="py-2 text-right">D\u00e9nivel\u00e9</th>
-                    <th className="py-2 text-right">Pente %</th>
-                    <th className="py-2 text-right">Cad</th>
-                    {splits.splits[0]?.avgWatts !== null && <th className="py-2 text-right">Watts</th>}
-                  </tr>
-                </thead>
-                <tbody>
-                  {splits.splits.map((split) => {
-                    const paceColor = split.pace && split.pace < 300 ? 'text-success' : split.pace && split.pace > 360 ? 'text-danger' : 'text-foreground';
-                    const gradientColor = split.gradient > 2 ? 'text-peak' : split.gradient < -2 ? 'text-primary' : 'text-muted';
-                    return (
-                      <tr key={split.split} className="border-b border-border/50 hover:bg-surface">
-                        <td className="py-2 font-medium">
-                          {split.split}
-                          {split.isPartial && <span className="text-xs text-muted ml-1">(partiel)</span>}
-                        </td>
-                        <td className="py-2 text-right font-mono">{fmt(split.duration)}</td>
-                        <td className={`py-2 text-right font-mono ${paceColor}`}>
-                          {split.pace ? `${Math.floor(split.pace / 60)}'${String(Math.round(split.pace % 60)).padStart(2, '0')}` : '-'}
-                        </td>
-                        <td className="py-2 text-right font-mono font-bold text-primary">
-                          {split.gap ? `${Math.floor(split.gap / 60)}'${String(Math.round(split.gap % 60)).padStart(2, '0')}` : '-'}
-                        </td>
-                        <td className="py-2 text-right font-mono">{split.speed.toFixed(1)} km/h</td>
-                        <td className="py-2 text-right">{split.avgHR || '-'}</td>
-                        <td className={`py-2 text-right ${split.elevationChange > 0 ? 'text-success' : split.elevationChange < 0 ? 'text-danger' : 'text-muted'}`}>
-                          {split.elevationChange > 0 ? '+' : ''}{split.elevationChange || '-'}m
-                        </td>
-                        <td className={`py-2 text-right ${gradientColor}`}>
-                          {split.gradient > 0 ? '+' : ''}{split.gradient || 0}%
-                        </td>
-                        <td className="py-2 text-right">{split.avgCadence || '-'}</td>
-                        {split.avgWatts !== null && <td className="py-2 text-right">{split.avgWatts || '-'}</td>}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
+      {/* HERO STATS */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-slide-up delay-100">
+        <Card variant="glass" accent="primary" padding="lg">
+          <div className="flex items-center gap-2 mb-1"><Gauge className="w-4 h-4 text-primary" /><span className="text-xs text-muted uppercase font-semibold">Distance</span></div>
+          <p className="text-2xl font-bold text-foreground">{activity.distance > 1000 ? `${(activity.distance / 1000).toFixed(2)} km` : `${Math.round(activity.distance)} m`}</p>
         </Card>
+        <Card variant="glass" accent="info" padding="lg">
+          <div className="flex items-center gap-2 mb-1"><Timer className="w-4 h-4 text-peak" /><span className="text-xs text-muted uppercase font-semibold">Dur\u00e9e</span></div>
+          <p className="text-2xl font-bold text-foreground">{fmt(activity.moving_time)}</p>
+          {activity.elapsed_time && activity.elapsed_time > activity.moving_time && <p className="text-xs text-muted mt-0.5">Temps: {fmt(activity.elapsed_time)}</p>}
+        </Card>
+        <Card variant="glass" accent="success" padding="lg">
+          <div className="flex items-center gap-2 mb-1"><Zap className="w-4 h-4 text-success" /><span className="text-xs text-muted uppercase font-semibold">Allure moy.</span></div>
+          <p className="text-2xl font-bold text-foreground">{pace(activity.average_speed)} <span className="text-sm font-normal text-muted">/km</span></p>
+        </Card>
+        {avgHR ? (
+          <Card variant="glass" accent="danger" padding="lg">
+            <div className="flex items-center gap-2 mb-1"><Heart className="w-4 h-4 text-danger" /><span className="text-xs text-muted uppercase font-semibold">FC moy.</span></div>
+            <p className="text-2xl font-bold text-foreground">{Math.round(avgHR)} <span className="text-sm font-normal text-muted">bpm</span></p>
+            <p className="text-xs text-muted mt-0.5">{maxHR ? `Max: ${Math.round(maxHR)} bpm` : ''}</p>
+          </Card>
+        ) : (
+          <Card variant="glass" padding="lg">
+            <div className="flex items-center gap-2 mb-1"><Heart className="w-4 h-4 text-muted" /><span className="text-xs text-muted uppercase font-semibold">FC</span></div>
+            <p className="text-2xl font-bold text-muted">—</p>
+          </Card>
+        )}
+      </div>
+
+      {/* SECONDARY STATS */}
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-3 animate-slide-up delay-100">
+        {activity.max_speed && (
+          <Card variant="glass-subtle" padding="sm">
+            <p className="text-sm font-bold text-foreground">{pace(activity.max_speed)}</p>
+            <p className="text-xs text-muted">Allure max</p>
+          </Card>
+        )}
+        {activity.max_heartrate && (
+          <Card variant="glass-subtle" padding="sm">
+            <p className="text-sm font-bold text-danger">{Math.round(activity.max_heartrate)}</p>
+            <p className="text-xs text-muted">FC max</p>
+          </Card>
+        )}
+        {activity.total_elevation_gain && (
+          <Card variant="glass-subtle" padding="sm">
+            <p className="text-sm font-bold text-success">+{Math.round(activity.total_elevation_gain)}m</p>
+            <p className="text-xs text-muted">D\u00e9nivel\u00e9</p>
+          </Card>
+        )}
+        {activity.tss && (
+          <Card variant="glass-subtle" padding="sm">
+            <p className="text-sm font-bold text-primary">{Math.round(activity.tss)}</p>
+            <p className="text-xs text-muted">TSS</p>
+          </Card>
+        )}
+        {activity.calories && (
+          <Card variant="glass-subtle" padding="sm">
+            <p className="text-sm font-bold text-warning">{Math.round(activity.calories)}</p>
+            <p className="text-xs text-muted">kcal</p>
+          </Card>
+        )}
+        {activity.average_cadence && (
+          <Card variant="glass-subtle" padding="sm">
+            <p className="text-sm font-bold text-foreground">{Math.round(activity.average_cadence)}</p>
+            <p className="text-xs text-muted">Cadence</p>
+          </Card>
+        )}
+      </div>
+
+      {/* HR CHART */}
+      {hrData && Array.isArray(hrData) && hrData.length > 10 && (
+        <div className="animate-slide-up delay-200">
+          <Card variant="glass" accent="danger" padding="lg">
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Heart className="w-4 h-4 text-danger" />Fr\u00e9quence Cardiaque</CardTitle></CardHeader>
+            <CardContent>
+              <StreamChart data={hrData} color="#EF4444" fillColor="rgba(239,68,68,0.1)" unit="bpm" min={fcm ? fcm * 0.5 : undefined} max={fcm || undefined} formatValue={v => `${Math.round(v)}`} />
+              <div className="grid grid-cols-3 gap-2 mt-3 text-center">
+                <div className="p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-danger">{Math.round(avgHR || 0)}</p><p className="text-xs text-muted">Moyenne</p></div>
+                <div className="p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-danger">{Math.round(maxHR || 0)}</p><p className="text-xs text-muted">Max</p></div>
+                <div className="p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-danger">{Math.min(...hrData)}</p><p className="text-xs text-muted">Min</p></div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
+      {/* SPEED CHART */}
+      {spdData && Array.isArray(spdData) && spdData.length > 10 && (
+        <div className="animate-slide-up delay-200">
+          <Card variant="glass" accent="primary" padding="lg">
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Zap className="w-4 h-4 text-primary" />Vitesse</CardTitle></CardHeader>
+            <CardContent>
+              <StreamChart
+                data={spdData.map((v: number) => paceFromMs(v) || 0).filter((v: number) => v > 0)}
+                color="#3B82F6"
+                fillColor="rgba(59,130,246,0.1)"
+                unit="min/km"
+                formatValue={v => `${Math.floor(v)}'${String(Math.round((v % 1) * 60)).padStart(2, '0')}`}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* ALTITUDE CHART */}
+      {altData && Array.isArray(altData) && altData.length > 10 && (
+        <div className="animate-slide-up delay-200">
+          <Card variant="glass" accent="success" padding="lg">
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Mountain className="w-4 h-4 text-success" />Altitude</CardTitle></CardHeader>
+            <CardContent>
+              <StreamChart data={altData} color="#22C55E" fillColor="rgba(34,197,94,0.1)" unit="m" formatValue={v => `${Math.round(v)}m`} />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* CADENCE CHART */}
+      {cadData && Array.isArray(cadData) && cadData.length > 10 && (
+        <div className="animate-slide-up delay-200">
+          <Card variant="glass" padding="lg">
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Wind className="w-4 h-4 text-muted" />Cadence</CardTitle></CardHeader>
+            <CardContent>
+              <StreamChart data={cadData} color="#A855F7" fillColor="rgba(168,85,247,0.1)" unit="spm" formatValue={v => `${Math.round(v)}`} />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* POWER CHART */}
+      {wattsData && Array.isArray(wattsData) && wattsData.length > 10 && (
+        <div className="animate-slide-up delay-200">
+          <Card variant="glass" accent="warning" padding="lg">
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Zap className="w-4 h-4 text-peak" />Puissance</CardTitle></CardHeader>
+            <CardContent>
+              <StreamChart
+                data={wattsData}
+                color="#F97316"
+                fillColor="rgba(249,115,22,0.1)"
+                unit="W"
+                min={Math.max(0, Math.min(...wattsData) - 20)}
+                max={Math.max(...wattsData) + 20}
+                formatValue={v => `${Math.round(v)}W`}
+              />
+              <div className="grid grid-cols-3 gap-2 mt-3 text-center">
+                {(activity.average_watts || activity.average_power) && (
+                  <div className="p-2 rounded-lg bg-peak/10">
+                    <p className="text-sm font-bold text-peak">{Math.round(activity.average_watts || activity.average_power || 0)}W</p>
+                    <p className="text-xs text-muted">Moyenne</p>
+                  </div>
+                )}
+                {(activity.normalized_power || activity.np) && (
+                  <div className="p-2 rounded-lg bg-peak/10">
+                    <p className="text-sm font-bold text-peak">{Math.round(activity.normalized_power || activity.np || 0)}W</p>
+                    <p className="text-xs text-muted">NP</p>
+                  </div>
+                )}
+                {activity.variability_index && (
+                  <div className="p-2 rounded-lg bg-peak/10">
+                    <p className="text-sm font-bold text-peak">{toNum(activity.variability_index).toFixed(2)}</p>
+                    <p className="text-xs text-muted">VI</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* ANALYSIS CARDS */}
+      {analysis && (
+        <div className="animate-slide-up delay-200">
+          {isRunAnalysis(analysis) ? (
+            <RunAnalysisCards analysis={analysis} />
+          ) : isRideAnalysis(analysis) ? (
+            <RideAnalysisCards analysis={analysis} />
+          ) : isSwimAnalysis(analysis) ? (
+            <SwimAnalysisCards analysis={analysis} />
+          ) : isTrailRunAnalysis(analysis) ? (
+            <TrailRunAnalysisCards analysis={analysis} />
+          ) : (
+            <SimpleAnalysisCards analysis={analysis} />
+          )}
+        </div>
+      )}
+
+      {/* ADVANCED METRICS */}
+      {(activity.elev_high !== null || activity.elev_low !== null || activity.running_index !== null || activity.hrv_rmssd !== null || activity.is_race || activity.is_commute || activity.device_name) && (
+        <div className="animate-slide-up delay-200">
+          <Card variant="glass" accent="primary" padding="lg">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Cpu className="w-4 h-4 text-primary" />
+                M\u00e9triques avanc\u00e9es
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {activity.elev_low !== null && activity.elev_high !== null && (
+                  <Card variant="glass-subtle" padding="sm" className="text-center">
+                    <p className="text-lg font-bold text-foreground">{Math.round(toNum(activity.elev_low))}m {'\u2013'} {Math.round(toNum(activity.elev_high))}m</p>
+                    <p className="text-xs text-muted">Altitude min {'\u2013'} max</p>
+                  </Card>
+                )}
+                {activity.running_index !== null && (
+                  <Card variant="glass-subtle" padding="sm" className="text-center">
+                    <p className="text-lg font-bold text-foreground">{toNum(activity.running_index).toFixed(1)}</p>
+                    <p className="text-xs text-muted">Running Index</p>
+                  </Card>
+                )}
+                {activity.hrv_rmssd !== null && (
+                  <Card variant="glass-subtle" padding="sm" className="text-center">
+                    <p className="text-lg font-bold text-foreground">{toNum(activity.hrv_rmssd).toFixed(1)} ms</p>
+                    <p className="text-xs text-muted">HRV (RMSSD)</p>
+                  </Card>
+                )}
+                {activity.device_name && (
+                  <Card variant="glass-subtle" padding="sm" className="text-center">
+                    <p className="text-sm font-bold text-foreground truncate">{toStr(activity.device_name)}</p>
+                    <p className="text-xs text-muted">Appareil</p>
+                  </Card>
+                )}
+              </div>
+              {(activity.is_race || activity.is_commute) && (
+                <div className="flex gap-2 mt-3">
+                  {!!activity.is_race && <span className="px-2 py-1 rounded-full text-xs font-medium bg-warning/20 text-warning flex items-center gap-1"><Flag className="w-3 h-3" /> Course</span>}
+                  {!!activity.is_commute && <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary flex items-center gap-1"><ActivityIcon className="w-3 h-3" /> Trajet</span>}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* NOTES */}
+      <div className="animate-slide-up delay-200">
+        <Card variant="glass" padding="lg">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Pencil className="w-4 h-4 text-muted" />
+                Notes
+              </CardTitle>
+              {!editingNotes && (
+                <Button variant="ghost" size="sm" onClick={() => { setNotesValue(activity.notes || activity.description || ''); setEditingNotes(true); }}>
+                  <Pencil className="w-3.5 h-3.5 mr-1" />
+                  Modifier
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {editingNotes ? (
+              <div className="space-y-3">
+                <textarea
+                  value={notesValue}
+                  onChange={e => setNotesValue(e.target.value)}
+                  className="w-full p-3 rounded-lg border border-border bg-surface/80 backdrop-blur-sm text-foreground text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  rows={4}
+                  placeholder="Ajouter des notes sur cette activit\u00e9\u2026"
+                  autoFocus
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button variant="ghost" size="sm" onClick={() => setEditingNotes(false)} disabled={savingNotes}>
+                    <X className="w-3.5 h-3.5 mr-1" />
+                    Annuler
+                  </Button>
+                  <Button size="sm" onClick={saveNotes} isLoading={savingNotes}>
+                    <Check className="w-3.5 h-3.5 mr-1" />
+                    Sauvegarder
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted whitespace-pre-wrap">
+                {activity.notes || activity.description
+                  ? (activity.notes || activity.description)
+                  : <span className="italic opacity-50">Aucune note {'\u2014'} cliquez sur Modifier pour en ajouter.</span>
+                }
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* SPLITS */}
+      {splits && splits.splits && splits.splits.length > 0 && (
+        <div className="animate-slide-up delay-200">
+          <Card variant="glass" accent="info" padding="lg">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" />
+                Splits ({splits.summary.unit === 'mi' ? 'miles' : 'kilom\u00e8tres'})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-4 mb-4 p-3 bg-surface/50 backdrop-blur-sm rounded-lg text-sm border border-border/60">
+                <div><span className="text-muted">D\u00e9nivel\u00e9:</span> <span className="font-medium">{splits.summary.elevationGain || 0}m</span></div>
+                <div><span className="text-muted">FC moy:</span> <span className="font-medium">{splits.summary.averageHR || '-'}</span></div>
+                {splits.summary.maxHR && <div><span className="text-muted">FC max:</span> <span className="font-medium">{splits.summary.maxHR}</span></div>}
+                {splits.summary.averageCadence && <div><span className="text-muted">Cadence:</span> <span className="font-medium">{splits.summary.averageCadence}</span></div>}
+                {splits.summary.averageWatts && <div><span className="text-muted">Watts:</span> <span className="font-medium">{splits.summary.averageWatts}</span></div>}
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border text-muted">
+                      <th className="py-2 text-left">Km</th>
+                      <th className="py-2 text-right">Temps</th>
+                      <th className="py-2 text-right">Allure</th>
+                      <th className="py-2 text-right text-primary">GAP</th>
+                      <th className="py-2 text-right">Vitesse</th>
+                      <th className="py-2 text-right">FC moy</th>
+                      <th className="py-2 text-right">D\u00e9nivel\u00e9</th>
+                      <th className="py-2 text-right">Pente %</th>
+                      <th className="py-2 text-right">Cad</th>
+                      {splits.splits[0]?.avgWatts !== null && <th className="py-2 text-right">Watts</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {splits.splits.map((split) => {
+                      const paceColor = split.pace && split.pace < 300 ? 'text-success' : split.pace && split.pace > 360 ? 'text-danger' : 'text-foreground';
+                      const gradientColor = split.gradient > 2 ? 'text-peak' : split.gradient < -2 ? 'text-primary' : 'text-muted';
+                      return (
+                        <tr key={split.split} className="border-b border-border/50 hover:bg-surface/50 transition-colors">
+                          <td className="py-2 font-medium">
+                            {split.split}
+                            {split.isPartial && <span className="text-xs text-muted ml-1">(partiel)</span>}
+                          </td>
+                          <td className="py-2 text-right font-mono">{fmt(split.duration)}</td>
+                          <td className={`py-2 text-right font-mono ${paceColor}`}>
+                            {split.pace ? `${Math.floor(split.pace / 60)}'${String(Math.round(split.pace % 60)).padStart(2, '0')}` : '-'}
+                          </td>
+                          <td className="py-2 text-right font-mono font-bold text-primary">
+                            {split.gap ? `${Math.floor(split.gap / 60)}'${String(Math.round(split.gap % 60)).padStart(2, '0')}` : '-'}
+                          </td>
+                          <td className="py-2 text-right font-mono">{split.speed.toFixed(1)} km/h</td>
+                          <td className="py-2 text-right">{split.avgHR || '-'}</td>
+                          <td className={`py-2 text-right ${split.elevationChange > 0 ? 'text-success' : split.elevationChange < 0 ? 'text-danger' : 'text-muted'}`}>
+                            {split.elevationChange > 0 ? '+' : ''}{split.elevationChange || '-'}m
+                          </td>
+                          <td className={`py-2 text-right ${gradientColor}`}>
+                            {split.gradient > 0 ? '+' : ''}{split.gradient || 0}%
+                          </td>
+                          <td className="py-2 text-right">{split.avgCadence || '-'}</td>
+                          {split.avgWatts !== null && <td className="py-2 text-right">{split.avgWatts || '-'}</td>}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* NO STREAM DATA */}
       {(!streams || (!hrData && !spdData && !altData)) && (
-        <Card>
+        <Card variant="glass-subtle" padding="lg">
           <CardContent className="p-6 text-center text-muted">
             <p>Aucune donn\u00e9e de stream disponible pour cette activit\u00e9</p>
             <p className="text-xs mt-1">Les graphiques apparaissent apr\u00e8s synchronisation avec Strava ou Garmin</p>
@@ -461,17 +573,21 @@ export default function ActivityDetailPage() {
         </Card>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Heart className="w-4 h-4 text-primary" />
-            Partage social
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ShareSettingsPanel activityId={Number(id)} onSave={() => toast.success('Param\u00e8tres de partage mis \u00e0 jour')} />
-        </CardContent>
-      </Card>
+      {/* SHARE */}
+      <div className="animate-slide-up delay-300">
+        <Card variant="glass" accent="primary" padding="lg">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Heart className="w-4 h-4 text-primary" />
+              Partage social
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ShareSettingsPanel activityId={Number(id)} onSave={() => toast.success('Param\u00e8tres de partage mis \u00e0 jour')} />
+          </CardContent>
+        </Card>
+      </div>
+
     </div>
   );
 }

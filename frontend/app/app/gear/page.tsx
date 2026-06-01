@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
 import AppLayout from '@/components/layout/AppLayout';
 import { GearCard } from '@/components/features/gear/GearCard';
-import { Plus, Package, History } from '@/components/ui/icons';
+import { Plus, Package, History, TrendingUp, Footprints, Bike } from '@/components/ui/icons';
 import { Card, PrimaryButton, Modal, Input } from '@/components/ui';
 import { toast } from 'sonner';
 
@@ -97,36 +97,83 @@ export default function GearPage() {
   const activeGear = gearList.filter(g => g.is_active);
   const archivedGear = gearList.filter(g => !g.is_active);
 
+  const totalKm = gearList.reduce((sum, g) => sum + (g.current_distance || 0), 0);
+  const shoesCount = gearList.filter(g => g.type === 'shoes').length;
+  const bikeCount = gearList.filter(g => g.type === 'bike').length;
+  const nearLimitCount = gearList.filter(g => {
+    const pct = g.max_distance > 0 ? (g.current_distance / g.max_distance) * 100 : 0;
+    return pct >= 80;
+  }).length;
+
   return (
     <AppLayout>
-      <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
-        <div className="flex justify-between items-center pt-2">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground tracking-tight">Mon Mat\u00e9riel</h1>
-            <p className="text-muted mt-1.5">Suivez l&apos;usure de vos chaussures et \u00e9quipements pour pr\u00e9venir les blessures.</p>
+      <div className="animate-fade-in max-w-6xl mx-auto space-y-5">
+        {/* Hero header glass card */}
+        <Card variant="glass" accent="primary" className="animate-slide-up delay-100">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+                <Package className="w-6 h-6" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground tracking-tight">Mon Mat\u00e9riel</h1>
+                <p className="text-muted-foreground text-sm mt-0.5">Suivez l&apos;usure de vos chaussures et \u00e9quipements pour pr\u00e9venir les blessures.</p>
+              </div>
+            </div>
+            <PrimaryButton
+              variant="primary"
+              icon={Plus}
+              onClick={() => {
+                setEditingGear(null);
+                setFormData({ name: '', brand: '', model: '', type: 'shoes', max_distance: 800, initial_distance: 0 });
+                setIsModalOpen(true);
+              }}
+            >
+              Ajouter
+            </PrimaryButton>
           </div>
-          <PrimaryButton
-            variant="primary"
-            icon={Plus}
-            onClick={() => {
-              setEditingGear(null);
-              setFormData({ name: '', brand: '', model: '', type: 'shoes', max_distance: 800, initial_distance: 0 });
-              setIsModalOpen(true);
-            }}
-          >
-            Ajouter du mat\u00e9riel
-          </PrimaryButton>
-        </div>
+          {/* Stats summary */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
+            <div className="p-3 rounded-xl bg-surface/50 border border-border/60 text-center">
+              <p className="text-2xl font-bold text-foreground tabular-nums">{gearList.length}</p>
+              <p className="text-xs text-muted mt-0.5">\u00c9quipements</p>
+            </div>
+            <div className="p-3 rounded-xl bg-surface/50 border border-border/60 text-center">
+              <p className="text-2xl font-bold text-foreground tabular-nums">{totalKm.toFixed(0)}</p>
+              <p className="text-xs text-muted mt-0.5">Km totaux</p>
+            </div>
+            <div className="p-3 rounded-xl bg-surface/50 border border-border/60 text-center">
+              <div className="flex items-center justify-center gap-1.5">
+                <Footprints className="w-4 h-4 text-primary" />
+                <span className="text-2xl font-bold text-foreground tabular-nums">{shoesCount}</span>
+              </div>
+              <p className="text-xs text-muted mt-0.5">Paires</p>
+            </div>
+            <div className="p-3 rounded-xl bg-surface/50 border border-border/60 text-center">
+              <div className="flex items-center justify-center gap-1.5">
+                <Bike className="w-4 h-4 text-primary" />
+                <span className="text-2xl font-bold text-foreground tabular-nums">{bikeCount}</span>
+              </div>
+              <p className="text-xs text-muted mt-0.5">V\u00e9los</p>
+            </div>
+          </div>
+          {nearLimitCount > 0 && (
+            <div className="mt-3 p-3 rounded-xl bg-warning/10 border border-warning/20 text-sm text-warning flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
+              {nearLimitCount} \u00e9quipement{nearLimitCount > 1 ? 's' : ''} proche{nearLimitCount > 1 ? 's' : ''} de la limite d&apos;usure
+            </div>
+          )}
+        </Card>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-slide-up delay-200">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-48 bg-surface rounded-2xl animate-pulse" />
+              <div key={i} className="h-48 bg-surface/50 rounded-xl animate-pulse" />
             ))}
           </div>
         ) : gearList.length === 0 ? (
-          <Card variant="bordered" padding="xl" className="text-center">
-            <div className="w-16 h-16 bg-surface rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <Card variant="glass" accent="primary" className="text-center py-10 animate-slide-up delay-200">
+            <div className="w-16 h-16 bg-surface/70 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Package className="w-8 h-8 text-muted" />
             </div>
             <h3 className="text-lg font-bold text-foreground">Aucun mat\u00e9riel enregistr\u00e9</h3>
@@ -138,22 +185,30 @@ export default function GearPage() {
             </PrimaryButton>
           </Card>
         ) : (
-          <div className="space-y-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {activeGear.map(gear => (
-                <GearCard key={gear.id} gear={gear} onEdit={handleEdit} onDelete={handleDelete} />
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {activeGear.map((gear, i) => (
+                <div key={gear.id} className={`animate-slide-up delay-${(i % 6 + 2) * 100}`}>
+                  <Card variant="glass" accent="primary" hover padding="none">
+                    <GearCard gear={gear} onEdit={handleEdit} onDelete={handleDelete} />
+                  </Card>
+                </div>
               ))}
             </div>
 
             {archivedGear.length > 0 && (
-              <div className="space-y-4">
+              <div className="space-y-4 animate-slide-up delay-300">
                 <div className="flex items-center gap-2 text-muted">
                   <History className="w-4 h-4" />
                   <h2 className="text-sm font-bold uppercase tracking-wider">Mat\u00e9riel Archiv\u00e9</h2>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {archivedGear.map(gear => (
-                    <GearCard key={gear.id} gear={gear} onEdit={handleEdit} onDelete={handleDelete} />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {archivedGear.map((gear, i) => (
+                    <div key={gear.id} className={`animate-slide-up delay-${(i % 6 + 4) * 100}`}>
+                      <Card variant="glass" accent="primary" hover padding="none">
+                        <GearCard gear={gear} onEdit={handleEdit} onDelete={handleDelete} />
+                      </Card>
+                    </div>
                   ))}
                 </div>
               </div>

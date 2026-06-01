@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
 import type { DrawRunMap } from '@/types/leaflet';
 import { Search, X } from '@/components/ui/icons';
+import { Card } from '@/components/ui';
 import ExplorePanel from '@/components/features/explore/ExplorePanel';
 import MapLayerSwitcher from '@/components/features/explore/MapLayerSwitcher';
 import LocationSearch from '@/components/features/explore/LocationSearch';
@@ -83,10 +84,16 @@ type Waypoint = { lat: number; lng: number };
 
 const ROUTE_COLORS = ['var(--danger)', 'var(--primary)', 'var(--success)', 'var(--peak)', 'var(--secondary)', 'var(--danger)', 'var(--recovery)', 'var(--peak)'];
 
+// Focus styles base classes
+const focusClasses = 'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface';
+
+// Default center (Brest, France) if geolocation fails
+const DEFAULT_CENTER = { lat: 48.400771, lng: -4.502407 };
+
 export default function ExplorePage() {
   const router = useRouter();
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>({ lat: 48.400771, lng: -4.502407 });
+  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>(DEFAULT_CENTER);
   const [mapZoom, setMapZoom] = useState(14.15);
   const [mapLayer, setMapLayer] = useState('osm');
   const [panelOpen, setPanelOpen] = useState(true);
@@ -131,8 +138,11 @@ export default function ExplorePage() {
   const loadSegments = useCallback(async (lat?: number, lng?: number) => {
     setSegmentsLoading(true);
     try {
-      if (lat && lng) {
-        const res = await api.getNearbySegments(lat, lng, 10000);
+      const useLat = lat ?? mapCenter.lat;
+      const useLng = lng ?? mapCenter.lng;
+      
+      if (useLat && useLng) {
+        const res = await api.getNearbySegments(useLat, useLng, 10000);
         if (res.success) {
           const segs = (res.segments ?? []) as Segment[];
           setSegments(segs);
@@ -162,7 +172,7 @@ export default function ExplorePage() {
     } finally {
       setSegmentsLoading(false);
     }
-  }, [router]);
+  }, [router, mapCenter]);
 
   const loadRoutes = useCallback(async (type?: string, difficulty?: string) => {
     setRoutesLoading(true);
@@ -209,23 +219,39 @@ export default function ExplorePage() {
     loadFavorites();
   }, [loadSegments, loadRoutes, loadFavorites]);
 
-  // Geolocate user
+  // Geolocate user with fallback
   useEffect(() => {
     if (locatedRef.current) return;
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        setUserLocation({ lat: latitude, lng: longitude });
-        setMapCenter({ lat: latitude, lng: longitude });
-        loadSegments(latitude, longitude);
+    
+    const geolocateUser = () => {
+      if (!navigator.geolocation) {
+        // Browser doesn't support geolocation, use default
+        setMapCenter(DEFAULT_CENTER);
+        loadSegments(DEFAULT_CENTER.lat, DEFAULT_CENTER.lng);
         locatedRef.current = true;
-      },
-      () => {
-        locatedRef.current = true;
-      },
-      { timeout: 5000 }
-    );
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          setUserLocation({ lat: latitude, lng: longitude });
+          setMapCenter({ lat: latitude, lng: longitude });
+          loadSegments(latitude, longitude);
+          locatedRef.current = true;
+        },
+        (err) => {
+          // Geolocation failed or was denied, use default center
+          console.warn('Geolocation error:', err);
+          setMapCenter(DEFAULT_CENTER);
+          loadSegments(DEFAULT_CENTER.lat, DEFAULT_CENTER.lng);
+          locatedRef.current = true;
+        },
+        { timeout: 5000, enableHighAccuracy: true }
+      );
+    };
+
+    geolocateUser();
   }, [loadSegments]);
 
   // Reload routes when filters change
@@ -282,149 +308,164 @@ export default function ExplorePage() {
   }, []);
 
   return (
-    <div className="relative w-full overflow-hidden -m-4 lg:-m-6 h-[calc(100dvh-4rem)]">
-      {/* Map */}
-      <div className="absolute inset-0">
-        <ExploreMap
-          center={mapCenter}
-          zoom={mapZoom}
-          mapLayer={mapLayer}
-          routes={routePlannerOpen ? [] : mapRoutes}
-          segments={routePlannerOpen ? [] : mapSegments}
-          userLocation={userLocation}
-          routeCreationActive={routePlannerOpen}
-          routeCreationPoints={waypoints}
-          onWaypointAdd={handleWaypointAdd}
-          onWaypointDrag={handleWaypointDrag}
-          isLoop={isLoop}
-          onMapReady={setMapInstance}
-          heatmapData={heatmapData}
-          showHeatmap={showHeatmap}
-        />
-      </div>
-
-      {/* Desktop search */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[500] max-sm:hidden">
-        <LocationSearch
-          onSelectLocation={(lat, lng, label) => {
-            setMapCenter({ lat, lng });
-            setMapZoom(15);
-            userLocation && loadSegments(lat, lng);
-            toast.success(label.split(',')[0]);
-          }}
-        />
-      </div>
-
-      {/* Mobile search overlay */}
-      {showMobileSearch && (
-        <div className="absolute inset-x-0 top-0 z-[600] sm:hidden">
-          <div className="flex items-center gap-2 p-3 bg-surface/95 backdrop-blur-md border-b border-border shadow-md">
-            <div className="flex-1">
-              <LocationSearch
-                onSelectLocation={(lat, lng, label) => {
-                  setMapCenter({ lat, lng });
-                  setMapZoom(15);
-                  userLocation && loadSegments(lat, lng);
-                  setShowMobileSearch(false);
-                  toast.success(label.split(',')[0]);
-                }}
-              />
-            </div>
-            <button
-              onClick={() => setShowMobileSearch(false)}
-              className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-surface transition-colors"
-            >
-              <X className="w-5 h-5 text-muted-foreground" />
-            </button>
-          </div>
+    // Skip to main content for screen readers
+    <div className="relative w-full min-h-[calc(100dvh-4rem)] lg:min-h-[calc(100dvh-4rem)] -m-4 lg:-m-6 flex flex-col">
+      <a href="#explore-main" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:bg-primary focus:text-white focus:p-3 focus:z-[1000] focus:rounded-md">
+        Aller au contenu principal
+      </a>
+      
+      <div id="explore-main" className="relative w-full flex-1 flex">
+        {/* Map - Accessible */}
+        <div className="absolute inset-0" role="region" aria-label="Carte d'exploration">
+          <ExploreMap
+            center={mapCenter}
+            zoom={mapZoom}
+            mapLayer={mapLayer}
+            routes={routePlannerOpen ? [] : mapRoutes}
+            segments={routePlannerOpen ? [] : mapSegments}
+            userLocation={userLocation}
+            routeCreationActive={routePlannerOpen}
+            routeCreationPoints={waypoints}
+            onWaypointAdd={handleWaypointAdd}
+            onWaypointDrag={handleWaypointDrag}
+            isLoop={isLoop}
+            onMapReady={setMapInstance}
+            heatmapData={heatmapData}
+            showHeatmap={showHeatmap}
+          />
         </div>
-      )}
 
-      {/* Control overlays */}
-      <div className="absolute top-4 right-4 z-[500] flex flex-col gap-2">
-        {/* Mobile search toggle */}
+        {/* Desktop search - Accessible */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[500] max-sm:hidden">
+          <LocationSearch
+            onSelectLocation={(lat, lng, label) => {
+              setMapCenter({ lat, lng });
+              setMapZoom(15);
+              userLocation && loadSegments(lat, lng);
+              toast.success(label.split(',')[0]);
+            }}
+            placeholder="Rechercher un lieu..."
+          />
+        </div>
+
+        {/* Mobile search overlay - Accessible */}
+        {showMobileSearch && (
+          <div className="absolute inset-x-0 top-0 z-[600] sm:hidden" role="region" aria-label="Recherche mobile">
+            <div className="flex items-center gap-2 p-3 bg-surface/95 backdrop-blur-md border-b border-border shadow-md">
+              <div className="flex-1">
+                <LocationSearch
+                  onSelectLocation={(lat, lng, label) => {
+                    setMapCenter({ lat, lng });
+                    setMapZoom(15);
+                    userLocation && loadSegments(lat, lng);
+                    setShowMobileSearch(false);
+                    toast.success(label.split(',')[0]);
+                  }}
+                  placeholder="Rechercher un lieu..."
+                />
+              </div>
+              <button
+                onClick={() => setShowMobileSearch(false)}
+                className={`min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-surface transition-colors ${focusClasses}`}
+                aria-label="Fermer la recherche"
+                type="button"
+              >
+                <X className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Control overlays - Accessible, with gap */}
+        <div className="absolute top-4 right-4 z-[500] flex flex-col gap-2" role="group" aria-label="Contrôles de la carte">
+          {/* Mobile search toggle */}
+          <button
+            onClick={() => setShowMobileSearch(true)}
+            className="sm:hidden flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg shadow-md border bg-surface/90 backdrop-blur-sm border-border hover:bg-surface transition-colors text-muted-foreground"
+            title="Rechercher"
+            aria-label="Rechercher un lieu"
+            type="button"
+          >
+            <Search className="w-4 h-4" aria-hidden="true" />
+          </button>
+          <HeatmapView
+            mapCenter={mapCenter}
+            activeFilterType={activeFilter.type}
+            mapInstance={mapInstance}
+            routePlannerOpen={routePlannerOpen}
+            showHeatmap={showHeatmap}
+            onShowHeatmapChange={setShowHeatmap}
+            onHeatmapDataChange={setHeatmapData}
+          />
+          <MapLayerSwitcher activeLayer={mapLayer} onLayerChange={setMapLayer} />
+        </div>
+
+        {/* Geolocate button - Fixed position, accessible */}
         <button
-          onClick={() => setShowMobileSearch(true)}
-          className="sm:hidden flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg shadow-md border bg-surface/90 backdrop-blur-sm border-border hover:bg-surface transition-colors text-muted-foreground"
-          title="Rechercher"
+          onClick={handleLocateMe}
+          className="absolute bottom-4 right-4 z-[500] flex items-center justify-center min-w-[44px] min-h-[44px] bg-surface/90 backdrop-blur-sm rounded-lg shadow-md border border-border hover:bg-surface transition-colors"
+          title="Me localiser"
+          aria-label="Me localiser sur la carte"
+          type="button"
         >
-          <Search className="w-4 h-4" />
+          <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
         </button>
-        <HeatmapView
-          mapCenter={mapCenter}
-          activeFilterType={activeFilter.type}
-          mapInstance={mapInstance}
-          routePlannerOpen={routePlannerOpen}
-          showHeatmap={showHeatmap}
-          onShowHeatmapChange={setShowHeatmap}
-          onHeatmapDataChange={setHeatmapData}
+
+        {/* Panel - Already accessible in ExplorePanel component */}
+        <ExplorePanel
+          segments={segments}
+          segmentsLoading={segmentsLoading}
+          routes={routes}
+          routesLoading={routesLoading}
+          favorites={favorites}
+          favoritesLoading={favoritesLoading}
+          onSegmentClick={(segment) => router.push(`/app/explore/segments/${segment.id}`)}
+          onRouteClick={(route) => router.push(`/app/explore/routes/${route.id}`)}
+          onFavoriteClick={(route) => router.push(`/app/explore/routes/${route.id}`)}
+          activeFilter={activeFilter}
+          onFilterChange={setActiveFilter}
+          onOpenRoutePlanner={openRoutePlanner}
+          isOpen={panelOpen}
+          onToggle={() => setPanelOpen((p) => !p)}
         />
-        <MapLayerSwitcher activeLayer={mapLayer} onLayerChange={setMapLayer} />
-      </div>
 
-      {/* Geolocate button */}
-      <button
-        onClick={handleLocateMe}
-        className="absolute max-sm:bottom-4 max-sm:right-4 sm:top-4 sm:right-16 z-[500] flex items-center justify-center min-w-[44px] min-h-[44px] bg-surface/90 backdrop-blur-sm rounded-lg shadow-md border border-border hover:bg-surface transition-colors"
-        title="Me localiser"
-      >
-        <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      </button>
-
-      {/* Panel */}
-      <ExplorePanel
-        segments={segments}
-        segmentsLoading={segmentsLoading}
-        routes={routes}
-        routesLoading={routesLoading}
-        favorites={favorites}
-        favoritesLoading={favoritesLoading}
-        onSegmentClick={(segment) => router.push(`/app/explore/segments/${segment.id}`)}
-        onRouteClick={(route) => router.push(`/app/explore/routes/${route.id}`)}
-        onFavoriteClick={(route) => router.push(`/app/explore/routes/${route.id}`)}
-        activeFilter={activeFilter}
-        onFilterChange={setActiveFilter}
-        onOpenRoutePlanner={openRoutePlanner}
-        isOpen={panelOpen}
-        onToggle={() => setPanelOpen((p) => !p)}
-      />
-
-      {/* Route detail popup */}
-      {selectedRoute && !routePlannerOpen && (
-        <RouteDetailPopup
-          route={selectedRoute}
-          onClose={() => setSelectedRoute(null)}
-          onViewDetails={() => {
-            setSelectedRoute(null);
-            router.push(`/app/explore/routes/${selectedRoute.id}`);
-          }}
-          onUseRoute={async () => {
-            try {
-              await api.useRoute(selectedRoute.id);
-              toast.success('Parcours ajouté à vos activités');
+        {/* Route detail popup - Accessible */}
+        {selectedRoute && !routePlannerOpen && (
+          <RouteDetailPopup
+            route={selectedRoute}
+            onClose={() => setSelectedRoute(null)}
+            onViewDetails={() => {
               setSelectedRoute(null);
-            } catch {
-              toast.error('Erreur lors de l\'utilisation du parcours');
-            }
-          }}
-        />
-      )}
+              router.push(`/app/explore/routes/${selectedRoute.id}`);
+            }}
+            onUseRoute={async () => {
+              try {
+                await api.useRoute(selectedRoute.id);
+                toast.success('Parcours ajouté à vos activités');
+                setSelectedRoute(null);
+              } catch {
+                toast.error('Erreur lors de l\'utilisation du parcours');
+              }
+            }}
+          />
+        )}
 
-      {/* Route planner (bottom sheet) */}
-      {routePlannerOpen && (
-        <RoutePlanner
-          waypoints={waypoints}
-          onWaypointsChange={setWaypoints}
-          onClose={closeRoutePlanner}
-          isLoop={isLoop}
-          onLoopChange={setIsLoop}
-        />
-      )}
+        {/* Route planner (bottom sheet) - Responsive */}
+        {routePlannerOpen && (
+          <RoutePlanner
+            waypoints={waypoints}
+            onWaypointsChange={setWaypoints}
+            onClose={closeRoutePlanner}
+            isLoop={isLoop}
+            onLoopChange={setIsLoop}
+          />
+        )}
+      </div>
     </div>
   );
 }
