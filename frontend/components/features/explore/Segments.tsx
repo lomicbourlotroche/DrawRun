@@ -65,28 +65,36 @@ export function SegmentList({ segments, onSegmentClick, isLoading }: SegmentList
       {segments.map((segment) => (
         <Card
           key={segment.id}
-          className="cursor-pointer hover:border-primary/50 transition-all"
+          className="cursor-pointer hover:border-primary/30 hover:shadow-md transition-all duration-200 group"
           onClick={() => onSegmentClick?.(segment)}
         >
           <CardContent className="p-4">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/10 to-primary/20 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-200">
                 <TrendingUp className="w-6 h-6 text-primary" />
               </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold truncate">{segment.name}</h3>
-                  <Badge variant="secondary" size="sm">
+                  <h3 className="font-semibold truncate group-hover:text-primary transition-colors duration-200">{segment.name}</h3>
+                  <Badge variant="secondary" size="sm" className="bg-primary/10 text-primary">
                     {segment.activity_type}
                   </Badge>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                  <span>{(segment.distance / 1000).toFixed(2)} km</span>
-                  <span>{segment.elevation_gain}m D+</span>
+                  <span className="flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5" />
+                    {(segment.distance / 1000).toFixed(2)} km
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    {segment.elevation_gain}m D+
+                  </span>
                   {segment.avg_grade && (
-                    <span>{segment.avg_grade}% moy.</span>
+                    <span className="flex items-center gap-1">
+                      {segment.avg_grade}% moy.
+                    </span>
                   )}
                 </div>
 

@@ -6,8 +6,8 @@ import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
 import type { DrawRunMap } from '@/types/leaflet';
-import { Search, X } from '@/components/ui/icons';
-import { Card } from '@/components/ui';
+import { Search, X, Compass, MapPin, Layers, Plus, LocateFixed, Route, Heart } from '@/components/ui/icons';
+import { Card, Button } from '@/components/ui';
 import ExplorePanel from '@/components/features/explore/ExplorePanel';
 import MapLayerSwitcher from '@/components/features/explore/MapLayerSwitcher';
 import LocationSearch from '@/components/features/explore/LocationSearch';
@@ -314,7 +314,35 @@ export default function ExplorePage() {
         Aller au contenu principal
       </a>
       
-      <div id="explore-main" className="relative w-full flex-1 flex">
+      {/* ===== HEADER ===== */}
+      <div className="absolute top-0 left-0 right-0 z-[450] p-4">
+        <div className="flex items-center justify-between gap-4 max-w-6xl mx-auto">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-xl bg-primary/10 border border-primary/30">
+              <Compass className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">Explorer</h1>
+              <p className="text-xs text-muted">D\u0019couvrez des parcours et segments autour de vous</p>
+            </div>
+          </div>
+          
+          {/* Quick actions */}
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              onClick={openRoutePlanner}
+              className="hidden sm:flex"
+              leftIcon={<Plus className="w-4 h-4" />}
+            >
+              Cr\u0019er un parcours
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div id="explore-main" className="relative w-full flex-1 flex pt-16">
         {/* Map - Accessible */}
         <div className="absolute inset-0" role="region" aria-label="Carte d'exploration">
           <ExploreMap
@@ -403,17 +431,23 @@ export default function ExplorePage() {
         {/* Geolocate button - Fixed position, accessible */}
         <button
           onClick={handleLocateMe}
-          className="absolute bottom-4 right-4 z-[500] flex items-center justify-center min-w-[44px] min-h-[44px] bg-surface/90 backdrop-blur-sm rounded-lg shadow-md border border-border hover:bg-surface transition-colors"
+          className="absolute bottom-4 right-4 z-[500] flex items-center justify-center min-w-[48px] min-h-[48px] bg-primary rounded-xl shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all duration-200 text-white"
           title="Me localiser"
           aria-label="Me localiser sur la carte"
           type="button"
         >
-          <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
+          <LocateFixed className="w-5 h-5" aria-hidden="true" />
+        </button>
+
+        {/* Floating action - Create route (mobile) */}
+        <button
+          onClick={openRoutePlanner}
+          className="absolute bottom-20 right-4 z-[500] sm:hidden flex items-center justify-center min-w-[48px] min-h-[48px] bg-primary rounded-xl shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all duration-200 text-white"
+          title="Créer un parcours"
+          aria-label="Créer un parcours"
+          type="button"
+        >
+          <Plus className="w-5 h-5" aria-hidden="true" />
         </button>
 
         {/* Panel - Already accessible in ExplorePanel component */}

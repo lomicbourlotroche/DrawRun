@@ -94,24 +94,24 @@ export function RouteList({ routes, onRouteClick, isLoading, showFavoriteButton 
       {routes.map((route) => (
         <Card
           key={route.id}
-          className="cursor-pointer hover:border-primary/50 transition-all"
+          className="cursor-pointer hover:border-primary/30 hover:shadow-md transition-all duration-200 group"
           onClick={() => onRouteClick?.(route)}
         >
           <CardContent className="p-4">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Navigation className="w-6 h-6 text-primary" />
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-success/10 to-success/20 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-200">
+                <Navigation className="w-6 h-6 text-success" />
               </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold truncate">{route.name}</h3>
-                  <Badge variant="secondary" size="sm">
+                  <h3 className="font-semibold truncate group-hover:text-primary transition-colors duration-200">{route.name}</h3>
+                  <Badge variant="secondary" size="sm" className="bg-primary/10 text-primary">
                     {route.activity_type}
                   </Badge>
                   {route.difficulty && (
                     <Badge 
-                      className={difficultyColors[route.difficulty] || 'bg-muted/20'}
+                      className={`text-xs ${difficultyColors[route.difficulty] || 'bg-muted/20'}`}
                       size="sm"
                     >
                       {difficultyLabels[route.difficulty] || route.difficulty}
@@ -124,8 +124,14 @@ export function RouteList({ routes, onRouteClick, isLoading, showFavoriteButton 
                 </p>
 
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                  <span>{(route.distance / 1000).toFixed(2)} km</span>
-                  <span>{route.elevation_gain}m D+</span>
+                  <span className="flex items-center gap-1">
+                    <Map className="w-3.5 h-3.5" />
+                    {(route.distance / 1000).toFixed(2)} km
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    {route.elevation_gain}m D+
+                  </span>
                   {route.estimated_duration && (
                     <span className="flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5" />

@@ -126,7 +126,7 @@ export default function ExplorePanel({
         aria-labelledby="explore-panel-title"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
+        <div className="flex items-center justify-between p-4 border-b border-border bg-gradient-to-r from-primary/5 to-transparent">
           <h2
             id="explore-panel-title"
             className="text-lg font-bold flex items-center gap-2"
@@ -171,6 +171,15 @@ export default function ExplorePanel({
               <div id="segments-panel" role="tabpanel" aria-labelledby="segments-tab">
                 <TabsContent value="segments">
                   <div className="space-y-3">
+                    {/* Header with count */}
+                    <div className="flex items-center justify-between pb-2">
+                      <div className="flex items-center gap-2">
+                        <Compass className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium text-muted">
+                          {segmentsLoading ? 'Chargement...' : `${segments.length} segments`}
+                        </span>
+                      </div>
+                    </div>
                     <SegmentList
                       segments={segments}
                       isLoading={segmentsLoading}
@@ -183,6 +192,16 @@ export default function ExplorePanel({
               <div id="routes-panel" role="tabpanel" aria-labelledby="routes-tab">
                 <TabsContent value="routes">
                   <div className="space-y-3">
+                    {/* Header with count */}
+                    <div className="flex items-center justify-between pb-2">
+                      <div className="flex items-center gap-2">
+                        <Route className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium text-muted">
+                          {routesLoading ? 'Chargement...' : `${routes.length} parcours`}
+                        </span>
+                      </div>
+                    </div>
+                    
                     {/* Filters */}
                     <div className="space-y-2 pb-2">
                       <FilterChipGroup
@@ -214,6 +233,15 @@ export default function ExplorePanel({
               <div id="favorites-panel" role="tabpanel" aria-labelledby="favorites-tab">
                 <TabsContent value="favorites">
                   <div className="space-y-3">
+                    {/* Header with count */}
+                    <div className="flex items-center justify-between pb-2">
+                      <div className="flex items-center gap-2">
+                        <Heart className="w-4 h-4 text-danger" />
+                        <span className="text-sm font-medium text-muted">
+                          {favoritesLoading ? 'Chargement...' : `${favorites.length} favoris`}
+                        </span>
+                      </div>
+                    </div>
                     <RouteList
                       routes={favorites}
                       isLoading={favoritesLoading}
@@ -228,10 +256,10 @@ export default function ExplorePanel({
         </div>
 
         {/* Bottom action - Responsive padding */}
-        <div className="p-4 pb-[env(safe-area-inset-bottom,16px)] border-t border-border">
+        <div className="p-4 pb-[env(safe-area-inset-bottom,16px)] border-t border-border bg-surface/50">
           <button
             onClick={onOpenRoutePlanner}
-            className={`w-full ${buttonBaseClasses} bg-primary text-foreground rounded-lg font-medium text-sm shadow-sm`}
+            className={`w-full ${buttonBaseClasses} bg-gradient-to-r from-primary to-primary/80 text-white rounded-xl font-medium text-sm shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200`}
             type="button"
             aria-label="Créer un parcours"
           >
