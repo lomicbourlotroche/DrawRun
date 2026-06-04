@@ -24,11 +24,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const stored = localStorage.getItem('drawrun-language') as Language | null;
-    if (stored && (supportedLanguages as unknown as Language[]).includes(stored)) {
+    if (stored && (supportedLanguages as readonly string[]).includes(stored)) {
       setLanguageState(stored);
     } else {
       const browserLang = navigator.language.toLowerCase().split('-')[0] as Language;
-      if ((supportedLanguages as unknown as Language[]).includes(browserLang)) {
+      if ((supportedLanguages as readonly string[]).includes(browserLang)) {
         setLanguageState(browserLang);
       }
     }
@@ -41,7 +41,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }, [language]);
 
   const setLanguage = (lang: Language) => {
-    if ((supportedLanguages as unknown as Language[]).includes(lang)) {
+    if ((supportedLanguages as readonly string[]).includes(lang)) {
       setLanguageState(lang);
     }
   };

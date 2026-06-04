@@ -10,6 +10,22 @@ const MIGRATIONS = [
         },
     },
     {
+        version: '002_placeholder_unknown',
+        description: 'Placeholder for missing migration 002 (schema already up-to-date, no action needed)',
+        up: () => {
+            // No-op: the schema is already current. This migration exists only to
+            // close the numbering gap between 001 and 004.
+        },
+    },
+    {
+        version: '003_placeholder_unknown',
+        description: 'Placeholder for missing migration 003 (schema already up-to-date, no action needed)',
+        up: () => {
+            // No-op: the schema is already current. This migration exists only to
+            // close the numbering gap between 001 and 004.
+        },
+    },
+    {
         version: '004_remove_other_providers',
         description: 'Remove Strava, Suunto, Decathlon columns from users table',
         up: (db) => {

@@ -2,7 +2,17 @@
 const { logger } = require('../../utils/logger');
 const express = require('express');
 const router = express.Router();
+const { verifyToken } = require('../../middleware/auth');
 const { Polarization, Taper, TrainingLoad, CriticalPower } = require('../../algorithms');
+
+function safeJsonParse(str, defaultVal = null) {
+    if (!str) return defaultVal;
+    try {
+        return JSON.parse(str);
+    } catch {
+        return defaultVal;
+    }
+}
 
 // ============================================================================
 // POLARIZATION - Analyse distribution d'intensité
@@ -15,7 +25,7 @@ const { Polarization, Taper, TrainingLoad, CriticalPower } = require('../../algo
  * Query params:
  *   - activities: JSON array [{zonePercent: {1,2,3,4,5}}]
  */
-router.get('/polarization', (req, res) => {
+router.get('/polarization', verifyToken, (req, res) => {
     try {
         const { activities } = req.query;
         
@@ -23,7 +33,10 @@ router.get('/polarization', (req, res) => {
             return res.status(400).json({ error: 'Paramètre activities requis' });
         }
         
-        const activitiesList = JSON.parse(activities);
+        const activitiesList = safeJsonParse(activities);
+        if (!Array.isArray(activitiesList)) {
+            return res.status(400).json({ error: 'Activities doit être un tableau JSON' });
+        }
         
         const index = Polarization.calculatePolarizationIndex(activitiesList);
         const recommendation = Polarization.getRecommendation(index);
@@ -117,7 +130,7 @@ router.get('/taper', (req, res) => {
  * Query params:
  *   - efforts: JSON array [{duration: sec, value: watts}] (minimum 2)
  */
-router.get('/critical-power', (req, res) => {
+router.get('/critical-power', verifyToken, (req, res) => {
     try {
         const { efforts } = req.query;
         
@@ -125,7 +138,7 @@ router.get('/critical-power', (req, res) => {
             return res.status(400).json({ error: 'Paramètre efforts requis' });
         }
         
-        const effortsList = JSON.parse(efforts);
+        const effortsList = safeJsonParse(efforts);
         
         if (!Array.isArray(effortsList) || effortsList.length < 2) {
             return res.status(400).json({ error: 'Minimum 2 efforts requis' });

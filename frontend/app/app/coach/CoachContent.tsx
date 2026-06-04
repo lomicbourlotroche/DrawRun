@@ -25,7 +25,7 @@ function TodayTab() {
       api.getCoachProfile().catch(() => null),
     ]).then(([recData, profileData]) => {
       if (recData) setRec(recData);
-      if (profileData) setProfile(profileData as unknown as Record<string, unknown>);
+      if (profileData) setProfile(profileData as Record<string, unknown>);
     }).finally(() => setIsLoading(false));
   }, []);
 

@@ -8,7 +8,7 @@
 'use strict';
 
 const express = require('express');
-const { verifyToken } = require('./auth');
+const { verifyToken } = require('../middleware/auth');
 const { getUserDb, dbGetUser, dbAllUser } = require('../database');
 const { Recommendations } = require('../algorithms');
 const { resolveUserConstants } = require('../services/userConstants.service');

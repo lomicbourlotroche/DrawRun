@@ -17,7 +17,7 @@ jest.mock('../../src/database', () => ({
   dbAllMain: jest.fn(),
 }));
 
-jest.mock('../../src/routes/auth', () => ({
+jest.mock('../../src/middleware/auth', () => ({
   verifyToken: (req, res, next) => {
     req.user = { id: 1, email: 'test@example.com' };
     next();

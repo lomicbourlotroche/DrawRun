@@ -64,8 +64,7 @@ if (process.env.NODE_ENV !== 'production') {
         console.error('\n╔══════════════════════════════════════════════════╗');
         console.error('║   ❌  Tests FAILED — server will NOT start       ║');
         console.error('╚══════════════════════════════════════════════════╝\n');
-        // eslint-disable-next-line no-process-exit
-        process.exit(1);
+        throw new Error('Startup tests failed — see above for details');
     }
 }
 
@@ -305,14 +304,11 @@ app.use((req, res, next) => {
         }
         
         // ============================================================================
-        // ERROR HANDLER
+        // CENTRALIZED ERROR HANDLER
         // ============================================================================
         
-        app.use((err, req, res, _next) => {
-            logger.error('Unhandled error:', { message: err.message });
-            const isProd = process.env.NODE_ENV === 'production';
-            res.status(500).json({ error: isProd ? 'Internal server error' : err.message });
-        });
+        const { errorHandler } = require('./src/utils/errors');
+        app.use(errorHandler);
         
         // ============================================================================
         // START SERVER
@@ -329,7 +325,7 @@ app.use((req, res, next) => {
         
     } catch (err) {
         logger.error(`Failed to start server: ${err.message}`);
-        // eslint-disable-next-line no-process-exit
-        process.exit(1);
+        // Let the unhandled promise rejection terminate the process naturally
+        throw err;
     }
 })();

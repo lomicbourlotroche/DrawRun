@@ -106,13 +106,10 @@ const SCIENTIFIC_CONSTANTS = {
         GELLISH_A: -0.007165,
         GELLISH_B: 207.08,
         
-        // Oakland University
-        OAKLAND_A: 0.7115,
-        OAKLAND_B: 186.6,
-        
-        //Londeree et Moeschberger
-        LONDEREE_A: 0.10,
-        LONDEREE_B: 206.3,
+        // Oakland University (unused — kept for reference)
+        // OAKLAND: 0.7115 * age + 186.6
+        // Londeree et Moeschberger (unused — kept for reference)
+        // LONDEREE: 0.10 * age + 206.3
     },
 
     // Critical Power Model - Poole et al. (2016)

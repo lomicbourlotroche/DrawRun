@@ -1,12 +1,10 @@
 'use strict';
 
-/* eslint-disable unused-imports/no-unused-vars, security/detect-non-literal-fs-filename */
-
 const express = require('express');
 const router = express.Router({ mergeParams: true });
-const { verifyToken } = require('./auth');
+const { verifyToken } = require('../middleware/auth');
 const { logger } = require('../utils/logger');
-const { getUserDb, dbGetUser, dbRunUser, dbRunMain } = require('../database');
+const { getUserDb, dbGetUser, dbRunMain } = require('../database');
 const { createCanvas } = require('canvas');
 const fs = require('fs');
 const path = require('path');
@@ -24,16 +22,31 @@ const IMAGE_SIZES = {
 // Default size
 const DEFAULT_SIZE = 'medium';
 
-// Ensure cache directory exists
-if (!fs.existsSync(CACHE_DIR)) {
-  fs.mkdirSync(CACHE_DIR, { recursive: true });
+// Lazy initialization — defer filesystem ops from module load time
+let _cacheInitialized = false;
+let _cleanupTimer = null;
+
+function ensureCacheInit() {
+  if (_cacheInitialized) return;
+  _cacheInitialized = true;
+
+  // Ensure cache directory exists
+  if (!fs.existsSync(CACHE_DIR)) {
+    fs.mkdirSync(CACHE_DIR, { recursive: true });
+  }
+
+  // Setup periodic cleanup (every hour)
+  _cleanupTimer = setInterval(cleanupCache, CACHE_TTL_MS);
+
+  // Initial cleanup on first use
+  cleanupCache();
 }
 
 /**
  * Clean up expired cache files
- * Called periodically and on startup
  */
 function cleanupCache() {
+  if (!_cacheInitialized) return;
   try {
     const files = fs.readdirSync(CACHE_DIR);
     const now = Date.now();
@@ -41,6 +54,7 @@ function cleanupCache() {
 
     files.forEach(file => {
       try {
+        // eslint-disable-next-line security/detect-non-literal-fs-filename -- file from fs.readdir, safe
         const filePath = path.join(CACHE_DIR, file);
         const stats = fs.statSync(filePath);
         const age = now - stats.mtime.getTime();
@@ -63,12 +77,6 @@ function cleanupCache() {
   }
 }
 
-// Setup periodic cleanup (every hour)
-setInterval(cleanupCache, CACHE_TTL_MS);
-
-// Initial cleanup on startup
-cleanupCache();
-
 /**
  * Log an activity share event to the database
  */
@@ -86,7 +94,7 @@ async function logShareEvent(userId, activityId, shareType, metadata = {}) {
 
 /**
  * Generate share image canvas
- * @param {Object} activity - Activity data
+ * @param {Object} activity - Activity data (object with named properties)
  * @param {string} size - 'small', 'medium', 'large'
  * @returns {canvas} Canvas object
  */
@@ -94,6 +102,9 @@ function generateShareCanvas(activity, size = DEFAULT_SIZE) {
   const dimensions = IMAGE_SIZES[size] || IMAGE_SIZES[DEFAULT_SIZE];
   const canvas = createCanvas(dimensions.width, dimensions.height);
   const ctx = canvas.getContext('2d');
+
+  // Extract named properties from activity object
+  const { name, distance, moving_time, elapsed_time, total_elevation_gain, average_speed, average_heartrate, start_date, type, athleteName } = activity;
 
   // Determine gradient colors based on activity type
   const typeColors = {
@@ -105,7 +116,7 @@ function generateShareCanvas(activity, size = DEFAULT_SIZE) {
     'default': { start: '#8b5cf6', end: '#6d28d9' },
   };
 
-  const colors = typeColors[activity[9]] || typeColors.default;
+  const colors = typeColors[type] || typeColors.default;
 
   // Draw gradient background
   const gradient = ctx.createLinearGradient(0, 0, dimensions.width, dimensions.height);
@@ -143,7 +154,7 @@ function generateShareCanvas(activity, size = DEFAULT_SIZE) {
   ctx.textAlign = 'left';
 
   // Truncate long names
-  let displayName = activity[1] || 'Activité';
+  let displayName = name || 'Activité';
   const maxWidth = dimensions.width - (120 * textScale);
   if (ctx.measureText(displayName).width > maxWidth) {
     while (ctx.measureText(displayName + '...').width > maxWidth && displayName.length > 0) {
@@ -154,7 +165,7 @@ function generateShareCanvas(activity, size = DEFAULT_SIZE) {
   ctx.fillText(displayName, 60 * textScale, 200 * textScale);
 
   // Draw date
-  const date = new Date(activity[8]);
+  const date = new Date(start_date);
   const dateStr = date.toLocaleDateString('fr-FR', {
     weekday: 'long',
     day: 'numeric',
@@ -184,11 +195,11 @@ function generateShareCanvas(activity, size = DEFAULT_SIZE) {
   };
 
   // Distance
-  const distanceKm = (activity[2] / 1000).toFixed(2);
+  const distanceKm = (distance / 1000).toFixed(2);
   drawStat(distanceKm, 'km', 0, statsY);
 
   // Duration
-  const duration = activity[3] || activity[4] || 0;
+  const duration = moving_time || elapsed_time || 0;
   const hours = Math.floor(duration / 3600);
   const mins = Math.floor((duration % 3600) / 60);
   const secs = duration % 60;
@@ -199,8 +210,8 @@ function generateShareCanvas(activity, size = DEFAULT_SIZE) {
 
   // Pace
   let paceStr = '--';
-  if (activity[6]) {
-    const paceSecPerKm = 3600 / activity[6];
+  if (average_speed) {
+    const paceSecPerKm = 3600 / average_speed;
     const paceMins = Math.floor(paceSecPerKm / 60);
     const paceSecs = Math.round(paceSecPerKm % 60);
     paceStr = `${paceMins}:${paceSecs.toString().padStart(2, '0')}`;
@@ -219,33 +230,33 @@ function generateShareCanvas(activity, size = DEFAULT_SIZE) {
   const addStatsY = 600 * textScale;
 
   // Elevation
-  if (activity[5]) {
+  if (total_elevation_gain) {
     ctx.textAlign = 'left';
     ctx.font = `${36 * textScale}px Arial`;
     ctx.fillStyle = 'white';
-    ctx.fillText(`+${Math.round(activity[5])} m`, 60 * textScale, addStatsY);
+      ctx.fillText(`+${Math.round(total_elevation_gain)} m`, 60 * textScale, addStatsY);
     ctx.font = `${20 * textScale}px Arial`;
     ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
     ctx.fillText('Dénivelé', 60 * textScale, addStatsY + 30 * textScale);
   }
 
   // Heart rate
-  if (activity[7]) {
+  if (average_heartrate) {
     ctx.textAlign = 'right';
     ctx.font = `${36 * textScale}px Arial`;
     ctx.fillStyle = 'white';
-    ctx.fillText(`${Math.round(activity[7])} bpm`, dimensions.width - 60 * textScale, addStatsY);
+      ctx.fillText(`${Math.round(average_heartrate)} bpm`, dimensions.width - 60 * textScale, addStatsY);
     ctx.font = `${20 * textScale}px Arial`;
     ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
     ctx.fillText('FC moyenne', dimensions.width - 60 * textScale, addStatsY + 30 * textScale);
   }
 
   // Draw athlete name
-  if (activity[10]) {
+  if (athleteName) {
     ctx.textAlign = 'center';
     ctx.font = `${32 * textScale}px Arial`;
     ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    ctx.fillText(activity[10], dimensions.width / 2, dimensions.height - 180 * textScale);
+    ctx.fillText(athleteName, dimensions.width / 2, dimensions.height - 180 * textScale);
   }
 
   // Draw footer
@@ -310,33 +321,26 @@ router.get('/share-image', verifyToken, async (req, res) => {
     }
 
     // Get athlete name from main DB
-    const { dbGetMain } = require('../database');
     const userRow = await dbGetMain('SELECT profile_data FROM users WHERE id = ?', [userId]);
     let athleteName = null;
     if (userRow?.profile_data) {
       try { athleteName = JSON.parse(userRow.profile_data).name || null; } catch { /* ignore */ }
     }
 
-    const activity = [
-      activityRow.id,
-      activityRow.name,
-      activityRow.distance,
-      activityRow.moving_time,
-      activityRow.elapsed_time,
-      activityRow.total_elevation_gain,
-      activityRow.average_speed,
-      activityRow.average_heartrate,
-      activityRow.start_date,
-      activityRow.type,
-      athleteName,
-    ];
+    // Build activity object with named properties (no array-index access)
+    const activity = { ...activityRow, athleteName };
+
+    // Ensure cache directory is initialized (lazy, not at module load)
+    ensureCacheInit();
 
     // Check cache
     const cacheFileName = getCacheFilename(activityId, userId, actualSize);
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- cacheFileName is internal
     const cachePath = path.join(CACHE_DIR, cacheFileName);
     
     let useCache = false;
     try {
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       const stats = fs.statSync(cachePath);
       const age = Date.now() - stats.mtime.getTime();
       if (age < CACHE_TTL_MS) {
@@ -353,6 +357,7 @@ router.get('/share-image', verifyToken, async (req, res) => {
         const dimensions = IMAGE_SIZES[actualSize];
         res.setHeader('Content-Disposition', `attachment; filename="drawrun-activity-${activityId}-${actualSize}.png"`);
       }
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       return fs.createReadStream(cachePath).pipe(res);
     }
 
@@ -375,6 +380,9 @@ router.get('/share-image', verifyToken, async (req, res) => {
       const dimensions = IMAGE_SIZES[actualSize];
       res.setHeader('Content-Disposition', `attachment; filename="drawrun-activity-${activityId}-${actualSize}.png"`);
     }
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    fs.writeFileSync(cachePath, buffer);
+
     res.send(buffer);
 
     logger.info('[ShareImage] Generated image', { activityId, userId, size: actualSize });
@@ -429,33 +437,26 @@ router.get('/share-image/preview', verifyToken, async (req, res) => {
       return res.status(404).json({ error: 'Activité non trouvée' });
     }
 
-    const { dbGetMain } = require('../database');
     const userRow = await dbGetMain('SELECT profile_data FROM users WHERE id = ?', [userId]);
     let athleteName = null;
     if (userRow?.profile_data) {
       try { athleteName = JSON.parse(userRow.profile_data).name || null; } catch { /* ignore */ }
     }
 
-    const activity = [
-      activityRow.id,
-      activityRow.name,
-      activityRow.distance,
-      activityRow.moving_time,
-      activityRow.elapsed_time,
-      activityRow.total_elevation_gain,
-      activityRow.average_speed,
-      activityRow.average_heartrate,
-      activityRow.start_date,
-      activityRow.type,
-      athleteName,
-    ];
+    // Build activity object with named properties
+    const activity = { ...activityRow, athleteName };
+
+    // Ensure cache directory is initialized (lazy, not at module load)
+    ensureCacheInit();
 
     // Check cache
     const cacheFileName = getCacheFilename(activityId, userId, actualSize);
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- cacheFileName is internal
     const cachePath = path.join(CACHE_DIR, cacheFileName);
     
     let useCache = false;
     try {
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       const stats = fs.statSync(cachePath);
       const age = Date.now() - stats.mtime.getTime();
       if (age < CACHE_TTL_MS) {
@@ -467,6 +468,7 @@ router.get('/share-image/preview', verifyToken, async (req, res) => {
 
     if (useCache) {
       res.setHeader('Content-Type', 'image/png');
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       return fs.createReadStream(cachePath).pipe(res);
     }
 
@@ -475,6 +477,7 @@ router.get('/share-image/preview', verifyToken, async (req, res) => {
     const buffer = canvas.toBuffer('image/png');
     
     // Cache the image
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     fs.writeFileSync(cachePath, buffer);
 
     res.setHeader('Content-Type', 'image/png');
@@ -573,4 +576,7 @@ router.get('/share/stats', verifyToken, async (req, res) => {
   }
 });
 
+// Export router and cleanup timer for test teardown
 module.exports = router;
+module.exports._cleanupTimer = _cleanupTimer;
+module.exports.ensureCacheInit = ensureCacheInit;

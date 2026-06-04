@@ -8,7 +8,7 @@
 'use strict';
 
 const express = require('express');
-const { verifyToken } = require('./auth');
+const { verifyToken } = require('../middleware/auth');
 const { getUserDb, dbGetUser } = require('../database');
 const metrics = require('../services/metricsCalculator.service');
 const { cacheRoute, invalidateUserCache } = require('../middleware/performance');

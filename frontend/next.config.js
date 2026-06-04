@@ -19,7 +19,7 @@ const nextConfig = {
     ],
   },
   poweredByHeader: false,
-  generateEtags: false,
+  generateEtags: false,  // Disabled for API-only backend; re-enable if serving static assets
   turbopack: {},
 };
 

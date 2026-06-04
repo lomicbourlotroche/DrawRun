@@ -1,7 +1,7 @@
 'use strict';
 
 const express = require('express');
-const { verifyToken } = require('./auth');
+const { verifyToken } = require('../middleware/auth');
 const segments = require('../services/explore/segments.service');
 const routes = require('../services/explore/routes.service');
 const heatmapService = require('../services/explore/heatmap.service');

@@ -17,11 +17,6 @@ import { LapListSheet } from './LapListSheet';
 import { RouteSelectionSheet } from './RouteSelectionSheet';
 import { SegmentRacingPanel } from './SegmentRacingPanel';
 import { logger } from '@/lib/logger';
-interface WakeLockSentinel {
-  release: () => Promise<void>;
-  type: string;
-  released: boolean;
-}
 import {
   MapPin, Navigation, Mountain, X, Save,
   Battery, BatteryMedium, BatteryLow, Footprints, Bike, Waves,
@@ -288,9 +283,8 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       animationFrameRef.current = null;
     }
     try {
-      const nav = navigator as any;
-      if ('getBattery' in navigator && nav.getBattery) {
-        nav.getBattery().then((battery: any) => {
+      if (navigator.getBattery) {
+        navigator.getBattery().then((battery) => {
           battery.removeEventListener('levelchange', updateBatteryLevel);
         });
       }
@@ -300,13 +294,13 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   };
   const requestWakeLock = async () => {
     try {
-      if ((navigator as any).wakeLock) {
-        (navigator as any).wakeLock.request('screen').then((lock: any) => { wakeLockRef.current = lock; });
+      if (navigator.wakeLock) {
+        navigator.wakeLock.request('screen').then((lock) => { wakeLockRef.current = lock; });
       }
     } catch { /* silent */ }
   };
   const releaseWakeLock = () => {
-    (wakeLockRef.current as any)?.release();
+    wakeLockRef.current?.release();
     wakeLockRef.current = null;
   };
   const checkCapabilities = () => {
@@ -317,9 +311,8 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   };
   const getBatteryLevel = async () => {
     try {
-      const nav = navigator as any;
-      if (nav.getBattery) {
-        const battery = await nav.getBattery();
+      if (navigator.getBattery) {
+        const battery = await navigator.getBattery();
         setBatteryLevel(Math.round(battery.level * 100));
         battery.removeEventListener('levelchange', updateBatteryLevel);
         battery.addEventListener('levelchange', updateBatteryLevel);
@@ -328,9 +321,8 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   };
   const updateBatteryLevel = () => {
     try {
-      const nav = navigator as any;
-      if (nav.getBattery) {
-        nav.getBattery().then((battery: any) => {
+      if (navigator.getBattery) {
+        navigator.getBattery().then((battery) => {
           setBatteryLevel(Math.round(battery.level * 100));
         });
       }
@@ -341,9 +333,8 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       if (watchIdRef.current !== null) navigator.geolocation.clearWatch(watchIdRef.current);
       try {
-        const nav = navigator as any;
-        if (nav.getBattery) {
-          nav.getBattery().then((battery: any) => {
+        if (navigator.getBattery) {
+          navigator.getBattery().then((battery) => {
             battery.removeEventListener('levelchange', updateBatteryLevel);
           });
         }
@@ -1565,7 +1556,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       />
       {/* Create Segment Modal */}
       {showCreateSegment && (
-        <div className="fixed inset-0 z-50 bg-foreground/70 flex items-end justify-center" onClick={() => setShowCreateSegment(false)}>
+        <div className="fixed inset-0 z-50 bg-foreground/70 flex items-end justify-center" onClick={() => setShowCreateSegment(false)} role="presentation" aria-hidden="true">
           <motion.div
             initial={{ y: '100%' }}
             animate={{ y: 0 }}

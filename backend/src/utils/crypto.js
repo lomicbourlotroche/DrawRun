@@ -19,8 +19,9 @@ function getEncryptionKey() {
     if (!secret) {
         throw new Error('CREDENTIALS_SECRET environment variable is required for encryption');
     }
-    // Derive a 32-byte key from the secret using PBKDF2 with a project-specific salt
-    return crypto.pbkdf2Sync(secret, 'drawrun-v2-credentials-salt', 100000, 32, 'sha256');
+    // Derive a 32-byte key from the secret using PBKDF2 with a configurable salt
+    const salt = process.env.CREDENTIALS_SALT || 'drawrun-v2-credentials-salt';
+    return crypto.pbkdf2Sync(secret, salt, 100000, 32, 'sha256');
 }
 
 /**

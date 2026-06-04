@@ -12,7 +12,7 @@
 | **IP** | `37.69.94.253` |
 | **Port SSH** | `20708` |
 | **Utilisateur** | `drawrun` |
-| **Mot de passe** | `0708` |
+| **Mot de passe** | `[REDACTED - voir channel sécurisé]` |
 | **OS** | Ubuntu 24.04.4 LTS (Noble Numbat) |
 | **RAM** | 7.7 Go |
 | **Disque** | 98 Go (LVM) |
@@ -23,7 +23,7 @@
 
 ```bash
 ssh drawrun@37.69.94.253 -p 20708
-# Mot de passe: 0708
+# Mot de passe: [REDACTED - voir channel sécurisé]
 ```
 
 ---
@@ -262,7 +262,7 @@ git push origin main
 #### Phase 2 : Connexion au VPS
 ```bash
 ssh drawrun@37.69.94.253 -p 20708
-# Mot de passe: 0708
+# Mot de passe: [REDACTED - voir channel sécurisé]
 ```
 
 #### Phase 3 : Mise à jour du code
@@ -822,7 +822,7 @@ tar -czvf drawrun-backup-$(date +%Y%m%d).tar.gz /home/drawrun/DrawRun-Data /home
 
 **Administrateur VPS :** Lomic Bourlot-Roche  
 **Email :** (à définir)  
-**SSH :** `ssh drawrun@37.69.94.253 -p 20708` (mot de passe: `0708`)
+**SSH :** `ssh drawrun@37.69.94.253 -p 20708` (mot de passe: `[REDACTED]`)
 
 ---
 

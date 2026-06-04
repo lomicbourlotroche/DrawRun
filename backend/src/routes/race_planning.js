@@ -4,7 +4,7 @@ const express = require('express');
 
 const router = express.Router();
 
-const { verifyToken } = require('./auth');
+const { verifyToken } = require('../middleware/auth');
 
 const { logger } = require('../utils/logger');
 

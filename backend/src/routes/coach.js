@@ -11,7 +11,7 @@
 'use strict';
 
 const express = require('express');
-const { verifyToken } = require('./auth');
+const { verifyToken } = require('../middleware/auth');
 const coachPlan = require('../coach_plan');
 const { validateBody, validatePlanBody } = require('../utils/validators');
 const { logger } = require('../utils/logger');

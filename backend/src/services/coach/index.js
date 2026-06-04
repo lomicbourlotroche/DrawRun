@@ -75,11 +75,37 @@ async function getGamification(userId, planId) {
     const totalKm = completedSessions.reduce((s, sess) => s + (sess.actual_distance || sess.target_distance || 0) / 1000, 0);
     const totalHours = completedSessions.reduce((s, sess) => s + (sess.actual_time || sess.target_duration || 0) / 3600, 0);
 
+    // Sort sessions by completion_date (ascending) for streak calculation
+    const sortedSessions = [...completedSessions].sort((a, b) => {
+        const dateA = new Date(a.completion_date || a.scheduled_date || 0);
+        const dateB = new Date(b.completion_date || b.scheduled_date || 0);
+        return dateA - dateB;
+    });
+
     let currentStreak = 0;
     let longestStreak = 0;
     let streak = 0;
-    for (const _s of completedSessions) {
-        streak++;
+    let prevDate = null;
+
+    for (const session of sortedSessions) {
+        const sessionDate = new Date(session.completion_date || session.scheduled_date || 0);
+        // Normalize to date only (strip time)
+        const sessionDay = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate());
+        
+        if (prevDate) {
+            const diffDays = (sessionDay - prevDate) / (1000 * 60 * 60 * 24);
+            if (diffDays <= 1) {
+                // Consecutive day (same day or next day)
+                streak++;
+            } else {
+                // Gap — reset streak
+                streak = 1;
+            }
+        } else {
+            streak = 1;
+        }
+
+        prevDate = sessionDay;
         if (streak > longestStreak) longestStreak = streak;
     }
     currentStreak = streak;

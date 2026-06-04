@@ -2,7 +2,17 @@
 const { logger } = require('../../utils/logger');
 const express = require('express');
 const router = express.Router();
+const { verifyToken } = require('../../middleware/auth');
 const { PMC, Overtraining } = require('../../algorithms');
+
+function safeJsonParse(str, defaultVal = null) {
+    if (!str) return defaultVal;
+    try {
+        return JSON.parse(str);
+    } catch {
+        return defaultVal;
+    }
+}
 
 // ============================================================================
 // PMC - Performance Management Chart
@@ -109,7 +119,7 @@ router.get('/pmc', (req, res) => {
  * Query params:
  *   - indicators: JSON {performanceTrend, rpeChange, hrvRatio, sleepQuality, restingHRChange, moodScore, illnessCount}
  */
-router.get('/overtraining', (req, res) => {
+router.get('/overtraining', verifyToken, (req, res) => {
     try {
         const { indicators } = req.query;
         
@@ -125,7 +135,10 @@ router.get('/overtraining', (req, res) => {
             });
         }
         
-        const indicatorsObj = JSON.parse(indicators);
+        const indicatorsObj = safeJsonParse(indicators, {});
+        if (!indicatorsObj || typeof indicatorsObj !== 'object') {
+            return res.status(400).json({ error: 'Indicateurs JSON invalides' });
+        }
         const result = Overtraining.detectOTS(indicatorsObj);
         
         res.json({
@@ -152,14 +165,15 @@ router.get('/overtraining', (req, res) => {
  *   - sleep: heures de sommeil
  *   - restingHR: FC de repos
  */
-router.get('/readiness', (req, res) => {
+router.get('/readiness', verifyToken, (req, res) => {
     try {
         const { pmc, hrv, sleep } = req.query;
         
         // Calcul readiness depuis PMC
         let pmcData = [];
         if (pmc) {
-            pmcData = JSON.parse(pmc);
+            pmcData = safeJsonParse(pmc, []);
+            if (!Array.isArray(pmcData)) pmcData = [];
         }
         
         const result = PMC.estimateReadiness(

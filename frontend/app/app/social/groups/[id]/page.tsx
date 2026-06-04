@@ -316,7 +316,26 @@ export default function GroupDetailPage() {
           showPresets={false}
           showPublicToggle={false}
           onClose={() => setShowWizard(false)}
-          onCreate={handleCreateChallenge as unknown as (_form: import('../../tabs/challenge-constants').ChallengeForm) => Promise<void>}
+          onCreate={async (form: import('../../tabs/challenge-constants').ChallengeForm) => {
+            await handleCreateChallenge({
+              title: form.title,
+              description: form.description,
+              type: form.type,
+              target_value: Number(form.target_value) || 0,
+              duration_days: form.end_date
+                ? Math.max(1, Math.ceil((new Date(form.end_date).getTime() - Date.now()) / 86400000))
+                : 30,
+              challenge_mode: form.challenge_mode,
+              badge_icon: form.badge_icon,
+              sport_type: form.sport_type,
+              weekly_target: form.weekly_target ? Number(form.weekly_target) : undefined,
+              weekly_increase_pct: form.weekly_increase_pct ? Number(form.weekly_increase_pct) : undefined,
+              streak_days: form.streak_days ? Number(form.streak_days) : undefined,
+              frequency_per_week: form.frequency_per_week ? Number(form.frequency_per_week) : undefined,
+              end_date: form.end_date || undefined,
+              is_public: form.is_public,
+            });
+          }}
         />
       )}
     </div>

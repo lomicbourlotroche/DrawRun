@@ -268,7 +268,7 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
                       )}
                     </div>
                     {activity.user_id && (
-                      <div onClick={(e) => e.preventDefault()}>
+                      <div onClick={(e) => e.preventDefault()} role="presentation">
                         <DrawButton
                           activityId={activity.id}
                           ownerId={activity.user_id}

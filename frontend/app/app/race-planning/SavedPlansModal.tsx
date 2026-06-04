@@ -61,7 +61,7 @@ export function SavedPlansModal({
                   </div>
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
-                  <Button variant="primary" size="sm" onClick={() => onLoadPlan(plan as unknown as Record<string, unknown>)}>
+                  <Button variant="primary" size="sm" onClick={() => onLoadPlan(plan)}>
                     Charger
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => onDeletePlan(plan.id as number)}>

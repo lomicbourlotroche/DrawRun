@@ -328,7 +328,7 @@ export function ShareSettingsPanel({
             {shareStats.shares_by_type && shareStats.shares_by_type.length > 0 && (
               <>
                 {' - '}
-                {shareStats.shares_by_type.map((s: any) => (
+                {shareStats.shares_by_type.map((s) => (
                   <span key={`${s.share_type}-${s.platform}`} className="mr-2">
                     {s.count} {s.share_type}
                     {s.platform && ` (${s.platform})`}

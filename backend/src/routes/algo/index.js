@@ -2,7 +2,18 @@
 const { logger } = require('../../utils/logger');
 const express = require('express');
 const router = express.Router();
+const { verifyToken } = require('../../middleware/auth');
 const { Recommendations, HRV, PMC, Cardiovascular, SCIENTIFIC_CONSTANTS, SportAnalysis } = require('../../algorithms');
+
+function safeJsonParse(str, defaultVal = null) {
+    if (!str) return defaultVal;
+    try {
+        const parsed = JSON.parse(str);
+        return parsed;
+    } catch {
+        return defaultVal;
+    }
+}
 
 const zonesRouter = require('./zones');
 const pmcRouter = require('./pmc');
@@ -24,12 +35,12 @@ router.use(trainingRouter);
  *   - history: JSON {weeklyLoad, chronicLoad, acwr, readiness, ...}
  *   - dayOfWeek: 0-6 (défaut: aujourd'hui)
  */
-router.get('/recommendations', (req, res) => {
+router.get('/recommendations', verifyToken, (req, res) => {
     try {
         const { profile, history, dayOfWeek } = req.query;
         
-        const profileObj = profile ? JSON.parse(profile) : {};
-        const historyObj = history ? JSON.parse(history) : {};
+        const profileObj = safeJsonParse(profile, {});
+        const historyObj = safeJsonParse(history, {});
         const day = dayOfWeek !== undefined ? parseInt(dayOfWeek) : new Date().getDay();
         
         const recommendation = Recommendations.generate(profileObj, historyObj, { dayOfWeek: day });
@@ -91,13 +102,14 @@ router.get('/hrv', (req, res) => {
  *   - pmc: JSON array PMC data
  *   - hrv: JSON {rmssd, baseline}
  */
-router.get('/health', (req, res) => {
+router.get('/health', verifyToken, (req, res) => {
     try {
         const { profile, pmc, hrv } = req.query;
         
-        const profileObj = profile ? JSON.parse(profile) : {};
-        const pmcData = pmc ? JSON.parse(pmc) : [];
-        const hrvObj = hrv ? JSON.parse(hrv) : {};
+        const profileObj = safeJsonParse(profile, {});
+        const pmcData = safeJsonParse(pmc, []);
+        if (!Array.isArray(pmcData)) pmcData.length = 0;
+        const hrvObj = safeJsonParse(hrv, {});
         
         const latest = pmcData[pmcData.length - 1] || {};
         
@@ -211,12 +223,12 @@ router.get('/constants', (req, res) => {
  *   - activity: objet activité avec toutes les propriétés
  *   - profile: profil utilisateur (fcm, vma, ftp, etc.)
  */
-router.post('/analyze', (req, res) => {
+router.post('/analyze', verifyToken, (req, res) => {
     try {
         const { activity, profile = {} } = req.body;
         
-        if (!activity) {
-            return res.status(400).json({ error: 'Activité requise' });
+        if (!activity || typeof activity !== 'object') {
+            return res.status(400).json({ error: 'Activité requise et doit être un objet' });
         }
         
         const analysis = SportAnalysis.analyze(activity, profile);

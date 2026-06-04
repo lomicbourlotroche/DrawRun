@@ -8,7 +8,7 @@
 'use strict';
 
 const express = require('express');
-const { verifyToken } = require('./auth');
+const { verifyToken } = require('../middleware/auth');
 const { getUserDb, dbGetUser, dbGetMain } = require('../database');
 const { PMC } = require('../algorithms/index');
 const { cacheRoute } = require('../middleware/performance');

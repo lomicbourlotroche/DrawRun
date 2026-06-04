@@ -139,7 +139,23 @@ export function RacePlanningContent() {
         totalTime: r.summary.totalTime,
         elevationProfile: r.summary.elevationProfile ?? form.elevationProfile,
         fatigue: form.fatigue,
-        splits: r.splits as unknown as RaceSplit[],
+        splits: (r.splits || []).map(s => ({
+          km: s.km,
+          distance: s.distance,
+          splitTime: s.splitTime,
+          cumulativeTime: s.cumulativeTime,
+          pace: s.pace,
+          hrZone: Number(s.hrZone),
+          hrRange: s.hrRange,
+          elevationGain: s.elevationGain ?? 0,
+          elevationLoss: s.elevationLoss ?? 0,
+          nutrition: (s.nutrition || []).map(n => ({
+            label: n.label,
+            quantity: n.quantity,
+            type: (n.type === 'gel' ? 'gel' : n.type === 'water' ? 'drink' : 'other') as 'gel' | 'drink' | 'bar' | 'other',
+            timing: 'during' as const,
+          })),
+        })),
         nutritionStrategy: r.nutritionStrategy as import('@/lib/api/race-planning.api').NutritionStrategy,
       });
       toast.success('Plan de course enregistr\u0019 !');

@@ -15,7 +15,7 @@ jest.mock('../src/database', () => ({
 }));
 
 // Mock auth middleware
-jest.mock('../src/routes/auth', () => ({
+jest.mock('../src/middleware/auth', () => ({
     verifyToken: (req, res, next) => {
         req.user = { id: 1, email: 'test@example.com' };
         next();

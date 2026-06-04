@@ -1,12 +1,10 @@
 'use strict';
 
-/* eslint-disable unused-imports/no-unused-vars, security/detect-object-injection */
-
 const express = require('express');
 const router = express.Router({ mergeParams: true });
-const { verifyToken } = require('./auth');
+const { verifyToken } = require('../middleware/auth');
 const { logger } = require('../utils/logger');
-const { getUserDb, dbGetMain } = require('../database');
+const { getUserDb, dbGetMain, dbGetUser, dbRunUser } = require('../database');
 const axios = require('axios');
 
 /**
@@ -56,55 +54,46 @@ router.get('/weather', verifyToken, async (req, res) => {
 
     const userDb = await getUserDb(userId);
 
-    // Get activity details - use prepare + get to avoid SQL injection
-    const activityResult = userDb.prepare(`
+    // Get activity details
+    const activity = await dbGetUser(userDb, `
       SELECT 
         id,
         start_date,
         start_latlng
       FROM activities 
       WHERE id = ?
-    `).get([activityId]);
+    `, [activityId]);
     
-    if (!activityResult) {
+    if (!activity) {
       return res.status(404).json({ error: 'Activité non trouvée' });
     }
     
     // Extract lat/lng from start_latlng JSON
     let lat, lng;
     try {
-      const startLatLng = JSON.parse(activityResult.start_latlng);
+      const startLatLng = JSON.parse(activity.start_latlng);
       if (Array.isArray(startLatLng) && startLatLng.length >= 2) {
         lat = startLatLng[0];
         lng = startLatLng[1];
       }
     } catch (e) { /* ignore parse error */ }
 
-
-    if (!lat || !lng) {
-      return res.status(404).json({ 
-        error: 'Aucune coordonnée GPS disponible pour cette activité' 
-      });
-    }
-    
-    const activity = activityResult;
-
     if (!lat || !lng) {
       return res.status(404).json({ 
         error: 'Aucune coordonnée GPS disponible pour cette activité' 
       });
     }
 
-    const startDate = activity[1];
+    const startDate = activity.start_date;
     const activityDate = new Date(startDate);
     const dateStr = activityDate.toISOString().split('T')[0];
 
-    // Check cache first - use prepare + get
-    const cacheResult = userDb.prepare(`
+    // Check cache first
+    const cacheResult = await dbGetUser(userDb, `
       SELECT data, fetched_at 
       FROM weather_cache 
       WHERE activity_id = ?
-    `).get([activityId]);
+    `, [activityId]);
 
     if (cacheResult?.data) {
       const cachedData = JSON.parse(cacheResult.data);
@@ -165,6 +154,7 @@ router.get('/weather', verifyToken, async (req, res) => {
         paceImpact += Math.min(Math.floor((windSpeed - 20) / 10) * 2, 8); // +2% per 10km/h, max +8%
       }
 
+      // eslint-disable-next-line security/detect-object-injection -- weatherCode from Open-Meteo API, not user input
       const weatherInfo = WMO_CODES[weatherCode] || { label: 'Inconnu', icon: 'cloud' };
 
       const weatherData = {
@@ -177,11 +167,11 @@ router.get('/weather', verifyToken, async (req, res) => {
         cached: false,
       };
 
-    // Cache the result - use prepare + run
-    userDb.prepare(`
+    // Cache the result
+    await dbRunUser(userDb, `
       INSERT OR REPLACE INTO weather_cache (activity_id, data, fetched_at)
       VALUES (?, ?, ?)
-    `).run([activityId, JSON.stringify(weatherData), new Date().toISOString()]);
+    `, [activityId, JSON.stringify(weatherData), new Date().toISOString()]);
 
       logger.info('[Weather] Fetched and cached weather for activity', { 
         activityId, 

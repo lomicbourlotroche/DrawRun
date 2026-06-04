@@ -13,7 +13,7 @@
 'use strict';
 
 const express = require('express');
-const { verifyToken } = require('./auth');
+const { verifyToken } = require('../middleware/auth');
 const { Cardiovascular, RunningPerformance } = require('../algorithms/index');
 const { resolveUserConstants } = require('../services/userConstants.service');
 const { logger } = require('../utils/logger');

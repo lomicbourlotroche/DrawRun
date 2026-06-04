@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 const { dbAllUser, dbRunUser, dbGetUser, getUserDb } = require('../database');
 const { logger } = require('../utils/logger');
-const { verifyToken } = require('./auth');
+const { verifyToken } = require('../middleware/auth');
 
 // Toutes les routes gear nécessitent auth
 router.use(verifyToken);

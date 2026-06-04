@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars */
 /**
  * ============================================================
  * CLIENT API - Base HTTP Client pour DrawRun
@@ -254,6 +253,107 @@ class ApiClient {
       options.body = JSON.stringify(body);
     }
     return this.request<T>(endpoint, options);
+  }
+
+  // ============================================================================
+  // Blob/Stream — Pour téléchargement d'images, fichiers, etc.
+  // ============================================================================
+
+  /**
+   * Effectue une requête GET et retourne une réponse Blob (binaire).
+   * Gère automatiquement l'injection du token JWT, le refresh 401,
+   * et la file d'attente des requêtes concurrentes.
+   *
+   * Utilisation typique : téléchargement d'images de partage, export GPX, etc.
+   */
+  async fetchBlob(endpoint: string): Promise<Blob> {
+    const token = this.getToken();
+    const headers: Record<string, string> = {};
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, { headers });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          const isAuthEndpoint =
+            endpoint === '/api/auth/login' || endpoint === '/api/auth/refresh';
+
+          if (isAuthEndpoint) {
+            throw new ApiError('Unauthorized', 401);
+          }
+
+          const refreshToken = this.getRefreshToken();
+          if (!refreshToken) {
+            const { useAuthStore } = await import('@/stores');
+            useAuthStore.getState().logout();
+            if (typeof window !== 'undefined') window.location.href = '/login';
+            throw new ApiError('Unauthorized', 401);
+          }
+
+          if (this.isRefreshing) {
+            // Queue this request and await the refresh
+            return new Promise<Blob>((resolve, reject) => {
+              this.refreshQueue.push({
+                resolve: (newToken: string) => {
+                  const newHeaders = { ...headers, Authorization: `Bearer ${newToken}` };
+                  fetch(`${this.baseUrl}${endpoint}`, { headers: newHeaders })
+                    .then((r) => {
+                      if (!r.ok) {
+                        reject(new ApiError(`HTTP error ${r.status}`, r.status));
+                      } else {
+                        r.blob().then(resolve).catch(reject);
+                      }
+                    })
+                    .catch(reject);
+                },
+                reject,
+              });
+            });
+          }
+
+          // Start refresh
+          this.isRefreshing = true;
+          try {
+            const newToken = await this.refreshAccessToken();
+            this.drainRefreshQueue(newToken);
+            this.isRefreshing = false;
+            // Retry original request with new token
+            const retryHeaders = { ...headers, Authorization: `Bearer ${newToken}` };
+            const retryResponse = await fetch(`${this.baseUrl}${endpoint}`, {
+              headers: retryHeaders,
+            });
+            if (!retryResponse.ok) {
+              throw new ApiError(`HTTP error ${retryResponse.status}`, retryResponse.status);
+            }
+            return retryResponse.blob();
+          } catch (refreshError) {
+            this.isRefreshing = false;
+            const err =
+              refreshError instanceof Error ? refreshError : new Error('Refresh failed');
+            this.drainRefreshQueue(null, err);
+            const { useAuthStore } = await import('@/stores');
+            useAuthStore.getState().logout();
+            if (typeof window !== 'undefined') window.location.href = '/login';
+            throw new ApiError('Unauthorized', 401);
+          }
+        }
+
+        const errorData = await response.json().catch(() => ({}));
+        throw new ApiError(
+          errorData.error || `HTTP error ${response.status}`,
+          response.status
+        );
+      }
+
+      return response.blob();
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      throw new ApiError('Network error', 0);
+    }
   }
 }
 

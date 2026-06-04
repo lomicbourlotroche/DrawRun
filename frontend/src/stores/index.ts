@@ -17,8 +17,11 @@
  * === STORES DÉfinis ===
  * - useAuthStore    : Authentication (user, token, login, logout)
  * - useDashboardStore : Métriques du dashboard
- * - useZonesStore   : Zones d'entraînement
  * - useActivitiesStore : Liste des activités
+ * - usePerformanceStore : Zones d'entraînement, performances
+ * - useSyncStore    : Synchronisation Garmin, Decathlon
+ * - useNotificationsStore : Notifications push
+ * - useUserConstantsStore : Constantes physiologiques (VDOT, VMA, FCM)
  * 
  * @module stores/index
  */
@@ -26,7 +29,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { User, Readiness, Recommendation, PmcDataPoint, Activity, Zones, SocialNotification } from '@/types';
-import { api, SyncStatus } from '@/lib/api';
+import { api } from '@/lib/api';
+import type { SyncStatus } from '@/lib/api';
 import { logger } from '@/lib/logger';
 
 interface AuthState {
@@ -65,7 +69,7 @@ export const useAuthStore = create<AuthState>()(
           const response = await api.login(email, password, totpCode);
 
           // Le backend retourne { requires2FA: true } si 2FA activée et code non fourni
-          if ((response as unknown as Record<string, unknown>).requires2FA) {
+          if ((response as Record<string, unknown>).requires2FA) {
             set({ isLoading: false });
             throw new Error('2FA_REQUIRED');
           }

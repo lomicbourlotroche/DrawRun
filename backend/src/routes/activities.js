@@ -14,7 +14,7 @@
 'use strict';
 
 const express = require('express');
-const { verifyToken } = require('./auth');
+const { verifyToken } = require('../middleware/auth');
 const { getUserDb, dbGetUser, dbRunUser, dbAllUser, dbGetMain, dbAllMain } = require('../database');
 const { validatePagination, validateBody, validateActivityBody } = require('../utils/validators');
 const metrics = require('../services/metricsCalculator.service');

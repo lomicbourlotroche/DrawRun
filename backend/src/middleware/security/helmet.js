@@ -15,13 +15,12 @@ const { logger } = require('../../utils/logger');
  * Configure Helmet with strict CSP and security headers.
  * Includes CSP reporting for monitoring policy violations.
  * 
- * Note: CSP is in report-only mode by default (CSP_REPORT_ONLY=true) for monitoring.
- * Set CSP_REPORT_ONLY=false to enforce strict CSP after testing.
+ * Note: CSP is enforced by default. Set CSP_REPORT_ONLY=true for monitoring mode.
  */
 function configureHelmet() {
     const reportUri = process.env.CSP_REPORT_URI || '/api/csp-report';
-    // Default to report-only mode for safety - set CSP_REPORT_ONLY=false to enforce
-    const reportOnly = process.env.CSP_REPORT_ONLY !== 'false';
+    // Default to enforce mode; set CSP_REPORT_ONLY=true for monitoring only
+    const reportOnly = process.env.CSP_REPORT_ONLY === 'true';
     
     // Allow connections to the API domain
     const corsOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : [];

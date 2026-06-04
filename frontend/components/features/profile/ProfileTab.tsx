@@ -31,8 +31,8 @@ export function ProfileTab({ isNewUser }: { isNewUser: boolean }) {
           name: profile.name || user.name || '',
           weight: (profile.weight || user.weight)?.toString() || '',
         });
-        if ((profile as { avatar_url?: string }).avatar_url) {
-          setAvatarUrl((profile as unknown as { avatar_url: string }).avatar_url);
+        if (profile.avatar_url) {
+          setAvatarUrl(profile.avatar_url);
         }
       }).catch(() => {
         setForm({ name: user.name || '', weight: user.weight?.toString() || '' });

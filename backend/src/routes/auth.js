@@ -22,13 +22,11 @@ const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 if (!JWT_SECRET) {
-    logger.error('FATAL: JWT_SECRET environment variable is required');
-    process.exit(1);
+    throw new Error('FATAL: JWT_SECRET environment variable is required');
 }
 
 if (!process.env.CREDENTIALS_SECRET) {
-    logger.error('FATAL: CREDENTIALS_SECRET environment variable is required');
-    process.exit(1);
+    throw new Error('FATAL: CREDENTIALS_SECRET environment variable is required');
 }
 
 const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS) || 12;

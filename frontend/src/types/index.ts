@@ -309,6 +309,14 @@ export interface TrainingWeek {
   sessions: TrainingSession[];
 }
 
+export interface SessionFeedback {
+  rpe?: number;
+  difficulty?: string;
+  hasPain?: boolean;
+  painLocation?: string;
+  notes?: string;
+}
+
 export interface TrainingSession {
   id: string;
   day: number;
@@ -317,6 +325,8 @@ export interface TrainingSession {
   description: string;
   completed: boolean;
   steps: WorkoutStep[];
+  feedback?: SessionFeedback;
+  result?: 'success' | 'failed' | 'partial' | 'skipped';
 }
 
 export interface WorkoutStep {

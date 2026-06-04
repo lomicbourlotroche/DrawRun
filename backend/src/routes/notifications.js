@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { verifyToken } = require('./auth');
+const { verifyToken } = require('../middleware/auth');
 const { sendPushNotification, subscribeUser, unsubscribeUser, getVapidPublicKey } = require('../services/notifications/push.service');
 const { logger } = require('../utils/logger');
 

@@ -77,7 +77,7 @@ jest.mock('../../src/utils/logger', () => ({
 }));
 
 // Mock verifyToken pour qu'il set req.user et passe au handler
-jest.mock('../../src/routes/auth', () => {
+jest.mock('../../src/middleware/auth', () => {
     const actual = jest.requireActual('../../src/routes/auth');
     return {
         ...actual,

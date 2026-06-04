@@ -3,7 +3,7 @@ const { logger } = require('../utils/logger');
 
 const express = require('express');
 const crypto = require('crypto');
-const { verifyToken } = require('./auth');
+const { verifyToken } = require('../middleware/auth');
 const { performGarminSync } = require('../services/sync/garmin');
 const { performDecathlonSync, getDecathlonSyncStatus, clearDecathlonTokens } = require('../services/sync/decathlon');
 const { performSuuntoSync, getSuuntoSyncStatus, clearSuuntoTokens } = require('../services/sync/suunto');

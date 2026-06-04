@@ -100,7 +100,7 @@ export default function Header() {
 
             {isNotifOpen && (
               <>
-                <div className="fixed inset-0 z-40" onClick={closeMenus} />
+                <div className="fixed inset-0 z-40" onClick={closeMenus} role="presentation" aria-hidden="true" />
                 <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-surface/95 backdrop-blur-xl border border-border/60 rounded-2xl shadow-lg z-dropdown py-2 max-h-[70vh] overflow-y-auto">
                   <div className="flex items-center justify-between px-4 py-2 border-b border-border">
                     <h3 className="font-semibold text-sm">Notifications</h3>
@@ -155,7 +155,7 @@ export default function Header() {
 
             {isUserMenuOpen && (
               <>
-                <div className="fixed inset-0 z-40" onClick={closeMenus} />
+                <div className="fixed inset-0 z-40" onClick={closeMenus} role="presentation" aria-hidden="true" />
                 <div className="absolute right-0 mt-2 w-56 bg-surface/95 backdrop-blur-xl border border-border/60 rounded-2xl shadow-lg z-dropdown py-1">
                   <div className="px-4 py-3 border-b border-border">
                     <p className="text-sm font-semibold text-foreground truncate">{user?.name}</p>

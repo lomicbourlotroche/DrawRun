@@ -89,8 +89,7 @@ async function initMainDb() {
 
         saveMainDb();
     } catch (err) {
-        logger.error('Failed to initialize main database:', err.message);
-        process.exit(1);
+        throw new Error('Failed to initialize main database: ' + err.message);
     }
 }
 
