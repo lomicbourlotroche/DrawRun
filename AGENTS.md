@@ -11,8 +11,8 @@ DrawRun is a full-stack sports performance tracking application.
 
 | Layer | Stack | Port |
 |-------|-------|------|
-| Backend API | Node.js 18+ / Express 5 / SQLite (sql.js) | 3000 |
-| Frontend | Next.js 14 (App Router) / TypeScript 5 strict / Tailwind CSS | 3001 |
+| Backend API | Node.js 18+ / Express 5 / SQLite (sql.js) / WebSocket (ws) | 3000 |
+| Frontend | Next.js 16 (App Router) / TypeScript 5 strict / Tailwind CSS | 3001 |
 
 **Key architectural decisions:**
 - **Per-user SQLite databases** — each user has their own `DrawRun-Data/user_<email>.db`; shared data lives in `DrawRun-Data/main.db`
@@ -21,6 +21,7 @@ DrawRun is a full-stack sports performance tracking application.
 - **AES-256-GCM encryption** — all third-party credentials (Garmin, Suunto, Strava passwords) encrypted at rest
 - **Formal schema migrations** — `schema_migrations` table in `main.db`; migrations run at startup
 - **Winston logging** — never use `console.log` in backend source; use `logger.info/warn/error` from `./src/utils/logger`
+- **TypeScript is NOT enforced at build time** — `next.config.js` has `typescript: { ignoreBuildErrors: true }`; no `tsc --noEmit` script exists
 
 ---
 
@@ -29,7 +30,7 @@ DrawRun is a full-stack sports performance tracking application.
 ```
 DrawRun-New/
 ├── backend/                        # Express 5 API
-│   ├── index.js                    # Entry point — runs tests then starts server
+│   ├── index.js                    # Entry point — runs tests then starts server (non-prod only)
 │   ├── jest.config.js              # Jest configuration
 │   ├── package.json                # v4.1.0
 │   ├── .env                        # Local secrets (never commit)
@@ -38,8 +39,11 @@ DrawRun-New/
 │   ├── src/
 │   │   ├── database.js             # Re-exports from database/
 │   │   ├── database/
-│   │   │   ├── index.js            # Core: sql.js init, per-user DB, helpers
-│   │   │   └── migrations.js       # Schema migrations (MIGRATIONS, runMigrations)
+│   │   │   ├── index.js            # Core: getDb, getMainDb, db helpers
+│   │   │   ├── mainDb.js           # Main DB (users, tokens, migrations)
+│   │   │   ├── userDb.js           # Per-user DB (activities, plans, etc.)
+│   │   │   ├── lruCache.js         # LRU cache (max 100, eviction → disk)
+│   │   │   └── migrations.js       # Schema migrations (MIGRATIONS[], runMigrations)
 │   │   ├── api_routes.js           # Re-exports from routes/algo/
 │   │   ├── coach_plan.js           # Re-exports from services/coach/
 │   │   ├── config/
@@ -54,15 +58,16 @@ DrawRun-New/
 │   │   │   ├── activities.js       # GET/POST /api/activities
 │   │   │   ├── coach.js            # /api/coach/*
 │   │   │   ├── social.js           # Re-exports from routes/social/
-│   │   │   ├── social/             # Social routes by domain (friends, groups, feed, etc.)
+│   │   │   ├── social/             # Social routes by domain
 │   │   │   │   └── index.js        # All social endpoints (to be split further)
-│   │   │   ├── algo/               # Scientific algorithm routes (split from api_routes.js)
+│   │   │   ├── algo/               # Scientific algorithm routes
 │   │   │   │   ├── index.js        # Aggregator + recommendations, health, constants, analyze
 │   │   │   │   ├── zones.js        # /zones, /vdot
 │   │   │   │   ├── pmc.js          # /pmc, /readiness, /overtraining
 │   │   │   │   └── training.js     # /polarization, /taper, /tss, /critical-power
+│   │   │   ├── stats.js            # WebSocket-based live user counter
 │   │   │   ├── explore.js          # /api/explore (segments, routes, heatmap)
-│   │   │   ├── gear.js             # /api/gear (CRUD) — verifyToken fixed
+│   │   │   ├── gear.js             # /api/gear (CRUD)
 │   │   │   ├── metrics.js          # /api/metrics
 │   │   │   ├── notifications.js    # /api/notifications (push/subscribe)
 │   │   │   ├── onboarding.js       # /api/onboarding
@@ -77,7 +82,7 @@ DrawRun-New/
 │   │   │   └── weather.js          # /api/activities/:id/weather
 │   │   ├── services/
 │   │   │   ├── cache.js            # Redis / in-memory cache
-│   │   │   ├── coach/              # Coach engine (split from coach_plan.js)
+│   │   │   ├── coach/              # Coach engine
 │   │   │   │   ├── index.js        # Orchestration (getCoachProfile, getGamification)
 │   │   │   │   ├── plan.service.js # Plan creation, periodization, helpers
 │   │   │   │   └── session.service.js  # Session CRUD, test scheduling, adaptation
@@ -86,8 +91,8 @@ DrawRun-New/
 │   │   │   ├── userConstants.service.js  # User physiological constants
 │   │   │   ├── social.service.js   # Re-exports from services/social/
 │   │   │   ├── social/             # Social services by domain
-│   │   │   │   ├── index.js        # All social service functions (to be split further)
-│   │   │   │   ├── draws.service.js  # DrawRun kudos system
+│   │   │   │   ├── index.js        # All social service functions
+│   │   │   │   ├── draws.service.js
 │   │   │   │   ├── friends.service.js
 │   │   │   │   ├── feed.service.js
 │   │   │   │   ├── groups.service.js
@@ -95,43 +100,56 @@ DrawRun-New/
 │   │   │   │   ├── conversations.service.js
 │   │   │   │   ├── engagement.service.js
 │   │   │   │   └── notifications.service.js
-│   │   │   ├── explore/            # Explore domain (segments, routes, heatmap)
+│   │   │   ├── explore/            # Explore domain
 │   │   │   │   ├── elevation.service.js
 │   │   │   │   ├── routes.service.js
 │   │   │   │   ├── segments.service.js
 │   │   │   │   └── heatmap.service.js
 │   │   │   ├── notifications/
-│   │   │   │   └── push.service.js # Push notifications
+│   │   │   │   └── push.service.js
 │   │   │   ├── sync/               # Sync providers
-│   │   │   │   ├── strava.js       # Strava sync via Playwright
-│   │   │   │   ├── garmin.js       # Garmin sync via Python bridge
-│   │   │   │   ├── suunto.js       # Suunto sync via reverse-engineered API
-│   │   │   │   ├── decathlon.js    # Decathlon sync via OAuth2
-│   │   │   │   └── utils.js        # Shared sync helpers (batch insert, merge details)
-│   │   │   ├── auth/
-│   │   │   │   └── 2fa.service.js   # TOTP / QR code 2FA helpers
-│   │   │   └── userConstants.service.js  # User physiological constants
+│   │   │   │   ├── strava.js       # Via Playwright
+│   │   │   │   ├── garmin.js       # Via Python bridge
+│   │   │   │   ├── suunto.js       # Reverse-engineered API
+│   │   │   │   ├── decathlon.js    # OAuth2
+│   │   │   │   └── utils.js        # Shared helpers
+│   │   │   └── auth/
+│   │   │       └── 2fa.service.js  # TOTP / QR code
 │   │   ├── middleware/
 │   │   │   ├── cache.js            # Cache middleware
-│   │   │   ├── security.js         # Helmet, rate limiting, CORS, CSP
-│   │   │   └── performance.js      # LRU computation cache, compression, perf metrics
+│   │   │   ├── auth.js             # verifyToken middleware
+│   │   │   ├── validation.js       # Input validation middleware
+│   │   │   ├── performance.js      # LRU computation cache, compression
+│   │   │   └── security/           # Modular security middleware
+│   │   │       ├── index.js        # Aggregate export
+│   │   │       ├── helmet.js       # Helmet CSP
+│   │   │       ├── cors.js         # CORS config
+│   │   │       ├── headers.js      # Extra security headers
+│   │   │       └── rateLimit.js    # Rate limiting config
 │   │   └── utils/
 │   │       ├── crypto.js           # AES-256-GCM encrypt/decrypt
-│   │       ├── jwt.js              # Token generation, verifyAccessToken, rotation
+│   │       ├── jwt.js              # Token generation, verify, rotation
 │   │       ├── validators.js       # Input validation helpers
-│   │       ├── logger.js           # Winston logger (use this, not console.log)
+│   │       ├── logger.js           # Winston logger (MANDATORY in src/)
 │   │       ├── gpx_utils.js        # GPX parsing, Haversine
-│   │       └── helpers.js          # maskEmail, sleep, clamp (replaces db_helpers.js)
+│   │       └── helpers.js          # maskEmail, sleep, clamp
 │   ├── tests/
 │   │   ├── setup.js                # Jest global setup (env vars, console mocks)
-│   │   ├── algorithms.test.js      # Scientific algorithm tests (55 tests)
-│   │   ├── auth.test.js            # Auth + refresh endpoint + encryption (14 tests)
-│   │   ├── crypto.test.js          # Encrypt/decrypt + Property 12 (5 tests)
-│   │   ├── database.test.js        # LRU cache + migrations + Properties 1-3,13 (12 tests)
-│   │   ├── validators.test.js      # Input validation (21 tests)
-│   │   ├── routes.test.js          # Route structure (3 tests)
-│   │   └── routes/
-│   │       └── activities.test.js  # Activities routes (7 tests)
+│   │   ├── algorithms.test.js      # Scientific algorithms (55)
+│   │   ├── auth.test.js            # Auth + Property 11 (14)
+│   │   ├── crypto.test.js          # Encrypt/decrypt + Property 12 (5)
+│   │   ├── database.test.js        # LRU cache + migrations + Properties 1-3,13 (12)
+│   │   ├── extended_algorithms.test.js # Biomechanics, Taper, RaceStrategy + Property (13)
+│   │   ├── validators.test.js      # Input validation (21)
+│   │   ├── routes.test.js          # Route structure (3)
+│   │   ├── race_planning.test.js   # Race planning (14)
+│   │   ├── routes/
+│   │   │   ├── activities.test.js  # Activities API (7)
+│   │   │   ├── explore.test.js     # Explore endpoints (9)
+│   │   │   ├── sync.test.js        # Sync endpoints (12)
+│   │   │   └── performance.test.js # Performance endpoints (15)
+│   │   └── services/
+│   │       └── metricsCalculator.test.js # Metrics service (30)
 │   ├── scripts/
 │   │   ├── backup.js
 │   │   └── restore.js
@@ -139,7 +157,7 @@ DrawRun-New/
 │   ├── data/                       # SQLite test data (gitignored)
 │   └── test-data/                  # Jest test DB directory
 │
-├── frontend/                       # Next.js 14 App Router
+├── frontend/                       # Next.js 16 App Router
 │   ├── app/
 │   │   ├── layout.tsx              # Root layout
 │   │   ├── page.tsx                # Landing page (uses _sections/)
@@ -163,6 +181,8 @@ DrawRun-New/
 │   │   │   ├── auth/               # LoginForm
 │   │   │   ├── coach/              # AdaptivePlanWizard, SessionFeedback, etc.
 │   │   │   ├── dashboard/          # PmcChart, QuickStats, ReadinessCard, etc.
+│   │   │   ├── explore/            # RouteDetailPopup, ElevationProfile, Segments, etc.
+│   │   │   ├── gear/               # GearCard
 │   │   │   ├── onboarding/         # OnboardingWizard
 │   │   │   ├── performance/        # PerformanceMetrics
 │   │   │   └── social/             # SocialHub, Chat, Challenges, etc.
@@ -174,7 +194,28 @@ DrawRun-New/
 │   │   └── NavBar.tsx
 │   ├── src/
 │   │   ├── lib/
-│   │   │   ├── api.ts              # ApiClient — ALL HTTP calls go through here
+│   │   │   ├── api/                # Modular API client (21 domain modules)
+│   │   │   │   ├── index.ts        # Re-exports all domains + backward-compatible `api`
+│   │   │   │   ├── client.ts       # ApiClient core (token mgmt, refresh, HTTP)
+│   │   │   │   ├── types.ts        # API-specific types
+│   │   │   │   ├── auth.api.ts
+│   │   │   │   ├── activities.api.ts
+│   │   │   │   ├── coach.api.ts
+│   │   │   │   ├── algo.api.ts
+│   │   │   │   ├── social.api.ts
+│   │   │   │   ├── profile.api.ts
+│   │   │   │   ├── metrics.api.ts
+│   │   │   │   ├── sync.api.ts
+│   │   │   │   ├── explore.api.ts
+│   │   │   │   ├── gear.api.ts
+│   │   │   │   ├── onboarding.api.ts
+│   │   │   │   ├── notifications.api.ts
+│   │   │   │   ├── race-planning.api.ts
+│   │   │   │   ├── share.api.ts
+│   │   │   │   ├── weather.api.ts
+│   │   │   │   ├── user-constants.api.ts
+│   │   │   │   ├── user-counter.api.ts
+│   │   │   │   └── coach-types.ts
 │   │   │   ├── constants.ts        # API_BASE_URL, API_ENDPOINTS
 │   │   │   ├── utils.ts
 │   │   │   ├── i18n.ts
@@ -184,11 +225,32 @@ DrawRun-New/
 │   │   │   └── sports.ts
 │   │   └── stores/
 │   │       └── index.ts            # Zustand stores (useAuthStore, useDashboardStore, etc.)
-│   ├── tests/
-│   │   └── lib/
-│   │       └── api.test.ts         # ApiClient tests + Properties 4-7 (26 tests)
+│   ├── tests/                      # 27 unit test files + 2 E2E specs
+│   │   ├── lib/
+│   │   │   ├── api.test.ts         # ApiClient (26 tests, Properties 4-7)
+│   │   │   ├── api.integration.test.tsx
+│   │   │   ├── polyline.test.ts
+│   │   │   └── race-planning.api.test.ts
+│   │   ├── stores/
+│   │   │   └── sync-store.test.ts
+│   │   ├── components/
+│   │   │   ├── ui/                 # Button, Card, Input, Modal, Skeleton, Badge, Avatar, Dialog, GlassCard
+│   │   │   ├── features/
+│   │   │   │   ├── gear/GearCard.test.tsx
+│   │   │   │   ├── activities/analysis-cards.test.tsx
+│   │   │   │   └── social/DrawButton.test.tsx
+│   │   │   ├── explore/            # RouteDetailPopup, ElevationProfile, MapLayerSwitcher, Segments
+│   │   │   └── coach/TaperingChart.test.tsx
+│   │   ├── hooks/
+│   │   │   ├── useSocial.test.ts
+│   │   │   ├── useGroupDetail.test.ts
+│   │   │   └── useLeafletMap.test.ts
+│   │   └── e2e/
+│   │       ├── playwright.config.ts
+│   │       ├── auth.spec.ts
+│   │       └── dashboard.spec.ts
 │   ├── next.config.js
-│   ├── tsconfig.json               # strict: true
+│   ├── tsconfig.json               # strict: true (but not enforced at build)
 │   ├── tailwind.config.js
 │   └── package.json
 │
@@ -217,15 +279,22 @@ npm run dev
 npm start
 
 # Tests only
-npm test                          # All 107 tests
+npm test                          # All 210 tests
 npm test -- --testPathPattern=auth  # Single suite
+npm run test:watch                # Watch mode
 npm run test:coverage             # Coverage report
+
+# E2E (Playwright — requires installed browsers)
+npm run test:e2e                  # Headless
+npm run test:e2e:ui               # With UI mode
+npm run test:e2e:debug            # Debug mode
 
 # Maintenance
 npm run backup                    # Backup SQLite databases
 npm run restore                   # Restore from backup
 npm run lint                      # ESLint check
 npm run lint:fix                  # Auto-fix lint issues
+npm run format                    # Prettier format
 ```
 
 ### Frontend
@@ -240,14 +309,28 @@ npm run dev                       # http://localhost:3001
 npm run build
 npm run start
 
-# Quality
-npm run lint                      # ESLint (next/core-web-vitals)
-npm run test                      # Vitest (run once)
+# Unit tests
+npm run test                      # Vitest (run once, 421 tests)
 npm run test:watch                # Vitest watch mode
 npm run test:coverage             # Coverage report
+npm run test:ui                   # Vitest UI mode
+
+# E2E tests (Playwright — requires installed browsers)
+npm run test:e2e                  # Headless, 2 specs
+npm run test:e2e:ui               # With UI mode
+npm run test:e2e:debug            # Debug mode
+
+# All tests
+npm run test:all                  # unit + e2e
+
+# Quality
+npm run lint                      # ESLint (next/core-web-vitals)
+npm run format                    # Prettier format
+npm run format:check              # Prettier check
 
 # Storybook
 npm run storybook                 # http://localhost:6006
+npm run storybook:build
 ```
 
 ---
@@ -328,9 +411,9 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
 - **All HTTP calls** from frontend must go through `api` from `@/lib/api` — never use raw `fetch` in components
 - **All backend logging** must use Winston `logger` — never `console.log`
 - **All sensitive data** (passwords, tokens) must be encrypted with `encrypt()` from `utils/crypto.js` before DB storage
-- **All new DB schema changes** must be added as a migration in the `MIGRATIONS` array in `database.js`
-- **TypeScript strict mode** — `tsc --noEmit` must pass with 0 errors after every change
-- **Tests must pass** — `npm test` must show 107/107 passing (120 with extended) after every backend change
+- **All new DB schema changes** must be added as a migration in the `MIGRATIONS` array in `database/migrations.js`
+- **TypeScript strict mode** is configured (`tsconfig.json` has `strict: true`) but NOT enforced at build time (`next.config.js` has `typescript: { ignoreBuildErrors: true }`). Strive for 0 TS errors regardless.
+- **Tests must pass** — `npm test` must show 210/210 passing after every backend change
 - **No junk files** — LRU tests must mock `fs.writeFileSync` globally (see `database.test.js` `beforeAll`)
 
 ### 5.3 Token & Auth flow
@@ -371,7 +454,7 @@ await dbRunUser(userDb, 'INSERT INTO activities ...', [...values]);
 ### 5.5 Adding a new migration
 
 ```javascript
-// In backend/src/database.js, add to MIGRATIONS array:
+// In backend/src/database/migrations.js, add to MIGRATIONS array:
 {
     version: '003_your_migration_name',   // must be lexicographically after '002_...'
     description: 'Human-readable description',
@@ -381,11 +464,15 @@ await dbRunUser(userDb, 'INSERT INTO activities ...', [...values]);
 },
 ```
 
+### 5.6 Migration target file
+
+Migrations live in `backend/src/database/migrations.js`, not `backend/src/database.js`. The top-level `database.js` is a backward-compatible re-export barrel. Always add new migrations to `database/migrations.js`.
+
 ---
 
 ## 6. Testing
 
-### Backend (Jest) — 120 tests, 8 suites (107 core + 13 extended)
+### Backend (Jest) — 210 tests, 13 suites
 
 | Suite | Tests | What it covers |
 |-------|-------|----------------|
@@ -397,42 +484,58 @@ await dbRunUser(userDb, 'INSERT INTO activities ...', [...values]);
 | `validators.test.js` | 21 | Input validation |
 | `routes.test.js` | 3 | Route file structure |
 | `routes/activities.test.js` | 7 | Activities API endpoints |
+| `routes/explore.test.js` | 9 | Explore API (segments, routes, heatmap) |
+| `routes/race_planning.test.js` | 14 | Race planning endpoints |
+| `routes/sync.test.js` | 12 | Sync status/trigger endpoints |
+| `routes/performance.test.js` | 15 | Performance metrics endpoints |
+| `services/metricsCalculator.test.js` | 30 | Metrics calculation service |
 
 **Property-based tests (fast-check):**
 
-| Property | File | What it proves |
-|----------|------|----------------|
-| 1 — LRU size ≤ 100 | database.test.js | Cache never exceeds LRU_MAX_SIZE |
-| 2 — LRU eviction order | database.test.js | Evicted entry is always the LRU |
-| 3 — Eviction persists | database.test.js | saveUserDb called on every eviction |
-| 4 — refreshToken stored on login | api.test.ts | sessionStorage updated after login |
-| 5 — 401 → refresh → retry | api.test.ts | Exactly 1 refresh call, then retry |
-| 6 — Failed refresh → logout | api.test.ts | logout() + redirect /login |
-| 7 — N concurrent 401s → 1 refresh | api.test.ts | Queue mechanism works |
-| 8 — Logout clears all auth state | stores/index.test.ts | Both sessionStorage keys cleared |
-| 9 — Token never in localStorage | stores/index.test.ts | sessionStorage only |
-| 10 — ErrorBoundary onError | ErrorBoundary.test.tsx | Callback called for any error |
-| 11 — Credentials never plaintext | auth.test.js | Encrypted format regex |
-| 12 — encrypt/decrypt round-trip | crypto.test.js | decrypt(encrypt(x)) === x |
-| 13 — Migrations in order | database.test.js | Ascending lexicographic order |
+| # | File | What it proves |
+|---|------|----------------|
+| 1 | database.test.js | LRU size never exceeds LRU_MAX_SIZE |
+| 2 | database.test.js | Evicted entry is always the LRU |
+| 3 | database.test.js | saveUserDb called on every eviction |
+| 4 | api.test.ts | sessionStorage updated after login |
+| 5 | api.test.ts | Exactly 1 refresh call, then retry |
+| 6 | api.test.ts | logout() + redirect /login on failed refresh |
+| 7 | api.test.ts | Queue mechanism: N concurrent 401s → 1 refresh |
+| 8 | stores/index.test.ts | Both sessionStorage keys cleared on logout |
+| 9 | stores/index.test.ts | sessionStorage only, never localStorage |
+| 10 | ErrorBoundary.test.tsx | Callback called for any error |
+| 11 | auth.test.js | Credentials never plaintext (encrypted format regex) |
+| 12 | crypto.test.js | decrypt(encrypt(x)) === x for any valid payload |
+| 13 | database.test.js | Migrations in ascending lexicographic order |
 
-### Frontend (Vitest)
+### Frontend (Vitest) — 421 tests, 27 unit files + 2 E2E specs
 
 ```bash
 cd frontend
-npm run test          # Run all tests once
-npm run test:watch    # Watch mode
-npm run test:coverage # Coverage
+npm run test           # Run all unit tests once
+npm run test:watch     # Watch mode
+npm run test:coverage  # Coverage report
+npm run test:e2e       # Run E2E specs
+npm run test:all       # unit + e2e
 ```
 
-Test files:
-- `tests/lib/api.test.ts` — ApiClient (26 tests, Properties 4-7)
-- `src/stores/index.test.ts` — Zustand auth store (Properties 8-9)
-- `components/providers/ErrorBoundary.test.tsx` — ErrorBoundary (Property 10)
+**Test file locations:**
+- `tests/lib/` — api, polyline, race-planning
+- `tests/stores/` — sync-store
+- `tests/components/ui/` — Button, Card, Input, Modal, Skeleton, Badge, Avatar, Dialog, GlassCard
+- `tests/components/features/gear/` — GearCard
+- `tests/components/features/activities/` — analysis-cards
+- `tests/components/features/social/` — DrawButton
+- `tests/components/explore/` — RouteDetailPopup, ElevationProfile, MapLayerSwitcher, Segments
+- `tests/components/coach/` — TaperingChart
+- `tests/hooks/` — useSocial, useGroupDetail, useLeafletMap
+- `components/providers/` — ErrorBoundary
+- `src/stores/` — index (auth store)
+- `tests/e2e/` — auth.spec, dashboard.spec
 
 ### Startup tests (development only)
 
-When `NODE_ENV !== 'production'`, `backend/index.js` runs the full Jest suite before starting the server. If any test fails, the server does not start.
+When `NODE_ENV !== 'production'`, `backend/index.js` runs the full Jest suite before starting the server. If any test fails, the server does not start. This is controlled by `index.js` lines 49-70.
 
 ```
 ╔══════════════════════════════════════════════════╗
@@ -498,8 +601,7 @@ Before committing any change, verify:
 - [ ] Passwords/tokens encrypted with `encrypt()` before storage
 - [ ] New endpoints protected with `verifyToken` middleware
 - [ ] Rate limiting applied to sensitive endpoints
-- [ ] `tsc --noEmit` passes (frontend)
-- [ ] `npm test` passes 120/120 (backend) [107 core + 13 extended]
+- [ ] `npm test` passes 210/210 (backend)
 - [ ] No new files created in `backend/` root (LRU test isolation)
 
 ---
@@ -538,6 +640,7 @@ Before committing any change, verify:
 | GET | `/api/sync/status` | JWT | Sync status |
 | GET | `/api/metrics` | JWT | Performance metrics |
 | POST | `/api/metrics/recalculate` | JWT | Recalculate metrics |
+| GET | `/api/stats` | — | WebSocket live user counter |
 
 ### Coach endpoints
 
@@ -671,3 +774,5 @@ curl http://localhost:3000/health
 - **Startup tests** — only run when `NODE_ENV !== 'production'`; add `NODE_ENV=production` to skip in CI if needed
 - **Redis optional** — cache falls back to in-memory if `REDIS_URL` not set
 - **Playwright** — in `devDependencies` only; not installed in production (`npm install --production`)
+- **TypeScript errors are NOT enforced** — `next.config.js` has `typescript: { ignoreBuildErrors: true }`; no `tsc --noEmit` script exists. Strive for zero errors regardless.
+- **Modular architecture** — database, middleware/security, and frontend API client all use a subdirectory pattern with backward-compatible barrel exports at the parent level. Always extend the subdirectory, not the barrel.
