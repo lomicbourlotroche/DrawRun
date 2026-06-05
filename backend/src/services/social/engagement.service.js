@@ -30,7 +30,7 @@ async function unlikeActivity(userId, activityId, fromUserId) {
 async function getActivityLikes(userId, activityId) {
     
     return await dbAll(`
-        SELECT u.id, u.name, u.avatar
+        SELECT u.id, u.name, JSON_EXTRACT(u.profile_data, '$.avatar_url') as avatar
         FROM activity_likes al
         JOIN users u ON al.from_user_id = u.id
         WHERE al.activity_id = ? AND al.activity_owner_id = ?
@@ -78,7 +78,7 @@ async function addComment(userId, activityId, content, ownerId) {
 async function getActivityComments(activityId, ownerId) {
     
     const comments = await dbAll(`
-        SELECT ac.*, u.name as user_name, u.avatar as user_avatar
+        SELECT ac.*, u.name as user_name, JSON_EXTRACT(u.profile_data, '$.avatar_url') as user_avatar
         FROM activity_comments ac
         LEFT JOIN users u ON ac.user_id = u.id
         WHERE ac.activity_id = ? AND ac.activity_owner_id = ?
@@ -116,7 +116,7 @@ async function removeReaction(userId, activityId, reactionType, ownerId) {
 async function getActivityReactions(activityId, ownerId) {
     
     const reactions = await dbAll(`
-        SELECT ar.*, u.name as user_name, u.avatar as user_avatar
+        SELECT ar.*, u.name as user_name, JSON_EXTRACT(u.profile_data, '$.avatar_url') as user_avatar
         FROM activity_reactions ar
         LEFT JOIN users u ON ar.user_id = u.id
         WHERE ar.activity_id = ? AND ar.activity_owner_id = ?

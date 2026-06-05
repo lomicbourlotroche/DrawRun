@@ -55,27 +55,6 @@ async function getSuuntoCredentials(userId) {
     );
 
     if (!creds || !creds.username) {
-        // Fallback: read from legacy users.suunto_username / suunto_password columns
-        const user = await dbGetMain(
-            'SELECT suunto_username, suunto_password FROM users WHERE id = ? AND suunto_username IS NOT NULL',
-            [userId]
-        );
-        if (user?.suunto_username) {
-            // Migrate to user_credentials
-            try {
-                await dbRunMain(
-                    `INSERT OR REPLACE INTO user_credentials (user_id, provider, username, password, enabled, updated_at)
-                     VALUES (?, 'suunto', ?, ?, 1, CURRENT_TIMESTAMP)`,
-                    [userId, user.suunto_username, user.suunto_password]
-                );
-                return {
-                    username: decrypt(user.suunto_username),
-                    password: user.suunto_password ? decrypt(user.suunto_password) : null
-                };
-            } catch (e) {
-                logError(userId, `Migration failed: ${e.message}`);
-            }
-        }
         throw new Error('Suunto credentials not configured');
     }
 

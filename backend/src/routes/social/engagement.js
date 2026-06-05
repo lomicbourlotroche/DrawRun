@@ -250,7 +250,7 @@ router.delete('/photos/:photoId', verifyToken, async (req, res) => {
 router.post('/activities/:activityId/comments', verifyToken, async (req, res) => {
     try {
         const activityId = parseInt(req.params.activityId);
-        const { content } = req.body;
+        const { content, ownerId } = req.body;
         if (!activityId || activityId <= 0) {
             return res.status(400).json({ error: 'Invalid activity ID' });
         }
@@ -258,12 +258,9 @@ router.post('/activities/:activityId/comments', verifyToken, async (req, res) =>
             return res.status(400).json({ error: 'content is required' });
         }
         try {
-            // Get activity owner first
-            const activity = await dbGet(
-                'SELECT user_id FROM activities WHERE id = ?',
-                [activityId]
-            );
-            const activityOwnerId = activity ? activity.user_id : req.user.id;
+            // Use provided ownerId (frontend knows the owner from loaded activity data)
+            // Fall back to current user if not provided
+            const activityOwnerId = ownerId || req.user.id;
             
             const result = await dbRun(`
                 INSERT INTO activity_comments (activity_id, activity_owner_id, user_id, content)

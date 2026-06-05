@@ -437,6 +437,9 @@ function ensureUserSchemaCompatibility(userDb) {
     try { userDb.run('ALTER TABLE notifications ADD COLUMN title TEXT'); } catch (_) {}
     try { userDb.run('ALTER TABLE activities ADD COLUMN gear_id INTEGER'); } catch (_) {}
     try { userDb.run('ALTER TABLE activities ADD COLUMN efficiency_factor REAL'); } catch (_) {}
+    try { userDb.run('CREATE TABLE IF NOT EXISTS weather_cache (id INTEGER PRIMARY KEY AUTOINCREMENT, activity_id INTEGER NOT NULL UNIQUE, data TEXT, fetched_at DATETIME, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)'); } catch (_) {}
+    try { userDb.run('ALTER TABLE user_preferences ADD COLUMN onboarding_completed INTEGER DEFAULT 0'); } catch (_) {}
+    try { userDb.run('ALTER TABLE user_preferences ADD COLUMN onboarding_data TEXT DEFAULT \'{}\''); } catch (_) {}
     try { userDb.run('ALTER TABLE activities ADD COLUMN share_to_friends INTEGER DEFAULT 0'); } catch (_) {}
     try { userDb.run('ALTER TABLE activities ADD COLUMN share_to_groups TEXT'); } catch (_) {}
     try { userDb.run('ALTER TABLE activities ADD COLUMN shared_data_fields TEXT'); } catch (_) {}

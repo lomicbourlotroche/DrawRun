@@ -671,6 +671,15 @@ const MIGRATIONS = [
             } catch (_) { /* Column may already exist */ }
         },
     },
+    {
+        version: '032_add_api_key_to_user_credentials',
+        description: 'Add api_key column to user_credentials table for Decathlon API key storage',
+        up: (db) => {
+            try {
+                db.run('ALTER TABLE user_credentials ADD COLUMN api_key TEXT');
+            } catch (_) { /* Column may already exist */ }
+        },
+    },
 ];
 
 async function runMigrations(db) {

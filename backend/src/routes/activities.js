@@ -1129,12 +1129,12 @@ router.put('/:id', verifyToken, async (req, res) => {
             
             // Add distance to new gear
             if (gear_id) {
-                await dbRunUser(userDb, 'UPDATE gear SET current_distance = current_distance + ? WHERE id = ?', [distanceKm, gear_id]);
+                await dbRunUser(userDb, 'UPDATE gear SET distance_km = distance_km + ? WHERE id = ?', [distanceKm, gear_id]);
             }
             
             // Subtract distance from old gear if existed
             if (activity.gear_id) {
-                await dbRunUser(userDb, 'UPDATE gear SET current_distance = current_distance - ? WHERE id = ?', [distanceKm, activity.gear_id]);
+                await dbRunUser(userDb, 'UPDATE gear SET distance_km = distance_km - ? WHERE id = ?', [distanceKm, activity.gear_id]);
             }
         }
 
