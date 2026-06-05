@@ -59,7 +59,7 @@ router.post('/login', async (req, res) => {
     
     try {
         const normalizedEmail = email.trim().toLowerCase();
-        const user = await dbGet('SELECT id, email, password_hash, profile_data, created_at, last_login, garmin_username, twofa_enabled, totp_secret FROM users WHERE email = ?', [normalizedEmail]);
+        const user = await dbGet('SELECT id, email, password_hash, profile_data, created_at, last_login, twofa_enabled, totp_secret FROM users WHERE email = ?', [normalizedEmail]);
         
         logger.info(`Login attempt for ${normalizedEmail}, user found: ${!!user}`);
         
@@ -117,8 +117,12 @@ router.post('/login', async (req, res) => {
             profileData = {};
         }
         
-        // Trigger background sync if user has Garmin configured
-        const hasGarmin = !!user.garmin_username;
+        // Check if user has Garmin credentials
+        const garminCred = await dbGet(
+            'SELECT id FROM user_credentials WHERE user_id = ? AND provider = ? AND enabled = 1',
+            [user.id, 'garmin']
+        );
+        const hasGarmin = !!garminCred;
         if (hasGarmin) {
             triggerBackgroundSync(user.id, hasGarmin);
         }

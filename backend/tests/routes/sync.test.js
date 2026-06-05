@@ -53,7 +53,7 @@ jest.mock('../../src/services/sync/suunto', () => ({
 }));
 
 jest.mock('../../src/database', () => ({
-    dbGetMain: jest.fn().mockResolvedValue({ garmin_username: 'test@test.com' }),
+    dbGetMain: jest.fn().mockResolvedValue({ id: 1 }),
     dbRunMain: jest.fn().mockResolvedValue({ lastID: 1, changes: 1 }),
     dbAllMain: jest.fn().mockResolvedValue([]),
     getUserDb: jest.fn().mockResolvedValue({
