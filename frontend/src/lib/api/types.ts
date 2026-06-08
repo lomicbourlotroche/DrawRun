@@ -561,6 +561,30 @@ export interface GetPublicRoutesParams {
   difficulty?: string;
 }
 
+export interface GenerateRouteParams {
+  waypoints: Array<{ lat: number; lng: number }>;
+  activity_type?: string;
+  name: string;
+  description?: string;
+  difficulty?: string;
+  tags?: string[];
+  is_public?: boolean;
+}
+
+export interface Direction {
+  index: number;
+  instruction: string;
+  distance: number;
+  distance_formatted: string;
+  duration: number;
+  street: string;
+  type: string;
+  modifier: string;
+  location: [number, number];
+  cumulative_distance: number;
+  cumulative_duration: number;
+}
+
 // 
 // Explore - Heatmap
 // 

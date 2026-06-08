@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { SegmentList } from './Segments';
 import { RouteList } from './Routes';
@@ -58,6 +57,8 @@ interface ExplorePanelProps {
   onOpenRoutePlanner: () => void;
   isOpen: boolean;
   onToggle: () => void;
+  activeTab: 'routes' | 'segments' | 'favorites';
+  onTabChange: (_tab: 'routes' | 'segments' | 'favorites') => void;
 }
 
 const ACTIVITY_TYPES = [
@@ -95,8 +96,9 @@ export default function ExplorePanel({
   onOpenRoutePlanner,
   isOpen,
   onToggle,
+  activeTab,
+  onTabChange,
 }: ExplorePanelProps) {
-  const [activeTab, setActiveTab] = useState('segments');
 
   return (
     <>
@@ -146,7 +148,7 @@ export default function ExplorePanel({
 
         {/* Tabs - Accessible tablist */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <Tabs value={activeTab} onValueChange={(value) => onTabChange(value as 'routes' | 'segments' | 'favorites')}>
             <div className="px-4 pt-3 pb-2 border-b border-border">
               <div role="tablist" aria-label="Onglets Explorer">
                 <TabsList className="w-full">

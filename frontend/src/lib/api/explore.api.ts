@@ -61,6 +61,8 @@ export interface Route {
   is_favorited?: boolean;
   is_public?: boolean;
   created_at?: string;
+  waypoints?: string;       // NEW
+  directions?: string;      // NEW (JSON string of Direction[])
 }
 
 // Heatmap types
@@ -92,6 +94,36 @@ export interface ElevationStats {
   total_gain: number;
   max_elevation: number;
   min_elevation: number;
+}
+
+// Direction/instruction types for route generation
+export interface Direction {
+  index: number;
+  instruction: string;
+  distance: number;
+  distance_formatted: string;
+  duration: number;
+  street: string;
+  type: string;
+  modifier: string;
+  location: [number, number]; // [lng, lat]
+  cumulative_distance: number;
+  cumulative_duration: number;
+}
+
+export interface GeneratedRouteResponse {
+  success: boolean;
+  route_id: number;
+  directions: Direction[];
+  directions_count: number;
+  distance: number;
+  distance_formatted: string;
+  duration: number;
+  duration_formatted: string;
+  polyline: string;
+  elevation_gain: number;
+  waypoints_used: number;
+  error?: string;
 }
 
 export const exploreApi = {
@@ -265,6 +297,22 @@ export const exploreApi = {
     return client.request(`/api/explore/routes/${routeId}/rate`, {
       method: 'POST',
       body: JSON.stringify({ rating }),
+    });
+  },
+
+  // Route generation
+  generateRoute(data: {
+    waypoints: Array<{ lat: number; lng: number }>;
+    activity_type?: string;
+    name: string;
+    description?: string;
+    difficulty?: string;
+    tags?: string[];
+    is_public?: boolean;
+  }): Promise<GeneratedRouteResponse> {
+    return client.request('/api/explore/routes/generate', {
+      method: 'POST',
+      body: JSON.stringify(data),
     });
   },
 

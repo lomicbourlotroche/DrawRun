@@ -1,6 +1,7 @@
 const { dbGetMain, dbRunMain, dbAllMain } = require('../../database');
 const { logger } = require('../../utils/logger');
 const { simplifyPolyline } = require('../../utils/polyline');
+const routingService = require('./routing.service');
 
 const dbGet = (q, p) => dbGetMain(q, p);
 const dbRun = (q, p) => dbRunMain(q, p);
@@ -14,13 +15,15 @@ async function createRoute(userId, data) {
         const result = await dbRun(`
             INSERT INTO routes (name, description, created_by, distance, elevation_gain, 
                               elevation_loss, polyline, activity_type, estimated_duration, 
-                              difficulty, tags, is_public)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                              difficulty, tags, is_public, waypoints, directions)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             data.name, data.description || '', userId, data.distance, 
             data.elevation_gain || 0, data.elevation_loss || 0, data.polyline,
             data.activity_type || 'Run', data.estimated_duration, data.difficulty,
-            data.tags ? JSON.stringify(data.tags) : '[]', data.is_public !== false ? 1 : 0
+            data.tags ? JSON.stringify(data.tags) : '[]', data.is_public !== false ? 1 : 0,
+            data.waypoints ? JSON.stringify(data.waypoints) : null,
+            data.directions ? JSON.stringify(data.directions) : null,
         ]);
         
         return { success: true, route_id: result.lastID };
@@ -57,6 +60,8 @@ async function getRoute(routeId, userId = null) {
     return {
         ...route,
         tags: route.tags ? JSON.parse(route.tags) : [],
+        waypoints: route.waypoints ? JSON.parse(route.waypoints) : null,
+        directions: route.directions ? JSON.parse(route.directions) : null,
         is_favorited: isFavorited
     };
 }
@@ -91,7 +96,8 @@ async function getPublicRoutes(activityType = null, difficulty = null, limit = 5
     
     return routes.map(r => ({
         ...r,
-        tags: r.tags ? JSON.parse(r.tags) : []
+        tags: r.tags ? JSON.parse(r.tags) : [],
+        waypoints: r.waypoints ? JSON.parse(r.waypoints) : null,
     }));
 }
 
@@ -100,15 +106,18 @@ async function getPublicRoutes(activityType = null, difficulty = null, limit = 5
  */
 async function getUserRoutes(userId) {
     const routes = await dbAll(`
-        SELECT r.*
+        SELECT r.*,
+               json_extract(u.profile_data, '$.name') as creator_name
         FROM routes r
+        LEFT JOIN users u ON r.created_by = u.id
         WHERE r.created_by = ?
         ORDER BY r.created_at DESC
     `, [userId]);
     
     return routes.map(r => ({
         ...r,
-        tags: r.tags ? JSON.parse(r.tags) : []
+        tags: r.tags ? JSON.parse(r.tags) : [],
+        waypoints: r.waypoints ? JSON.parse(r.waypoints) : null,
     }));
 }
 
@@ -129,6 +138,7 @@ async function getFavoriteRoutes(userId) {
     return routes.map(r => ({
         ...r,
         tags: r.tags ? JSON.parse(r.tags) : [],
+        waypoints: r.waypoints ? JSON.parse(r.waypoints) : null,
         is_favorited: true
     }));
 }
@@ -246,6 +256,78 @@ async function deleteRoute(userId, routeId) {
 }
 
 /**
+ * Générer une route via OSRM et la sauvegarder en base
+ * 
+ * @param {number} userId - ID du créateur
+ * @param {Array<{lat: number, lng: number}>} data.waypoints - Points de passage
+ * @param {string} data.activity_type - Type d'activité (Run, Bike, etc.)
+ * @param {string} data.name - Nom de la route
+ * @param {string} [data.description] - Description
+ * @param {string} [data.difficulty] - Difficulté
+ * @param {boolean} [data.is_public] - Visibilité
+ * @param {string[]} [data.tags] - Tags
+ * @returns {Promise<Object>} Résultat avec route_id et directions
+ */
+async function generateAndCreateRoute(userId, data) {
+    try {
+        const { waypoints, activity_type, name, description, difficulty, is_public, tags } = data;
+
+        if (!waypoints || waypoints.length < 2) {
+            return { success: false, error: 'Au moins 2 points de passage sont requis' };
+        }
+
+        // Appeler OSRM pour générer la route
+        const routingResult = await routingService.generateRoute(waypoints, activity_type || 'Run');
+
+        if (!routingResult.success) {
+            return { success: false, error: routingResult.error || 'Échec de la génération de route' };
+        }
+
+        const genRoute = routingResult.route;
+
+        // Créer la route en base
+        const routeData = {
+            name: name || `Parcours ${routingService.formatDistance(genRoute.distance)}`,
+            description: description || '',
+            distance: genRoute.distance,
+            elevation_gain: genRoute.elevation_gain,
+            elevation_loss: 0,
+            polyline: genRoute.polyline,
+            activity_type: activity_type || 'Run',
+            estimated_duration: genRoute.duration,
+            difficulty: difficulty || 'medium',
+            tags: tags || [],
+            is_public: is_public !== false,
+            waypoints: waypoints,
+            directions: genRoute.directions,
+        };
+
+        const result = await createRoute(userId, routeData);
+
+        if (result.success) {
+            return {
+                success: true,
+                route_id: result.route_id,
+                directions: genRoute.directions,
+                directions_count: genRoute.directions_count,
+                distance: genRoute.distance,
+                distance_formatted: genRoute.distance_formatted,
+                duration: genRoute.duration,
+                duration_formatted: genRoute.duration_formatted,
+                polyline: genRoute.polyline,
+                elevation_gain: genRoute.elevation_gain,
+                waypoints_used: waypoints.length,
+            };
+        }
+
+        return result;
+    } catch (error) {
+        logger.error('Error generating route:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
  * Récupérer les traces anonymisées de la communauté
  */
 async function getCommunityTraces(bounds, activityType, limit = 200) {
@@ -294,5 +376,6 @@ module.exports = {
     incrementRouteUsage,
     rateRoute,
     deleteRoute,
-    getCommunityTraces
+    getCommunityTraces,
+    generateAndCreateRoute
 };

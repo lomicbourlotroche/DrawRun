@@ -680,6 +680,21 @@ const MIGRATIONS = [
             } catch (_) { /* Column may already exist */ }
         },
     },
+    {
+        version: '033_add_route_directions',
+        description: 'Add waypoints and directions columns to routes table for OSRM route generation',
+        up: (db) => {
+            try {
+                db.run('ALTER TABLE routes ADD COLUMN waypoints TEXT');
+            } catch (_) { /* Column may already exist */ }
+            try {
+                db.run('ALTER TABLE routes ADD COLUMN directions TEXT');
+            } catch (_) { /* Column may already exist */ }
+            try {
+                db.run('CREATE INDEX IF NOT EXISTS idx_routes_waypoints ON routes(waypoints)');
+            } catch (_) { /* Index may already exist */ }
+        },
+    },
 ];
 
 async function runMigrations(db) {

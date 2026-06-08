@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { api, exploreApi } from '@/lib/api';
-import { Button, Input, Badge } from '@/components/ui';
-import { X, Undo2, Save, Trash2, Map, Navigation, Repeat, Redo2, Loader2 } from '@/components/ui/icons';
+import { useState, useCallback } from 'react';
+import { api } from '@/lib/api';
 import { toast } from 'sonner';
-import { encodePolyline } from '@/lib/utils';
-import ElevationProfile from './ElevationProfile';
+import { Navigation, MapPin, Plus, X, Trash2, Loader2, Settings, ArrowRight, Check, ChevronLeft } from '@/components/ui/icons';
+import DirectionsPanel from './DirectionsPanel';
+import type { Direction, GeneratedRouteResponse } from '@/lib/api';
 
 interface Waypoint {
   lat: number;
@@ -15,408 +14,278 @@ interface Waypoint {
 
 interface RoutePlannerProps {
   waypoints: Waypoint[];
-  onWaypointsChange: (_waypoints: Waypoint[]) => void;
+  onWaypointsChange: (waypoints: Waypoint[]) => void;
   onClose: () => void;
-  isLoop?: boolean;
-  onLoopChange?: (_loop: boolean) => void;
+  isLoop: boolean;
+  onLoopChange: (isLoop: boolean) => void;
+  onRouteCreated?: () => void;
 }
 
-function haversineDistance(a: Waypoint, b: Waypoint): number {
-  const R = 6371000;
-  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
-  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
-  const lat1 = (a.lat * Math.PI) / 180;
-  const lat2 = (b.lat * Math.PI) / 180;
-  const sinDLat = Math.sin(dLat / 2);
-  const sinDLng = Math.sin(dLng / 2);
-  const h = sinDLat * sinDLat + Math.cos(lat1) * Math.cos(lat2) * sinDLng * sinDLng;
-  return R * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
-}
+const ACTIVITY_TYPES = ['Run', 'Bike', 'Walk', 'Hike', 'Trail Run'];
+const DIFFICULTY_OPTIONS = [
+  { value: 'easy', label: 'Facile' },
+  { value: 'medium', label: 'Modéré' },
+  { value: 'hard', label: 'Difficile' },
+];
 
 export default function RoutePlanner({
   waypoints,
   onWaypointsChange,
   onClose,
-  isLoop = false,
+  isLoop,
   onLoopChange,
+  onRouteCreated,
 }: RoutePlannerProps) {
-  const [history, setHistory] = useState<Waypoint[][]>([waypoints]);
-  const [historyIdx, setHistoryIdx] = useState(0);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  const [step, setStep] = useState<'plan' | 'generating' | 'result'>('plan');
+  const [routeName, setRouteName] = useState('');
   const [activityType, setActivityType] = useState('Run');
   const [difficulty, setDifficulty] = useState('medium');
-  const [isSaving, setIsSaving] = useState(false);
-  const [elevationData, setElevationData] = useState<{ distance: number; elevation: number }[]>([]);
-  const [elevationStats, setElevationStats] = useState({ total_gain: 0, max_elevation: 0, min_elevation: 0 });
-  const [elevationLoading, setElevationLoading] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const [description, setDescription] = useState('');
+  const [result, setResult] = useState<GeneratedRouteResponse | null>(null);
 
-  const pushHistory = useCallback((wps: Waypoint[]) => {
-    setHistory((prev) => {
-      const next = prev.slice(0, historyIdx + 1);
-      next.push([...wps]);
-      return next;
-    });
-    setHistoryIdx((prev) => prev + 1);
-  }, [historyIdx]);
-
-  const handleUndo = useCallback(() => {
-    if (historyIdx > 0) {
-      const newIdx = historyIdx - 1;
-      setHistoryIdx(newIdx);
-      onWaypointsChange([...history[newIdx]]);
+  const removeWaypoint = useCallback((index: number) => {
+    if (waypoints.length <= 2) {
+      toast.error('Il faut au moins 2 points');
+      return;
     }
-  }, [historyIdx, history, onWaypointsChange]);
+    onWaypointsChange(waypoints.filter((_, i) => i !== index));
+  }, [waypoints, onWaypointsChange]);
 
-  const handleRedo = useCallback(() => {
-    if (historyIdx < history.length - 1) {
-      const newIdx = historyIdx + 1;
-      setHistoryIdx(newIdx);
-      onWaypointsChange([...history[newIdx]]);
-    }
-  }, [historyIdx, history, onWaypointsChange]);
-
-  const handleRemoveLast = useCallback(() => {
-    if (waypoints.length === 0) return;
-    const next = waypoints.slice(0, -1);
-    onWaypointsChange(next);
-    pushHistory(next);
-  }, [waypoints, onWaypointsChange, pushHistory]);
-
-  const handleClear = useCallback(() => {
+  const clearWaypoints = useCallback(() => {
     onWaypointsChange([]);
-    pushHistory([]);
-  }, [onWaypointsChange, pushHistory]);
+  }, [onWaypointsChange]);
 
-  // Validate waypoints
-  const validateWaypoints = useCallback((points: Waypoint[]): { valid: boolean; error?: string } => {
-    if (points.length < 2) {
-      return { valid: false, error: 'At least 2 waypoints are required' };
-    }
-    
-    for (const point of points) {
-      if (typeof point.lat !== 'number' || typeof point.lng !== 'number') {
-        return { valid: false, error: 'Each waypoint must have lat and lng as numbers' };
-      }
-      
-      if (point.lat < -90 || point.lat > 90) {
-        return { valid: false, error: 'Latitude must be between -90 and 90' };
-      }
-      
-      if (point.lng < -180 || point.lng > 180) {
-        return { valid: false, error: 'Longitude must be between -180 and 180' };
-      }
-    }
-    
-    // Check minimum distance between waypoints (10m)
-    if (points.length >= 2) {
-      for (let i = 1; i < points.length; i++) {
-        const dist = haversineDistance(points[i - 1], points[i]);
-        if (dist < 10) {
-          return { valid: false, error: `Waypoints ${i} and ${i + 1} are too close (minimum 10m apart)` };
-        }
-      }
-    }
-    
-    return { valid: true };
-  }, []);
-
-  // Fetch real elevation data from API
-  useEffect(() => {
-    if (waypoints.length < 2) {
-      setElevationData([]);
-      setElevationStats({ total_gain: 0, max_elevation: 0, min_elevation: 0 });
-      return;
-    }
-
-    // Validate waypoints before fetching elevation
-    const validation = validateWaypoints(waypoints);
-    if (!validation.valid) {
-      console.warn('Invalid waypoints:', validation.error);
-      return;
-    }
-
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-
-    debounceRef.current = setTimeout(async () => {
-      setElevationLoading(true);
-      try {
-        const res = await exploreApi.getElevationProfile(waypoints);
-        if (res.success) {
-          setElevationData(res.profile);
-          setElevationStats(res.stats);
-        }
-      } catch {
-        const totalDist = waypoints.slice(1).reduce((sum, wp, i) =>
-          sum + haversineDistance(waypoints[i], wp), 0);
-        const numPoints = Math.max(10, waypoints.length * 3);
-        const fallback: { distance: number; elevation: number }[] = [];
-        for (let i = 0; i <= numPoints; i++) {
-          const frac = i / numPoints;
-          fallback.push({
-            distance: totalDist * frac,
-            elevation: 50 + Math.sin(frac * Math.PI * 4) * 20 + Math.random() * 5,
-          });
-        }
-        setElevationData(fallback);
-      } finally {
-        setElevationLoading(false);
-      }
-    }, 500);
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [waypoints]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const stats = useMemo(() => {
-    let totalDist = 0;
-    for (let i = 1; i < waypoints.length; i++) {
-      totalDist += haversineDistance(waypoints[i - 1], waypoints[i]);
-    }
-    if (isLoop && waypoints.length >= 3) {
-      totalDist += haversineDistance(waypoints[waypoints.length - 1], waypoints[0]);
-    }
-    return {
-      distance: totalDist,
-      elevationGain: elevationStats.total_gain,
-    };
-  }, [waypoints, isLoop, elevationStats.total_gain]);
-
-  const handleToggleLoop = useCallback(() => {
-    const next = !isLoop;
-    onLoopChange?.(next);
-    if (next && waypoints.length >= 2) {
-      pushHistory(waypoints);
-    }
-  }, [isLoop, onLoopChange, waypoints, pushHistory]);
-
-  const handleSave = async () => {
-    if (!name.trim()) {
-      toast.error('Veuillez donner un nom au parcours');
-      return;
-    }
-    
-    // Validate waypoints
-    const validation = validateWaypoints(waypoints);
-    if (!validation.valid) {
-      toast.error(validation.error || 'Waypoints invalides');
-      return;
-    }
-    
+  const handleGenerate = useCallback(async () => {
     if (waypoints.length < 2) {
       toast.error('Ajoutez au moins 2 points sur la carte');
       return;
     }
-    if (isLoop && waypoints.length < 3) {
-      toast.error('Ajoutez au moins 3 points pour une boucle');
+    if (!routeName.trim()) {
+      toast.error('Donnez un nom au parcours');
       return;
     }
 
-    setIsSaving(true);
+    setStep('generating');
     try {
-      const rawPoints = waypoints.map((w) => [w.lat, w.lng] as [number, number]);
-      const polyPoints = isLoop ? [...rawPoints, rawPoints[0]] : rawPoints;
-      const polyline = encodePolyline(polyPoints);
-
-      const result = await api.createRoute({
-        name: name.trim(),
-        description: description.trim(),
-        polyline,
-        distance: Math.round(stats.distance),
-        elevation_gain: Math.round(elevationStats.total_gain),
-        elevation_loss: 0,
+      const response = await api.generateRoute({
+        waypoints,
         activity_type: activityType,
+        name: routeName.trim(),
+        description: description.trim(),
         difficulty,
-        estimated_duration: Math.round(stats.distance / 1000 / 10 * 3600), // rough: 10 km/h
         is_public: true,
       });
 
-      if (result.success) {
-        toast.success('Parcours créé avec succès !');
-        onClose();
+      if (response.success) {
+        setResult(response);
+        setStep('result');
+        toast.success(`Parcours généré ! ${response.directions_count} directions`);
+        onRouteCreated?.();
       } else {
-        toast.error(result.error || 'Erreur lors de la création');
+        toast.error(response.error || 'Erreur lors de la génération');
+        setStep('plan');
       }
-    } catch {
-      toast.error('Erreur réseau');
-    } finally {
-      setIsSaving(false);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur de connexion';
+      toast.error(message);
+      setStep('plan');
     }
-  };
+  }, [waypoints, routeName, activityType, description, difficulty, onRouteCreated]);
+
+  const resetPlanner = useCallback(() => {
+    setStep('plan');
+    setResult(null);
+    setRouteName('');
+    setDescription('');
+  }, []);
+
+  // Step 3: Show directions
+  if (step === 'result' && result) {
+    return (
+      <div className="fixed inset-0 z-[600] bg-surface flex flex-col">
+        <DirectionsPanel
+          directions={result.directions}
+          totalDistance={result.distance_formatted}
+          totalDuration={result.duration_formatted}
+          elevationGain={result.elevation_gain}
+          routeName={routeName}
+          onBack={resetPlanner}
+          onClose={onClose}
+        />
+      </div>
+    );
+  }
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-[600] bg-surface/95 backdrop-blur-md border-t border-border rounded-t-xl shadow-xl overflow-y-auto pb-[env(safe-area-inset-bottom,0px)]"
-         style={{ maxHeight: 'min(60dvh, 50vh)' }}>
-      <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-surface/95 z-10">
-        <h3 className="font-bold flex items-center gap-2">
-          <Map className="w-5 h-5 text-primary" />
-          Créer un parcours
-        </h3>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleUndo}
-            disabled={historyIdx <= 0}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-surface transition-colors disabled:opacity-30"
-            title="Annuler"
-          >
-            <Undo2 className="w-4 h-4" />
-          </button>
-          <button
-            onClick={handleRedo}
-            disabled={historyIdx >= history.length - 1}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-surface transition-colors disabled:opacity-30"
-            title="Refaire"
-          >
-            <Redo2 className="w-4 h-4" />
-          </button>
-          <button
-            onClick={handleRemoveLast}
-            disabled={waypoints.length === 0}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-surface transition-colors disabled:opacity-30"
-            title="Supprimer dernier point"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-          <button
-            onClick={handleClear}
-            disabled={waypoints.length === 0}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-surface transition-colors disabled:opacity-30"
-            title="Tout effacer"
-          >
-            <X className="w-4 h-4" />
-          </button>
-          <button
-            onClick={onClose}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-surface transition-colors ml-2"
-          >
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
-      </div>
-
-      <div className="p-4 space-y-4">
-        {/* Stats bar */}
-        <div className="flex items-center gap-4 text-sm flex-wrap">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <Navigation className="w-4 h-4" />
-            <span className="font-semibold text-foreground">
-              {(stats.distance / 1000).toFixed(2)} km
-            </span>
-          </div>
-          {isLoop && (
-            <Badge className="bg-primary-50 text-primary-700 border-primary-300">
-              <Repeat className="w-3 h-3 mr-1" />
-              Boucle
-            </Badge>
-          )}
-          <Badge variant="secondary">
-            {waypoints.length} point{waypoints.length > 1 ? 's' : ''}
-          </Badge>
-          {waypoints.length >= 2 && (
-            <Badge variant="secondary">
-              ~{Math.round(stats.distance / 1000 / 10 * 60)} min
-            </Badge>
-          )}
-          <span className="text-xs text-muted-foreground ml-auto hidden sm:inline">
-            Cliquez sur la carte pour ajouter des points
-          </span>
-        </div>
-
-        {/* Loop toggle */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleToggleLoop}
-            disabled={waypoints.length < 2}
-            className={`flex items-center gap-2 px-3 min-h-[44px] rounded-lg text-sm font-medium transition-all border ${
-              isLoop
-                ? 'bg-primary-50 text-primary-700 border-primary-300 shadow-sm'
-                : 'bg-background text-muted-foreground border-border hover:border-primary-300 hover:text-primary'
-            } disabled:opacity-30 disabled:cursor-not-allowed`}
-          >
-            <Repeat className={`w-4 h-4 ${isLoop ? 'text-primary' : ''}`} />
-            {isLoop ? 'Boucle activée' : 'Générer une boucle'}
-          </button>
-          {isLoop && waypoints.length >= 3 && (
-            <span className="text-xs text-muted-foreground">
-              +{haversineDistance(waypoints[waypoints.length - 1], waypoints[0]).toFixed(0)}m de retour
-            </span>
-          )}
-        </div>
-
-        {/* Elevation profile */}
-        <div className="bg-muted/20 rounded-lg p-3 min-h-[60px]">
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-xs text-muted-foreground font-medium">Profil d&apos;élévation</p>
-            {elevationLoading && (
-              <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
-            )}
-            {!elevationLoading && elevationStats.total_gain > 0 && (
-              <span className="text-xs font-semibold text-success">
-                D+ {elevationStats.total_gain} m
-              </span>
-            )}
-          </div>
-          {elevationData.length > 0 ? (
-            <ElevationProfile data={elevationData} height={100} />
-          ) : (
-            <div className="flex items-center justify-center text-xs text-muted-foreground" style={{ height: 100 }}>
-              {waypoints.length < 2 ? 'Ajoutez au moins 2 points' : 'Chargement...'}
+    <div className="fixed inset-x-0 bottom-0 z-[600] sm:left-auto sm:right-4 sm:w-[420px] sm:bottom-4 sm:rounded-2xl sm:max-h-[80vh]">
+      <div className="bg-surface border-t sm:border border-border sm:shadow-2xl sm:rounded-2xl flex flex-col max-h-[70vh] sm:max-h-[75vh]">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onClose}
+              className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-muted transition-colors"
+              aria-label="Fermer"
+            >
+              <X className="w-5 h-5 text-muted-foreground" />
+            </button>
+            <div>
+              <h2 className="text-base font-bold text-foreground">
+                {step === 'generating' ? 'Génération...' : 'Nouveau parcours'}
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                {waypoints.length} point{waypoints.length > 1 ? 's' : ''} placé{waypoints.length > 1 ? 's' : ''}
+                {isLoop ? ' — Boucle' : ''}
+              </p>
             </div>
-          )}
+          </div>
+          <div className="flex items-center gap-1">
+            {waypoints.length > 0 && (
+              <button
+                onClick={clearWaypoints}
+                className="flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-danger hover:bg-danger/10 rounded-lg transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Effacer
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Save form */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="sm:col-span-2">
-            <Input
-              placeholder="Nom du parcours *"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+        {step === 'generating' ? (
+          /* Loading state */
+          <div className="flex flex-col items-center justify-center py-16 px-8">
+            <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
+            <p className="text-sm font-medium text-foreground">Génération du parcours...</p>
+            <p className="text-xs text-muted-foreground mt-1">Calcul de l&apos;itinéraire via OSRM</p>
           </div>
-          <div className="sm:col-span-2">
-            <Input
-              placeholder="Description (optionnelle)"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-          <select
-            value={activityType}
-            onChange={(e) => setActivityType(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-border bg-background text-sm"
-          >
-            <option value="Run">Course à pied</option>
-            <option value="Bike">Vélo</option>
-            <option value="Swim">Natation</option>
-            <option value="Hike">Randonnée</option>
-          </select>
-          <select
-            value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-border bg-background text-sm"
-          >
-            <option value="easy">Facile</option>
-            <option value="medium">Modéré</option>
-            <option value="hard">Difficile</option>
-          </select>
-        </div>
+        ) : (
+          <>
+            {/* Waypoints list */}
+            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1.5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Points du parcours
+              </p>
+              {waypoints.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <MapPin className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                  <p className="text-xs">Cliquez sur la carte pour ajouter des points</p>
+                  <p className="text-xs text-muted-foreground/60 mt-0.5">Minimum 2 points requis</p>
+                </div>
+              ) : (
+                waypoints.map((wp, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors group"
+                  >
+                    <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">
+                      {idx + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-foreground truncate">
+                        {wp.lat.toFixed(5)}, {wp.lng.toFixed(5)}
+                      </p>
+                      {idx === 0 && (
+                        <span className="text-[10px] text-success font-semibold">Départ</span>
+                      )}
+                      {idx === waypoints.length - 1 && idx > 0 && (
+                        <span className="text-[10px] text-danger font-semibold">Arrivée</span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => removeWaypoint(idx)}
+                      className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg hover:bg-danger/10 text-muted-foreground hover:text-danger flex items-center justify-center transition-all"
+                      aria-label={`Retirer le point ${idx + 1}`}
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
 
-        <div className="flex gap-2">
-          <Button onClick={onClose} variant="outline" className="flex-1">
-            Annuler
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={isSaving || waypoints.length < 2 || !name.trim()}
-            className="flex-1"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {isSaving ? 'Enregistrement…' : 'Enregistrer'}
-          </Button>
-        </div>
+            {/* Route settings */}
+            <div className="px-4 pb-2 space-y-3 border-t border-border pt-3">
+              <div>
+                <input
+                  type="text"
+                  value={routeName}
+                  onChange={(e) => setRouteName(e.target.value)}
+                  placeholder="Nom du parcours *"
+                  className="w-full px-3 py-2.5 text-sm bg-muted/30 border border-border rounded-xl text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                />
+              </div>
+              <div>
+                <input
+                  type="text"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Description (optionnelle)"
+                  className="w-full px-3 py-2.5 text-sm bg-muted/30 border border-border rounded-xl text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                    Activité
+                  </label>
+                  <select
+                    value={activityType}
+                    onChange={(e) => setActivityType(e.target.value)}
+                    className="w-full px-3 py-2.5 text-sm bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all appearance-none"
+                  >
+                    {ACTIVITY_TYPES.map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                    Difficulté
+                  </label>
+                  <select
+                    value={difficulty}
+                    onChange={(e) => setDifficulty(e.target.value)}
+                    className="w-full px-3 py-2.5 text-sm bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all appearance-none"
+                  >
+                    {DIFFICULTY_OPTIONS.map((d) => (
+                      <option key={d.value} value={d.value}>{d.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pb-1">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <div
+                    onClick={() => onLoopChange(!isLoop)}
+                    className={`w-10 h-5 rounded-full transition-colors relative ${isLoop ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                  >
+                    <div className={`w-3.5 h-3.5 rounded-full bg-white absolute top-0.5 transition-all ${isLoop ? 'left-5.5' : 'left-0.5'}`} />
+                  </div>
+                  <span className="text-xs font-medium text-foreground">Parcours en boucle</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Generate button */}
+            <div className="p-4 pt-2">
+              <button
+                onClick={handleGenerate}
+                disabled={waypoints.length < 2 || !routeName.trim()}
+                className="w-full py-3 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
+              >
+                <Navigation className="w-4 h-4" />
+                Générer le parcours
+              </button>
+              <p className="text-[10px] text-center text-muted-foreground mt-2">
+                Itinéraire calculé via OSRM — données OpenStreetMap
+              </p>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

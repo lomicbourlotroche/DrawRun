@@ -6,7 +6,10 @@ import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
 import type { DrawRunMap } from '@/types/leaflet';
-import { Search, X, Compass, MapPin, Layers, Plus, LocateFixed, Route, Heart } from '@/components/ui/icons';
+import { 
+  Search, X, Compass, MapPin, Layers, Plus, LocateFixed, 
+  Route, Heart, Navigation, List, Grid3x3, ArrowRight 
+} from '@/components/ui/icons';
 import { Card, Button } from '@/components/ui';
 import ExplorePanel from '@/components/features/explore/ExplorePanel';
 import MapLayerSwitcher from '@/components/features/explore/MapLayerSwitcher';
@@ -83,11 +86,6 @@ interface MapSegment {
 type Waypoint = { lat: number; lng: number };
 
 const ROUTE_COLORS = ['var(--danger)', 'var(--primary)', 'var(--success)', 'var(--peak)', 'var(--secondary)', 'var(--danger)', 'var(--recovery)', 'var(--peak)'];
-
-// Focus styles base classes
-const focusClasses = 'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface';
-
-// Default center (Brest, France) if geolocation fails
 const DEFAULT_CENTER = { lat: 48.400771, lng: -4.502407 };
 
 export default function ExplorePage() {
@@ -131,8 +129,8 @@ export default function ExplorePage() {
   const [heatmapData, setHeatmapData] = useState<Array<{ lat: number; lng: number; intensity: number }>>([]);
   const [mapInstance, setMapInstance] = useState<DrawRunMap | null>(null);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [activeTab, setActiveTab] = useState<'routes' | 'segments' | 'favorites'>('routes');
 
-  // Has user been located
   const locatedRef = useRef(false);
 
   const loadSegments = useCallback(async (lat?: number, lng?: number) => {
@@ -225,7 +223,6 @@ export default function ExplorePage() {
     
     const geolocateUser = () => {
       if (!navigator.geolocation) {
-        // Browser doesn't support geolocation, use default
         setMapCenter(DEFAULT_CENTER);
         loadSegments(DEFAULT_CENTER.lat, DEFAULT_CENTER.lng);
         locatedRef.current = true;
@@ -237,12 +234,11 @@ export default function ExplorePage() {
           const { latitude, longitude } = pos.coords;
           setUserLocation({ lat: latitude, lng: longitude });
           setMapCenter({ lat: latitude, lng: longitude });
+          setMapZoom(14);
           loadSegments(latitude, longitude);
           locatedRef.current = true;
         },
-        (err) => {
-          // Geolocation failed or was denied, use default center
-          console.warn('Geolocation error:', err);
+        () => {
           setMapCenter(DEFAULT_CENTER);
           loadSegments(DEFAULT_CENTER.lat, DEFAULT_CENTER.lng);
           locatedRef.current = true;
@@ -254,12 +250,10 @@ export default function ExplorePage() {
     geolocateUser();
   }, [loadSegments]);
 
-  // Reload routes when filters change
   useEffect(() => {
     loadRoutes(activeFilter.type || undefined, activeFilter.difficulty || undefined);
   }, [activeFilter, loadRoutes]);
 
-  // Filter also favorites specifically
   useEffect(() => {
     loadFavorites();
   }, [loadFavorites]);
@@ -274,6 +268,7 @@ export default function ExplorePage() {
         const { latitude, longitude } = pos.coords;
         setUserLocation({ lat: latitude, lng: longitude });
         setMapCenter({ lat: latitude, lng: longitude });
+        setMapZoom(15);
         loadSegments(latitude, longitude);
         toast.success('Position détectée');
       },
@@ -307,43 +302,42 @@ export default function ExplorePage() {
     setPanelOpen(true);
   }, []);
 
+  const handleRouteCreated = useCallback(() => {
+    loadRoutes();
+    loadFavorites();
+  }, [loadRoutes, loadFavorites]);
+
   return (
-    // Skip to main content for screen readers
-    <div className="relative w-full min-h-[calc(100dvh-4rem)] lg:min-h-[calc(100dvh-4rem)] -m-4 lg:-m-6 flex flex-col">
-      <a href="#explore-main" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:bg-primary focus:text-white focus:p-3 focus:z-[1000] focus:rounded-md">
-        Aller au contenu principal
-      </a>
-      
-      {/* ===== HEADER ===== */}
-      <div className="absolute top-0 left-0 right-0 z-[450] p-4">
-        <div className="flex items-center justify-between gap-4 max-w-6xl mx-auto">
+    <div className="relative w-full h-[calc(100dvh-4rem)] -m-4 lg:-m-6 flex flex-col overflow-hidden bg-surface">
+      {/* ===== HEADER WITH MAGAZINE STYLE ===== */}
+      <div className="absolute top-0 left-0 right-0 z-[450] bg-gradient-to-b from-black/40 to-transparent">
+        <div className="flex items-center justify-between p-4 pb-8">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-primary/10 border border-primary/30">
-              <Compass className="w-6 h-6 text-primary" />
+            <div className="p-2.5 rounded-xl bg-white/15 backdrop-blur-md border border-white/20">
+              <Compass className="w-5 h-5 text-white" />
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">Explorer</h1>
-              <p className="text-xs text-muted">D\u0019couvrez des parcours et segments autour de vous</p>
+            <div className="text-white">
+              <h1 className="text-xl font-black tracking-tight leading-none">EXPLORER</h1>
+              <p className="text-[11px] opacity-80 font-medium tracking-wide">
+                DÉCOUVREZ — PARCOURS & SEGMENTS
+              </p>
             </div>
           </div>
           
-          {/* Quick actions */}
           <div className="flex items-center gap-2">
-            <Button 
-              variant="secondary" 
-              size="sm" 
+            <button
               onClick={openRoutePlanner}
-              className="hidden sm:flex"
-              leftIcon={<Plus className="w-4 h-4" />}
+              className="hidden sm:flex items-center gap-2 px-4 py-2 bg-white/15 backdrop-blur-md border border-white/25 rounded-xl text-white text-sm font-bold hover:bg-white/25 transition-all shadow-lg"
             >
-              Cr\u0019er un parcours
-            </Button>
+              <Plus className="w-4 h-4" />
+              Créer un parcours
+            </button>
           </div>
         </div>
       </div>
 
-      <div id="explore-main" className="relative w-full flex-1 flex pt-16">
-        {/* Map - Accessible */}
+      <div id="explore-main" className="relative flex-1 flex">
+        {/* Map */}
         <div className="absolute inset-0" role="region" aria-label="Carte d'exploration">
           <ExploreMap
             center={mapCenter}
@@ -363,20 +357,22 @@ export default function ExplorePage() {
           />
         </div>
 
-        {/* Desktop search - Accessible */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[500] max-sm:hidden">
-          <LocationSearch
-            onSelectLocation={(lat, lng, label) => {
-              setMapCenter({ lat, lng });
-              setMapZoom(15);
-              userLocation && loadSegments(lat, lng);
-              toast.success(label.split(',')[0]);
-            }}
-            placeholder="Rechercher un lieu..."
-          />
+        {/* Search bar */}
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[500] w-full max-w-md px-4 max-sm:hidden">
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl shadow-black/10 border border-white/30 overflow-hidden">
+            <LocationSearch
+              onSelectLocation={(lat, lng, label) => {
+                setMapCenter({ lat, lng });
+                setMapZoom(15);
+                userLocation && loadSegments(lat, lng);
+                toast.success(label.split(',')[0]);
+              }}
+              placeholder="Rechercher un lieu..."
+            />
+          </div>
         </div>
 
-        {/* Mobile search overlay - Accessible */}
+        {/* Mobile search overlay */}
         {showMobileSearch && (
           <div className="absolute inset-x-0 top-0 z-[600] sm:hidden" role="region" aria-label="Recherche mobile">
             <div className="flex items-center gap-2 p-3 bg-surface/95 backdrop-blur-md border-b border-border shadow-md">
@@ -394,27 +390,26 @@ export default function ExplorePage() {
               </div>
               <button
                 onClick={() => setShowMobileSearch(false)}
-                className={`min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-surface transition-colors ${focusClasses}`}
+                className="flex items-center justify-center w-11 h-11 rounded-xl hover:bg-muted transition-colors"
                 aria-label="Fermer la recherche"
                 type="button"
               >
-                <X className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
+                <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
           </div>
         )}
 
-        {/* Control overlays - Accessible, with gap */}
-        <div className="absolute top-4 right-4 z-[500] flex flex-col gap-2" role="group" aria-label="Contrôles de la carte">
-          {/* Mobile search toggle */}
+        {/* Right side controls */}
+        <div className="absolute top-20 right-4 z-[500] flex flex-col gap-2">
           <button
             onClick={() => setShowMobileSearch(true)}
-            className="sm:hidden flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg shadow-md border bg-surface/90 backdrop-blur-sm border-border hover:bg-surface transition-colors text-muted-foreground"
+            className="sm:hidden flex items-center justify-center w-11 h-11 rounded-xl bg-surface/90 backdrop-blur-md border border-border shadow-lg hover:bg-surface transition-colors text-muted-foreground"
             title="Rechercher"
             aria-label="Rechercher un lieu"
             type="button"
           >
-            <Search className="w-4 h-4" aria-hidden="true" />
+            <Search className="w-4 h-4" />
           </button>
           <HeatmapView
             mapCenter={mapCenter}
@@ -428,29 +423,60 @@ export default function ExplorePage() {
           <MapLayerSwitcher activeLayer={mapLayer} onLayerChange={setMapLayer} />
         </div>
 
-        {/* Geolocate button - Fixed position, accessible */}
+        {/* Geolocate button */}
         <button
           onClick={handleLocateMe}
-          className="absolute bottom-4 right-4 z-[500] flex items-center justify-center min-w-[48px] min-h-[48px] bg-primary rounded-xl shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all duration-200 text-white"
+          className="absolute bottom-4 right-4 z-[500] flex items-center justify-center w-12 h-12 bg-primary rounded-2xl shadow-xl shadow-primary/30 hover:bg-primary/90 hover:scale-105 transition-all duration-200 text-white"
           title="Me localiser"
           aria-label="Me localiser sur la carte"
           type="button"
         >
-          <LocateFixed className="w-5 h-5" aria-hidden="true" />
+          <LocateFixed className="w-5 h-5" />
         </button>
 
-        {/* Floating action - Create route (mobile) */}
+        {/* Mobile FAB - Create route */}
         <button
           onClick={openRoutePlanner}
-          className="absolute bottom-20 right-4 z-[500] sm:hidden flex items-center justify-center min-w-[48px] min-h-[48px] bg-primary rounded-xl shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all duration-200 text-white"
+          className="absolute bottom-20 right-4 z-[500] sm:hidden flex items-center justify-center w-12 h-12 bg-primary rounded-2xl shadow-xl shadow-primary/30 hover:bg-primary/90 hover:scale-105 transition-all duration-200 text-white"
           title="Créer un parcours"
           aria-label="Créer un parcours"
           type="button"
         >
-          <Plus className="w-5 h-5" aria-hidden="true" />
+          <Plus className="w-5 h-5" />
         </button>
 
-        {/* Panel - Already accessible in ExplorePanel component */}
+        {/* Tab selector - Magazine style for explore panel */}
+        {!routePlannerOpen && (
+          <div className="absolute bottom-4 left-4 z-[500]">
+            <div className="flex items-center gap-1 bg-surface/95 backdrop-blur-md rounded-2xl border border-border shadow-xl p-1">
+              {[
+                { id: 'routes', label: 'Parcours', icon: Route },
+                { id: 'segments', label: 'Segments', icon: MapPin },
+                { id: 'favorites', label: 'Favoris', icon: Heart },
+              ].map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                    className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl transition-all ${
+                      isActive
+                        ? 'bg-primary text-white shadow-md shadow-primary/20'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    }`}
+                    type="button"
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Side panel */}
         <ExplorePanel
           segments={segments}
           segmentsLoading={segmentsLoading}
@@ -466,9 +492,11 @@ export default function ExplorePage() {
           onOpenRoutePlanner={openRoutePlanner}
           isOpen={panelOpen}
           onToggle={() => setPanelOpen((p) => !p)}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
         />
 
-        {/* Route detail popup - Accessible */}
+        {/* Route detail popup */}
         {selectedRoute && !routePlannerOpen && (
           <RouteDetailPopup
             route={selectedRoute}
@@ -489,7 +517,7 @@ export default function ExplorePage() {
           />
         )}
 
-        {/* Route planner (bottom sheet) - Responsive */}
+        {/* Route planner */}
         {routePlannerOpen && (
           <RoutePlanner
             waypoints={waypoints}
@@ -497,6 +525,7 @@ export default function ExplorePage() {
             onClose={closeRoutePlanner}
             isLoop={isLoop}
             onLoopChange={setIsLoop}
+            onRouteCreated={handleRouteCreated}
           />
         )}
       </div>

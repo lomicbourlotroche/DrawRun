@@ -350,6 +350,67 @@ function validateLocationParams(query) {
 }
 
 /**
+ * Validate route generation body (for OSRM-based route generation).
+ */
+function validateRouteGenerationBody(body) {
+    const errors = [];
+    if (!body || typeof body !== 'object') return { valid: false, errors: ['Request body is required'] };
+
+    // Validate waypoints (required, at least 2)
+    if (!body.waypoints || !Array.isArray(body.waypoints)) {
+        errors.push('waypoints must be an array');
+    } else if (body.waypoints.length < 2) {
+        errors.push('At least 2 waypoints are required');
+    } else {
+        for (let i = 0; i < body.waypoints.length; i++) {
+            const wp = body.waypoints[i];
+            if (!wp || typeof wp !== 'object') {
+                errors.push(`waypoints[${i}] must be an object with lat and lng`);
+            } else {
+                if (typeof wp.lat !== 'number' || wp.lat < -90 || wp.lat > 90) {
+                    errors.push(`waypoints[${i}].lat must be a number between -90 and 90`);
+                }
+                if (typeof wp.lng !== 'number' || wp.lng < -180 || wp.lng > 180) {
+                    errors.push(`waypoints[${i}].lng must be a number between -180 and 180`);
+                }
+            }
+        }
+    }
+
+    // Validate activity_type
+    const ALLOWED_TYPES = ['Run', 'Bike', 'Swim', 'Hike', 'Walk', 'Trail Run', 'Mountain Bike', 'Trail', 'Ride'];
+    if (body.activity_type !== undefined && !ALLOWED_TYPES.includes(body.activity_type)) {
+        errors.push(`activity_type must be one of: ${ALLOWED_TYPES.join(', ')}`);
+    }
+
+    // Validate name (optional, but if provided must be string)
+    if (body.name !== undefined && (typeof body.name !== 'string' || body.name.trim() === '')) {
+        errors.push('name must be a non-empty string');
+    }
+    if (body.name && body.name.length > 200) {
+        errors.push('name must be 200 characters or less');
+    }
+
+    // Validate difficulty
+    const ALLOWED_DIFFICULTIES = ['easy', 'medium', 'hard', 'expert'];
+    if (body.difficulty !== undefined && !ALLOWED_DIFFICULTIES.includes(body.difficulty)) {
+        errors.push(`difficulty must be one of: ${ALLOWED_DIFFICULTIES.join(', ')}`);
+    }
+
+    // Validate is_public
+    if (body.is_public !== undefined && typeof body.is_public !== 'boolean') {
+        errors.push('is_public must be a boolean');
+    }
+
+    // Validate tags
+    if (body.tags !== undefined && !Array.isArray(body.tags)) {
+        errors.push('tags must be an array');
+    }
+
+    return { valid: errors.length === 0, errors };
+}
+
+/**
  * Validate rating value (1-5).
  */
 function validateRating(rating) {
@@ -436,6 +497,7 @@ module.exports = {
     // Explore validators
     validateSegmentBody,
     validateRouteBody,
+    validateRouteGenerationBody,
     validateSegmentEffortBody,
     validateLocationParams,
     validateRating,
