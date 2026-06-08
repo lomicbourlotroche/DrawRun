@@ -323,6 +323,74 @@ router.get('/routes', verifyToken, async (req, res) => {
  *     security:
  *       - bearerAuth: []
  */
+
+/**
+ * @swagger
+ * /explore/routes/my:
+ *   get:
+ *     summary: Get user's routes
+ *     tags: [Explore]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get('/routes/my', verifyToken, async (req, res) => {
+    try {
+        const userRoutes = await routes.getUserRoutes(req.user.id);
+        res.json({ success: true, routes: userRoutes });
+    } catch (error) {
+        logger.error('Get user routes error:', error);
+        res.status(500).json({ error: 'Failed to get routes' });
+    }
+});
+
+/**
+ * @swagger
+ * /explore/routes/favorites:
+ *   get:
+ *     summary: Get favorite routes
+ *     tags: [Explore]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get('/routes/favorites', verifyToken, async (req, res) => {
+    try {
+        const favorites = await routes.getFavoriteRoutes(req.user.id);
+        res.json({ success: true, routes: favorites });
+    } catch (error) {
+        logger.error('Get favorites error:', error);
+        res.status(500).json({ error: 'Failed to get favorites' });
+    }
+});
+
+/**
+ * @swagger
+ * /explore/routes/generate:
+ *   post:
+ *     summary: Generate a route with OSRM and turn-by-turn directions
+ *     tags: [Explore]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.post('/routes/generate', verifyToken, async (req, res) => {
+    try {
+        const validationError = validateRequestBody(validateRouteGenerationBody, req.body);
+        if (validationError) {
+            return res.status(400).json(validationError);
+        }
+
+        const result = await routes.generateAndCreateRoute(req.user.id, req.body);
+
+        if (result.success) {
+            res.status(201).json(result);
+        } else {
+            res.status(400).json(result);
+        }
+    } catch (error) {
+        logger.error('Generate route error:', error);
+        res.status(500).json({ error: 'Échec de la génération de route' });
+    }
+});
+
 router.get('/routes/:id', verifyToken, async (req, res) => {
     try {
         const routeId = parseInt(req.params.id);
@@ -427,44 +495,6 @@ router.post('/routes/:id/use', verifyToken, async (req, res) => {
 
 /**
  * @swagger
- * /explore/routes/my:
- *   get:
- *     summary: Get user's routes
- *     tags: [Explore]
- *     security:
- *       - bearerAuth: []
- */
-router.get('/routes/my', verifyToken, async (req, res) => {
-    try {
-        const userRoutes = await routes.getUserRoutes(req.user.id);
-        res.json({ success: true, routes: userRoutes });
-    } catch (error) {
-        logger.error('Get user routes error:', error);
-        res.status(500).json({ error: 'Failed to get routes' });
-    }
-});
-
-/**
- * @swagger
- * /explore/routes/favorites:
- *   get:
- *     summary: Get favorite routes
- *     tags: [Explore]
- *     security:
- *       - bearerAuth: []
- */
-router.get('/routes/favorites', verifyToken, async (req, res) => {
-    try {
-        const favorites = await routes.getFavoriteRoutes(req.user.id);
-        res.json({ success: true, routes: favorites });
-    } catch (error) {
-        logger.error('Get favorites error:', error);
-        res.status(500).json({ error: 'Failed to get favorites' });
-    }
-});
-
-/**
- * @swagger
  * /explore/routes/{id}:
  *   delete:
  *     summary: Delete a route
@@ -537,70 +567,6 @@ router.post('/routes/:id/rate', verifyToken, async (req, res) => {
     } catch (error) {
         logger.error('Rate route error:', error);
         res.status(500).json({ error: 'Failed to rate route' });
-    }
-});
-
-/**
- * @swagger
- * /explore/routes/generate:
- *   post:
- *     summary: Generate a route with OSRM and turn-by-turn directions
- *     tags: [Explore]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [waypoints]
- *             properties:
- *               waypoints:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     lat: { type: number }
- *                     lng: { type: number }
- *                 minItems: 2
- *               activity_type:
- *                 type: string
- *                 enum: [Run, Bike, Hike, Walk, Trail, Ride]
- *                 default: Run
- *               name:
- *                 type: string
- *               description:
- *                 type: string
- *               difficulty:
- *                 type: string
- *                 enum: [easy, medium, hard, expert]
- *               is_public:
- *                 type: boolean
- *                 default: true
- *               tags:
- *                 type: array
- *                 items:
- *                   type: string
- */
-router.post('/routes/generate', verifyToken, async (req, res) => {
-    try {
-        // Validate request body for route generation
-        const validationError = validateRequestBody(validateRouteGenerationBody, req.body);
-        if (validationError) {
-            return res.status(400).json(validationError);
-        }
-
-        const result = await routes.generateAndCreateRoute(req.user.id, req.body);
-
-        if (result.success) {
-            res.status(201).json(result);
-        } else {
-            res.status(400).json(result);
-        }
-    } catch (error) {
-        logger.error('Generate route error:', error);
-        res.status(500).json({ error: 'Échec de la génération de route' });
     }
 });
 
