@@ -3,8 +3,8 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { api, racePlanningApi } from '@/lib/api';
-import type { RacePlanningResponse, RacePlanningRequest, Split, RaceNutritionStrategy } from '@/types';
-import type { SavedRacePlan, RaceSplit } from '@/lib/api/race-planning.api';
+import type { RacePlanningResponse, RacePlanningRequest, RaceNutritionStrategy } from '@/types';
+import type { SavedRacePlan } from '@/lib/api/race-planning.api';
 import { StrategySlider } from './StrategySlider';
 import { RaceForm } from './RaceForm';
 import { GpxImportSection } from './GpxImportSection';
@@ -139,24 +139,8 @@ export function RacePlanningContent() {
         totalTime: r.summary.totalTime,
         elevationProfile: r.summary.elevationProfile ?? form.elevationProfile,
         fatigue: form.fatigue,
-        splits: (r.splits || []).map(s => ({
-          km: s.km,
-          distance: s.distance,
-          splitTime: s.splitTime,
-          cumulativeTime: s.cumulativeTime,
-          pace: s.pace,
-          hrZone: Number(s.hrZone),
-          hrRange: s.hrRange,
-          elevationGain: s.elevationGain ?? 0,
-          elevationLoss: s.elevationLoss ?? 0,
-          nutrition: (s.nutrition || []).map(n => ({
-            label: n.label,
-            quantity: n.quantity,
-            type: (n.type === 'gel' ? 'gel' : n.type === 'water' ? 'drink' : 'other') as 'gel' | 'drink' | 'bar' | 'other',
-            timing: 'during' as const,
-          })),
-        })),
-        nutritionStrategy: r.nutritionStrategy as import('@/lib/api/race-planning.api').NutritionStrategy,
+        splits: r.splits || [],
+        nutritionStrategy: r.nutritionStrategy as Record<string, unknown>,
       });
       toast.success('Plan de course enregistr\u0019 !');
     } catch {
@@ -177,27 +161,27 @@ export function RacePlanningContent() {
     }
   };
 
-  const handleLoadPlan = (plan: Record<string, unknown>) => {
+  const handleLoadPlan = (plan: SavedRacePlan) => {
     setForm({
-      distance: (plan.distance as number) || form.distance,
-      elevationProfile: (plan.elevationProfile as 'flat' | 'rolling' | 'mountainous') || form.elevationProfile,
-      fatigue: (plan.fatigue as number) ?? form.fatigue,
+      distance: plan.distance || form.distance,
+      elevationProfile: (plan.elevation_profile as 'flat' | 'rolling' | 'mountainous') || form.elevationProfile,
+      fatigue: plan.fatigue ?? form.fatigue,
     });
     setResult({
       summary: {
-        distance: plan.distance as number,
-        targetPace: plan.targetPace as number,
-        totalTime: plan.totalTime as number,
-        elevationProfile: plan.elevationProfile as string,
+        distance: plan.distance,
+        targetPace: plan.target_pace,
+        totalTime: plan.total_time,
+        elevationProfile: plan.elevation_profile || 'flat',
         fcm: 0,
       },
-      splits: plan.splits as Split[],
-      nutritionStrategy: plan.nutritionStrategy as RaceNutritionStrategy,
+      splits: plan.splits,
+      nutritionStrategy: plan.nutrition_strategy as unknown as RaceNutritionStrategy,
       racePrediction: null,
       warnings: [],
     } as RacePlanningResponse);
     setShowPlansModal(false);
-    toast.success('Plan charg\u0019');
+    toast.success('Plan chargé');
   };
 
   const handleDeletePlan = async (id: number) => {

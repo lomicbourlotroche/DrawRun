@@ -126,7 +126,21 @@ Key differentiators:
    - Based on peer-reviewed research
    - Banister impulse-response model
    - ACWR (Acute:Chronic Workload Ratio)
-   - HRV trend analysis
+    - HRV trend analysis
+
+---
+
+## 👨‍💻 Pour les Développeurs (Humains)
+
+Si vous reprenez ce projet et souhaitez le comprendre ou y apporter des modifications :
+1. Lisez le **[GUIDE_DEVELOPPEUR.md](GUIDE_DEVELOPPEUR.md)** à la racine, rédigé en français. Il explique l'architecture, la structure des bases de données et contient un tutoriel pas-à-pas pour vos modifications.
+2. Lancez l'assistant interactif de développement en tapant :
+   ```bash
+   npm run assistant
+   ```
+   Cet outil diagnostique votre installation, lance les serveurs et peut **générer instantanément un compte de test** (`testeur@drawrun.local` / `Password123`) avec un historique d'activités fictif complet pour tester l'application directement.
+
+---
 
 ## Quick Start
 

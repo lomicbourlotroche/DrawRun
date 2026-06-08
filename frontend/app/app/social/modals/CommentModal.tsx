@@ -9,11 +9,12 @@ import { toast } from 'sonner';
 
 interface CommentModalProps {
   activityId: number;
+  ownerId?: number;
   onClose: () => void;
   onCommentCountChange: (_delta: number) => void;
 }
 
-export default function CommentModal({ activityId, onClose, onCommentCountChange }: CommentModalProps) {
+export default function CommentModal({ activityId, ownerId, onClose, onCommentCountChange }: CommentModalProps) {
   const [comments, setComments] = useState<Array<{ id: number; content: string; user_name: string; created_at: string }>>([]);
   const [commentText, setCommentText] = useState('');
   const [isLoadingComments, setIsLoadingComments] = useState(true);
@@ -36,7 +37,7 @@ export default function CommentModal({ activityId, onClose, onCommentCountChange
     if (!commentText.trim()) return;
     setIsPostingComment(true);
     try {
-      await api.addComment(activityId, commentText.trim());
+      await api.addComment(activityId, commentText.trim(), ownerId);
       toast.success('Commentaire ajouté');
       setCommentText('');
       const data = await api.getActivityComments(activityId);

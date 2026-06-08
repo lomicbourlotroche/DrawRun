@@ -22,7 +22,6 @@ import type {
   GroupEvent,
   GroupUpdate,
   LeaderboardEntry,
-  ActivityLike,
   SocialFeedItem,
   UserSearchResult,
   PublicProfile,
@@ -182,11 +181,11 @@ export const socialApi = {
     return client.request(`/api/social/activities/${activityId}/like`, { method: 'DELETE' });
   },
 
-  getActivityLikes(activityId: number): Promise<ActivityLike[]> {
+  getActivityLikes(activityId: number): Promise<Array<{ id: number; email: string; name: string }>> {
     return client.request(`/api/social/activities/${activityId}/likes`);
   },
 
-  getLikedActivities(): Promise<ActivityLike[]> {
+  getLikedActivities(): Promise<Array<{ id: number; email: string; name: string }>> {
     return client.request('/api/social/liked-activities');
   },
 
@@ -257,27 +256,12 @@ export const socialApi = {
     return client.request('/api/social/feed');
   },
 
-  getSocialFeedPaginated(limit?: number, offset?: number): Promise<{
-    success: boolean;
-    feed: Array<{
-      id: number;
-      name: string;
-      type: string;
-      start_date: string;
-      distance: number;
-      moving_time: number;
-      total_elevation_gain?: number;
-      user_id: number;
-      user_name: string;
-      draw_count: number;
-      comment_count: number;
-      photo_count: number;
-    }>;
-  }> {
+  async getSocialFeedPaginated(limit?: number, offset?: number): Promise<SocialFeedItem[]> {
     const params = new URLSearchParams();
     if (limit) params.set('limit', String(limit));
     if (offset) params.set('offset', String(offset));
-    return client.request(`/api/social/feed?${params.toString()}`);
+    const data = await client.request<SocialFeedItem[]>(`/api/social/feed?${params.toString()}`);
+    return data || [];
   },
 
   // ============================================================================
@@ -297,10 +281,10 @@ export const socialApi = {
   // Comments
   // ============================================================================
 
-  addComment(activityId: number, content: string): Promise<{ success: boolean; comment?: Comment; error?: string }> {
+  addComment(activityId: number, content: string, ownerId?: number): Promise<{ success: boolean; comment?: Comment; error?: string }> {
     return client.request(`/api/social/activities/${activityId}/comments`, {
       method: 'POST',
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ content, ownerId }),
     });
   },
 
@@ -334,7 +318,7 @@ export const socialApi = {
     return client.request(`/api/social/activities/${activityId}/reactions`);
   },
 
-  getUserActivityReactions(activityId: number): Promise<{ reaction_type: string }[]> {
+  getUserActivityReactions(activityId: number): Promise<string[]> {
     return client.request(`/api/social/activities/${activityId}/reactions/user`);
   },
 
@@ -354,13 +338,15 @@ export const socialApi = {
     });
   },
 
-  getUserConversations(): Promise<unknown[]> {
-    return client.request('/api/social/conversations');
+  async getUserConversations(): Promise<unknown[]> {
+    const response = await client.request<{ success: boolean; conversations: unknown[] }>('/api/social/conversations');
+    return response.conversations ?? [];
   },
 
-  getConversationMessages(conversationId: number, limit = 50, offset = 0): Promise<unknown[]> {
+  async getConversationMessages(conversationId: number, limit = 50, offset = 0): Promise<unknown[]> {
     const params = new URLSearchParams({ limit: String(limit), offset: String(offset) });
-    return client.request(`/api/social/conversations/${conversationId}/messages?${params.toString()}`);
+    const response = await client.request<{ success: boolean; messages: unknown[] }>(`/api/social/conversations/${conversationId}/messages?${params.toString()}`);
+    return response.messages ?? [];
   },
 
   sendMessage(params: SendMessageParams): Promise<{ success: boolean; message?: unknown; error?: string }> {
@@ -374,8 +360,9 @@ export const socialApi = {
     });
   },
 
-  getConversationParticipants(conversationId: number): Promise<unknown[]> {
-    return client.request(`/api/social/conversations/${conversationId}/participants`);
+  async getConversationParticipants(conversationId: number): Promise<unknown[]> {
+    const response = await client.request<{ success: boolean; participants: unknown[] }>(`/api/social/conversations/${conversationId}/participants`);
+    return response.participants ?? [];
   },
 
   // ============================================================================
@@ -430,8 +417,9 @@ export const socialApi = {
     });
   },
 
-  getUserChallenges(): Promise<unknown[]> {
-    return client.request('/api/social/challenges/user');
+  async getUserChallenges(): Promise<unknown[]> {
+    const response = await client.request<{ success: boolean; challenges: unknown[] }>('/api/social/challenges/user');
+    return response.challenges ?? [];
   },
 
   getPublicChallenges(limit = 20): Promise<unknown[]> {
@@ -464,8 +452,9 @@ export const socialApi = {
     return client.request(`/api/social/challenges/teams/${teamId}/join`, { method: 'POST' });
   },
 
-  getChallengeTeams(challengeId: number): Promise<unknown[]> {
-    return client.request(`/api/social/challenges/${challengeId}/teams`);
+  async getChallengeTeams(challengeId: number): Promise<unknown[]> {
+    const response = await client.request<{ success: boolean; teams: unknown[] }>(`/api/social/challenges/${challengeId}/teams`);
+    return response.teams ?? [];
   },
 
   // ============================================================================
@@ -572,7 +561,7 @@ export const socialApi = {
   // Notifications
   // ============================================================================
 
-  getNotifications(params?: PaginationParams): Promise<{ notifications: unknown[]; unread_count: number }> {
+  getNotifications(params?: PaginationParams): Promise<{ success: boolean; notifications: unknown[]; unread_count: number }> {
     const query = new URLSearchParams();
     if (params?.limit) query.set('limit', String(params.limit));
     if (params?.offset) query.set('offset', String(params.offset));

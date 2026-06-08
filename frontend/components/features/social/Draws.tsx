@@ -20,6 +20,7 @@ interface Draw {
 
 interface ActivityDrawsProps {
   activityId: number;
+  ownerId: number;
   draws: Draw[];
   drawCount: number;
   userHasDrawn: boolean;
@@ -28,6 +29,7 @@ interface ActivityDrawsProps {
 
 export function ActivityDraws({ 
   activityId, 
+  ownerId,
   draws, 
   drawCount, 
   userHasDrawn,
@@ -42,17 +44,17 @@ export function ActivityDraws({
     setIsSubmitting(true);
     try {
       if (userHasDrawn) {
-        // Retirer le draw
-        const response = await api.toggleActivityDraw(activityId, 0); // 0 pour retirer
+        // Retirer le draw (ownerId only needed for add case; backend tolerates missing for remove)
+        const response = await api.toggleActivityDraw(activityId, ownerId);
         if (response.success) {
-          const newDraws = (draws ?? []).filter(d => d.user_id !== 0); // Filtrer le draw de l'utilisateur actuel
+          const newDraws = (draws ?? []).filter(d => d.user_id !== ownerId);
           const newCount = response.draw_count;
           onDrawUpdate?.(newDraws, newCount, false);
           toast.success('Draw retiré');
         }
       } else {
         // Ajouter un draw
-        const response = await api.toggleActivityDraw(activityId, 1); // 1 pour ajouter
+        const response = await api.toggleActivityDraw(activityId, ownerId);
         if (response.success) {
           const newCount = response.draw_count;
           onDrawUpdate?.(draws, newCount, true);
@@ -144,6 +146,7 @@ interface SocialDrawProps {
   initialDraws: Draw[];
   initialCount: number;
   userHasDrawn: boolean;
+  ownerId: number;
   compact?: boolean;
 }
 
@@ -152,6 +155,7 @@ export function SocialDraw({
   initialDraws, 
   initialCount, 
   userHasDrawn,
+  ownerId,
   compact = false 
 }: SocialDrawProps) {
   const [draws, setDraws] = useState<Draw[]>(initialDraws);
@@ -165,14 +169,14 @@ export function SocialDraw({
     setIsSubmitting(true);
     try {
       if (hasDrawn) {
-        const response = await api.toggleActivityDraw(itemId, 0); // 0 pour retirer
+        const response = await api.toggleActivityDraw(itemId, ownerId);
         if (response.success) {
-          setDraws((draws ?? []).filter(d => d.user_id !== 0)); // Filtrer le draw de l'utilisateur actuel
+          setDraws((draws ?? []).filter(d => d.user_id !== ownerId));
           setDrawCount(response.draw_count);
           setHasDrawn(false);
         }
       } else {
-        const response = await api.toggleActivityDraw(itemId, 1); // 1 pour ajouter
+        const response = await api.toggleActivityDraw(itemId, ownerId);
         if (response.success) {
           setDrawCount(response.draw_count);
           setHasDrawn(true);

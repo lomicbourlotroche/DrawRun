@@ -62,15 +62,15 @@ describe('useGroupDetail hook', () => {
     id: mockGroupId,
     name: 'Test Group',
     description: 'Test Description',
-    isPrivate: true,
-    memberCount: 5,
-    adminCount: 1,
-    userRole: 'admin',
-    inviteCode: 'TEST1234',
+    is_private: true,
+    member_count: 5,
+    admin_count: 1,
+    user_role: 'admin',
+    invite_code: 'TEST1234',
   };
   const mockMembers = [
-    { id: 1, userId: 1, name: 'Member 1', email: 'member1@test.com', role: 'member', joinedAt: '2024-01-01' },
-    { id: 2, userId: 2, name: 'Member 2', email: 'member2@test.com', role: 'admin', joinedAt: '2024-01-02' },
+    { id: 1, user_id: 1, name: 'Member 1', email: 'member1@test.com', role: 'member', joined_at: '2024-01-01' },
+    { id: 2, user_id: 2, name: 'Member 2', email: 'member2@test.com', role: 'admin', joined_at: '2024-01-02' },
   ];
   const mockActivities = [
     { id: 1, type: 'Running', name: 'Morning Run', start_date: '2024-01-01', distance: 10000, moving_time: 3600 },
@@ -269,7 +269,7 @@ describe('useGroupDetail hook', () => {
   });
 
   it('should handle leave group with confirmation', async () => {
-    const nonAdminGroup = { ...mockGroup, userRole: 'member' };
+    const nonAdminGroup = { ...mockGroup, user_role: 'member' };
     mockApi.getGroupDetail.mockResolvedValue(nonAdminGroup);
     mockApi.getGroupMembers.mockResolvedValue(mockMembers);
     mockApi.getGroupActivities.mockResolvedValue(mockActivities);

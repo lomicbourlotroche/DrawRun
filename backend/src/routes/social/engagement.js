@@ -83,10 +83,6 @@ router.post('/activities/:activityId/draw', verifyToken, async (req, res) => {
             return res.status(400).json({ error: 'Invalid activity ID' });
         }
         
-        if (!ownerId || ownerId <= 0) {
-            return res.status(400).json({ error: 'Invalid owner ID' });
-        }
-        
         const result = await draws.toggleDraw(req.user.id, activityId, ownerId);
         
         // Send push notification to activity owner if draw was added (not removed)

@@ -2,109 +2,95 @@
  * ============================================================
  * RACE PLANNING API
  * ============================================================
- * 
+ *
  * Outil de stratégie de course avec calcul des splits,
  * zones de fréquence cardiaque et stratégie de nutrition.
- * 
+ *
  * @module lib/api/race-planning.api
  */
 
 import { client } from './client';
-import type { RacePlanningRequest, RacePlanningResponse } from '@/types';
+import type { RacePlanningRequest, RacePlanningResponse, Split } from '@/types';
 
 /**
- * Split data for race planning
- */
-export interface RaceSplit {
-  km: number;
-  distance: number; // in meters
-  splitTime: number; // in seconds
-  cumulativeTime: number; // in seconds
-  pace: number; // in seconds per km
-  hrZone: number;
-  hrRange: string;
-  elevationGain: number; // in meters
-  elevationLoss: number; // in meters
-  nutrition: Array<{
-    label: string;
-    quantity: string;
-    type: 'gel' | 'drink' | 'bar' | 'other';
-    timing: 'before' | 'during' | 'after';
-  }>;
-}
-
-/**
- * Nutrition strategy for race planning
- */
-export interface NutritionStrategy {
-  totalCalories: number;
-  totalCarbs: number; // in grams
-  totalLiquids: number; // in ml
-  perHour: {
-    calories: number;
-    carbs: number;
-    liquids: number;
-  };
-  schedule: Array<{
-    time: number; // in minutes
-    type: 'gel' | 'drink' | 'bar' | 'other';
-    quantity: string;
-    notes?: string;
-  }>;
-}
-
-/**
- * Saved race plan data
+ * Saved race plan data (as stored in DB and returned by list endpoint)
  */
 export interface SavedRacePlan {
   id: number;
-  userId: string;
+  user_id: number;
   name: string;
-  distance: number; // in meters
-  targetPace: number; // in seconds per km
-  totalTime: number; // in seconds
-  elevationProfile?: string;
-  fatigue: number; // percentage
-  splits: RaceSplit[];
-  nutritionStrategy?: NutritionStrategy;
-  createdAt: string;
-  updatedAt: string;
+  distance: number;
+  target_pace: number;
+  total_time: number;
+  elevation_profile?: string;
+  fatigue: number;
+  splits: Split[];
+  nutrition_strategy: Record<string, unknown> | null;
+  created_at: string;
+}
+
+/**
+ * List race plans response from backend (paginated)
+ */
+export interface ListRacePlansResponse {
+  plans: SavedRacePlan[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
 }
 
 /**
  * Race strategy parameters
  */
 export interface RaceStrategyParams {
-  points?: Array<{ dist: number; elev: number }>;
+  points?: Array<{ dist: number; elev: number; lat?: number; lon?: number }>;
   gpxData?: string;
-  temp?: number; // in Celsius
-  humidity?: number; // percentage
-  goalTime?: number; // in seconds
+  temp?: number;
+  humidity?: number;
+  goalTime?: number;
 }
 
 /**
  * Race strategy result
  */
 export interface RaceStrategyResult {
-  success: boolean;
-  strategy: {
-    name: string;
-    description: string;
-    splits: RaceSplit[];
-    pacingAdvice: string;
-    nutritionRecommendations: NutritionStrategy;
-    elevationAnalysis: {
-      totalGain: number;
-      totalLoss: number;
-      difficultyScore: number;
-    };
-    weatherImpact: {
-      temperatureEffect: number;
-      humidityEffect: number;
-      adjustedPace: number;
-    };
+  segments: Array<{
+    km: number;
+    distance: number;
+    elevGain: number;
+    elevLoss: number;
+    grade: number;
+    targetPaceSec: number;
+    targetPace: string;
+    cumulativeTime: number;
+  }>;
+  summary: {
+    totalDistance: number;
+    totalElevationGain: number;
+    totalTimeSec: number;
+    averagePace: string;
   };
-  message?: string;
+  nutrition: Record<string, unknown>;
+  taper: Record<string, unknown> | null;
+}
+
+/**
+ * Save race plan payload
+ */
+export interface SaveRacePlanPayload {
+  name?: string;
+  distance: number;
+  targetPace: number;
+  totalTime?: number;
+  elevationProfile?: string;
+  fatigue?: number;
+  splits: Split[];
+  nutritionStrategy?: Record<string, unknown>;
 }
 
 /**
@@ -117,24 +103,16 @@ async function calculateRacePlan(params: RacePlanningRequest): Promise<RacePlann
 /**
  * Save a race plan to the user's database
  */
-async function saveRacePlan(data: {
-  name?: string;
-  distance: number;
-  targetPace: number;
-  totalTime?: number;
-  elevationProfile?: string;
-  fatigue?: number;
-  splits: RaceSplit[];
-  nutritionStrategy?: NutritionStrategy;
-}): Promise<{ success: boolean; message: string }> {
+async function saveRacePlan(data: SaveRacePlanPayload): Promise<{ success: boolean; message: string }> {
   return client.post('/api/race-planning/save', data);
 }
 
 /**
  * List all saved race plans
+ * Unwraps the paginated response to return the plans array.
  */
-async function listRacePlans(): Promise<SavedRacePlan[]> {
-  return client.get('/api/race-planning/list');
+async function listRacePlans(page = 1, limit = 20): Promise<ListRacePlansResponse> {
+  return client.get(`/api/race-planning/list?page=${page}&limit=${limit}`);
 }
 
 /**
@@ -153,12 +131,10 @@ async function calculateRaceStrategy(params: RaceStrategyParams): Promise<RaceSt
 
 /**
  * Export race plan splits to CSV format
- * @param splits Array of splits from race plan
- * @returns CSV content string
  */
 function exportToCsv(splits: RacePlanningResponse['splits']): string {
   const headers = ['KM', 'Distance (km)', 'Temps (sec)', 'Temps cumulé (sec)', 'Allure (sec/km)', 'Zone FC', 'FC (bpm)', 'Nutrition'];
-  
+
   const rows = splits.map(split => [
     split.km,
     split.distance,
@@ -167,7 +143,7 @@ function exportToCsv(splits: RacePlanningResponse['splits']): string {
     split.pace,
     split.hrZone,
     split.hrRange,
-    split.nutrition.map(n => `${n.label} (${n.quantity})`).join(', ') || '-'
+    (split.nutrition || []).map(n => `${n.label} (${n.quantity})`).join(', ') || '-'
   ]);
 
   return [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -175,34 +151,30 @@ function exportToCsv(splits: RacePlanningResponse['splits']): string {
 
 /**
  * Download race plan as CSV file
- * @param splits Array of splits
- * @param filename Optional filename (default: race-plan.csv)
  */
 function downloadCsv(splits: RacePlanningResponse['splits'], filename = 'race-plan.csv'): void {
   const csv = exportToCsv(splits);
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
-  
+
   const link = document.createElement('a');
   link.href = url;
   link.download = filename;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  
+
   URL.revokeObjectURL(url);
 }
 
 /**
  * Format time in seconds to MM:SS or HH:MM:SS
- * @param seconds Time in seconds
- * @returns Formatted time string
  */
 function formatTime(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const mins = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
-  
+
   if (hours > 0) {
     return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
@@ -211,8 +183,6 @@ function formatTime(seconds: number): string {
 
 /**
  * Format pace in sec/km to MM:SS/km
- * @param pace Pace in seconds per km
- * @returns Formatted pace string
  */
 function formatPace(pace: number): string {
   if (!pace || pace <= 0) return '--:--';

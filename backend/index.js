@@ -21,6 +21,7 @@
 // ===========================================================================
 // CONFIGURATION
 // ===========================================================================
+process.env.DOTENV_CONFIG_YAML = 'false';
 require('dotenv').config({ path: require('path').join(__dirname, '.env'), override: false });
 
 // Fail fast if JWT_SECRET is missing (no fallback)

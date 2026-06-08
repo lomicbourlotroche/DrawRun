@@ -792,70 +792,52 @@ export interface PendingSessions {
 
 export interface Friend {
   id: number;
-  user_id?: number;
-  friend_id?: number;
   email: string;
   name: string;
-  avatar_url?: string;
   status?: string;
   created_at?: string;
   accepted_at?: string;
-  [key: string]: unknown;
 }
 
 export interface FriendRequest {
   id: number;
-  userId: number;
-  user_id?: number;
+  user_id: number;
   email: string;
   name: string;
-  createdAt: string;
-  created_at?: string;
-  [key: string]: unknown;
+  created_at: string;
 }
 
 export interface Group {
   id: number;
   name: string;
   description?: string;
-  isPrivate?: boolean;
   is_private?: boolean;
-  memberCount?: number;
   member_count?: number;
-  inviteCode?: string;
   invite_code?: string;
-  creatorId?: number;
   creator_id?: number;
-  creatorName?: string;
   creator_name?: string;
   role?: string;
-  userRole?: string | null;
   user_role?: string | null;
-  isMember?: boolean;
   is_member?: boolean;
-  createdAt?: string;
   created_at?: string;
-  updatedAt?: string;
   updated_at?: string;
-  [key: string]: unknown;
 }
 
 export interface GroupDetail extends Group {
-  memberCount: number;
-  adminCount: number;
-  userRole: string | null;
-  isMember: boolean;
+  member_count: number;
+  admin_count: number;
+  user_role: string | null;
+  is_member: boolean;
 }
 
 export interface GroupMember {
   id: number;
-  userId: number;
+  user_id: number;
   name: string;
   email: string;
-  avatarUrl?: string;
   role: string;
-  joinedAt: string;
-  groupId: number;
+  joined_at: string;
+  group_id: number;
 }
 
 export interface GroupEvent {
@@ -887,61 +869,52 @@ export interface CreateEventParams {
 export interface GroupUpdate {
   name?: string;
   description?: string;
-  isPrivate?: boolean;
-  regenerateInvite?: boolean;
+  is_private?: boolean;
+  regenerate_invite?: boolean;
 }
 
 export interface LeaderboardEntry {
   rank: number;
-  userId: number;
-  user_id?: number;
+  user_id: number;
   name: string;
   value: number;
   unit?: string;
-  [key: string]: unknown;
 }
 
 export interface ActivityLike {
   id: number;
-  userId: number;
-  activityId: number;
-  createdAt: string;
-  [key: string]: unknown;
+  email: string;
+  name: string;
 }
 
 export interface SocialFeedItem {
   id: number;
   type?: string;
-  userId?: number;
-  user_id?: number;
-  activityId?: number;
-  activity_id?: number;
-  content?: string;
-  createdAt?: string;
-  created_at?: string;
-  // Activity feed fields
   name?: string;
+  // Activity feed fields (from backend)
+  start_date?: string;
   distance?: number;
   moving_time?: number;
-  start_date_local?: string;
+  average_speed?: number;
+  total_elevation_gain?: number;
+  average_heartrate?: number;
+  max_heartrate?: number;
+  map_summary_polyline?: string;
   owner_name?: string;
   owner_id?: number;
   like_count?: number;
-  user_liked?: boolean;
-  draw_count?: number;
   comment_count?: number;
   photo_count?: number;
-  [key: string]: unknown;
+  draw_count?: number;
+  // Client-side only (for optimistic updates in hooks/components)
+  start_date_local?: string;
+  user_liked?: boolean;
 }
 
 export interface UserSearchResult {
   id: number;
   email: string;
   name: string;
-  avatar_url?: string;
-  memberSince?: string;
-  member_since?: string;
-  [key: string]: unknown;
 }
 
 export interface PublicProfile {
@@ -951,43 +924,29 @@ export interface PublicProfile {
 
 export interface Comment {
   id: number;
-  activityId?: number;
-  activity_id?: number;
-  userId?: number;
-  user_id?: number;
+  activity_id: number;
+  user_id: number;
   content: string;
-  createdAt?: string;
-  created_at?: string;
-  name?: string;
-  email?: string;
-  [key: string]: unknown;
+  created_at: string;
+  user_name: string;
 }
 
 export interface Reaction {
   id?: number;
-  activityId?: number;
   activity_id?: number;
-  userId?: number;
   user_id?: number;
-  reactionType?: string;
   reaction_type?: string;
   count?: number;
-  users?: string;
-  createdAt?: string;
-  [key: string]: unknown;
 }
 
 export interface SocialNotification {
   id: number;
-  type: 'friend_request' | 'challenge' | 'like' | 'message' | 'comment' | 'group_invite' | 'achievement' | string;
+  type: string;
   message: string;
-  unread: boolean;
+  read_at: string | null;
   created_at: string;
-  actor_id?: number;
-  actor_name?: string;
-  reference_id?: number;
-  reference_type?: string;
-  [key: string]: unknown;
+  user_id: number;
+  data?: Record<string, unknown>;
 }
 
 // ============================================================================
@@ -1008,6 +967,7 @@ export interface Split {
   elevationGain?: number;
   elevationLoss?: number;
   grade?: number;
+  elevChange?: number;
   nutrition: Array<{
     type: 'water' | 'gel' | 'sodium' | 'solid';
     label: string;
@@ -1137,6 +1097,10 @@ export interface RacePlanningResponse {
     altitude: string;
     wind: string;
     overall: string;
+  } | {
+    correctedTime: number;
+    timeLoss: number;
+    factor: number;
   };
   pacingStrategy?: {
     type: string;

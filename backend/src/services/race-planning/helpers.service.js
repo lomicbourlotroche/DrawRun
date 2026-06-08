@@ -178,13 +178,17 @@ function generateScientificSplits({ distance, basePace, elevationProfile, pacing
         const hrMin = Math.round(fcm * hrPhase.minPct + restingHR * (1 - hrPhase.minPct) * 0.3);
         const hrMax = Math.round(fcm * hrPhase.maxPct + restingHR * (1 - hrPhase.maxPct) * 0.3);
         const nutrition = getSplitNutrition(km, cumulativeTime, totalRaceTime, distance, weight, gpxKmSegments, km);
+        // Compute elevationGain/elevationLoss from elevChange for frontend compatibility
+        const elevationGain = kmElevChange > 0 ? kmElevChange : 0;
+        const elevationLoss = kmElevChange < 0 ? Math.abs(kmElevChange) : 0;
+
         splits.push({
             km, distance: Math.round(kmDistance * 100) / 100,
             splitTime: Math.round(splitTime), cumulativeTime: Math.round(cumulativeTime),
             pace: Math.round(splitPace), paceFactor: Math.round(paceFactor * 1000) / 1000,
             hrZone: hrPhase.name, hrRange: `${hrMin + driftCap}-${hrMax + Math.min(driftCap, 12)} bpm`,
             cardiacDrift: driftCap, elevationFactor: Math.round(elevFactor * 100) / 100,
-            grade: kmGrade, elevChange: kmElevChange, nutrition,
+            grade: kmGrade, elevChange: kmElevChange, elevationGain, elevationLoss, nutrition,
         });
     }
     return splits;

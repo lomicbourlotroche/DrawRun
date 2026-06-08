@@ -71,20 +71,20 @@ export default function GroupDetailPage() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-2xl font-bold truncate">{group.name}</h1>
-            <span className={`text-xs px-2 py-1 rounded-full font-medium ${group.isPrivate ? 'bg-peak/10 text-peak' : 'bg-success/10 text-success'}`}>
-              {group.isPrivate ? '🔒 Privé' : '🌍 Public'}
+            <span className={`text-xs px-2 py-1 rounded-full font-medium ${group.is_private ? 'bg-peak/10 text-peak' : 'bg-success/10 text-success'}`}>
+              {group.is_private ? '🔒 Privé' : '🌍 Public'}
             </span>
-            {group.userRole && (
-              <span className={`text-xs px-2 py-1 rounded-full font-medium ${group.userRole === 'admin' ? 'bg-primary/10 text-primary' : 'bg-border text-muted'}`}>
-                {group.userRole === 'admin' ? '👑 Admin' : 'Membre'}
+            {group.user_role && (
+              <span className={`text-xs px-2 py-1 rounded-full font-medium ${group.user_role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-border text-muted'}`}>
+                {group.user_role === 'admin' ? '👑 Admin' : 'Membre'}
               </span>
             )}
           </div>
           {group.description && <p className="text-muted mt-1 text-sm">{group.description}</p>}
-          <p className="text-xs text-muted mt-2">{group.memberCount} membres · {challenges.length} défis</p>
+          <p className="text-xs text-muted mt-2">{group.member_count} membres · {challenges.length} défis</p>
         </div>
         <div className="flex gap-2 shrink-0">
-          {group.inviteCode && (
+          {group.invite_code && (
             <Button variant="secondary" size="sm" onClick={copyInvite} leftIcon={<Copy className="w-4 h-4" />} aria-label="Copier le code d'invitation">
               Code
             </Button>
@@ -104,10 +104,10 @@ export default function GroupDetailPage() {
         <div className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { icon: Users, color: 'text-primary', bg: 'bg-primary/10', val: group.memberCount, label: 'Membres' },
+              { icon: Users, color: 'text-primary', bg: 'bg-primary/10', val: group.member_count, label: 'Membres' },
               { icon: ActivityIcon, color: 'text-peak', bg: 'bg-peak/10', val: activities.length, label: 'Activités' },
               { icon: Trophy, color: 'text-warning', bg: 'bg-warning/10', val: challenges.length, label: 'Défis' },
-              { icon: Crown, color: 'text-warning', bg: 'bg-warning/10', val: group.adminCount || 1, label: 'Admins' },
+              { icon: Crown, color: 'text-warning', bg: 'bg-warning/10', val: group.admin_count || 1, label: 'Admins' },
             ].map(s => (
               <div key={s.label} className="p-4 rounded-xl bg-card border border-border text-center">
                 <div className={`w-10 h-10 rounded-xl ${s.bg} flex items-center justify-center mx-auto mb-2`}>
@@ -164,7 +164,7 @@ export default function GroupDetailPage() {
                 <Avatar name={member.name} size="md" />
                 <div>
                   <p className="font-semibold text-sm">{member.name}</p>
-                  <p className="text-xs text-muted">Depuis {new Date(member.joinedAt).toLocaleDateString('fr-FR')}</p>
+                  <p className="text-xs text-muted">Depuis {new Date(member.joined_at).toLocaleDateString('fr-FR')}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -178,11 +178,11 @@ export default function GroupDetailPage() {
                 {isAdmin && member.role !== 'admin' && (
                   <div className="flex gap-1">
                     {member.role !== 'moderator' && (
-                      <button onClick={() => handlePromote(member.userId, 'moderator')} className="p-1.5 rounded-lg hover:bg-border transition-colors" title="Promouvoir modérateur" aria-label="Promouvoir modérateur">
+                      <button onClick={() => handlePromote(member.user_id, 'moderator')} className="p-1.5 rounded-lg hover:bg-border transition-colors" title="Promouvoir modérateur" aria-label="Promouvoir modérateur">
                         <Shield className="w-4 h-4 text-primary" />
                       </button>
                     )}
-                    <button onClick={() => handleKick(member.userId)} className="p-1.5 rounded-lg hover:bg-danger/10 transition-colors" title="Exclure" aria-label="Exclure le membre">
+                    <button onClick={() => handleKick(member.user_id)} className="p-1.5 rounded-lg hover:bg-danger/10 transition-colors" title="Exclure" aria-label="Exclure le membre">
                       <UserX className="w-4 h-4 text-danger" />
                     </button>
                   </div>
@@ -277,18 +277,18 @@ export default function GroupDetailPage() {
               </div>
               <div className="flex items-center justify-between p-3 rounded-xl bg-background border border-border">
                 <div><p className="text-sm font-medium">Groupe privé</p><p className="text-xs text-muted">Accès par code d&apos;invitation uniquement</p></div>
-                <button onClick={() => setEditForm({ ...editForm, isPrivate: !editForm.isPrivate })} aria-label={editForm.isPrivate ? 'Passer en groupe public' : 'Passer en groupe privé'} className={`w-12 h-6 rounded-full transition-all relative ${editForm.isPrivate ? 'bg-primary' : 'bg-border'}`}>
-                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${editForm.isPrivate ? 'left-7' : 'left-1'}`} />
+                <button onClick={() => setEditForm({ ...editForm, is_private: !editForm.is_private })} aria-label={editForm.is_private ? 'Passer en groupe public' : 'Passer en groupe privé'} className={`w-12 h-6 rounded-full transition-all relative ${editForm.is_private ? 'bg-primary' : 'bg-border'}`}>
+                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${editForm.is_private ? 'left-7' : 'left-1'}`} />
                 </button>
               </div>
-              {group.inviteCode && (
+              {group.invite_code && (
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-background border border-border">
-                  <div className="flex-1"><p className="text-xs text-muted">Code d&apos;invitation</p><p className="font-mono font-bold text-lg tracking-widest">{group.inviteCode}</p></div>
+                  <div className="flex-1"><p className="text-xs text-muted">Code d&apos;invitation</p><p className="font-mono font-bold text-lg tracking-widest">{group.invite_code}</p></div>
                   <Button size="sm" variant="secondary" onClick={copyInvite} leftIcon={<Copy className="w-4 h-4" />} aria-label="Copier le code">Copier</Button>
                 </div>
               )}
               <div className="flex gap-3">
-                <Button variant="secondary" className="flex-1 rounded-xl" onClick={() => setEditForm({ name: group.name, description: group.description || '', isPrivate: group.isPrivate ?? true })} aria-label="Réinitialiser le formulaire">
+                <Button variant="secondary" className="flex-1 rounded-xl" onClick={() => setEditForm({ name: group.name, description: group.description || '', is_private: group.is_private ?? true })} aria-label="Réinitialiser le formulaire">
                   Réinitialiser
                 </Button>
                 <Button className="flex-1 rounded-xl" onClick={handleEdit} leftIcon={<Save className="w-4 h-4" />} aria-label="Enregistrer les modifications">

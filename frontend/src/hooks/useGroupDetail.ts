@@ -68,10 +68,10 @@ export function useGroupDetail(): UseGroupDetailReturn {
   const [challenges, setChallenges] = useState<GroupChallenge[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ name: '', description: '', isPrivate: false });
+  const [editForm, setEditForm] = useState({ name: '', description: '', is_private: false });
   const [showWizard, setShowWizard] = useState(false);
 
-  const isAdmin = group?.userRole === 'admin';
+  const isAdmin = group?.user_role === 'admin';
 
   const loadGroup = useCallback(async () => {
     setIsLoading(true);
@@ -90,7 +90,7 @@ export function useGroupDetail(): UseGroupDetailReturn {
       setEditForm({
         name: groupData.name,
         description: groupData.description || '',
-        isPrivate: groupData.isPrivate ?? true,
+        is_private: groupData.is_private ?? true,
       });
     } catch {
       setError(SOCIAL_ERRORS.FETCH_GROUPS);
@@ -159,8 +159,8 @@ export function useGroupDetail(): UseGroupDetailReturn {
   }, [groupId, router]);
 
   const copyInvite = useCallback(() => {
-    if (group?.inviteCode) {
-      navigator.clipboard.writeText(group.inviteCode);
+    if (group?.invite_code) {
+      navigator.clipboard.writeText(group.invite_code);
       toast.success('Code copié');
     }
   }, [group?.inviteCode]);

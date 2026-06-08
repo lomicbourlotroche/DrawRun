@@ -4,6 +4,7 @@
   "description": "DrawRun - Application de Performance Sportive",
   "private": true,
   "scripts": {
+    "assistant": "node scripts/assistant.js",
     "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",

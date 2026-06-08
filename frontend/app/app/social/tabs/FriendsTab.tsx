@@ -134,7 +134,7 @@ export default function FriendsTab() {
           </div>
           <div className="grid gap-2 sm:grid-cols-2">
             {requests.map((req) => (
-              <GlassCard key={req.userId || req.user_id || 0} padding="sm" hover>
+              <GlassCard key={req.user_id || 0} padding="sm" hover>
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-3 min-w-0">
                     <Avatar name={req.name} size="md" />
@@ -147,7 +147,7 @@ export default function FriendsTab() {
                     <Button
                       size="sm"
                       className="rounded-xl bg-success hover:bg-success min-h-[36px] min-w-[36px] p-0"
-                      onClick={() => handleAccept(req.userId || req.user_id || 0)}
+                      onClick={() => handleAccept(req.user_id)}
                       aria-label={`Accepter la demande d'ami de ${req.name}`}
                     >
                       <Check className="w-4 h-4" />
@@ -156,7 +156,7 @@ export default function FriendsTab() {
                       size="sm"
                       variant="ghost"
                       className="rounded-xl text-muted hover:text-danger min-h-[36px] min-w-[36px] p-0"
-                      onClick={() => handleRemove(req.userId || req.user_id || 0)}
+                      onClick={() => handleRemove(req.user_id)}
                       aria-label={`Refuser la demande d'ami de ${req.name}`}
                     >
                       <X className="w-4 h-4" />

@@ -156,6 +156,7 @@ router.get('/feed', verifyToken, async (req, res) => {
                         name: act.name,
                         type: act.type,
                         start_date: act.start_date,
+                        owner_id: friendUser.id,
                         owner_name: friendUser.name || friendUser.email.split('@')[0],
                         like_count: 0,
                         comment_count: 0,

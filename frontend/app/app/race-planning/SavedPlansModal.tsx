@@ -11,7 +11,7 @@ interface SavedPlansModalProps {
   onClose: () => void;
   isLoading: boolean;
   savedPlans: SavedRacePlan[];
-  onLoadPlan: (_plan: Record<string, unknown>) => void;
+  onLoadPlan: (_plan: SavedRacePlan) => void;
   onDeletePlan: (_id: number) => void;
 }
 
@@ -39,23 +39,23 @@ export function SavedPlansModal({
       ) : (
         <div className="space-y-3">
           {savedPlans.map((plan) => (
-            <div key={plan.id as number} className="p-4 rounded-lg border border-border hover:border-primary/50 transition-colors">
+            <div key={plan.id} className="p-4 rounded-lg border border-border hover:border-primary/50 transition-colors">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{plan.name as string}</p>
+                  <p className="font-medium text-sm truncate">{plan.name}</p>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 text-xs text-muted">
                     <span className="flex items-center gap-1">
                       <MapPin className="w-3 h-3" />
-                      {typeof plan.distance === 'number' ? `${plan.distance.toFixed(2)} km` : '-'}
+                      {plan.distance ? `${plan.distance.toFixed(2)} km` : '-'}
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      {typeof plan.totalTime === 'number' ? formatDuration(plan.totalTime) : '-'}
+                      {plan.total_time ? formatDuration(plan.total_time) : '-'}
                     </span>
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
-                      {plan.createdAt
-                        ? new Date(plan.createdAt).toLocaleDateString('fr-FR')
+                      {plan.created_at
+                        ? new Date(plan.created_at).toLocaleDateString('fr-FR')
                         : '-'}
                     </span>
                   </div>
@@ -64,7 +64,7 @@ export function SavedPlansModal({
                   <Button variant="primary" size="sm" onClick={() => onLoadPlan(plan)}>
                     Charger
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => onDeletePlan(plan.id as number)}>
+                  <Button variant="ghost" size="sm" onClick={() => onDeletePlan(plan.id)}>
                     <Trash2 className="w-4 h-4 text-error" />
                   </Button>
                 </div>

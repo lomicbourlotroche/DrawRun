@@ -205,13 +205,14 @@ export default function FeedTab() {
         </div>
       )}
 
-      {commentActivityId !== null && (
-        <CommentModal
-          activityId={commentActivityId}
-          onClose={() => setCommentActivityId(null)}
-          onCommentCountChange={(delta) => handleCommentCountChange(commentActivityId, delta)}
-        />
-      )}
+      {commentActivityId !== null && (
+        <CommentModal
+          activityId={commentActivityId}
+          ownerId={activities.find(a => a.id === commentActivityId)?.owner_id}
+          onClose={() => setCommentActivityId(null)}
+          onCommentCountChange={(delta) => handleCommentCountChange(commentActivityId, delta)}
+        />
+      )}
     </>
   );
 }
