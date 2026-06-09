@@ -49,8 +49,11 @@ if (process.env.NODE_ENV === 'production' && !config.CORS_ORIGINS) {
 // ============================================================================
 if (process.env.NODE_ENV !== 'production') {
     const { execSync } = require('child_process');
+    // eslint-disable-next-line no-console
     console.log('\n╔══════════════════════════════════════════════════╗');
+    // eslint-disable-next-line no-console
     console.log('║         🧪  Running startup test suite…          ║');
+    // eslint-disable-next-line no-console
     console.log('╚══════════════════════════════════════════════════╝\n');
     try {
         execSync('npm test -- --passWithNoTests --forceExit', {
@@ -58,12 +61,18 @@ if (process.env.NODE_ENV !== 'production') {
             stdio: 'inherit',
             timeout: 120000
         });
+        // eslint-disable-next-line no-console
         console.log('\n╔══════════════════════════════════════════════════╗');
+        // eslint-disable-next-line no-console
         console.log('║         ✅  All tests passed — starting server   ║');
+        // eslint-disable-next-line no-console
         console.log('╚══════════════════════════════════════════════════╝\n');
     } catch (err) {
+        // eslint-disable-next-line no-console
         console.error('\n╔══════════════════════════════════════════════════╗');
+        // eslint-disable-next-line no-console
         console.error('║   ❌  Tests FAILED — server will NOT start       ║');
+        // eslint-disable-next-line no-console
         console.error('╚══════════════════════════════════════════════════╝\n');
         throw new Error('Startup tests failed — see above for details');
     }
@@ -262,6 +271,7 @@ app.use((req, res, next) => {
                 return res.status(400).json({ error: 'Invalid filename' });
             }
             const filepath = path.join(__dirname, 'uploads', 'avatars', filename);
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             if (!_fs.existsSync(filepath)) {
                 return res.status(404).json({ error: 'Avatar not found' });
             }

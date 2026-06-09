@@ -13,8 +13,6 @@ const {
     // Common
     EmailSchema,
     PasswordSchema,
-    NameSchema,
-    DateSchema,
 
     // Auth
     LoginSchema,
@@ -29,7 +27,6 @@ const {
 
     // Activity
     ActivitySchema,
-    ActivityCreateSchema,
     ActivityFilterSchema,
 
     // Training

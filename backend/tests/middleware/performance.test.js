@@ -7,7 +7,7 @@
  * Tests for LRUCache, cacheKey, cached decorator, withCache, cacheRoute
  */
 
-const { LRUCache, cacheKey, caches, performanceMetrics } = require('../../src/middleware/performance');
+const { LRUCache, cacheKey, performanceMetrics } = require('../../src/middleware/performance');
 
 describe('LRUCache', () => {
     let cache;

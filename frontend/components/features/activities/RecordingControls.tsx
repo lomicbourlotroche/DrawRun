@@ -54,6 +54,7 @@ export function RecordingControls({
             <button
               onClick={onShowRoutePicker}
               className="w-12 h-12 rounded-full hover:bg-surface active:bg-surface-hover flex items-center justify-center transition-colors"
+              aria-label="Sélectionner un itinéraire"
             >
               <MapPin className="w-5 h-5 text-muted" />
             </button>
@@ -61,12 +62,14 @@ export function RecordingControls({
               onClick={onStart}
               disabled={permissionStatus === 'denied' || permissionStatus === 'unsupported'}
               className="w-20 h-20 rounded-full bg-peak hover:bg-peak/90 active:bg-peak/80 disabled:opacity-50 flex items-center justify-center transition-colors"
+              aria-label="Démarrer l'enregistrement"
             >
               <Play className="w-8 h-8 fill-white text-foreground ml-1" />
             </button>
             <button
               onClick={onShowSegmentPicker}
               className="w-12 h-12 rounded-full hover:bg-surface active:bg-surface-hover flex items-center justify-center transition-colors"
+              aria-label="Sélectionner un segment"
             >
               <Target className="w-5 h-5 text-muted" />
             </button>
@@ -85,6 +88,7 @@ export function RecordingControls({
                 onClick={onConnectHR}
                 disabled={isScanning}
                 className="w-10 h-10 rounded-full hover:bg-surface active:bg-surface-hover disabled:opacity-50 flex items-center justify-center transition-colors"
+                aria-label="Connecter un capteur cardiaque"
               >
                 <Heart className="w-4 h-4 text-muted" />
               </button>
@@ -93,6 +97,7 @@ export function RecordingControls({
                 onClick={onDisconnectHR}
                 className="w-10 h-10 rounded-full hover:bg-surface active:bg-surface-hover flex items-center justify-center transition-colors"
                 title="Connecté"
+                aria-label="Déconnecter le capteur cardiaque"
               >
                 <BluetoothConnected className="w-4 h-4 text-muted" />
               </button>
@@ -100,30 +105,35 @@ export function RecordingControls({
             <button
               onClick={onMarkLap}
               className="w-10 h-10 rounded-full hover:bg-surface active:bg-surface-hover flex items-center justify-center transition-colors"
+              aria-label="Marquer un tour"
             >
               <Flag className="w-4 h-4 text-muted" />
             </button>
             <button
               onClick={onPause}
               className="w-14 h-14 rounded-full bg-warning hover:bg-warning/90 active:bg-warning/80 flex items-center justify-center transition-colors"
+              aria-label="Mettre en pause"
             >
               <Pause className="w-6 h-6 fill-white text-foreground" />
             </button>
             <button
               onClick={onStop}
               className="w-14 h-14 rounded-full bg-danger hover:bg-danger/90 active:bg-danger/80 flex items-center justify-center transition-colors"
+              aria-label="Arrêter l'enregistrement"
             >
               <Square className="w-6 h-6 fill-white text-foreground" />
             </button>
             <button
               onClick={onLockScreen}
               className="w-10 h-10 rounded-full hover:bg-surface active:bg-surface-hover flex items-center justify-center transition-colors"
+              aria-label="Verrouiller l'écran"
             >
               <Lock className="w-4 h-4 text-muted" />
             </button>
             <button
               onClick={onTakePhoto}
               className="w-10 h-10 rounded-full hover:bg-surface active:bg-surface-hover flex items-center justify-center transition-colors"
+              aria-label="Prendre une photo"
             >
               <Camera className="w-4 h-4 text-muted" />
             </button>
@@ -131,6 +141,7 @@ export function RecordingControls({
               <button
                 onClick={onStartInterval}
                 className="w-10 h-10 rounded-full hover:bg-surface active:bg-surface-hover flex items-center justify-center transition-colors"
+                aria-label="Démarrer un entraînement fractionné"
               >
                 <Zap className="w-4 h-4 text-muted" />
               </button>
@@ -148,12 +159,14 @@ export function RecordingControls({
             <button
               onClick={onResume}
               className="w-16 h-16 rounded-full bg-peak hover:bg-peak/90 active:bg-peak/80 flex items-center justify-center transition-colors"
+              aria-label="Reprendre l'enregistrement"
             >
               <Play className="w-7 h-7 fill-white text-foreground ml-1" />
             </button>
             <button
               onClick={onStop}
               className="w-16 h-16 rounded-full bg-danger hover:bg-danger/90 active:bg-danger/80 flex items-center justify-center transition-colors"
+              aria-label="Arrêter l'enregistrement"
             >
               <Square className="w-7 h-7 fill-white text-foreground" />
             </button>

@@ -7,10 +7,10 @@
  * et un plan d'entraînement actif pour tester l'interface.
  */
 
+/* eslint-disable no-console, no-process-exit, security/detect-object-injection */
 'use strict';
 
 const path = require('path');
-const fs = require('fs');
 
 // Charger les variables d'environnement du backend
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
@@ -20,8 +20,7 @@ const {
     dbGetMain, 
     dbRunMain, 
     getUserDb, 
-    dbRunUser, 
-    dbGetUser
+    dbRunUser
 } = require('../src/database');
 
 const bcrypt = require('bcryptjs');

@@ -47,9 +47,7 @@ jest.mock('../../src/services/sync/utils', () => ({
 }));
 
 const { getUserDb, dbGetUser, dbAllUser, dbRunUser } = require('../../src/database');
-const { parseGpx } = require('../../src/services/activities/gpx.service');
 const { parseActivityFile } = require('../../src/services/activityParser.service');
-const { processUploadedActivityFile } = require('../../src/services/sync/utils');
 
 describe('Activities Routes', () => {
   let app;
