@@ -99,21 +99,12 @@ const {
     validateRegister,
     validateRefreshToken,
     validateChangePassword,
-    validateForgotPasswordRequest,
-    validateForgotPasswordConfirm,
     validateUserProfile,
-    validateActivity,
     validateActivityCreate,
     validateActivityFilter,
-    validateTrainingPlan,
     validateFriendRequest,
-    validateGroup,
-    validateChallenge,
-    validateSyncCredentials,
     validatePagination,
 } = require('../../src/middleware/validation');
-
-const { validateSchema } = require('../../src/utils/schemas');
 
 describe('validateBody', () => {
     let req;

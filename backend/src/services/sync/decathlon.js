@@ -128,8 +128,6 @@ const SPORT_MAP = {
     405: 'jump_rope',
     // Running subtypes
     126: 'trail',
-    // Cycling subtypes
-    380: 'scooter',
 };
 
 // ---------------------------------------------------------------------------
