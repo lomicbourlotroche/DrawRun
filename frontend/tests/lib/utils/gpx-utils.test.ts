@@ -4,8 +4,6 @@ import {
   parseGpx,
   parseGpxProfile,
   countGpxPoints,
-  type GpxPoint,
-  type GpxProfile,
 } from '@/lib/utils/gpx-utils';
 
 // Sample GPX data for testing

@@ -3,9 +3,9 @@
 import { useState, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
-import { Navigation, MapPin, Plus, X, Trash2, Loader2, Settings, ArrowRight, Check, ChevronLeft } from '@/components/ui/icons';
+import { Navigation, MapPin, X, Trash2, Loader2 } from '@/components/ui/icons';
 import DirectionsPanel from './DirectionsPanel';
-import type { Direction, GeneratedRouteResponse } from '@/lib/api';
+import type { GeneratedRouteResponse } from '@/lib/api';
 
 interface Waypoint {
   lat: number;

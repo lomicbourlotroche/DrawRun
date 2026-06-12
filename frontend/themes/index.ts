@@ -3,7 +3,7 @@ import { trailTheme } from './trail.theme';
 import { peakTheme } from './peak.theme';
 import { apexTheme } from './apex.theme';
 import { kompakTheme } from './kompak.theme';
-import { flattenSemanticTokens, cssVarsToString, paletteToCssVars } from './helpers';
+import { flattenSemanticTokens, cssVarsToString } from './helpers';
 
 export type { ThemeDefinition, ThemeConfig };
 export type ThemeId = 'trail' | 'peak' | 'apex' | 'kompak';

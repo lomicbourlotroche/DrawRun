@@ -7,7 +7,7 @@ import { RecommendationCard } from './RecommendationCard';
 import { InjuryRiskCard } from './InjuryRiskCard';
 import { PmcChart } from './PmcChart';
 import { cn } from '@/lib/utils';
-import { TrendingUp, Activity, Heart, Zap, AlertTriangle, ChevronRight, BarChart3 } from '@/components/ui/icons';
+import { TrendingUp, Activity, Heart, Zap, ChevronRight, BarChart3 } from '@/components/ui/icons';
 import Link from 'next/link';
 import type { Activity as ActivityType, PmcDataPoint } from '@/types';
 

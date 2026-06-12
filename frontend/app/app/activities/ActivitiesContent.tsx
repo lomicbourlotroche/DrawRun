@@ -4,13 +4,12 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useAuthStore, useActivitiesStore, useSyncStore } from '@/stores';
 import { api } from '@/lib/api';
-import { Card, CardContent, Button, Modal, Input, Select, Badge } from '@/components/ui';
+import { Card, Button, Modal, Input, Select } from '@/components/ui';
 import { cn, formatDistance, formatDuration, formatDate, getSportColor } from '@/lib/utils';
 import { RefreshCw, Plus, FileUp, Play, Clock, TrendingUp, Heart, Mountain, Bike, Waves, Footprints, Dumbbell, Route, Loader2, Activity as ActivityIcon, Search } from '@/components/ui/icons';
 import { MobileActivityRecorder } from '@/components/features/activities';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { toast } from 'sonner';
-import type { Activity } from '@/types';
 
 const PAGE_SIZE = 20;
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/stores';
 import { api } from '@/lib/api';
 import { Button, Modal, Input } from '@/components/ui';
-import { Watch, CheckCircle, XCircle, Mail, Lock, Eye, EyeOff, Loader2 } from '@/components/ui/icons';
+import { XCircle, Mail, Lock, Eye, EyeOff, Loader2 } from '@/components/ui/icons';
 import { toast } from 'sonner';
 
 export type SuuntoStatus = 'idle' | 'connecting' | 'connected' | 'error' | 'disconnected';
