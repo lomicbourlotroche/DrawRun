@@ -39,14 +39,14 @@ export default function SettingsPage() {
   const [isSyncing, setIsSyncing] = useState(false);
 
   const loadPreferences = useCallback(async () => {
-    try { const profile = await api.getProfile(); setTwoFAEnabled(!!(profile as UserType).twofa_enabled); } catch {}
+    try { const profile = await api.getProfile(); setTwoFAEnabled(!!(profile as UserType).twofa_enabled); } catch { /* empty */ }
     try {
       const prefs = await api.getPreferences();
       if (prefs.theme) { const t = prefs.theme as 'light' | 'dark' | 'auto'; setThemeMode(t); if (t !== 'auto') setMode(t); else { const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches; setMode(isDark ? 'dark' : 'light'); } }
       if (prefs.units) setUnits(prefs.units as 'metric' | 'imperial');
       if ((prefs as Record<string, unknown>).language) setLanguage((prefs as Record<string, unknown>).language as 'fr' | 'en');
       if ((prefs as Record<string, unknown>).density) setDensity((prefs as Record<string, unknown>).density as 'compact' | 'normal' | 'comfortable');
-    } catch {}
+    } catch { /* empty */ }
   }, [setMode, setLanguage]);
 
   useEffect(() => { loadPreferences(); }, [loadPreferences]);
@@ -54,13 +54,13 @@ export default function SettingsPage() {
   useEffect(() => {
     const check = async () => {
       if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
-      try { const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription(); setPushEnabled(!!sub); setPushSubscription(sub); } catch {}
+      try { const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription(); setPushEnabled(!!sub); setPushSubscription(sub); } catch { /* empty */ }
     };
     check();
   }, []);
 
   useEffect(() => {
-    api.getSyncStatus().then((s) => setSyncStatus(s as unknown as { lastSync?: string; provider?: string; status?: string; garmin_status?: string })).catch(() => {});
+    api.getSyncStatus().then((s) => setSyncStatus(s as unknown as { lastSync?: string; provider?: string; status?: string; garmin_status?: string })).catch(() => { /* empty */ });
   }, []);
 
   function urlBase64ToUint8Array(base64String: string): Uint8Array {
@@ -103,18 +103,18 @@ export default function SettingsPage() {
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'auto') => {
     setThemeMode(newTheme);
     if (newTheme === 'auto') { const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches; setMode(isDark ? 'dark' : 'light'); } else { setMode(newTheme); }
-    api.updatePreferences({ theme: newTheme }).catch(() => {});
+    api.updatePreferences({ theme: newTheme }).catch(() => { /* empty */ });
   };
   const handleLanguageChange = (newLanguage: string) => {
     setLanguage(newLanguage as 'fr' | 'en');
-    api.updatePreferences({ language: newLanguage } as Parameters<typeof api.updatePreferences>[0]).catch(() => {});
+    api.updatePreferences({ language: newLanguage } as Parameters<typeof api.updatePreferences>[0]).catch(() => { /* empty */ });
   };
   const handleUnitsChange = (newUnits: 'metric' | 'imperial') => {
-    setUnits(newUnits); api.updatePreferences({ units: newUnits }).catch(() => {});
+    setUnits(newUnits); api.updatePreferences({ units: newUnits }).catch(() => { /* empty */ });
   };
   const handleDensityChange = (newDensity: 'compact' | 'normal' | 'comfortable') => {
     setDensity(newDensity); document.documentElement.setAttribute('data-density', newDensity);
-    api.updatePreferences({ density: newDensity } as Parameters<typeof api.updatePreferences>[0]).catch(() => {});
+    api.updatePreferences({ density: newDensity } as Parameters<typeof api.updatePreferences>[0]).catch(() => { /* empty */ });
   };
   const handleLogout = () => { logout(); router.push('/login'); };
   const handleChangePassword = async () => {

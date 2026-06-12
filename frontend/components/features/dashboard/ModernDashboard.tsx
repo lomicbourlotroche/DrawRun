@@ -7,7 +7,7 @@ import { RecommendationCard } from './RecommendationCard';
 import { InjuryRiskCard } from './InjuryRiskCard';
 import { PmcChart } from './PmcChart';
 import { cn } from '@/lib/utils';
-import { TrendingUp, Activity, Heart, Zap, AlertTriangle, ChevronRight, BarChart3 } from '@/components/ui/icons';
+import { TrendingUp, Activity, Heart, Zap, ChevronRight, BarChart3 } from '@/components/ui/icons';
 import Link from 'next/link';
 import type { Activity as ActivityType, PmcDataPoint } from '@/types';
 
@@ -117,7 +117,7 @@ function ActivityRow({ activity }: { activity: ActivityType }) {
         {(activity.distance ?? 0) > 0 && (
           <div className="text-right">
             <p className="text-sm font-semibold text-foreground tabular-nums">{formatDistance(activity.distance!)}</p>
-            {elevation != null && elevation > 0 && (
+            {elevation !== null && elevation > 0 && (
               <p className="text-[10px] text-muted-foreground">{Math.round(elevation)} m D+</p>
             )}
           </div>
