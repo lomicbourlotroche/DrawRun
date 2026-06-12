@@ -117,7 +117,7 @@ function ActivityRow({ activity }: { activity: ActivityType }) {
         {(activity.distance ?? 0) > 0 && (
           <div className="text-right">
             <p className="text-sm font-semibold text-foreground tabular-nums">{formatDistance(activity.distance!)}</p>
-            {elevation != null && elevation > 0 && (
+            {elevation !== null && elevation > 0 && (
               <p className="text-[10px] text-muted-foreground">{Math.round(elevation)} m D+</p>
             )}
           </div>

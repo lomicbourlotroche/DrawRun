@@ -100,7 +100,7 @@ export function loadThemeConfig(): ThemeConfig {
     if (stored) {
       try {
         return JSON.parse(stored);
-      } catch {}
+      } catch { /* empty */ }
     }
     // Check for system preference
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;

@@ -5,11 +5,6 @@
  * - Screen Wake Lock API (navigator.wakeLock)
  */
 
-// ============================================================================
-// Battery Status API
-// ============================================================================
-// https://developer.mozilla.org/en-US/docs/Web/API/Battery_Status_API
-
 interface BatteryManager extends EventTarget {
   charging: boolean;
   chargingTime: number;
@@ -20,15 +15,6 @@ interface BatteryManager extends EventTarget {
   ondischargingtimechange: ((this: BatteryManager, ev: Event) => unknown) | null;
   onlevelchange: ((this: BatteryManager, ev: Event) => unknown) | null;
 }
-
-interface Navigator {
-  getBattery?: () => Promise<BatteryManager>;
-}
-
-// ============================================================================
-// Screen Wake Lock API
-// ============================================================================
-// https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API
 
 interface WakeLockSentinel {
   release: () => Promise<void>;
@@ -42,5 +28,6 @@ interface WakeLock {
 }
 
 interface Navigator {
+  getBattery?: () => Promise<BatteryManager>;
   wakeLock?: WakeLock;
 }
