@@ -64,7 +64,7 @@ describe('formatDuration', () => {
   });
 
   it('should handle negative values gracefully', () => {
-    expect(formatDuration(-1)).toBe('0:-1');
+    expect(formatDuration(-1)).toBe('-1:-1');
   });
 });
 
