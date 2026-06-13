@@ -193,6 +193,7 @@ export function RecordingControls({
                 ? 'text-foreground bg-surface'
                 : 'text-muted'
             }`}
+            aria-label={autoPauseEnabled ? 'Désactiver la pause automatique' : 'Activer la pause automatique'}
           >
             {autoPauseEnabled ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
             Auto-pause

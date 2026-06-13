@@ -121,7 +121,7 @@ export function CredentialModal({
         <Input label="Email" type="email" placeholder="email@example.com" value={email} onChange={(e) => setEmail(e.target.value)} leftIcon={<Mail className="w-4 h-4" />} onKeyDown={(e) => e.key === 'Enter' && handleSubmit()} />
         <div className="relative">
           <Input label="Mot de passe" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} leftIcon={<Lock className="w-4 h-4" />} onKeyDown={(e) => e.key === 'Enter' && handleSubmit()} />
-          <button type="button" className="absolute right-3 top-9 text-muted hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
+          <button type="button" className="absolute right-3 top-9 text-muted hover:text-foreground" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}>
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         </div>

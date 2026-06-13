@@ -1,0 +1,3 @@
+## 2026-06-13 - Missing ARIA Labels on Toggle Buttons
+**Learning:** Found multiple instances of icon-only toggle buttons (like password visibility or auto-pause) missing `aria-label` attributes across different components. While their visual context might suggest their function, screen reader users miss out on this crucial context, especially when the button's state changes.
+**Action:** When creating or modifying icon-only buttons, especially toggle buttons, always add a descriptive `aria-label` that clearly indicates the action the button will perform (e.g., "Afficher le mot de passe" or "Masquer le mot de passe").
