@@ -187,6 +187,7 @@ export function SuuntoConnect({ onSuccess, onError }: SuuntoConnectProps) {
               type="button" 
               className="absolute right-3 top-9 text-muted hover:text-foreground" 
               onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
