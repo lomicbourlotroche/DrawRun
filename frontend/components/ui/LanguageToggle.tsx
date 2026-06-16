@@ -43,12 +43,15 @@ export function LanguageToggle({ variant = 'default' }: { variant?: 'default' | 
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200",
+          "flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500",
           variant === 'scrolled'
             ? 'text-muted hover:text-foreground hover:bg-background'
             : 'text-foreground/80 hover:text-foreground hover:bg-surface/80'
         )}
         title="Changer de langue"
+        aria-label="Changer de langue"
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
       >
         <Globe className="w-4 h-4" />
         <span className="uppercase text-xs font-bold tracking-wide">{currentLang.code}</span>
@@ -59,10 +62,12 @@ export function LanguageToggle({ variant = 'default' }: { variant?: 'default' | 
         "absolute right-0 mt-2 w-48 bg-surface border border-border rounded-xl shadow-xl z-dropdown overflow-hidden transition-all duration-200 origin-top-right",
         isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
       )}>
-        <div className="py-2">
+        <div className="py-2" role="listbox">
           {languages.map((lang) => (
             <button
               key={lang.code}
+              role="option"
+              aria-selected={language === lang.code}
               onClick={() => { setLanguage(lang.code); setIsOpen(false); }}
               className={cn(
                 "w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors",
