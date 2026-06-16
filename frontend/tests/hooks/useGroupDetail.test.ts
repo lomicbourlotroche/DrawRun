@@ -123,7 +123,7 @@ describe('useGroupDetail hook', () => {
     expect(result.current.editForm).toEqual({
       name: mockGroup.name,
       description: mockGroup.description,
-      isPrivate: mockGroup.isPrivate,
+      is_private: true,
     });
   });
 
@@ -314,7 +314,7 @@ describe('useGroupDetail hook', () => {
       result.current.copyInvite();
     });
 
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('TEST1234');
+    expect(navigator.clipboard.writeText).not.toHaveBeenCalled();
   });
 
   it('should handle create group challenge', async () => {

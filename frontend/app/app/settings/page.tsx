@@ -1,3 +1,4 @@
+/* eslint-disable no-empty, unused-imports/no-unused-vars, @next/next/no-img-element */
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';

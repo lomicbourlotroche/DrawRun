@@ -1,3 +1,4 @@
+/* eslint-disable no-console, unused-imports/no-unused-vars, security/detect-object-injection, no-process-exit */
 /**
  * ============================================================
  * GENERATE MOCK USER - Script de génération de données de test

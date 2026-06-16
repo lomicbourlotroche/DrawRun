@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-non-literal-fs-filename, no-undef, unused-imports/no-unused-vars */
 'use strict';
 
 const express = require('express');

@@ -42,7 +42,6 @@
         "no-console": "off"
       },
       "env": {
-        "vitest": true
       },
       "globals": {
         "vi": "readonly",
