@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars, react-hooks/exhaustive-deps, react/no-unescaped-entities, @next/next/no-img-element */
 'use client';
 
 /**

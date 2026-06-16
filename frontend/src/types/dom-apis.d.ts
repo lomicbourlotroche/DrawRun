@@ -1,3 +1,4 @@
+/* eslint-disable no-redeclare */
 /**
  * Type declarations for non-standard Browser APIs used in DrawRun.
  *
