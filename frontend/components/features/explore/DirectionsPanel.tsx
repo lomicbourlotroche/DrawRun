@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Navigation, ArrowRight, MapPin, ChevronLeft } from '@/components/ui/icons';
+import { MapPin, ChevronLeft } from '@/components/ui/icons';
 import type { Direction } from '@/lib/api';
 
 interface DirectionsPanelProps {

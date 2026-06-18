@@ -21,7 +21,7 @@ interface BatteryManager extends EventTarget {
   onlevelchange: ((this: BatteryManager, ev: Event) => unknown) | null;
 }
 
-interface Navigator {
+interface CustomNavigator {
   getBattery?: () => Promise<BatteryManager>;
 }
 
@@ -41,6 +41,6 @@ interface WakeLock {
   request: (type: 'screen') => Promise<WakeLockSentinel>;
 }
 
-interface Navigator {
+interface CustomNavigatorAlt {
   wakeLock?: WakeLock;
 }

@@ -14,7 +14,6 @@ import {
   Compass,
   Users,
   User,
-  Settings,
   LogOut,
   Menu,
   X,

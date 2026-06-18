@@ -9,7 +9,7 @@
  * - Partage avec les amis (feed social)
  * - Partage avec des groupes specifices
  * - Champs de donnees exposes (distance, temps, FC, carte, etc.)
- * - Previsualisation de l'image de partage
+ * - Previsualisation de l&apos;image de partage
  *
  * @module components/features/activities/ShareSettingsPanel
  */
@@ -340,10 +340,10 @@ export function ShareSettingsPanel({
         </div>
       )}
 
-      {/* Previsualisation de l'image de partage */}
+      {/* Previsualisation de l&apos;image de partage */}
       {showPreview && (
         <div className="mb-6">
-          <h4 className="font-medium mb-3">Previsualisation de l'image de partage</h4>
+          <h4 className="font-medium mb-3">Previsualisation de l&apos;image de partage</h4>
           
           {/* Selecteur de taille */}
           <div className="mb-3 flex gap-2">

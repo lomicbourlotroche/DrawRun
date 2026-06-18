@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import ActivityMap from '@/components/ui/ActivityMap';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/Card';
+import { Card, CardTitle } from '@/components/ui/Card';
 import { Upload, FileText, X, Activity, AlertCircle } from '@/components/ui/icons';
 import { toast } from 'sonner';
 
