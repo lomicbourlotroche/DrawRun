@@ -212,7 +212,7 @@ export function RacePlanningContent() {
               </h1>
               <p className="text-muted mt-2 max-w-2xl">
                 Cr\u0019eez des plans de course intelligents avec splits pr\u0019cis, 
-                strat\u0019gie de nutrition et gestion de l'effort bas\u001ee sur vos donn\u0019es.
+                strat\u0019gie de nutrition et gestion de l&apos;effort bas\u001ee sur vos donn\u0019es.
               </p>
             </div>
           </div>
@@ -542,7 +542,7 @@ export function RacePlanningContent() {
               <CardHeader className="border-b border-border pb-2">
                 <CardTitle className="flex items-center gap-2">
                   <Settings className="w-5 h-5 text-purple-500" />
-                  Strat\u0019gie d'allure
+                  Strat\u0019gie d&apos;allure
                 </CardTitle>
               </CardHeader>
               <CardContent>

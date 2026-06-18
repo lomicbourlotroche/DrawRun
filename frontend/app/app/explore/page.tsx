@@ -7,10 +7,9 @@ import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
 import type { DrawRunMap } from '@/types/leaflet';
 import { 
-  Search, X, Compass, MapPin, Layers, Plus, LocateFixed, 
-  Route, Heart, Navigation, List, Grid3x3, ArrowRight 
+  Search, X, Compass, MapPin, Plus, LocateFixed,
+  Route, Heart
 } from '@/components/ui/icons';
-import { Card, Button } from '@/components/ui';
 import ExplorePanel from '@/components/features/explore/ExplorePanel';
 import MapLayerSwitcher from '@/components/features/explore/MapLayerSwitcher';
 import LocationSearch from '@/components/features/explore/LocationSearch';

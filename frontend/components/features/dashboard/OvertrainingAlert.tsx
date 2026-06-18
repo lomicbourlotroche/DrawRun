@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { logger } from '@/lib/logger';
-import { Card, CardContent } from '@/components/ui';
 import { AlertTriangle, CheckCircle, Info, TrendingDown, Activity, Heart } from '@/components/ui/icons';
 import { cn } from '@/lib/utils';
 
