@@ -54,12 +54,13 @@ function cleanupCache() {
 
     files.forEach(file => {
       try {
-        // eslint-disable-next-line security/detect-non-literal-fs-filename -- file from fs.readdir, safe
         const filePath = path.join(CACHE_DIR, file);
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const stats = fs.statSync(filePath);
         const age = now - stats.mtime.getTime();
 
         if (age > CACHE_TTL_MS) {
+          // eslint-disable-next-line security/detect-non-literal-fs-filename
           fs.unlinkSync(filePath);
           deletedCount++;
         }
@@ -320,8 +321,9 @@ router.get('/share-image', verifyToken, async (req, res) => {
       return res.status(404).json({ error: 'Activité non trouvée' });
     }
 
+    const dbMain = require('../database/database').dbGetMain();
     // Get athlete name from main DB
-    const userRow = await dbGetMain('SELECT profile_data FROM users WHERE id = ?', [userId]);
+    const userRow = await dbMain.prepare('SELECT profile_data FROM users WHERE id = ?').get(userId);
     let athleteName = null;
     if (userRow?.profile_data) {
       try { athleteName = JSON.parse(userRow.profile_data).name || null; } catch { /* ignore */ }
@@ -354,7 +356,6 @@ router.get('/share-image', verifyToken, async (req, res) => {
     if (useCache) {
       res.setHeader('Content-Type', 'image/png');
       if (download !== 'false') {
-        const dimensions = IMAGE_SIZES[actualSize];
         res.setHeader('Content-Disposition', `attachment; filename="drawrun-activity-${activityId}-${actualSize}.png"`);
       }
       // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -366,6 +367,7 @@ router.get('/share-image', verifyToken, async (req, res) => {
     const buffer = canvas.toBuffer('image/png');
     
     // Cache the image
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     fs.writeFileSync(cachePath, buffer);
 
     // Log the share event
@@ -377,11 +379,8 @@ router.get('/share-image', verifyToken, async (req, res) => {
     // Send response
     res.setHeader('Content-Type', 'image/png');
     if (download !== 'false') {
-      const dimensions = IMAGE_SIZES[actualSize];
       res.setHeader('Content-Disposition', `attachment; filename="drawrun-activity-${activityId}-${actualSize}.png"`);
     }
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    fs.writeFileSync(cachePath, buffer);
 
     res.send(buffer);
 
@@ -437,7 +436,8 @@ router.get('/share-image/preview', verifyToken, async (req, res) => {
       return res.status(404).json({ error: 'Activité non trouvée' });
     }
 
-    const userRow = await dbGetMain('SELECT profile_data FROM users WHERE id = ?', [userId]);
+    const dbMain = require('../database/database').dbGetMain();
+    const userRow = await dbMain.prepare('SELECT profile_data FROM users WHERE id = ?').get(userId);
     let athleteName = null;
     if (userRow?.profile_data) {
       try { athleteName = JSON.parse(userRow.profile_data).name || null; } catch { /* ignore */ }

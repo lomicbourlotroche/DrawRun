@@ -1,0 +1,3 @@
+## 2024-06-19 - Added ARIA labels to RecordingControls
+**Learning:** Found multiple icon-only buttons in the core activity recording component (`RecordingControls.tsx`) lacking accessible names. The application language is French, so ARIA labels must be localized accordingly. Additionally, toggle buttons (like "Auto-pause") should use `aria-pressed` rather than changing `aria-label` text when the text is already visible on the screen.
+**Action:** When adding accessibility to complex components with many states, ensure every interactive element without text has an `aria-label` in the correct language. Also, prefer semantic state attributes (`aria-pressed`, `aria-expanded`) over changing label text for elements that already have visible text.

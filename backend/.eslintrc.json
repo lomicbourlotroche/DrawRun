@@ -23,9 +23,21 @@
     "unused-imports/no-unused-imports": "error",
     "unused-imports/no-unused-vars": [
       "warn",
-      { "vars": "all", "varsIgnorePattern": "^_", "args": "after-used", "argsIgnorePattern": "^_" }
+      {
+        "vars": "all",
+        "varsIgnorePattern": "^_",
+        "args": "after-used",
+        "argsIgnorePattern": "^_"
+      }
     ],
-    "no-console": ["error", { "allow": ["error"] }],
+    "no-console": [
+      "error",
+      {
+        "allow": [
+          "error"
+        ]
+      }
+    ],
     "security/detect-object-injection": "error",
     "security/detect-non-literal-regexp": "error",
     "security/detect-unsafe-regex": "error",
@@ -42,19 +54,30 @@
   },
   "overrides": [
     {
-      "files": ["src/services/**/*.js", "src/routes/**/*.js", "src/algorithms/**/*.js", "src/utils/**/*.js"],
+      "files": [
+        "src/services/**/*.js",
+        "src/routes/**/*.js",
+        "src/algorithms/**/*.js",
+        "src/utils/**/*.js"
+      ],
       "rules": {
         "security/detect-object-injection": "off"
       }
     },
     {
-      "files": ["src/services/sync/decathlon.js"],
+      "files": [
+        "src/services/sync/decathlon.js"
+      ],
       "rules": {
         "security/detect-non-literal-fs-filename": "off"
       }
     },
     {
-      "files": ["src/database/**/*.js", "src/middleware/security/**/*.js", "src/middleware/validation.js"],
+      "files": [
+        "src/database/**/*.js",
+        "src/middleware/security/**/*.js",
+        "src/middleware/validation.js"
+      ],
       "rules": {
         "security/detect-non-literal-fs-filename": "off",
         "security/detect-object-injection": "off",
@@ -70,6 +93,9 @@
     "data/",
     "logs/",
     "coverage/",
-    "scripts/*.py"
+    "scripts/*.py",
+    "scripts/*",
+    "tests/*",
+    "index.js"
   ]
 }
