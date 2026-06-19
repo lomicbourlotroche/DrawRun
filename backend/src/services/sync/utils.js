@@ -531,8 +531,6 @@ function extractDecathlonSplits(datastream) {
             
             // Start new lap
             currentLapStart = t;
-            currentLapDist = datastream[t] && datastream[t][5] ? datastream[t][5] : 0;
-            currentLapStartAlt = datastream[t] && datastream[t][14] ? datastream[t][14] : 0;
         }
     }
     
