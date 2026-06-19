@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/stores';
 import { api } from '@/lib/api';
 import { Button, Modal, Input } from '@/components/ui';
-import { Watch, CheckCircle, XCircle, Mail, Lock, Eye, EyeOff, Loader2 } from '@/components/ui/icons';
+import { XCircle, Mail, Lock, Eye, EyeOff, Loader2 } from '@/components/ui/icons';
 import { toast } from 'sonner';
 
 export type SuuntoStatus = 'idle' | 'connecting' | 'connected' | 'error' | 'disconnected';
@@ -187,6 +187,8 @@ export function SuuntoConnect({ onSuccess, onError }: SuuntoConnectProps) {
               type="button" 
               className="absolute right-3 top-9 text-muted hover:text-foreground" 
               onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+              title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
