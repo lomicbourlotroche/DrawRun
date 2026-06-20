@@ -36,48 +36,54 @@ export function LanguageToggle({ variant = 'default' }: { variant?: 'default' | 
     };
   }, [isOpen]);
 
-  const currentLang = languages.find(l => l.code === language) || languages[0];
+  const currentLang = languages.find((l) => l.code === language) || languages[0];
 
   return (
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200",
+          'flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500',
           variant === 'scrolled'
             ? 'text-muted hover:text-foreground hover:bg-background'
-            : 'text-foreground/80 hover:text-foreground hover:bg-surface/80'
+            : 'text-foreground/80 hover:text-foreground hover:bg-surface/80',
         )}
         title="Changer de langue"
+        aria-label="Changer de langue"
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
       >
         <Globe className="w-4 h-4" />
         <span className="uppercase text-xs font-bold tracking-wide">{currentLang.code}</span>
       </button>
 
       {/* Dropdown */}
-      <div className={cn(
-        "absolute right-0 mt-2 w-48 bg-surface border border-border rounded-xl shadow-xl z-dropdown overflow-hidden transition-all duration-200 origin-top-right",
-        isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
-      )}>
+      <div
+        className={cn(
+          'absolute right-0 mt-2 w-48 bg-surface border border-border rounded-xl shadow-xl z-dropdown overflow-hidden transition-all duration-200 origin-top-right',
+          isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none',
+        )}
+        role="menu"
+      >
         <div className="py-2">
           {languages.map((lang) => (
             <button
               key={lang.code}
-              onClick={() => { setLanguage(lang.code); setIsOpen(false); }}
+              role="menuitem"
+              onClick={() => {
+                setLanguage(lang.code);
+                setIsOpen(false);
+              }}
               className={cn(
-                "w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors",
-                language === lang.code
-                  ? 'bg-primary-50 text-primary-700'
-                  : 'text-foreground hover:bg-background'
+                'w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors focus-visible:outline-none focus-visible:bg-primary-50',
+                language === lang.code ? 'bg-primary-50 text-primary-700' : 'text-foreground hover:bg-background',
               )}
             >
               <div className="flex items-center gap-3">
                 <span className="text-lg">{lang.flag}</span>
                 <span className="font-medium">{lang.label}</span>
               </div>
-              {language === lang.code && (
-                <Check className="w-4 h-4 text-primary-600" />
-              )}
+              {language === lang.code && <Check className="w-4 h-4 text-primary-600" />}
             </button>
           ))}
         </div>
