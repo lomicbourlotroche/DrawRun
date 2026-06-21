@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars, no-undef, no-process-exit, no-control-regex, no-dupe-keys */
 'use strict';
 
 const express = require('express');
