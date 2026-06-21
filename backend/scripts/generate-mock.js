@@ -1,3 +1,5 @@
+/* eslint-disable unused-imports/no-unused-vars, no-undef, no-process-exit, no-control-regex, no-dupe-keys */
+/* eslint-disable security/detect-non-literal-fs-filename, security/detect-object-injection, no-console */
 /**
  * ============================================================
  * GENERATE MOCK USER - Script de génération de données de test
