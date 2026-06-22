@@ -1,0 +1,3 @@
+## 2024-05-20 - ThemeToggle Button Accessibility Improvement
+**Learning:** Icon-only toggle buttons in the design system (like ThemeToggle) often lack both `aria-label` and `aria-pressed` attributes. The lack of `aria-pressed` prevents screen readers from knowing the current state of a semantic toggle.
+**Action:** When adding or reviewing icon-only toggle buttons, always pair `aria-label` with an `aria-pressed={state}` boolean attribute to communicate both the button's purpose and its current toggle state. Ensure keyboard focus is visible using `focus-visible:ring-2` to support keyboard navigation.
