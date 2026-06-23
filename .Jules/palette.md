@@ -1,0 +1,3 @@
+## 2026-06-23 - Added focus-visible state to Button base styles
+**Learning:** Found that the primary Button UI component lacked keyboard `focus-visible` styles in its base configuration. This is a critical accessibility issue, as it prevents keyboard users from knowing when they have focused on a primary interactive element.
+**Action:** Always verify that fundamental UI components, especially interactive ones like Buttons and Inputs, have explicitly defined and styled focus states (e.g., using `focus-visible`) so that keyboard navigation is fully supported across the entire application without needing to be added manually per usage.
