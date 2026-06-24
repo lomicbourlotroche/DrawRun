@@ -163,7 +163,7 @@ export function useGroupDetail(): UseGroupDetailReturn {
       navigator.clipboard.writeText(group.invite_code);
       toast.success('Code copié');
     }
-  }, [group?.inviteCode]);
+  }, [group?.invite_code]);
 
   const handleCreateChallenge = useCallback(
     async (form: Omit<CreateChallengeParams, 'groupId'> & { is_public?: boolean; end_date?: string }) => {
