@@ -32,9 +32,11 @@ const TEST_PASS = 'Password123';
 const TEST_NAME = 'Dev Testeur';
 
 async function main() {
+    // eslint-disable-next-line no-console
     console.log('🔄 Initialisation de la base de données principale...');
     await initMainDb();
 
+    // eslint-disable-next-line no-console
     console.log(`🔍 Vérification de l'existence de l'utilisateur ${TEST_EMAIL}...`);
     let user = await dbGetMain('SELECT id FROM users WHERE email = ?', [TEST_EMAIL]);
     let userId;
@@ -52,14 +54,16 @@ async function main() {
     };
 
     if (user) {
-        console.log('👤 L\'utilisateur existe déjà. Mise à jour du profil...');
+        // eslint-disable-next-line no-console
+    console.log('👤 L\'utilisateur existe déjà. Mise à jour du profil...');
         userId = user.id;
         await dbRunMain(
             'UPDATE users SET profile_data = ? WHERE id = ?', 
             [JSON.stringify(profileData), userId]
         );
     } else {
-        console.log('➕ Création du nouvel utilisateur de test...');
+        // eslint-disable-next-line no-console
+    console.log('➕ Création du nouvel utilisateur de test...');
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(TEST_PASS, salt);
         
@@ -68,14 +72,18 @@ async function main() {
             [TEST_EMAIL, passwordHash, JSON.stringify(profileData)]
         );
         userId = result.lastID;
-        console.log(`✅ Utilisateur créé avec l'ID: ${userId}`);
+        // eslint-disable-next-line no-console
+    console.log(`✅ Utilisateur créé avec l'ID: ${userId}`);
     }
 
+    // eslint-disable-next-line no-console
     console.log('🔄 Connexion à la base de données spécifique de l\'utilisateur...');
     const userDb = await getUserDb(userId);
+    // eslint-disable-next-line no-console
     console.log('✅ Base de données utilisateur connectée.');
 
     // Nettoyer les anciennes données pour repartir sur de bonnes bases
+    // eslint-disable-next-line no-console
     console.log('🧹 Nettoyage des anciennes données utilisateur de test...');
     userDb.run('DELETE FROM activities');
     userDb.run('DELETE FROM daily_health');
@@ -84,6 +92,7 @@ async function main() {
     userDb.run('DELETE FROM training_sessions');
     userDb.run('DELETE FROM performance_metrics');
 
+    // eslint-disable-next-line no-console
     console.log('⚙️ Génération de 30 jours de données d\'entraînement et de santé...');
     
     const now = new Date();
@@ -218,6 +227,7 @@ async function main() {
     }
 
     // Insérer les activités de test
+    // eslint-disable-next-line no-console
     console.log(`📥 Insertion de ${mockActivities.length} activités dans la base...`);
     for (const act of mockActivities) {
         await dbRunUser(userDb, `
@@ -236,6 +246,7 @@ async function main() {
     }
 
     // Insérer l'historique PMC
+    // eslint-disable-next-line no-console
     console.log(`📥 Insertion de ${mockPmc.length} jours d'historique PMC...`);
     for (const pmc of mockPmc) {
         await dbRunUser(userDb, `
@@ -248,6 +259,7 @@ async function main() {
     }
 
     // Insérer les données de santé
+    // eslint-disable-next-line no-console
     console.log(`📥 Insertion de ${mockHealth.length} jours de données de santé (HRV, sommeil)...`);
     for (const h of mockHealth) {
         await dbRunUser(userDb, `
@@ -260,6 +272,7 @@ async function main() {
     }
 
     // 4. Générer un plan d'entraînement de 4 semaines (actif et en cours)
+    // eslint-disable-next-line no-console
     console.log('📋 Création d\'un plan d\'entraînement de test...');
     const planStartDate = new Date(now);
     planStartDate.setDate(now.getDate() - 14); // démarré il y a 2 semaines
@@ -289,6 +302,7 @@ async function main() {
     // Créer des séances de plan (3 par semaine, total 12 séances)
     // Séances des semaines 1 et 2 (passées) : marquées comme terminées
     // Séances des semaines 3 et 4 (futures) : en attente
+    // eslint-disable-next-line no-console
     console.log('📋 Création des séances du plan...');
     const sessionTypes = [
         { type: 'Run', title: 'Footing Fondamental', desc: 'Courir en endurance fondamentale. Aisance respiratoire.', dist: 8.0, time: 2700, tss: 40 },
@@ -298,6 +312,7 @@ async function main() {
 
     for (let w = 1; w <= 4; w++) {
         for (let d = 0; d < 3; d++) {
+            // eslint-disable-next-line security/detect-object-injection
             const sessType = sessionTypes[d];
             const sessionNum = (w - 1) * 3 + d + 1;
             
@@ -337,24 +352,41 @@ async function main() {
         }
     }
 
+    // eslint-disable-next-line no-console
     console.log('\n🌟 ============================================================ 🌟');
+    // eslint-disable-next-line no-console
     console.log('    DONNÉES DE TEST GÉNÉRÉES AVEC SUCCÈS !');
+    // eslint-disable-next-line no-console
     console.log('🌟 ============================================================ 🌟');
+    // eslint-disable-next-line no-console
     console.log(`📧 E-mail de connexion : \x1b[36m${TEST_EMAIL}\x1b[0m`);
+    // eslint-disable-next-line no-console
     console.log(`🔑 Mot de passe       : \x1b[36m${TEST_PASS}\x1b[0m`);
+    // eslint-disable-next-line no-console
     console.log(`👤 Nom de l'utilisateur: ${TEST_NAME}`);
+    // eslint-disable-next-line no-console
     console.log(`📊 Statistiques injectées :`);
+    // eslint-disable-next-line no-console
     console.log(`   - ${mockActivities.length} Activités (Endurance, Fractionné, Vélo)`);
+    // eslint-disable-next-line no-console
     console.log(`   - 30 Jours d'historique de charge d'entraînement (Fitness/Fatigue)`);
+    // eslint-disable-next-line no-console
     console.log(`   - 30 Jours d'historique de santé (HRV, Sommeil, Poids)`);
+    // eslint-disable-next-line no-console
     console.log(`   - 1 Plan d'entraînement de 4 semaines avec séances passées et futures`);
+    // eslint-disable-next-line no-console
     console.log('================================================================');
+    // eslint-disable-next-line no-console
     console.log('Vous pouvez maintenant démarrer l\'application, vous connecter');
+    // eslint-disable-next-line no-console
     console.log('et explorer toutes les fonctionnalités avec des graphiques complets.');
+    // eslint-disable-next-line no-console
     console.log('================================================================\n');
 }
 
 main().catch(err => {
+    // eslint-disable-next-line no-console
     console.error('❌ Une erreur est survenue lors de la génération :', err);
+    // eslint-disable-next-line no-process-exit
     process.exit(1);
 });

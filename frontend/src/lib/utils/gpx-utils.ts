@@ -146,7 +146,7 @@ export function parseGpxProfile(gpxXml: string): GpxProfile | null {
   let elevationLoss = 0;
   let minElevation = points[0].ele;
   let maxElevation = points[0].ele;
-  let totalElevation = 0;
+  let totalElevation = points[0].ele;
 
   for (let i = 1; i < points.length; i++) {
     const prev = points[i - 1];

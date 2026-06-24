@@ -74,10 +74,10 @@ describe('calculateHaversineDistance', () => {
   });
 
   it('should calculate approximate distance between two close points', () => {
-    // Distance between these points is ~1.2 km
+    // Distance between these points is ~1.33 km
     const dist = calculateHaversineDistance(48.8566, 2.3522, 48.8666, 2.3622);
     expect(dist).toBeGreaterThan(1100);
-    expect(dist).toBeLessThan(1300);
+    expect(dist).toBeLessThan(1400);
   });
 
   it('should be commutative (order-independent)', () => {

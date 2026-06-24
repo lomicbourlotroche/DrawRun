@@ -123,7 +123,7 @@ describe('useGroupDetail hook', () => {
     expect(result.current.editForm).toEqual({
       name: mockGroup.name,
       description: mockGroup.description,
-      isPrivate: mockGroup.isPrivate,
+      is_private: mockGroup.is_private,
     });
   });
 
@@ -310,8 +310,8 @@ describe('useGroupDetail hook', () => {
 
     await waitFor(() => {});
 
-    act(() => {
-      result.current.copyInvite();
+    await act(async () => {
+      await result.current.copyInvite();
     });
 
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith('TEST1234');
