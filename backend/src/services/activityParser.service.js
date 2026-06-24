@@ -1534,8 +1534,11 @@ async function parseZipSingle(content, filename) {
         const str = buffer.toString('binary');
         
         // Look for .fit or .gpx files in the ZIP
+        // eslint-disable-next-line no-control-regex
         const fitMatch = str.match(/(\x50\x4B\x03\x04[\s\S]*?\.fit)/i);
+        // eslint-disable-next-line no-control-regex
         const gpxMatch = str.match(/(\x50\x4B\x03\x04[\s\S]*?\.gpx)/i);
+        // eslint-disable-next-line no-control-regex
         const tcxMatch = str.match(/(\x50\x4B\x03\x04[\s\S]*?\.tcx)/i);
 
         if (fitMatch) {
@@ -1692,13 +1695,16 @@ async function parseStravaZip(content, filename) {
  */
 async function parseActivityDirectory(dirPath, options = {}) {
     const activities = [];
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     const files = fs.readdirSync(dirPath);
 
     for (const file of files) {
         const filePath = path.join(dirPath, file);
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const stat = fs.statSync(filePath);
 
         if (stat.isFile()) {
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             const content = fs.readFileSync(filePath);
             const parsed = await parseActivityFile(file, content, options);
 

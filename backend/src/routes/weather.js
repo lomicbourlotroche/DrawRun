@@ -4,6 +4,7 @@ const express = require('express');
 const router = express.Router({ mergeParams: true });
 const { verifyToken } = require('../middleware/auth');
 const { logger } = require('../utils/logger');
+// eslint-disable-next-line unused-imports/no-unused-vars
 const { getUserDb, dbGetMain, dbGetUser, dbRunUser } = require('../database');
 const axios = require('axios');
 

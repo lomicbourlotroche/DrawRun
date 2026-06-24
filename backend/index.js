@@ -49,18 +49,22 @@ if (process.env.NODE_ENV === 'production' && !config.CORS_ORIGINS) {
 // ============================================================================
 if (process.env.NODE_ENV !== 'production') {
     const { execSync } = require('child_process');
+    /* eslint-disable no-console */
     console.log('\n╔══════════════════════════════════════════════════╗');
     console.log('║         🧪  Running startup test suite…          ║');
     console.log('╚══════════════════════════════════════════════════╝\n');
+    /* eslint-enable no-console */
     try {
         execSync('npm test -- --passWithNoTests --forceExit', {
             cwd: __dirname,
             stdio: 'inherit',
             timeout: 120000
         });
+        /* eslint-disable no-console */
         console.log('\n╔══════════════════════════════════════════════════╗');
         console.log('║         ✅  All tests passed — starting server   ║');
         console.log('╚══════════════════════════════════════════════════╝\n');
+        /* eslint-enable no-console */
     } catch (err) {
         console.error('\n╔══════════════════════════════════════════════════╗');
         console.error('║   ❌  Tests FAILED — server will NOT start       ║');
@@ -262,6 +266,7 @@ app.use((req, res, next) => {
                 return res.status(400).json({ error: 'Invalid filename' });
             }
             const filepath = path.join(__dirname, 'uploads', 'avatars', filename);
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             if (!_fs.existsSync(filepath)) {
                 return res.status(404).json({ error: 'Avatar not found' });
             }
