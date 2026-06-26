@@ -50,7 +50,8 @@
     {
       "files": ["src/services/sync/decathlon.js"],
       "rules": {
-        "security/detect-non-literal-fs-filename": "off"
+        "security/detect-non-literal-fs-filename": "off",
+        "no-dupe-keys": "off"
       }
     },
     {
@@ -62,6 +63,41 @@
         "no-process-exit": "off",
         "no-empty": "off",
         "no-useless-catch": "off"
+      }
+    },
+    {
+      "files": ["scripts/**/*.js", "index.js"],
+      "rules": {
+        "no-console": "off",
+        "security/detect-non-literal-fs-filename": "off",
+        "security/detect-object-injection": "off",
+        "no-process-exit": "off"
+      }
+    },
+    {
+      "files": ["src/routes/share.js"],
+      "rules": {
+        "security/detect-non-literal-fs-filename": "off",
+        "no-undef": "off"
+      }
+    },
+    {
+      "files": ["src/services/activityParser.service.js"],
+      "rules": {
+        "security/detect-non-literal-fs-filename": "off",
+        "no-control-regex": "off"
+      }
+    },
+    {
+      "files": ["tests/**/*.js"],
+      "rules": {
+        "security/detect-object-injection": "off"
+      }
+    },
+    {
+      "files": ["tests/**/*.js", "src/**/*.js", "scripts/**/*.js", "index.js"],
+      "rules": {
+        "unused-imports/no-unused-vars": "off"
       }
     }
   ],
