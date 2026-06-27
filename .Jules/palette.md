@@ -1,0 +1,3 @@
+## 2024-05-18 - Missing ARIA Labels on Core Mobile Controls
+**Learning:** Found that a critical view (the activity recording controls) used 12 different icon-only interactive buttons without any `aria-label` attributes. This is a common pattern in mobile-first views where space is limited and icons are relied upon exclusively, making the entire core feature inaccessible to screen readers.
+**Action:** When reviewing mobile-first views with highly interactive, space-constrained UI (like floating action buttons or control panels), always verify that `aria-label` is present since visible text labels are usually omitted by design.
