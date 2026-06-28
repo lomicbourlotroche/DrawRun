@@ -52,7 +52,13 @@ function PasswordField({ label, value, onChange, placeholder }: {
           placeholder={placeholder}
           className="w-full px-3 py-2.5 pr-10 rounded-xl border border-border bg-surface text-sm text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
         />
-        <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground">
+        <button
+          type="button"
+          onClick={() => setShow(!show)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground rounded-md p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+          aria-label={show ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+          aria-pressed={show}
+        >
           {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
         </button>
       </div>
