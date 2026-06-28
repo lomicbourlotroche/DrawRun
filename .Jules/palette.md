@@ -1,0 +1,3 @@
+## 2024-06-28 - Accessible Password Visibility Toggles
+**Learning:** Icon-only password visibility toggles (`Eye`/`EyeOff`) require more than just an `onClick` handler. Without an `aria-label`, screen readers only hear "button", and without `aria-pressed`, users don't know the current visibility state. Additionally, missing `focus-visible` styles prevent keyboard users from knowing which element is focused.
+**Action:** Always add dynamic `aria-label` (e.g., "Masquer le mot de passe" / "Afficher le mot de passe"), semantic `aria-pressed={state}` attributes, and distinct keyboard focus styles (e.g., `rounded-md p-1 focus-visible:outline-none focus-visible:ring-2`) to icon-only toggle buttons across the app.
