@@ -1,0 +1,3 @@
+## 2024-06-29 - Icon-only Toggle Buttons Accessibility
+**Learning:** Icon-only interactive elements like theme toggles require explicit `aria-label`s for screen readers since there's no text content. Furthermore, toggles specifically benefit from `aria-pressed` to announce their state, and adding keyboard `focus-visible` states is critical for non-mouse users navigating via Tab.
+**Action:** Always verify that buttons lacking visible text include `aria-label` and `focus-visible` styling. For stateful buttons, ensure `aria-pressed` or `aria-expanded` is updated correctly based on the internal state.
