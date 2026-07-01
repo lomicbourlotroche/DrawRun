@@ -1,0 +1,3 @@
+## 2024-05-18 - Missing Screen Reader Context on UI Toggles
+**Learning:** Icon-heavy utility toggles (like Theme and Language switchers) in existing UI kits frequently use `title` attributes for tooltips but lack semantic `aria-label` or stateful ARIA attributes (`aria-pressed`, `aria-expanded`). This leaves screen reader users without context about current states. Moreover, custom styling often drops default `focus-visible` states, harming keyboard navigability.
+**Action:** When auditing custom interactive UI components (especially icon-only or toggles), proactively check for explicit `aria-label`, correct state attributes (`aria-pressed`/`aria-expanded`), and clear `focus-visible` styles rather than relying entirely on `title` or hover styles.
