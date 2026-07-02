@@ -9,8 +9,10 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleMode}
-      className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted hover:text-primary hover:bg-primary-50 transition-colors"
+      className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-muted hover:text-primary hover:bg-primary-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
       title={mode === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
+      aria-label={mode === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
+      aria-pressed={mode === 'dark'}
     >
       {mode === 'dark' ? (
         <Sun className="w-4 h-4" />
