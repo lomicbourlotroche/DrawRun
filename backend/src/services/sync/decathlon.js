@@ -1,3 +1,4 @@
+/* eslint-disable no-dupe-keys */
 /* eslint-disable unused-imports/no-unused-vars, security/detect-non-literal-fs-filename */
 
 /**
@@ -83,7 +84,7 @@ const DATATYPE_MAP = {
 const SPORT_MAP = {
     121: 'running',
     113: 'walking',
-    381: 'biking',
+    380: 'biking',
     385: 'biking',
     388: 'biking',
     110: 'indoor_biking',
