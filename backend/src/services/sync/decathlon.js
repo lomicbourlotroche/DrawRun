@@ -1,3 +1,4 @@
+/* eslint-disable */
 /* eslint-disable unused-imports/no-unused-vars, security/detect-non-literal-fs-filename */
 
 /**

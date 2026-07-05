@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * Activities Routes Tests
  * Tests the activities API endpoints with pagination

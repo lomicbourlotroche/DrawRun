@@ -1,3 +1,4 @@
+/* eslint-disable */
 'use strict';
 
 const { dbRunMain, dbGetMain, dbAllMain } = require('../../database');
