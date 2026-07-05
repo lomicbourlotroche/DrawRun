@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * ============================================================
  * DRAWRUN BACKEND v4.1 - Point d'entrée principal (Refactorisé)
@@ -262,6 +263,7 @@ app.use((req, res, next) => {
                 return res.status(400).json({ error: 'Invalid filename' });
             }
             const filepath = path.join(__dirname, 'uploads', 'avatars', filename);
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             if (!_fs.existsSync(filepath)) {
                 return res.status(404).json({ error: 'Avatar not found' });
             }

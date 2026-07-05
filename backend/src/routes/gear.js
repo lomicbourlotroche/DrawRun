@@ -31,7 +31,6 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
     try {
         const userDb = await getUserDb(req.user.id);
-        const userId = req.user.id;
         const { name, brand, model, type, purchase_date, initial_distance = 0, max_distance = 800 } = req.body;
 
         if (!name || !type) {
@@ -57,7 +56,6 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const userDb = await getUserDb(req.user.id);
-        const userId = req.user.id;
         const gearId = req.params.id;
         const { name, brand, model, type, max_distance, is_active, initial_distance } = req.body;
 
@@ -95,7 +93,6 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         const userDb = await getUserDb(req.user.id);
-        const userId = req.user.id;
         const gearId = req.params.id;
 
         // Check if gear is used in any activity
