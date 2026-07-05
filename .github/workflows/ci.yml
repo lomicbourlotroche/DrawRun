@@ -54,39 +54,32 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'pnpm'
-          cache-dependency-path: frontend/pnpm-lock.yaml
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install frontend dependencies
         run: |
           cd frontend
-          pnpm install
+          npm install
 
       - name: Run frontend linting
-        continue-on-error: true
         run: |
           cd frontend
-          pnpm run lint
+          npx eslint . --ignore-pattern "scripts/" --ignore-pattern "tests/" --ignore-pattern "node_modules/"
 
       - name: Run frontend tests
-        continue-on-error: true
         run: |
           cd frontend
-          pnpm run test
+          npm run test
 
       - name: Build frontend
         run: |
           cd frontend
-          pnpm run build
+          npm run build
 
   # Run in parallel
   test-and-lint:

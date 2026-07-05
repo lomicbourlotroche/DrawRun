@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable no-process-exit */
 /**
  * ============================================================
  * GENERATE MOCK USER - Script de génération de données de test
@@ -12,6 +10,7 @@
 'use strict';
 
 const path = require('path');
+const fs = require('fs');
 
 // Charger les variables d'environnement du backend
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
@@ -21,7 +20,8 @@ const {
     dbGetMain, 
     dbRunMain, 
     getUserDb, 
-    dbRunUser
+    dbRunUser,
+    dbGetUser
 } = require('../src/database');
 
 const bcrypt = require('bcryptjs');
@@ -298,7 +298,6 @@ async function main() {
 
     for (let w = 1; w <= 4; w++) {
         for (let d = 0; d < 3; d++) {
-            // eslint-disable-next-line security/detect-object-injection
             const sessType = sessionTypes[d];
             const sessionNum = (w - 1) * 3 + d + 1;
             
@@ -357,5 +356,5 @@ async function main() {
 
 main().catch(err => {
     console.error('❌ Une erreur est survenue lors de la génération :', err);
-    throw err;
+    process.exit(1);
 });

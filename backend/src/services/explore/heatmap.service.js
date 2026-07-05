@@ -1,6 +1,6 @@
 'use strict';
 
-const { dbRunMain, dbAllMain } = require('../../database');
+const { dbRunMain, dbGetMain, dbAllMain } = require('../../database');
 const { logger } = require('../../utils/logger');
 
 /**

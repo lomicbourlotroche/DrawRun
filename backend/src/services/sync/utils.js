@@ -488,6 +488,8 @@ function extractDecathlonSplits(datastream) {
     
     const splits = [];
     let currentLapStart = 0;
+    let currentLapDist = 0;
+    let currentLapStartAlt = 0;
     
     for (let i = 0; i < timestamps.length; i++) {
         const t = timestamps[i];
@@ -529,6 +531,8 @@ function extractDecathlonSplits(datastream) {
             
             // Start new lap
             currentLapStart = t;
+            currentLapDist = datastream[t] && datastream[t][5] ? datastream[t][5] : 0;
+            currentLapStartAlt = datastream[t] && datastream[t][14] ? datastream[t][14] : 0;
         }
     }
     

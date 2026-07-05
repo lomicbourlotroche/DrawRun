@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router({ mergeParams: true });
 const { verifyToken } = require('../middleware/auth');
 const { logger } = require('../utils/logger');
-const { getUserDb, dbGetUser, dbRunMain, dbGetMain } = require('../database');
+const { getUserDb, dbGetUser, dbRunMain } = require('../database');
 const { createCanvas } = require('canvas');
 const fs = require('fs');
 const path = require('path');
@@ -54,13 +54,12 @@ function cleanupCache() {
 
     files.forEach(file => {
       try {
+        // eslint-disable-next-line security/detect-non-literal-fs-filename -- file from fs.readdir, safe
         const filePath = path.join(CACHE_DIR, file);
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const stats = fs.statSync(filePath);
         const age = now - stats.mtime.getTime();
 
         if (age > CACHE_TTL_MS) {
-          // eslint-disable-next-line security/detect-non-literal-fs-filename
           fs.unlinkSync(filePath);
           deletedCount++;
         }
@@ -355,6 +354,7 @@ router.get('/share-image', verifyToken, async (req, res) => {
     if (useCache) {
       res.setHeader('Content-Type', 'image/png');
       if (download !== 'false') {
+        const dimensions = IMAGE_SIZES[actualSize];
         res.setHeader('Content-Disposition', `attachment; filename="drawrun-activity-${activityId}-${actualSize}.png"`);
       }
       // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -366,7 +366,6 @@ router.get('/share-image', verifyToken, async (req, res) => {
     const buffer = canvas.toBuffer('image/png');
     
     // Cache the image
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     fs.writeFileSync(cachePath, buffer);
 
     // Log the share event
@@ -378,6 +377,7 @@ router.get('/share-image', verifyToken, async (req, res) => {
     // Send response
     res.setHeader('Content-Type', 'image/png');
     if (download !== 'false') {
+      const dimensions = IMAGE_SIZES[actualSize];
       res.setHeader('Content-Disposition', `attachment; filename="drawrun-activity-${activityId}-${actualSize}.png"`);
     }
     // eslint-disable-next-line security/detect-non-literal-fs-filename

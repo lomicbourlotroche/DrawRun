@@ -213,6 +213,11 @@ function parseGPX(content) {
     let lastEle = null;
     let totalDistance = 0;
 
+    // Extract namespace for extensions
+    const nsResolver = (prefix) => {
+        const ns = doc.lookupNamespaceURI(prefix);
+        return ns || null;
+    };
 
     for (let i = 0; i < trkpts.length; i++) {
         const trkpt = trkpts[i];
@@ -1271,6 +1276,7 @@ function parsePolarCSV(content, filename) {
     let totalGain = 0;
     let startTime = null;
     let endTime = null;
+    let totalDistance = 0;
 
     for (const row of rows) {
         // Time
@@ -1514,24 +1520,22 @@ function parsePolarTime(timeStr) {
  * @param {string} filename - Original filename
  * @returns {Promise<ParsedActivity|null>} Parsed activity
  */
-async function parseZipSingle(content) {
+async function parseZipSingle(content, filename) {
     const buffer = Buffer.isBuffer(content) ? content : Buffer.from(content, 'binary');
 
     // For now, just extract the first FIT or GPX file from the ZIP
     // Full Strava ZIP parsing is done in parseStravaZip
     try {
         // Try to find and extract first activity file
+        const entries = [];
         
         // Simple ZIP parsing - look for file signatures
         // This is a simplified approach; for production, use yauzl or similar
         const str = buffer.toString('binary');
         
         // Look for .fit or .gpx files in the ZIP
-        // eslint-disable-next-line no-control-regex
         const fitMatch = str.match(/(\x50\x4B\x03\x04[\s\S]*?\.fit)/i);
-        // eslint-disable-next-line no-control-regex
         const gpxMatch = str.match(/(\x50\x4B\x03\x04[\s\S]*?\.gpx)/i);
-        // eslint-disable-next-line no-control-regex
         const tcxMatch = str.match(/(\x50\x4B\x03\x04[\s\S]*?\.tcx)/i);
 
         if (fitMatch) {
@@ -1575,7 +1579,7 @@ async function parseZipSingle(content) {
  * @param {string} filename - Original filename
  * @returns {Promise<ParsedActivity[]|null>} Array of parsed activities
  */
-async function parseStravaZip(content) {
+async function parseStravaZip(content, filename) {
     const buffer = Buffer.isBuffer(content) ? content : Buffer.from(content, 'binary');
 
     const activities = [];
@@ -1583,8 +1587,16 @@ async function parseStravaZip(content) {
     try {
         // Simple ZIP parsing to find activity files
         // In production, consider using 'yauzl' or 'adm-zip' for proper ZIP handling
+        const str = buffer.toString('binary');
 
         // Find all .fit.gz, .gpx.gz, .fit, .gpx, .tcx files
+        const fileSignatures = [
+            { ext: 'fit.gz', signature: Buffer.from([0x1f, 0x8b]) }, // gzip signature
+            { ext: 'gpx.gz', signature: Buffer.from([0x1f, 0x8b]) },
+            { ext: 'fit', signature: Buffer.from([0x12]) },
+            { ext: 'gpx', signature: Buffer.from('<?xml') },
+            { ext: 'tcx', signature: Buffer.from('<?xml') },
+        ];
 
         // Look for activities/ folder entries
         const activitiesFolderPrefix = 'activities/';
@@ -1680,16 +1692,13 @@ async function parseStravaZip(content) {
  */
 async function parseActivityDirectory(dirPath, options = {}) {
     const activities = [];
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     const files = fs.readdirSync(dirPath);
 
     for (const file of files) {
         const filePath = path.join(dirPath, file);
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const stat = fs.statSync(filePath);
 
         if (stat.isFile()) {
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             const content = fs.readFileSync(filePath);
             const parsed = await parseActivityFile(file, content, options);
 
