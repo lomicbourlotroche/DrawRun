@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * ============================================================
  * GENERATE MOCK USER - Script de génération de données de test
@@ -20,7 +21,7 @@ const {
     dbGetMain, 
     dbRunMain, 
     getUserDb, 
-    dbRunUser, 
+    dbRunUser,
     dbGetUser
 } = require('../src/database');
 
