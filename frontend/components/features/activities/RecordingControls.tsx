@@ -1,9 +1,21 @@
 'use client';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Play, Pause, Square, MapPin, Target, X, Save,
-  Heart, BluetoothConnected, Flag, Lock, Camera, Zap,
-  Eye, EyeOff,
+  Play,
+  Pause,
+  Square,
+  MapPin,
+  Target,
+  X,
+  Save,
+  Heart,
+  BluetoothConnected,
+  Flag,
+  Lock,
+  Camera,
+  Zap,
+  Eye,
+  EyeOff,
 } from '@/components/ui/icons';
 
 type RecordingState = 'idle' | 'recording' | 'paused' | 'finished' | 'review';
@@ -34,11 +46,28 @@ interface RecordingControlsProps {
 }
 
 export function RecordingControls({
-  state, permissionStatus, isScanning, hrConnected, intervalConfig,
-  gpsHighAccuracy, autoPauseEnabled,
-  onStart, onPause, onResume, onStop, onMarkLap, onTakePhoto,
-  onConnectHR, onDisconnectHR, onLockScreen, onStartInterval,
-  onCancel, onReview, onShowRoutePicker, onShowSegmentPicker, onToggleAutoPause,
+  state,
+  permissionStatus,
+  isScanning,
+  hrConnected,
+  intervalConfig,
+  gpsHighAccuracy,
+  autoPauseEnabled,
+  onStart,
+  onPause,
+  onResume,
+  onStop,
+  onMarkLap,
+  onTakePhoto,
+  onConnectHR,
+  onDisconnectHR,
+  onLockScreen,
+  onStartInterval,
+  onCancel,
+  onReview,
+  onShowRoutePicker,
+  onShowSegmentPicker,
+  onToggleAutoPause,
 }: RecordingControlsProps) {
   return (
     <div className="px-4 pb-6 pt-3 bg-background border-t border-surface">
@@ -52,12 +81,14 @@ export function RecordingControls({
             className="flex items-center justify-center gap-6"
           >
             <button
+              aria-label="Choisir un parcours"
               onClick={onShowRoutePicker}
               className="w-12 h-12 rounded-full hover:bg-surface active:bg-surface-hover flex items-center justify-center transition-colors"
             >
               <MapPin className="w-5 h-5 text-muted" />
             </button>
             <button
+              aria-label="Démarrer l'enregistrement"
               onClick={onStart}
               disabled={permissionStatus === 'denied' || permissionStatus === 'unsupported'}
               className="w-20 h-20 rounded-full bg-peak hover:bg-peak/90 active:bg-peak/80 disabled:opacity-50 flex items-center justify-center transition-colors"
@@ -65,6 +96,7 @@ export function RecordingControls({
               <Play className="w-8 h-8 fill-white text-foreground ml-1" />
             </button>
             <button
+              aria-label="Choisir un segment"
               onClick={onShowSegmentPicker}
               className="w-12 h-12 rounded-full hover:bg-surface active:bg-surface-hover flex items-center justify-center transition-colors"
             >
@@ -82,6 +114,7 @@ export function RecordingControls({
           >
             {!hrConnected ? (
               <button
+                aria-label="Connecter un capteur cardiaque"
                 onClick={onConnectHR}
                 disabled={isScanning}
                 className="w-10 h-10 rounded-full hover:bg-surface active:bg-surface-hover disabled:opacity-50 flex items-center justify-center transition-colors"
@@ -90,6 +123,7 @@ export function RecordingControls({
               </button>
             ) : (
               <button
+                aria-label="Déconnecter le capteur cardiaque"
                 onClick={onDisconnectHR}
                 className="w-10 h-10 rounded-full hover:bg-surface active:bg-surface-hover flex items-center justify-center transition-colors"
                 title="Connecté"
@@ -98,30 +132,35 @@ export function RecordingControls({
               </button>
             )}
             <button
+              aria-label="Marquer un tour"
               onClick={onMarkLap}
               className="w-10 h-10 rounded-full hover:bg-surface active:bg-surface-hover flex items-center justify-center transition-colors"
             >
               <Flag className="w-4 h-4 text-muted" />
             </button>
             <button
+              aria-label="Mettre en pause"
               onClick={onPause}
               className="w-14 h-14 rounded-full bg-warning hover:bg-warning/90 active:bg-warning/80 flex items-center justify-center transition-colors"
             >
               <Pause className="w-6 h-6 fill-white text-foreground" />
             </button>
             <button
+              aria-label="Arrêter l'enregistrement"
               onClick={onStop}
               className="w-14 h-14 rounded-full bg-danger hover:bg-danger/90 active:bg-danger/80 flex items-center justify-center transition-colors"
             >
               <Square className="w-6 h-6 fill-white text-foreground" />
             </button>
             <button
+              aria-label="Verrouiller l'écran"
               onClick={onLockScreen}
               className="w-10 h-10 rounded-full hover:bg-surface active:bg-surface-hover flex items-center justify-center transition-colors"
             >
               <Lock className="w-4 h-4 text-muted" />
             </button>
             <button
+              aria-label="Prendre une photo"
               onClick={onTakePhoto}
               className="w-10 h-10 rounded-full hover:bg-surface active:bg-surface-hover flex items-center justify-center transition-colors"
             >
@@ -129,6 +168,7 @@ export function RecordingControls({
             </button>
             {!intervalConfig && (
               <button
+                aria-label="Démarrer une séance d'intervalle"
                 onClick={onStartInterval}
                 className="w-10 h-10 rounded-full hover:bg-surface active:bg-surface-hover flex items-center justify-center transition-colors"
               >
@@ -146,6 +186,7 @@ export function RecordingControls({
             className="flex items-center justify-center gap-6"
           >
             <button
+              aria-label="Reprendre l'enregistrement"
               onClick={onResume}
               className="w-16 h-16 rounded-full bg-peak hover:bg-peak/90 active:bg-peak/80 flex items-center justify-center transition-colors"
             >
@@ -187,19 +228,16 @@ export function RecordingControls({
       {state === 'recording' && (
         <div className="flex items-center justify-center gap-4 mt-3">
           <button
+            aria-pressed={autoPauseEnabled}
             onClick={onToggleAutoPause}
             className={`text-xs flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-colors ${
-              autoPauseEnabled
-                ? 'text-foreground bg-surface'
-                : 'text-muted'
+              autoPauseEnabled ? 'text-foreground bg-surface' : 'text-muted'
             }`}
           >
             {autoPauseEnabled ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
             Auto-pause
           </button>
-          <span className="text-[10px] text-muted">
-            {gpsHighAccuracy ? 'GPS haute précision' : 'GPS économie'}
-          </span>
+          <span className="text-[10px] text-muted">{gpsHighAccuracy ? 'GPS haute précision' : 'GPS économie'}</span>
         </div>
       )}
     </div>
