@@ -55,6 +55,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               setValue(e.target.value);
               props.onChange?.(e);
             }}
+            aria-invalid={!!error}
+            aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
             className={cn(
               'w-full bg-surface border rounded-lg px-4 py-2.5 text-foreground',
               'placeholder:text-muted',
@@ -88,13 +90,13 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error && (
-          <p className="mt-1.5 text-sm text-danger flex items-center gap-1">
+          <p id={`${inputId}-error`} className="mt-1.5 text-sm text-danger flex items-center gap-1">
             <AlertCircle className="w-3.5 h-3.5" />
             {error}
           </p>
         )}
         {hint && !error && (
-          <p className="mt-1.5 text-sm text-muted">{hint}</p>
+          <p id={`${inputId}-hint`} className="mt-1.5 text-sm text-muted">{hint}</p>
         )}
       </div>
     );
