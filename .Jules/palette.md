@@ -1,0 +1,3 @@
+## 2026-07-11 - Form Input Validation Accessibility
+**Learning:** For accessible form inputs with custom validation text, simply rendering text below the input is insufficient for screen readers. Screen readers may not inherently understand that an adjacent paragraph describes the validation state of the input, making it difficult for visually impaired users to interact with forms accurately.
+**Action:** Always associate the input with its validation text using `aria-describedby` pointing to the `id` of the error or hint text element, and ensure `aria-invalid` is properly toggled to signal an error state. This makes form accessibility robust and predictable.
