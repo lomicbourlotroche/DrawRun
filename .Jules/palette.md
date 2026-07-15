@@ -1,0 +1,3 @@
+## 2024-07-15 - ARIA associations for component form fields
+**Learning:** For dynamic components like `Input.tsx` in a React/Next.js environment, ensuring proper linkage between inputs and validation messages (`error`, `hint`) is vital. Using `id` attributes that can inadvertently clash when the component is reused across forms leads to accessibility issues where screen readers may announce the wrong error message.
+**Action:** Always use React's `useId()` hook to generate unique fallback IDs for form elements, and pass these to `aria-describedby` when errors or hints are present to guarantee reliable programmatic associations across multiple instances.
