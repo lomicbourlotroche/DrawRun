@@ -1,0 +1,3 @@
+## 2024-07-16 - Proper ARIA descriptions for input hints and errors
+**Learning:** React's `useId()` is crucial for correctly implementing `aria-describedby` associations for form inputs when hints or errors are dynamically rendered, ensuring screen readers receive the appropriate context. Also, assumptions about UI language (e.g. French localization) shouldn't be blindly applied to accessibility strings without explicit direction.
+**Action:** Use `useId()` when building custom form components that require generated IDs for associative ARIA attributes, avoiding collisions when multiple instances exist.
