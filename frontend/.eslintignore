@@ -1,1 +1,4 @@
-components/ui/ActivityMap.tsx
+node_modules/
+.next/
+scripts/
+tests/

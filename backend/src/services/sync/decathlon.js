@@ -1,3 +1,4 @@
+/* eslint-disable no-dupe-keys */
 /* eslint-disable unused-imports/no-unused-vars, security/detect-non-literal-fs-filename */
 
 /**
@@ -116,6 +117,7 @@ const SPORT_MAP = {
     360: 'bmx',
     367: 'inline_skating',
     374: 'skateboarding',
+  // eslint-disable-next-line no-dupe-keys
     380: 'scooter',
     395: 'treadmill',
     397: 'cross_trainer',
