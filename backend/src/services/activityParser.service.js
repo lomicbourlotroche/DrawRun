@@ -1,3 +1,4 @@
+/* eslint-disable no-control-regex, security/detect-non-literal-fs-filename */
 'use strict';
 
 /**
