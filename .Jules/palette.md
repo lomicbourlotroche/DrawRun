@@ -1,0 +1,3 @@
+## 2024-05-14 - Input Component ARIA Enhancements
+**Learning:** React Server Component modules that use React hooks (`useEffect`, `useState`, `useId`) need to be marked with `"use client";` in the Next.js App Router context. Adding a unique ID for hints and errors ensures that `aria-describedby` links inputs to their contextual messages, enabling a much better screen reader experience.
+**Action:** Always make sure `use client` is at the top of client-side components using hooks in Next.js 14+ contexts. Make sure to generate unique IDs with `useId()` when conditionally rendering hint/error text blocks for accessible forms.
