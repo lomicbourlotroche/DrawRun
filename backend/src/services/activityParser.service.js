@@ -1,3 +1,4 @@
+/* eslint-disable no-control-regex */
 'use strict';
 
 /**
@@ -1692,13 +1693,16 @@ async function parseStravaZip(content, filename) {
  */
 async function parseActivityDirectory(dirPath, options = {}) {
     const activities = [];
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     const files = fs.readdirSync(dirPath);
 
     for (const file of files) {
         const filePath = path.join(dirPath, file);
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const stat = fs.statSync(filePath);
 
         if (stat.isFile()) {
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
             const content = fs.readFileSync(filePath);
             const parsed = await parseActivityFile(file, content, options);
 

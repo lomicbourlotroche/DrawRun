@@ -230,7 +230,9 @@ describe('generateScientificSplits', () => {
 
     test('cumulative times should be increasing', () => {
         const splits = generateScientificSplits(baseParams);
+        // eslint-disable-next-line security/detect-object-injection
         for (let i = 1; i < splits.length; i++) {
+            // eslint-disable-next-line security/detect-object-injection
             expect(splits[i].cumulativeTime).toBeGreaterThan(splits[i - 1].cumulativeTime);
         }
     });

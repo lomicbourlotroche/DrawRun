@@ -1,0 +1,3 @@
+## 2024-07-24 - Input Component ARIA Association
+**Learning:** React Server Components strictly prohibit the use of client-side hooks like `useId`, `useState`, and `useEffect`. When adapting UI components like forms for accessibility (e.g., dynamically generating unique IDs for `aria-describedby` links between inputs and errors/hints), we must explicitly declare `'use client';` at the top of the file to prevent server compilation failures and hydration mismatches.
+**Action:** When adding accessibility features that rely on dynamic ID generation or state (like linking form inputs to errors) to Next.js App Router components, verify the component is correctly marked as a Client Component.
