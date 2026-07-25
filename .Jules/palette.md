@@ -1,0 +1,3 @@
+## 2023-10-27 - Form Input Association Using `useId`
+**Learning:** Visual proximity of labels and error messages is not sufficient for screen readers. In React components with multiple instances (e.g. multiple `InputField` components on a single form like a login/register form), hardcoded IDs can cause collisions that break semantic associations.
+**Action:** Always use React's `useId()` hook to generate globally unique identifiers for linking `<label>` with `<input>` (via `htmlFor` and `id`) and for linking error texts to inputs via `aria-describedby` when building reusable UI form components.
