@@ -1,0 +1,3 @@
+## 2026-07-27 - Form Input Accessibility (useId and ARIA links)
+**Learning:** Using React's `useId()` generates a robust and unique identifier that prevents hydration errors, which is superior to deriving an ID simply from `label?.toLowerCase()`. For ARIA hints/errors (`aria-describedby`), `useId` provides the necessary consistent foundation across instances of inputs, which is crucial for accessibility.
+**Action:** When implementing custom form components, prefer using `useId()` hook to generate unique `id` values for the component and properly link `aria-invalid` and `aria-describedby` elements to error and hint texts for screen readers to pick up contextual form input help.
