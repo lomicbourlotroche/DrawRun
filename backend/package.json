@@ -39,8 +39,17 @@
 
 
     "test:coverage": "jest --coverage",
+
+
+
     "test:e2e": "playwright test tests/e2e",
+
+
+
     "test:e2e:ui": "playwright test tests/e2e --ui",
+
+
+
     "test:e2e:debug": "playwright test tests/e2e --debug",
 
 
@@ -129,26 +138,6 @@
 
 
 
-    
-
-
-
-    
-
-
-
-    
-
-
-
-    
-
-
-
-    
-
-
-
     "realtime"
 
 
@@ -202,8 +191,10 @@
 
 
     "express-rate-limit": "^8.4.0",
+
+
+
     "fit-file-parser": "^2.2.0",
-    "multer": "^1.4.5-lts.1",
 
 
 
@@ -219,7 +210,7 @@
 
 
 
-
+    "multer": "^1.4.5-lts.1",
 
 
 
@@ -231,7 +222,7 @@
 
 
 
-
+    "playwright": "^1.52.0",
 
 
 
@@ -252,14 +243,17 @@
 
 
     "winston": "^3.19.0",
-    "playwright": "^1.52.0",
 
 
 
     "ws": "^8.18.0",
 
 
+
     "xmldom": "^0.6.0",
+
+
+
     "zod": "^3.23.4"
 
 
@@ -276,7 +270,11 @@
 
 
 
-    "eslint": "^8.57.0",
+    "@playwright/test": "^1.52.0",
+
+
+
+    "eslint": "^8.57.1",
 
 
 
@@ -304,9 +302,7 @@
 
 
 
-    "supertest": "^6.3.3",
-
-    "@playwright/test": "^1.52.0"
+    "supertest": "^6.3.3"
 
 
 
@@ -331,10 +327,6 @@
 
 
 }
-
-
-
-
 
 
 
