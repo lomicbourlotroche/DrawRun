@@ -153,6 +153,19 @@ describe('Input component', () => {
     
     expect(input).toHaveAttribute('id', 'name-input');
     expect(label).toHaveAttribute('for', 'name-input');
+    expect(input).toHaveAttribute('aria-invalid', 'false');
+  });
+
+  it('has correct accessibility attributes for error and hint', () => {
+    const { rerender } = render(<Input id="test-input" error="Invalid input" />);
+    let input = screen.getByRole('textbox');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAttribute('aria-describedby', 'test-input-error');
+
+    rerender(<Input id="test-input" hint="Please enter valid text" />);
+    input = screen.getByRole('textbox');
+    expect(input).toHaveAttribute('aria-invalid', 'false');
+    expect(input).toHaveAttribute('aria-describedby', 'test-input-hint');
   });
 
   it('generates id from label when not provided', () => {
