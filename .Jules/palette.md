@@ -1,0 +1,3 @@
+## 2024-05-24 - Form Input Accessibility: aria-invalid and aria-describedby
+**Learning:** For screen readers to appropriately announce errors and hints inline, inputs must use `aria-describedby` linking to the exact `id` of the hint or error element, and use `aria-invalid` to announce error states. React's `useId()` is crucial here for preventing hydration mismatches and guaranteeing global uniqueness of these ids across many input fields on the same page.
+**Action:** Always associate input fields with their helper texts and error states using dynamic IDs generated from `useId()`, and ensure `aria-invalid` strictly matches the presence of an error.
