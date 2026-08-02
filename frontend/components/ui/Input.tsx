@@ -1,5 +1,5 @@
 import React from 'react';
-import { forwardRef, cloneElement, isValidElement, useState, useEffect, type InputHTMLAttributes, type ReactNode } from 'react';
+import { forwardRef, cloneElement, isValidElement, useState, useEffect, useId, type InputHTMLAttributes, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { AlertCircle, X } from '@/components/ui/icons';
 
@@ -14,7 +14,10 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, label, error, hint, leftIcon, rightIcon, id, clearable = false, ...props }, ref) => {
-    const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
+    const defaultId = useId();
+    const inputId = id || label?.toLowerCase().replace(/\s+/g, '-') || defaultId;
+    const errorId = `${inputId}-error`;
+    const hintId = `${inputId}-hint`;
     const [value, setValue] = useState(props.value || props.defaultValue || '');
 
     const handleClear = () => {
@@ -55,6 +58,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               setValue(e.target.value);
               props.onChange?.(e);
             }}
+            aria-invalid={!!error}
+            aria-describedby={cn(
+              error && errorId,
+              hint && !error && hintId
+            ) || undefined}
             className={cn(
               'w-full bg-surface border rounded-lg px-4 py-2.5 text-foreground',
               'placeholder:text-muted',
@@ -88,13 +96,13 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error && (
-          <p className="mt-1.5 text-sm text-danger flex items-center gap-1">
+          <p id={errorId} className="mt-1.5 text-sm text-danger flex items-center gap-1">
             <AlertCircle className="w-3.5 h-3.5" />
             {error}
           </p>
         )}
         {hint && !error && (
-          <p className="mt-1.5 text-sm text-muted">{hint}</p>
+          <p id={hintId} className="mt-1.5 text-sm text-muted">{hint}</p>
         )}
       </div>
     );
