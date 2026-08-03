@@ -1,3 +1,0 @@
-## 2026-05-01 - Input Component Accessibility Pattern
-**Learning:** The application's core `Input` component lacked foundational form accessibility, specifically missing `aria-invalid` for error states and `aria-describedby` for associating hint/error text with the input field. This meant screen reader users were unaware of validation failures or contextual help text.
-**Action:** When updating core form components, always ensure dynamic state (errors) and associative text (hints) are explicitly linked to the input via ARIA attributes, utilizing `React.useId()` to guarantee stable, unique IDs across instances and prevent hydration mismatches.
