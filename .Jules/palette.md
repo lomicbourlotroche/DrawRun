@@ -1,0 +1,3 @@
+## 2024-08-04 - Form Input Accessibility
+**Learning:** Form inputs need explicit programmatic associations with their error and hint messages to be fully accessible. Using useId() is crucial for generating stable unique IDs in React (especially with SSR) to correctly map aria-describedby from the input to the corresponding message elements, preventing duplicate IDs across multiple inputs on the same page.
+**Action:** Always ensure that form components (like Input, Select, etc.) generate unique IDs using useId() and correctly apply aria-invalid and aria-describedby attributes to associate the input field with its corresponding error or hint text.
