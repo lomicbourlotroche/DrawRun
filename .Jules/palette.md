@@ -1,0 +1,3 @@
+## 2024-08-05 - Missing ARIA Associations for Form Inputs
+**Learning:** Found that custom `Input` components were visually displaying error and hint text, but lacked the necessary `aria-invalid` and `aria-describedby` attributes to associate this context for screen reader users. Using React's `useId()` is the ideal way to generate stable IDs for these associations without requiring the developer to pass them in manually.
+**Action:** When creating or updating custom form controls, always ensure validation states and helper text are programmatically linked to the input element via ARIA attributes using unique IDs.
