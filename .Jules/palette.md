@@ -1,0 +1,3 @@
+## 2024-05-24 - Interactive icon buttons and missing aria-labels
+**Learning:** DrawRun's activity recording UI (`RecordingControls.tsx`) heavily utilizes icon-only buttons for critical actions (Start, Pause, Choose Route, Auto-pause toggle, etc.). These buttons lacked `aria-label`s, rendering them completely inaccessible to screen reader users who wouldn't know their function. We also added `aria-pressed` for the auto-pause toggle to communicate its active state.
+**Action:** Always verify icon-only interactive elements for proper ARIA descriptors (`aria-label`) and state descriptors (`aria-pressed`) when auditing components, specifically focusing on critical user flows like activity recording.
