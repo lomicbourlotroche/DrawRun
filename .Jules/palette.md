@@ -1,0 +1,3 @@
+## 2024-08-07 - Form Input ARIA associations
+**Learning:** Using `aria-invalid` and `aria-describedby` correctly associates inputs with their corresponding error and hint messages for screen readers, significantly improving form accessibility. Additionally, relying on React's `useId()` ensures unique IDs for these element relationships, preventing hydration mismatches and collision issues across multiple input instances on the same page.
+**Action:** Always map the `id` of `<p>` tag hints/errors to the `aria-describedby` property of their associated input component, and explicitly toggle `aria-invalid` based on the error state. Generate unique fallback IDs with `useId()` rather than manual string concatenation when possible.
