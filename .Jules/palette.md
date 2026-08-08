@@ -1,0 +1,3 @@
+## 2024-05-24 - [Accessible Forms and Unique IDs]
+**Learning:** Hardcoded or simplistically generated IDs (like `label.toLowerCase().replace(...)`) can lead to hydration mismatches or duplicated IDs across multiple components on the same page. Without truly unique IDs, proper association for `aria-describedby` (essential for screen readers to announce form errors and hints) fails.
+**Action:** Always prefer React's `useId()` for generating default fallback IDs when an explicit ID is not provided. Always use `aria-invalid` to indicate error state and dynamically link error/hint descriptive elements via `aria-describedby` utilizing these robust IDs.

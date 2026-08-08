@@ -155,13 +155,48 @@ describe('Input component', () => {
     expect(label).toHaveAttribute('for', 'name-input');
   });
 
-  it('generates id from label when not provided', () => {
+  it('generates id from label when not provided and links to label', () => {
     render(<Input label="Test Input" />);
     
     const input = screen.getByRole('textbox');
     const label = screen.getByText('Test Input');
     
-    expect(input.id).toBe('test-input');
+    expect(input.id).toBe('test-input'); // Falls back to the label format
     expect(label).toHaveAttribute('for', 'test-input');
+  });
+
+  it('generates completely unique default ID when no label or id is provided', () => {
+    const { container } = render(<Input />);
+
+    const input = screen.getByRole('textbox');
+    expect(input.id).toBeTruthy();
+  });
+
+  it('sets aria-invalid and aria-describedby for errors', () => {
+    render(<Input error="Error message" />);
+
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+
+    const errorId = input.getAttribute('aria-describedby');
+    expect(errorId).toBeTruthy();
+
+    const errorElement = document.getElementById(errorId as string);
+    expect(errorElement).toBeInTheDocument();
+    expect(errorElement).toHaveTextContent('Error message');
+  });
+
+  it('sets aria-describedby for hints without aria-invalid', () => {
+    render(<Input hint="Hint message" />);
+
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveAttribute('aria-invalid', 'false');
+
+    const hintId = input.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+
+    const hintElement = document.getElementById(hintId as string);
+    expect(hintElement).toBeInTheDocument();
+    expect(hintElement).toHaveTextContent('Hint message');
   });
 });
