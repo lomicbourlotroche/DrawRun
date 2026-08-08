@@ -1,5 +1,4 @@
 import React from 'react';
-
 import {
   forwardRef,
   cloneElement,
@@ -10,9 +9,7 @@ import {
   type InputHTMLAttributes,
   type ReactNode,
 } from 'react';
-
 import { cn } from '@/lib/utils';
-
 import { AlertCircle, X } from '@/components/ui/icons';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -125,7 +122,5 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     );
   },
 );
-
 Input.displayName = 'Input';
-
 export { Input };
