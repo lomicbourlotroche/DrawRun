@@ -41,9 +41,11 @@ export const UserCounter = ({
         setError(null);
 
         // Récupérer le compteur initial et s'abonner aux mises à jour
-        const { unsubscribe: unsubscribeFn } = await userCounterApi.getUserCountAndSubscribe((newCount) => {
-          setCount(newCount);
-        });
+        const { unsubscribe: unsubscribeFn } = await userCounterApi.getUserCountAndSubscribe(
+          (newCount) => {
+            setCount(newCount);
+          }
+        );
 
         unsubscribe = unsubscribeFn;
       } catch (err) {
@@ -81,13 +83,19 @@ export const UserCounter = ({
   }
 
   if (error) {
-    return <div className={`text-sm text-danger-500 ${className}`}>{error}</div>;
+    return (
+      <div className={`text-sm text-danger-500 ${className}`}>
+        {error}
+      </div>
+    );
   }
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <span className="text-lg font-bold text-primary-600 tabular-nums">{count.toLocaleString()}</span>
-      {showLabel && <span className="text-xs text-muted hidden sm:inline">{label}</span>}
+      {showLabel && (
+        <span className="text-xs text-muted hidden sm:inline">{label}</span>
+      )}
     </div>
   );
 };

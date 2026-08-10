@@ -13,13 +13,13 @@ import { Upload, FileText, X, Activity, AlertCircle } from '@/components/ui/icon
 import { toast } from 'sonner';
 
 const ACTIVITY_TYPES = [
-  { value: 'run', label: 'Course \u00e0 pied' },
+  { value: 'run',      label: 'Course \u00e0 pied' },
   { value: 'racewalk', label: 'Marche rapide' },
-  { value: 'ride', label: 'V\u00e9lo' },
-  { value: 'swim', label: 'Natation' },
-  { value: 'hike', label: 'Randonn\u00e9e' },
-  { value: 'workout', label: 'Entra\u00eenement' },
-  { value: 'other', label: 'Autre' },
+  { value: 'ride',     label: 'V\u00e9lo' },
+  { value: 'swim',     label: 'Natation' },
+  { value: 'hike',     label: 'Randonn\u00e9e' },
+  { value: 'workout',  label: 'Entra\u00eenement' },
+  { value: 'other',    label: 'Autre' },
 ];
 
 interface GpxPreview {
@@ -55,14 +55,8 @@ export default function NewActivityPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const parseGpxPreview = useCallback((xml: string, fileName: string) => {
-    const getAttr = (s: string, a: string) => {
-      const m = s.match(new RegExp(`${a}="([^"]+)"`));
-      return m ? m[1] : null;
-    };
-    const getTag = (s: string, t: string) => {
-      const m = s.match(new RegExp(`<${t}[^>]*>([^<]*)</${t}>`, 'i'));
-      return m ? m[1].trim() : null;
-    };
+    const getAttr = (s: string, a: string) => { const m = s.match(new RegExp(`${a}="([^"]+)"`)); return m ? m[1] : null; };
+    const getTag  = (s: string, t: string) => { const m = s.match(new RegExp(`<${t}[^>]*>([^<]*)</${t}>`, 'i')); return m ? m[1].trim() : null; };
 
     const trkptRe = /<trkpt([^>]*)>([\s\S]*?)<\/trkpt>/gi;
     const pts: { lat: number; lon: number; ele: number; time: Date | null }[] = [];
@@ -76,25 +70,21 @@ export default function NewActivityPage() {
     }
     if (pts.length < 2) return null;
 
-    let dist = 0,
-      elevGain = 0;
+    let dist = 0, elevGain = 0;
     const latlng: [number, number][] = [[pts[0].lat, pts[0].lon]];
     for (let i = 1; i < pts.length; i++) {
       const R = 6371000;
-      const dLat = ((pts[i].lat - pts[i - 1].lat) * Math.PI) / 180;
-      const dLon = ((pts[i].lon - pts[i - 1].lon) * Math.PI) / 180;
-      const a =
-        Math.sin(dLat / 2) ** 2 +
-        Math.cos((pts[i - 1].lat * Math.PI) / 180) * Math.cos((pts[i].lat * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
-      dist += R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      if (pts[i].ele > pts[i - 1].ele) elevGain += pts[i].ele - pts[i - 1].ele;
+      const dLat = (pts[i].lat - pts[i-1].lat) * Math.PI / 180;
+      const dLon = (pts[i].lon - pts[i-1].lon) * Math.PI / 180;
+      const a = Math.sin(dLat/2)**2 + Math.cos(pts[i-1].lat*Math.PI/180)*Math.cos(pts[i].lat*Math.PI/180)*Math.sin(dLon/2)**2;
+      dist += R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      if (pts[i].ele > pts[i-1].ele) elevGain += pts[i].ele - pts[i-1].ele;
       latlng.push([pts[i].lat, pts[i].lon]);
     }
 
-    const durationSec =
-      pts[0].time && pts[pts.length - 1].time
-        ? (pts[pts.length - 1].time!.getTime() - pts[0].time!.getTime()) / 1000
-        : 0;
+    const durationSec = pts[0].time && pts[pts.length-1].time
+      ? (pts[pts.length-1].time!.getTime() - pts[0].time!.getTime()) / 1000
+      : 0;
 
     return {
       fileName,
@@ -106,32 +96,26 @@ export default function NewActivityPage() {
     };
   }, []);
 
-  const handleGpxFile = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const xml = ev.target?.result as string;
-        const preview = parseGpxPreview(xml, file.name);
-        if (!preview) {
-          toast.error('Fichier GPX invalide');
-          return;
-        }
-        setGpxPreview(preview);
-        setForm((f) => ({
-          ...f,
-          name: f.name || file.name.replace('.gpx', ''),
-          distance: String(preview.distanceKm),
-          moving_time: preview.durationMin > 0 ? String(preview.durationMin) : f.moving_time,
-          total_elevation_gain: String(preview.elevGain),
-        }));
-        toast.success(`GPX charg\u00e9 : ${preview.distanceKm} km, ${preview.elevGain}m D+`);
-      };
-      reader.readAsText(file);
-    },
-    [parseGpxPreview],
-  );
+  const handleGpxFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const xml = ev.target?.result as string;
+      const preview = parseGpxPreview(xml, file.name);
+      if (!preview) { toast.error('Fichier GPX invalide'); return; }
+      setGpxPreview(preview);
+      setForm(f => ({
+        ...f,
+        name: f.name || file.name.replace('.gpx', ''),
+        distance: String(preview.distanceKm),
+        moving_time: preview.durationMin > 0 ? String(preview.durationMin) : f.moving_time,
+        total_elevation_gain: String(preview.elevGain),
+      }));
+      toast.success(`GPX charg\u00e9 : ${preview.distanceKm} km, ${preview.elevGain}m D+`);
+    };
+    reader.readAsText(file);
+  }, [parseGpxPreview]);
 
   const computedAvgSpeed = (() => {
     const dist = parseFloat(form.distance);
@@ -183,7 +167,7 @@ export default function NewActivityPage() {
         router.push(result?.id ? `/app/activities/${result.id}` : '/app/activities');
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Erreur lors de l'enregistrement";
+      const msg = err instanceof Error ? err.message : 'Erreur lors de l\'enregistrement';
       setError(msg);
       toast.error(msg);
     } finally {
@@ -193,6 +177,7 @@ export default function NewActivityPage() {
 
   return (
     <div className="animate-fade-in max-w-3xl mx-auto space-y-5">
+
       {/* Hero header */}
       <Card variant="glass" padding="lg">
         <div className="flex items-center justify-between">
@@ -208,10 +193,7 @@ export default function NewActivityPage() {
           <div className="flex bg-surface p-0.5 rounded-xl text-sm">
             <button
               type="button"
-              onClick={() => {
-                setGpxMode(false);
-                setGpxPreview(null);
-              }}
+              onClick={() => { setGpxMode(false); setGpxPreview(null); }}
               className={`px-3 py-1.5 rounded-lg font-medium transition-all ${!gpxMode ? 'bg-surface text-primary shadow-sm' : 'text-muted'}`}
             >
               Manuel
@@ -260,13 +242,7 @@ export default function NewActivityPage() {
                   <FileText className="w-5 h-5 text-primary" />
                   <span className="font-medium text-sm text-foreground">{gpxPreview.fileName}</span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setGpxPreview(null);
-                    if (fileInputRef.current) fileInputRef.current.value = '';
-                  }}
-                >
+                <button type="button" onClick={() => { setGpxPreview(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}>
                   <X className="w-4 h-4 text-muted hover:text-foreground" />
                 </button>
               </div>
@@ -298,6 +274,7 @@ export default function NewActivityPage() {
       <form onSubmit={handleSubmit} className="space-y-5">
         <Card variant="glass" accent="primary" padding="lg">
           <div className="space-y-4">
+
             {/* Name + Type */}
             <Card variant="glass-subtle" accent="primary" padding="md">
               <CardTitle className="text-sm flex items-center gap-2 mb-3">
@@ -306,15 +283,10 @@ export default function NewActivityPage() {
               </CardTitle>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
-                    Nom de l&apos;activit\u00e9 *
-                  </label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Nom de l&apos;activit\u00e9 *</label>
                   <Input
                     value={form.name}
-                    onChange={(e) => {
-                      setForm({ ...form, name: e.target.value });
-                      setFieldErrors((f) => ({ ...f, name: '' }));
-                    }}
+                    onChange={e => { setForm({ ...form, name: e.target.value }); setFieldErrors(f => ({ ...f, name: '' })); }}
                     placeholder="Morning Run"
                     required
                     className={fieldErrors.name ? 'border-danger' : ''}
@@ -323,7 +295,7 @@ export default function NewActivityPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1">Type d&apos;activit\u00e9</label>
-                  <Select value={form.type} onChange={(v) => setForm({ ...form, type: v })} options={ACTIVITY_TYPES} />
+                  <Select value={form.type} onChange={v => setForm({ ...form, type: v })} options={ACTIVITY_TYPES} />
                 </div>
               </div>
             </Card>
@@ -333,16 +305,7 @@ export default function NewActivityPage() {
               <Card variant="glass-subtle" accent="info" padding="md">
                 <CardTitle className="text-sm mb-3">Date et heure</CardTitle>
                 <div>
-                  <Input
-                    type="datetime-local"
-                    value={form.start_date}
-                    onChange={(e) => {
-                      setForm({ ...form, start_date: e.target.value });
-                      setFieldErrors((f) => ({ ...f, start_date: '' }));
-                    }}
-                    required
-                    className={fieldErrors.start_date ? 'border-danger' : ''}
-                  />
+                  <Input type="datetime-local" value={form.start_date} onChange={e => { setForm({ ...form, start_date: e.target.value }); setFieldErrors(f => ({ ...f, start_date: '' })); }} required className={fieldErrors.start_date ? 'border-danger' : ''} />
                   {fieldErrors.start_date && <p className="text-xs text-danger mt-1">{fieldErrors.start_date}</p>}
                 </div>
               </Card>
@@ -354,22 +317,11 @@ export default function NewActivityPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1">Distance (km)</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={form.distance}
-                    onChange={(e) => setForm({ ...form, distance: e.target.value })}
-                    placeholder="5.0"
-                  />
+                  <Input type="number" step="0.01" value={form.distance} onChange={e => setForm({ ...form, distance: e.target.value })} placeholder="5.0" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1">Dur\u00e9e (minutes)</label>
-                  <Input
-                    type="number"
-                    value={form.moving_time}
-                    onChange={(e) => setForm({ ...form, moving_time: e.target.value })}
-                    placeholder="30"
-                  />
+                  <Input type="number" value={form.moving_time} onChange={e => setForm({ ...form, moving_time: e.target.value })} placeholder="30" />
                 </div>
               </div>
             </Card>
@@ -381,25 +333,14 @@ export default function NewActivityPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-1">Vitesse moyenne (km/h)</label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={form.average_speed}
-                      onChange={(e) => setForm({ ...form, average_speed: e.target.value })}
-                      placeholder="10.0"
-                    />
+                    <Input type="number" step="0.1" value={form.average_speed} onChange={e => setForm({ ...form, average_speed: e.target.value })} placeholder="10.0" />
                     {computedAvgSpeed && !form.average_speed && (
                       <p className="text-xs text-primary mt-1">Auto-calcul\u00e9e: {computedAvgSpeed} km/h</p>
                     )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-1">D\u00e9nivel\u00e9 (m)</label>
-                    <Input
-                      type="number"
-                      value={form.total_elevation_gain}
-                      onChange={(e) => setForm({ ...form, total_elevation_gain: e.target.value })}
-                      placeholder="100"
-                    />
+                    <Input type="number" value={form.total_elevation_gain} onChange={e => setForm({ ...form, total_elevation_gain: e.target.value })} placeholder="100" />
                   </div>
                 </div>
               </Card>
@@ -412,21 +353,11 @@ export default function NewActivityPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-1">FC moyenne</label>
-                    <Input
-                      type="number"
-                      value={form.average_heartrate}
-                      onChange={(e) => setForm({ ...form, average_heartrate: e.target.value })}
-                      placeholder="150"
-                    />
+                    <Input type="number" value={form.average_heartrate} onChange={e => setForm({ ...form, average_heartrate: e.target.value })} placeholder="150" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-1">FC max</label>
-                    <Input
-                      type="number"
-                      value={form.max_heartrate}
-                      onChange={(e) => setForm({ ...form, max_heartrate: e.target.value })}
-                      placeholder="175"
-                    />
+                    <Input type="number" value={form.max_heartrate} onChange={e => setForm({ ...form, max_heartrate: e.target.value })} placeholder="175" />
                   </div>
                 </div>
               </Card>
@@ -438,12 +369,7 @@ export default function NewActivityPage() {
                 <CardTitle className="text-sm mb-3">D\u00e9pense \u00e9nerg\u00e9tique</CardTitle>
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1">Calories</label>
-                  <Input
-                    type="number"
-                    value={form.calories}
-                    onChange={(e) => setForm({ ...form, calories: e.target.value })}
-                    placeholder="300"
-                  />
+                  <Input type="number" value={form.calories} onChange={e => setForm({ ...form, calories: e.target.value })} placeholder="300" />
                 </div>
               </Card>
             )}
@@ -454,13 +380,14 @@ export default function NewActivityPage() {
               <div>
                 <textarea
                   value={form.notes}
-                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                  onChange={e => setForm({ ...form, notes: e.target.value })}
                   className="w-full p-2 border border-border rounded-lg bg-surface text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
                   rows={3}
                   placeholder="Notes sur l'activit\u00e9..."
                 />
               </div>
             </Card>
+
           </div>
         </Card>
 
@@ -468,7 +395,7 @@ export default function NewActivityPage() {
         <Card variant="glass" padding="lg">
           <div className="flex gap-4">
             <Button type="submit" isLoading={isLoading} className="flex-1">
-              {gpxMode ? "Importer l'activit\u00e9 GPX" : 'Enregistrer'}
+              {gpxMode ? 'Importer l\'activit\u00e9 GPX' : 'Enregistrer'}
             </Button>
             <Button type="button" variant="secondary" onClick={() => router.back()}>
               Annuler
@@ -476,6 +403,7 @@ export default function NewActivityPage() {
           </div>
         </Card>
       </form>
+
     </div>
   );
 }

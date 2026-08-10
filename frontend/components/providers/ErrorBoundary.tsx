@@ -29,7 +29,7 @@ export class ErrorBoundary extends Component<Props, State> {
     logger.error('ErrorBoundary caught error', {
       message: error.message,
       stack: error.stack,
-      componentStack: errorInfo.componentStack,
+      componentStack: errorInfo.componentStack
     });
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
@@ -55,10 +55,7 @@ export class ErrorBoundary extends Component<Props, State> {
             ) : (
               <p className="text-muted mb-4">Une erreur inattendue est survenue. Veuillez réessayer.</p>
             )}
-            <button
-              onClick={this.handleRetry}
-              className="px-4 py-2 bg-primary text-surface rounded text-sm cursor-pointer border-0"
-            >
+            <button onClick={this.handleRetry} className="px-4 py-2 bg-primary text-surface rounded text-sm cursor-pointer border-0">
               Réessayer
             </button>
           </div>

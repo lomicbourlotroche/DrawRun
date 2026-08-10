@@ -443,15 +443,8 @@ export interface ExternalEvent {
 export interface CoachProfile {
   user: { id: number; email: string; name: string };
   profile: {
-    vdot?: number;
-    vma?: number;
-    fcm?: number;
-    resting_hr?: number;
-    age?: number;
-    sex?: string;
-    weight?: number;
-    weeklyKm?: number | null;
-    pace?: string | null;
+    vdot?: number; vma?: number; fcm?: number; resting_hr?: number;
+    age?: number; sex?: string; weight?: number; weeklyKm?: number | null; pace?: string | null;
   };
   activePlan: { plan: Record<string, unknown>; sessions: Record<string, unknown>[]; planId: number } | null;
   hasActivePlan: boolean;

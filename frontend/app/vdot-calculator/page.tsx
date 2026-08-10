@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
-import { ArrowLeft, Calculator, Trophy, Target, Zap, TrendingUp, Activity, ChevronRight } from '@/components/ui/icons';
+import {
+  ArrowLeft, Calculator, Trophy, Target, Zap, TrendingUp, Activity, ChevronRight
+} from '@/components/ui/icons';
 
 const RACE_PRESETS = [
   { label: '5K', distance: 5000, icon: '🏃' },
@@ -120,7 +122,10 @@ export default function VDOTCalculatorPage() {
       {/* Header */}
       <div className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-surface">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
-          <button onClick={() => router.push('/')} className="p-2 rounded-xl hover:bg-surface transition-colors">
+          <button
+            onClick={() => router.push('/')}
+            className="p-2 rounded-xl hover:bg-surface transition-colors"
+          >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-3">
@@ -240,7 +245,9 @@ export default function VDOTCalculatorPage() {
           </button>
 
           {error && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">{error}</div>
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+              {error}
+            </div>
           )}
         </div>
 
@@ -248,23 +255,18 @@ export default function VDOTCalculatorPage() {
         {result && (
           <div className="space-y-6 animate-fade-in">
             {/* VDOT Score Card */}
-            <div
-              className={`bg-gradient-to-br ${getVDOTLevelInfo(result.level.level).gradient} rounded-3xl p-6 text-white shadow-lg`}
-            >
+            <div className={`bg-gradient-to-br ${getVDOTLevelInfo(result.level.level).gradient} rounded-3xl p-6 text-white shadow-lg`}>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-white/80 text-sm font-medium">Votre VDOT</p>
                   <p className="text-5xl font-extrabold mt-1">{result.vdot}</p>
                   <p className="text-white/90 text-sm mt-2">
-                    {getVDOTLevelInfo(result.level.level).emoji} {result.level.level} — {result.level.percent}ème
-                    percentile
+                    {getVDOTLevelInfo(result.level.level).emoji} {result.level.level} — {result.level.percent}ème percentile
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-white/80 text-sm">VMA estimée</p>
-                  <p className="text-3xl font-bold">
-                    {result.vma} <span className="text-lg">km/h</span>
-                  </p>
+                  <p className="text-3xl font-bold">{result.vma} <span className="text-lg">km/h</span></p>
                 </div>
               </div>
               {/* Progress bar */}
@@ -286,11 +288,9 @@ export default function VDOTCalculatorPage() {
                 {TRAINING_ZONES.map((zone) => {
                   const zoneData = result.trainingPaces?.[zone.key];
                   const paceDisplay = zoneData
-                    ? 'min' in zoneData && zoneData.min
+                    ? ('min' in zoneData && zoneData.min
                       ? `${zoneData.min} - ${zoneData.max}`
-                      : 'pace' in zoneData
-                        ? zoneData.pace
-                        : '--:--'
+                      : ('pace' in zoneData ? zoneData.pace : '--:--'))
                     : '--:--';
                   return (
                     <div key={zone.key} className="flex items-center justify-between p-3 bg-background rounded-xl">
@@ -301,9 +301,7 @@ export default function VDOTCalculatorPage() {
                           <p className="text-xs text-muted">{zone.description}</p>
                         </div>
                       </div>
-                      <p className="font-mono font-bold">
-                        {paceDisplay} <span className="text-xs text-muted font-normal">min/km</span>
-                      </p>
+                      <p className="font-mono font-bold">{paceDisplay} <span className="text-xs text-muted font-normal">min/km</span></p>
                     </div>
                   );
                 })}
@@ -318,10 +316,7 @@ export default function VDOTCalculatorPage() {
               </h3>
               <div className="grid grid-cols-2 gap-3">
                 {result.predictions.classicRaces.map((race) => (
-                  <div
-                    key={race.distance}
-                    className="p-4 bg-gradient-to-br from-neutral-50 to-white border border-surface rounded-xl"
-                  >
+                  <div key={race.distance} className="p-4 bg-gradient-to-br from-neutral-50 to-white border border-surface rounded-xl">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold">{race.distance}</span>
                       <TrendingUp className="w-4 h-4 text-primary" />
@@ -337,9 +332,7 @@ export default function VDOTCalculatorPage() {
             <div className="bg-gradient-to-r from-primary-600 to-secondary rounded-3xl p-6 text-white text-center">
               <Zap className="w-8 h-8 mx-auto mb-3" />
               <h3 className="text-xl font-bold mb-2">Poussez votre performance plus loin</h3>
-              <p className="text-white/80 text-sm mb-4">
-                Créez un compte pour un suivi personnalisé, un coaching adaptatif et des analyses avancées.
-              </p>
+              <p className="text-white/80 text-sm mb-4">Créez un compte pour un suivi personnalisé, un coaching adaptatif et des analyses avancées.</p>
               <button
                 onClick={() => router.push('/login?mode=register')}
                 className="px-6 py-3 bg-surface text-primary-600 font-semibold rounded-xl hover:bg-surface transition-colors inline-flex items-center gap-2"

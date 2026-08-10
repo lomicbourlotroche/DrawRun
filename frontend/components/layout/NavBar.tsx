@@ -6,15 +6,18 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <Image src="/logo.svg" alt="DrawRun" width={120} height={30} className="brightness-0 invert" priority />
+            <Image
+              src="/logo.svg"
+              alt="DrawRun"
+              width={120}
+              height={30}
+              className="brightness-0 invert"
+              priority
+            />
           </div>
           <div className="hidden md:flex items-center space-x-8">
-            <a href="/" className="text-foreground/80 hover:text-foreground transition-colors">
-              Accueil
-            </a>
-            <a href="/garmin" className="text-foreground/80 hover:text-foreground transition-colors">
-              Garmin
-            </a>
+            <a href="/" className="text-foreground/80 hover:text-foreground transition-colors">Accueil</a>
+            <a href="/garmin" className="text-foreground/80 hover:text-foreground transition-colors">Garmin</a>
           </div>
         </div>
       </div>

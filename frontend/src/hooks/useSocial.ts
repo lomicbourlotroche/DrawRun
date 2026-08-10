@@ -12,7 +12,14 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
-import type { Friend, FriendRequest, Group, LeaderboardEntry, SocialFeedItem, UserSearchResult } from '@/types';
+import type {
+  Friend,
+  FriendRequest,
+  Group,
+  LeaderboardEntry,
+  SocialFeedItem,
+  UserSearchResult,
+} from '@/types';
 import { SOCIAL_ERRORS } from '@/constants/social';
 
 // ============================================================
@@ -47,6 +54,8 @@ interface UseGroupsReturn {
   setSearchQuery: (_query: string) => void;
 }
 
+
+
 // ============================================================
 // HOOKS
 // ============================================================
@@ -67,7 +76,10 @@ export function useFriends(): UseFriendsReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const [friendsData, requestsData] = await Promise.all([api.getFriends(), api.getPendingFriendRequests()]);
+      const [friendsData, requestsData] = await Promise.all([
+        api.getFriends(),
+        api.getPendingFriendRequests(),
+      ]);
       setFriends(friendsData || []);
       setRequests(requestsData || []);
     } catch {
@@ -106,29 +118,23 @@ export function useFriends(): UseFriendsReturn {
     }
   }, []);
 
-  const handleAccept = useCallback(
-    async (userId: number) => {
-      try {
-        await api.acceptFriendRequest(userId);
-        await loadFriends();
-      } catch {
-        setError(SOCIAL_ERRORS.ACCEPT_FRIEND_REQUEST);
-      }
-    },
-    [loadFriends],
-  );
+  const handleAccept = useCallback(async (userId: number) => {
+    try {
+      await api.acceptFriendRequest(userId);
+      await loadFriends();
+    } catch {
+      setError(SOCIAL_ERRORS.ACCEPT_FRIEND_REQUEST);
+    }
+  }, [loadFriends]);
 
-  const handleRemove = useCallback(
-    async (userId: number) => {
-      try {
-        await api.removeFriend(userId);
-        await loadFriends();
-      } catch {
-        setError(SOCIAL_ERRORS.REMOVE_FRIEND);
-      }
-    },
-    [loadFriends],
-  );
+  const handleRemove = useCallback(async (userId: number) => {
+    try {
+      await api.removeFriend(userId);
+      await loadFriends();
+    } catch {
+      setError(SOCIAL_ERRORS.REMOVE_FRIEND);
+    }
+  }, [loadFriends]);
 
   useEffect(() => {
     loadFriends();
@@ -165,7 +171,10 @@ export function useGroups(): UseGroupsReturn {
     setIsLoading(true);
     setError(null);
     try {
-      const [myGroups, pubGroups] = await Promise.all([api.getGroups(), api.getPublicGroups()]);
+      const [myGroups, pubGroups] = await Promise.all([
+        api.getGroups(),
+        api.getPublicGroups(),
+      ]);
       setGroups(myGroups || []);
       setPublicGroups(pubGroups || []);
     } catch {
@@ -188,17 +197,14 @@ export function useGroups(): UseGroupsReturn {
     }
   }, []);
 
-  const handleLeave = useCallback(
-    async (groupId: number) => {
-      try {
-        await api.leaveGroup(groupId);
-        await loadGroups();
-      } catch {
-        setError(SOCIAL_ERRORS.LEAVE_GROUP);
-      }
-    },
-    [loadGroups],
-  );
+  const handleLeave = useCallback(async (groupId: number) => {
+    try {
+      await api.leaveGroup(groupId);
+      await loadGroups();
+    } catch {
+      setError(SOCIAL_ERRORS.LEAVE_GROUP);
+    }
+  }, [loadGroups]);
 
   useEffect(() => {
     loadGroups();
@@ -292,8 +298,8 @@ export function useFeed() {
               user_liked: !currentLiked,
               like_count: currentLiked ? (a.like_count ?? 0) - 1 : (a.like_count ?? 0) + 1,
             }
-          : a,
-      ),
+          : a
+      )
     );
     try {
       if (currentLiked) await api.unlikeActivity(activityId);
@@ -307,8 +313,8 @@ export function useFeed() {
                 user_liked: currentLiked,
                 like_count: currentLiked ? (a.like_count ?? 0) + 1 : (a.like_count ?? 0) - 1,
               }
-            : a,
-        ),
+            : a
+        )
       );
       setError(SOCIAL_ERRORS.LIKE_ACTIVITY);
     }
@@ -334,47 +340,43 @@ export function useFeed() {
  * Hook pour gérer les défis (challenges).
  */
 export function useChallenges() {
-  const [publicChallenges, setPublicChallenges] = useState<
-    Array<{
-      id: number;
-      title: string;
-      description?: string;
-      type: string;
-      target_value: number;
-      target_unit?: string;
-      duration_days: number;
-      participant_count: number;
-      created_at: string;
-      challenge_mode?: string;
-      badge_icon?: string;
-      sport_type?: string;
-      milestones?: string;
-      weekly_target?: number;
-      weekly_increase_pct?: number;
-      streak_days?: number;
-      frequency_per_week?: number;
-      creator_name?: string;
-    }>
-  >([]);
-  const [myChallenges, setMyChallenges] = useState<
-    Array<{
-      id: number;
-      title: string;
-      description?: string;
-      type: string;
-      target_value: number;
-      target_unit?: string;
-      progress: number;
-      user_status: string;
-      start_date: string;
-      end_date: string;
-      challenge_mode?: string;
-      badge_icon?: string;
-      milestones?: string;
-      streak_current?: number;
-      streak_best?: number;
-    }>
-  >([]);
+  const [publicChallenges, setPublicChallenges] = useState<Array<{
+    id: number;
+    title: string;
+    description?: string;
+    type: string;
+    target_value: number;
+    target_unit?: string;
+    duration_days: number;
+    participant_count: number;
+    created_at: string;
+    challenge_mode?: string;
+    badge_icon?: string;
+    sport_type?: string;
+    milestones?: string;
+    weekly_target?: number;
+    weekly_increase_pct?: number;
+    streak_days?: number;
+    frequency_per_week?: number;
+    creator_name?: string;
+  }>>( []);
+  const [myChallenges, setMyChallenges] = useState<Array<{
+    id: number;
+    title: string;
+    description?: string;
+    type: string;
+    target_value: number;
+    target_unit?: string;
+    progress: number;
+    user_status: string;
+    start_date: string;
+    end_date: string;
+    challenge_mode?: string;
+    badge_icon?: string;
+    milestones?: string;
+    streak_current?: number;
+    streak_best?: number;
+  }>>( []);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -397,21 +399,18 @@ export function useChallenges() {
     }
   }, []);
 
-  const handleJoin = useCallback(
-    async (challengeId: number) => {
-      try {
-        const res = await api.joinChallenge(challengeId);
-        if (res?.success) {
-          await loadChallenges();
-        } else {
-          setError(res?.error || SOCIAL_ERRORS.JOIN_CHALLENGE);
-        }
-      } catch {
-        setError(SOCIAL_ERRORS.JOIN_CHALLENGE);
+  const handleJoin = useCallback(async (challengeId: number) => {
+    try {
+      const res = await api.joinChallenge(challengeId);
+      if (res?.success) {
+        await loadChallenges();
+      } else {
+        setError(res?.error || SOCIAL_ERRORS.JOIN_CHALLENGE);
       }
-    },
-    [loadChallenges],
-  );
+    } catch {
+      setError(SOCIAL_ERRORS.JOIN_CHALLENGE);
+    }
+  }, [loadChallenges]);
 
   useEffect(() => {
     loadChallenges();
@@ -490,7 +489,10 @@ export function getTypeInfo(type: string) {
 /**
  * Récupère les milestones pour un défi.
  */
-export function getMilestones(challenge: { milestones?: string; challenge_mode?: string }) {
+export function getMilestones(challenge: {
+  milestones?: string;
+  challenge_mode?: string;
+}) {
   const defaultMilestones = [
     { pct: 25, label: '1/4', icon: '🌱' },
     { pct: 50, label: 'Moitié', icon: '🌿' },

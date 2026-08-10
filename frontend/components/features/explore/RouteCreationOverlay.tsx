@@ -16,12 +16,7 @@ interface RouteCreationOverlayProps {
   isLoop: boolean;
 }
 
-export default function RouteCreationOverlay({
-  map,
-  routeCreationPoints,
-  onWaypointDrag,
-  isLoop,
-}: RouteCreationOverlayProps) {
+export default function RouteCreationOverlay({ map, routeCreationPoints, onWaypointDrag, isLoop }: RouteCreationOverlayProps) {
   const waypointMarkersRef = useRef<DrawRunMarker[]>([]);
   const creationPolylineRef = useRef<L.Polyline | null>(null);
   const layersRef = useRef<Map<string, L.Layer>>(new Map());
@@ -91,16 +86,13 @@ export default function RouteCreationOverlay({
       const first = routeCreationPoints[0];
       const last = routeCreationPoints[routeCreationPoints.length - 1];
       const loopLine = L.polyline(
-        [
-          [last.lat, last.lng],
-          [first.lat, first.lng],
-        ],
+        [[last.lat, last.lng], [first.lat, first.lng]],
         {
           color: 'var(--primary)',
           weight: 3,
           opacity: 0.6,
           dashArray: '8 6',
-        },
+        }
       );
       loopLine.addTo(map);
       layersRef.current.set('loop_closure', loopLine);
@@ -116,11 +108,7 @@ export default function RouteCreationOverlay({
       });
       if (creationPolylineRef.current) {
         const currentMap = mapRef.current;
-        if (
-          currentMap &&
-          creationPolylineRef.current &&
-          (creationPolylineRef.current as unknown as { _map: unknown })._map
-        ) {
+        if (currentMap && creationPolylineRef.current && (creationPolylineRef.current as unknown as { _map: unknown })._map) {
           currentMap.removeLayer(creationPolylineRef.current);
         }
       }

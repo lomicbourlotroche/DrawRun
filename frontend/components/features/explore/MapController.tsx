@@ -134,5 +134,10 @@ export default function MapController({
     mapInstanceRef.current.setView([center.lat, center.lng], zoom);
   }, [center.lat, center.lng, zoom, mapReady]);
 
-  return <div ref={mapRef} className="w-full h-full min-h-[400px] explore-map-container" />;
+  return (
+    <div
+      ref={mapRef}
+      className="w-full h-full min-h-[400px] explore-map-container"
+    />
+  );
 }

@@ -25,15 +25,9 @@ describe('API Client', () => {
     Object.defineProperty(window, 'sessionStorage', {
       value: {
         getItem: vi.fn((key: string) => sessionStorageData[key] ?? null),
-        setItem: vi.fn((key: string, value: string) => {
-          sessionStorageData[key] = value;
-        }),
-        removeItem: vi.fn((key: string) => {
-          delete sessionStorageData[key];
-        }),
-        clear: vi.fn(() => {
-          sessionStorageData = {};
-        }),
+        setItem: vi.fn((key: string, value: string) => { sessionStorageData[key] = value; }),
+        removeItem: vi.fn((key: string) => { delete sessionStorageData[key]; }),
+        clear: vi.fn(() => { sessionStorageData = {}; }),
       },
       writable: true,
       configurable: true,
@@ -42,15 +36,9 @@ describe('API Client', () => {
     Object.defineProperty(window, 'localStorage', {
       value: {
         getItem: vi.fn((key: string) => localStorageData[key] ?? null),
-        setItem: vi.fn((key: string, value: string) => {
-          localStorageData[key] = value;
-        }),
-        removeItem: vi.fn((key: string) => {
-          delete localStorageData[key];
-        }),
-        clear: vi.fn(() => {
-          localStorageData = {};
-        }),
+        setItem: vi.fn((key: string, value: string) => { localStorageData[key] = value; }),
+        removeItem: vi.fn((key: string) => { delete localStorageData[key]; }),
+        clear: vi.fn(() => { localStorageData = {}; }),
       },
       writable: true,
       configurable: true,
@@ -116,7 +104,7 @@ describe('API Client', () => {
         `${API_BASE_URL}/health`,
         expect.objectContaining({
           headers: { 'Content-Type': 'application/json' },
-        }),
+        })
       );
       expect(result).toEqual(mockData);
     });
@@ -142,7 +130,7 @@ describe('API Client', () => {
           headers: expect.objectContaining({
             Authorization: `Bearer ${token}`,
           }),
-        }),
+        })
       );
     });
 
@@ -194,7 +182,7 @@ describe('API Client', () => {
         expect.objectContaining({
           method: 'POST',
           body: JSON.stringify({ email: 'test@example.com', password: 'password123' }),
-        }),
+        })
       );
       expect(result).toEqual(mockResponse);
     });
@@ -239,7 +227,7 @@ describe('API Client', () => {
             password: 'password123',
             name: 'New User',
           }),
-        }),
+        })
       );
       expect(result).toEqual(mockResponse);
     });
@@ -269,7 +257,10 @@ describe('API Client', () => {
 
       const result = await api.getActivities();
 
-      expect(fetch).toHaveBeenCalledWith(`${API_BASE_URL}/api/activities?page=1&per_page=20`, expect.any(Object));
+      expect(fetch).toHaveBeenCalledWith(
+        `${API_BASE_URL}/api/activities?page=1&per_page=20`,
+        expect.any(Object)
+      );
       expect(result).toEqual(mockActivities);
     });
 
@@ -295,7 +286,7 @@ describe('API Client', () => {
         expect.objectContaining({
           method: 'POST',
           body: expect.stringContaining('Test Run'),
-        }),
+        })
       );
     });
   });
@@ -318,7 +309,10 @@ describe('API Client', () => {
 
       const result = await api.getProfile();
 
-      expect(fetch).toHaveBeenCalledWith(`${API_BASE_URL}/api/profile`, expect.any(Object));
+      expect(fetch).toHaveBeenCalledWith(
+        `${API_BASE_URL}/api/profile`,
+        expect.any(Object)
+      );
       expect(result).toEqual(mockProfile);
     });
 
@@ -337,7 +331,7 @@ describe('API Client', () => {
         expect.objectContaining({
           method: 'PUT',
           body: JSON.stringify(updates),
-        }),
+        })
       );
     });
   });
@@ -353,26 +347,29 @@ describe('API Client', () => {
       const mockUser = { id: 1, email: 'a@b.com', name: 'Test' };
 
       await fc.assert(
-        fc.asyncProperty(fc.string({ minLength: 10, maxLength: 100 }), async (refreshToken) => {
-          // Reset state between runs
-          sessionStorageData = {};
-          api.setToken(null);
+        fc.asyncProperty(
+          fc.string({ minLength: 10, maxLength: 100 }),
+          async (refreshToken) => {
+            // Reset state between runs
+            sessionStorageData = {};
+            api.setToken(null);
 
-          global.fetch = vi.fn().mockResolvedValueOnce({
-            ok: true,
-            json: () =>
-              Promise.resolve({
-                token: 'access-token',
-                refreshToken,
-                userId: 1,
-                user: mockUser,
-              }),
-          } as Response);
+            global.fetch = vi.fn().mockResolvedValueOnce({
+              ok: true,
+              json: () =>
+                Promise.resolve({
+                  token: 'access-token',
+                  refreshToken,
+                  userId: 1,
+                  user: mockUser,
+                }),
+            } as Response);
 
-          await api.login('a@b.com', 'pass');
-          return api.getRefreshToken() === refreshToken;
-        }),
-        { numRuns: 50 },
+            await api.login('a@b.com', 'pass');
+            return api.getRefreshToken() === refreshToken;
+          }
+        ),
+        { numRuns: 50 }
       );
     });
 
@@ -381,7 +378,8 @@ describe('API Client', () => {
 
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ token: 'access-token', userId: 1, user: mockUser }),
+        json: () =>
+          Promise.resolve({ token: 'access-token', userId: 1, user: mockUser }),
       } as Response);
 
       await api.login('a@b.com', 'pass');
@@ -541,32 +539,35 @@ describe('API Client', () => {
       });
 
       await fc.assert(
-        fc.asyncProperty(fc.string({ minLength: 5, maxLength: 50 }), async (expiredToken) => {
-          const mockLogout = vi.fn();
-          (useAuthStore.getState as ReturnType<typeof vi.fn>).mockReturnValue({
-            logout: mockLogout,
-          });
+        fc.asyncProperty(
+          fc.string({ minLength: 5, maxLength: 50 }),
+          async (expiredToken) => {
+            const mockLogout = vi.fn();
+            (useAuthStore.getState as ReturnType<typeof vi.fn>).mockReturnValue({
+              logout: mockLogout,
+            });
 
-          sessionStorageData = {};
-          api.setToken(expiredToken);
-          api.setRefreshToken(null);
-          window.location.href = '';
+            sessionStorageData = {};
+            api.setToken(expiredToken);
+            api.setRefreshToken(null);
+            window.location.href = '';
 
-          global.fetch = vi.fn().mockResolvedValueOnce({
-            ok: false,
-            status: 401,
-            json: () => Promise.resolve({ error: 'Unauthorized' }),
-          } as Response);
+            global.fetch = vi.fn().mockResolvedValueOnce({
+              ok: false,
+              status: 401,
+              json: () => Promise.resolve({ error: 'Unauthorized' }),
+            } as Response);
 
-          try {
-            await api.getProfile();
-          } catch {
-            // expected
+            try {
+              await api.getProfile();
+            } catch {
+              // expected
+            }
+
+            return mockLogout.mock.calls.length === 1 && window.location.href === '/login';
           }
-
-          return mockLogout.mock.calls.length === 1 && window.location.href === '/login';
-        }),
-        { numRuns: 20 },
+        ),
+        { numRuns: 20 }
       );
 
       Object.defineProperty(window, 'location', {
@@ -582,59 +583,64 @@ describe('API Client', () => {
     // Validates: Requirement 2.5
     it('queues concurrent 401 requests and makes exactly one refresh call', async () => {
       await fc.assert(
-        fc.asyncProperty(fc.integer({ min: 2, max: 8 }), async (n) => {
-          // Reset state between runs
-          sessionStorageData = {};
-          api.setToken('expired-token');
-          api.setRefreshToken('valid-refresh-token');
+        fc.asyncProperty(
+          fc.integer({ min: 2, max: 8 }),
+          async (n) => {
+            // Reset state between runs
+            sessionStorageData = {};
+            api.setToken('expired-token');
+            api.setRefreshToken('valid-refresh-token');
 
-          let refreshCallCount = 0;
-          let protectedCallCount = 0;
+            let refreshCallCount = 0;
+            let protectedCallCount = 0;
 
-          global.fetch = vi.fn().mockImplementation((url: string) => {
-            if ((url as string).includes('/api/auth/refresh')) {
-              refreshCallCount++;
-              return new Promise((resolve) =>
-                // Small delay to allow concurrent requests to queue
-                setTimeout(
-                  () =>
-                    resolve({
-                      ok: true,
-                      json: () =>
-                        Promise.resolve({
-                          token: 'new-access-token',
-                          refreshToken: 'new-refresh-token',
-                          expiresIn: 900,
-                        }),
-                    } as Response),
-                  10,
-                ),
-              );
-            }
+            global.fetch = vi.fn().mockImplementation((url: string) => {
+              if ((url as string).includes('/api/auth/refresh')) {
+                refreshCallCount++;
+                return new Promise((resolve) =>
+                  // Small delay to allow concurrent requests to queue
+                  setTimeout(
+                    () =>
+                      resolve({
+                        ok: true,
+                        json: () =>
+                          Promise.resolve({
+                            token: 'new-access-token',
+                            refreshToken: 'new-refresh-token',
+                            expiresIn: 900,
+                          }),
+                      } as Response),
+                    10
+                  )
+                );
+              }
 
-            protectedCallCount++;
-            // First n calls return 401, subsequent retries return 200
-            if (protectedCallCount <= n) {
+              protectedCallCount++;
+              // First n calls return 401, subsequent retries return 200
+              if (protectedCallCount <= n) {
+                return Promise.resolve({
+                  ok: false,
+                  status: 401,
+                  json: () => Promise.resolve({ error: 'Unauthorized' }),
+                } as Response);
+              }
               return Promise.resolve({
-                ok: false,
-                status: 401,
-                json: () => Promise.resolve({ error: 'Unauthorized' }),
+                ok: true,
+                json: () => Promise.resolve({ data: 'ok' }),
               } as Response);
-            }
-            return Promise.resolve({
-              ok: true,
-              json: () => Promise.resolve({ data: 'ok' }),
-            } as Response);
-          });
+            });
 
-          const requests = Array.from({ length: n }, () => api.getProfile());
-          const results = await Promise.allSettled(requests);
+            const requests = Array.from({ length: n }, () => api.getProfile());
+            const results = await Promise.allSettled(requests);
 
-          const allSettled = results.every((r) => r.status === 'fulfilled' || r.status === 'rejected');
+            const allSettled = results.every(
+              (r) => r.status === 'fulfilled' || r.status === 'rejected'
+            );
 
-          return allSettled && refreshCallCount === 1;
-        }),
-        { numRuns: 10 },
+            return allSettled && refreshCallCount === 1;
+          }
+        ),
+        { numRuns: 10 }
       );
     });
   });

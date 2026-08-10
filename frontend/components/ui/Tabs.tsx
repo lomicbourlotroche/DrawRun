@@ -53,7 +53,11 @@ interface TabsListProps {
 }
 
 export function TabsList({ children, className }: TabsListProps) {
-  return <div className={cn('flex gap-1 p-1 bg-background rounded-lg', className)}>{children}</div>;
+  return (
+    <div className={cn('flex gap-1 p-1 bg-background rounded-lg', className)}>
+      {children}
+    </div>
+  );
 }
 
 interface TabsTriggerProps {
@@ -66,15 +70,17 @@ export function TabsTrigger({ value, children, className }: TabsTriggerProps) {
   const { value: selectedValue, onValueChange } = useTabs();
   const isActive = selectedValue === value;
 
-  return (
-    <button
-      onClick={() => onValueChange(value)}
-      className={cn(
-        'flex-1 flex items-center justify-center gap-2 px-3 py-3 min-h-[44px] rounded-md text-sm font-medium transition-all duration-200',
-        isActive ? 'bg-surface text-foreground' : 'text-muted hover:text-foreground hover:bg-surface/50',
-        className,
-      )}
-    >
+    return (
+      <button
+        onClick={() => onValueChange(value)}
+        className={cn(
+          'flex-1 flex items-center justify-center gap-2 px-3 py-3 min-h-[44px] rounded-md text-sm font-medium transition-all duration-200',
+          isActive
+            ? 'bg-surface text-foreground'
+            : 'text-muted hover:text-foreground hover:bg-surface/50',
+          className
+        )}
+      >
       {children}
     </button>
   );
@@ -116,7 +122,7 @@ export function LegacyTabs({ tabs, activeTab, onTabChange, className }: LegacyTa
             'flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200',
             activeTab === tab.id
               ? 'bg-surface text-foreground'
-              : 'text-muted hover:text-foreground hover:bg-surface/50',
+              : 'text-muted hover:text-foreground hover:bg-surface/50'
           )}
         >
           {tab.icon}
@@ -152,12 +158,17 @@ export function FilterChip({ label, isActive, onClick, count }: FilterChipProps)
         'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200',
         isActive
           ? 'bg-primary text-primary-foreground'
-          : 'bg-surface text-muted hover:text-foreground border border-border',
+          : 'bg-surface text-muted hover:text-foreground border border-border'
       )}
     >
       {label}
       {count !== undefined && (
-        <span className={cn('px-1.5 py-0.5 rounded-full text-xs', isActive ? 'bg-surface/20' : 'bg-background')}>
+        <span
+          className={cn(
+            'px-1.5 py-0.5 rounded-full text-xs',
+            isActive ? 'bg-surface/20' : 'bg-background'
+          )}
+        >
           {count}
         </span>
       )}
@@ -172,7 +183,12 @@ interface FilterChipGroupProps {
   className?: string;
 }
 
-export function FilterChipGroup({ options, activeFilter, onFilterChange, className }: FilterChipGroupProps) {
+export function FilterChipGroup({
+  options,
+  activeFilter,
+  onFilterChange,
+  className,
+}: FilterChipGroupProps) {
   return (
     <div className={cn('flex flex-wrap gap-2', className)}>
       {options.map((option) => (

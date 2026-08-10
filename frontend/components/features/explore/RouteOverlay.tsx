@@ -18,14 +18,7 @@ interface RouteOverlayProps {
   routes: RouteData[];
 }
 
-const ROUTE_COLORS = [
-  'var(--danger)',
-  'var(--primary)',
-  'var(--success)',
-  'var(--peak)',
-  'var(--secondary)',
-  'var(--danger)',
-];
+const ROUTE_COLORS = ['var(--danger)', 'var(--primary)', 'var(--success)', 'var(--peak)', 'var(--secondary)', 'var(--danger)'];
 
 export default function RouteOverlay({ map, routes }: RouteOverlayProps) {
   const layersRef = useRef<Map<string, L.Polyline>>(new Map());

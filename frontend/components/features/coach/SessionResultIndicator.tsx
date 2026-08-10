@@ -11,10 +11,7 @@ interface SessionResultIndicatorProps {
 }
 
 // Couleurs basées sur les tokens métiers
-const resultStyles: Record<
-  string,
-  { icon: JSX.Element; color: string; bgColor: string; label: string; description: string }
-> = {
+const resultStyles: Record<string, { icon: JSX.Element; color: string; bgColor: string; label: string; description: string }> = {
   success: {
     icon: <CheckCircle2 className="w-full h-full" />,
     color: 'text-success',
@@ -47,7 +44,7 @@ const resultStyles: Record<
     icon: <TrendingUp className="w-full h-full" />,
     color: 'text-success',
     bgColor: 'bg-success/20',
-    label: "À l'heure",
+    label: 'À l\'heure',
     description: 'Séance terminée à temps',
   },
   delayed: {
@@ -87,7 +84,11 @@ export default function SessionResultIndicator({
       >
         <span className={sizes.icon}>{style.icon}</span>
       </div>
-      {showLabel && <span className={`font-medium ${style.color} ${sizes.label}`}>{style.label}</span>}
+      {showLabel && (
+        <span className={`font-medium ${style.color} ${sizes.label}`}>
+          {style.label}
+        </span>
+      )}
     </div>
   );
 }

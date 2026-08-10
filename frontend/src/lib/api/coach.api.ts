@@ -247,9 +247,7 @@ export const coachApi = {
   /**
    * Adapte le plan en fonction du feedback
    */
-  adaptPlanBasedOnFeedback(
-    params: PlanFeedback,
-  ): Promise<{ success: boolean; adaptation: { adjustedSessions: number; reason: string } }> {
+  adaptPlanBasedOnFeedback(params: PlanFeedback): Promise<{ success: boolean; adaptation: { adjustedSessions: number; reason: string } }> {
     return client.request('/api/coach/adapt-plan', {
       method: 'POST',
       body: JSON.stringify(params),

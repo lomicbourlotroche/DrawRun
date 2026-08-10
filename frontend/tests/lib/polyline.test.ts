@@ -3,7 +3,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { decodePolyline, encodePolyline, calculateDistance, calculatePolylineDistance } from '@/lib/polyline';
+import {
+  decodePolyline,
+  encodePolyline,
+  calculateDistance,
+  calculatePolylineDistance,
+} from '@/lib/polyline';
 
 describe('polyline utilities', () => {
   describe('decodePolyline', () => {
@@ -23,7 +28,7 @@ describe('polyline utilities', () => {
       const decoded = decodePolyline(encoded);
 
       expect(decoded.length).toBeGreaterThan(1);
-      decoded.forEach((point) => {
+      decoded.forEach(point => {
         expect(point).toHaveLength(2);
         expect(typeof point[0]).toBe('number');
         expect(typeof point[1]).toBe('number');
@@ -42,7 +47,7 @@ describe('polyline utilities', () => {
 
       expect(decoded.length).toBeGreaterThan(0);
       // Check that we have valid coordinates
-      decoded.forEach((point) => {
+      decoded.forEach(point => {
         expect(typeof point[0]).toBe('number');
         expect(typeof point[1]).toBe('number');
       });
@@ -61,7 +66,7 @@ describe('polyline utilities', () => {
     it('should encode multiple coordinates', () => {
       const coordinates = [
         [37.7749, -122.4194],
-        [37.775, -122.4195],
+        [37.7750, -122.4195],
         [37.7751, -122.4196],
       ];
       const encoded = encodePolyline(coordinates);
@@ -78,7 +83,7 @@ describe('polyline utilities', () => {
     it('should encode and decode back to similar coordinates', () => {
       const original = [
         [37.7749, -122.4194],
-        [37.775, -122.4195],
+        [37.7750, -122.4195],
         [37.7751, -122.4196],
       ];
 

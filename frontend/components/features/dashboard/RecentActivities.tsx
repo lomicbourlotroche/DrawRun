@@ -77,9 +77,7 @@ export function RecentActivities({ activities, isLoading }: RecentActivitiesProp
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <h4 className="font-medium text-foreground truncate">{activity.title}</h4>
-                <Badge variant="default" size="sm">
-                  {activity.type}
-                </Badge>
+                <Badge variant="default" size="sm">{activity.type}</Badge>
               </div>
               <div className="flex items-center gap-3 text-sm text-muted">
                 <span className="flex items-center gap-1">

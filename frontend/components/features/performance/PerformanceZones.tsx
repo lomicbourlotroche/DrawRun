@@ -64,7 +64,9 @@ export function PerformanceZones({ zones, isLoading }: PerformanceZonesProps) {
             onClick={() => setIsProMode(!isProMode)}
             className={cn(
               'px-3 py-1 rounded-full text-xs font-medium transition-colors',
-              isProMode ? 'bg-primary text-foreground' : 'bg-surface text-muted hover:text-foreground',
+              isProMode
+                ? 'bg-primary text-foreground'
+                : 'bg-surface text-muted hover:text-foreground'
             )}
           >
             {isProMode ? 'Mode Pro (7 zones)' : 'Mode Standard (5 zones)'}
@@ -76,7 +78,10 @@ export function PerformanceZones({ zones, isLoading }: PerformanceZonesProps) {
         {activeTab === 'hr' && (
           <div className="space-y-2">
             {displayZones(zones.hrZones).map((zone) => (
-              <div key={zone.zone} className="flex items-center gap-4 p-3 rounded-lg bg-background">
+              <div
+                key={zone.zone}
+                className="flex items-center gap-4 p-3 rounded-lg bg-background"
+              >
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center text-foreground font-bold"
                   style={{ backgroundColor: ZONE_COLORS[(zone.zone - 1) % ZONE_COLORS.length] }}
@@ -85,7 +90,9 @@ export function PerformanceZones({ zones, isLoading }: PerformanceZonesProps) {
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-foreground">{zone.name}</p>
-                  {zone.description && <p className="text-xs text-muted">{zone.description}</p>}
+                  {zone.description && (
+                    <p className="text-xs text-muted">{zone.description}</p>
+                  )}
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-foreground">
@@ -103,7 +110,10 @@ export function PerformanceZones({ zones, isLoading }: PerformanceZonesProps) {
         {activeTab === 'pace' && (
           <div className="space-y-2">
             {displayZones(zones.speedZones).map((zone) => (
-              <div key={zone.zone} className="flex items-center gap-4 p-3 rounded-lg bg-background">
+              <div
+                key={zone.zone}
+                className="flex items-center gap-4 p-3 rounded-lg bg-background"
+              >
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center text-foreground font-bold"
                   style={{ backgroundColor: ZONE_COLORS[(zone.zone - 1) % ZONE_COLORS.length] }}

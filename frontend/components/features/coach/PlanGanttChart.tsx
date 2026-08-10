@@ -8,12 +8,12 @@ const TW_COLORS: Record<string, string> = {
   'hr-zone-1': 'var(--success)',
   'hr-zone-3': 'var(--warning)',
   'hr-zone-4': 'var(--peak)',
-  peak: 'var(--peak)',
-  danger: 'var(--danger)',
-  success: 'var(--success)',
-  primary: 'var(--primary)',
-  muted: 'var(--muted)',
-  warning: 'var(--warning)',
+  'peak': 'var(--peak)',
+  'danger': 'var(--danger)',
+  'success': 'var(--success)',
+  'primary': 'var(--primary)',
+  'muted': 'var(--muted)',
+  'warning': 'var(--warning)',
 };
 
 function resolveColor(twClass: string, defaultFallback = '#64748B20'): string {
@@ -31,25 +31,25 @@ interface PlanGanttChartProps {
 
 // Couleurs par type de séance basées sur les tokens métiers
 const sessionTypeColors: Record<string, { bg: string; border: string; text: string }> = {
-  Endurance: { bg: 'bg-hr-zone-1/30', border: 'border-hr-zone-1', text: 'text-hr-zone-1' },
-  Tempo: { bg: 'bg-hr-zone-3/30', border: 'border-hr-zone-3', text: 'text-hr-zone-3' },
-  Interval: { bg: 'bg-hr-zone-4/30', border: 'border-hr-zone-4', text: 'text-hr-zone-4' },
-  Seuil: { bg: 'bg-hr-zone-3/30', border: 'border-hr-zone-3', text: 'text-hr-zone-3' },
-  Fractionné: { bg: 'bg-hr-zone-4/30', border: 'border-hr-zone-4', text: 'text-hr-zone-4' },
-  Récupération: { bg: 'bg-hr-zone-1/30', border: 'border-hr-zone-1', text: 'text-hr-zone-1' },
-  Régénération: { bg: 'bg-hr-zone-1/30', border: 'border-hr-zone-1', text: 'text-hr-zone-1' },
-  Test: { bg: 'bg-peak/30', border: 'border-peak', text: 'text-peak' },
-  Course: { bg: 'bg-danger/30', border: 'border-danger', text: 'text-danger' },
-  default: { bg: 'bg-muted/30', border: 'border-muted', text: 'text-muted' },
+  'Endurance': { bg: 'bg-hr-zone-1/30', border: 'border-hr-zone-1', text: 'text-hr-zone-1' },
+  'Tempo': { bg: 'bg-hr-zone-3/30', border: 'border-hr-zone-3', text: 'text-hr-zone-3' },
+  'Interval': { bg: 'bg-hr-zone-4/30', border: 'border-hr-zone-4', text: 'text-hr-zone-4' },
+  'Seuil': { bg: 'bg-hr-zone-3/30', border: 'border-hr-zone-3', text: 'text-hr-zone-3' },
+  'Fractionné': { bg: 'bg-hr-zone-4/30', border: 'border-hr-zone-4', text: 'text-hr-zone-4' },
+  'Récupération': { bg: 'bg-hr-zone-1/30', border: 'border-hr-zone-1', text: 'text-hr-zone-1' },
+  'Régénération': { bg: 'bg-hr-zone-1/30', border: 'border-hr-zone-1', text: 'text-hr-zone-1' },
+  'Test': { bg: 'bg-peak/30', border: 'border-peak', text: 'text-peak' },
+  'Course': { bg: 'bg-danger/30', border: 'border-danger', text: 'text-danger' },
+  'default': { bg: 'bg-muted/30', border: 'border-muted', text: 'text-muted' },
 };
 
 // Couleurs par phase
 const phaseColors: Record<string, { bg: string; text: string }> = {
-  Foundation: { bg: 'bg-success/20', text: 'text-success' },
-  Development: { bg: 'bg-primary/20', text: 'text-primary' },
-  Intensity: { bg: 'bg-peak/20', text: 'text-peak' },
-  Peak: { bg: 'bg-danger/20', text: 'text-danger' },
-  Recovery: { bg: 'bg-muted/20', text: 'text-muted' },
+  'Foundation': { bg: 'bg-success/20', text: 'text-success' },
+  'Development': { bg: 'bg-primary/20', text: 'text-primary' },
+  'Intensity': { bg: 'bg-peak/20', text: 'text-peak' },
+  'Peak': { bg: 'bg-danger/20', text: 'text-danger' },
+  'Recovery': { bg: 'bg-muted/20', text: 'text-muted' },
 };
 
 // Jours de la semaine
@@ -64,7 +64,7 @@ export function PlanGanttChart({ plan, onSessionClick }: PlanGanttChartProps) {
     const startDate = new Date(plan.startDate);
     return weeks.map((_, index) => {
       const date = new Date(startDate);
-      date.setDate(date.getDate() + index * 7);
+      date.setDate(date.getDate() + (index * 7));
       return date;
     });
   }, [weeks, plan.startDate]);
@@ -83,7 +83,7 @@ export function PlanGanttChart({ plan, onSessionClick }: PlanGanttChartProps) {
         date.setDate(date.getDate() + day);
 
         // Trouver la session pour ce jour
-        const session = week.sessions.find((s) => s.day === day + 1);
+        const session = week.sessions.find(s => s.day === day + 1);
 
         weekRow.push({
           week: week.week,
@@ -123,11 +123,14 @@ export function PlanGanttChart({ plan, onSessionClick }: PlanGanttChartProps) {
         <div className="mb-4">
           <div className="flex flex-wrap gap-2">
             {Object.entries(phaseColors).map(([phase, colors]) => {
-              const hasPhase = weeks.some((w) => w.phase === phase);
+              const hasPhase = weeks.some(w => w.phase === phase);
               if (!hasPhase) return null;
               return (
                 <div key={phase} className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: resolveColor(colors.bg) }} />
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: resolveColor(colors.bg) }}
+                  />
                   <span className="text-xs text-muted">{phase}</span>
                 </div>
               );
@@ -139,7 +142,10 @@ export function PlanGanttChart({ plan, onSessionClick }: PlanGanttChartProps) {
         <div className="flex">
           <div className="w-10 flex-shrink-0" />
           {weeks.map((week) => (
-            <div key={week.week} className="w-14 flex-shrink-0 text-center p-2 border border-border">
+            <div
+              key={week.week}
+              className="w-14 flex-shrink-0 text-center p-2 border border-border"
+            >
               <span className="text-xs font-medium text-foreground">S{week.week}</span>
               <div className="text-xs text-muted truncate">
                 {weekStartDates[week.week - 1]?.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' })}
@@ -197,10 +203,7 @@ export function PlanGanttChart({ plan, onSessionClick }: PlanGanttChartProps) {
                       <span className={`text-[10px] font-medium truncate px-1 ${color.text}`}>
                         {session.title.slice(0, 3)}
                       </span>
-                      <div
-                        className="absolute bottom-1 left-1 right-1 h-0.5"
-                        style={{ backgroundColor: resolveColor(color.border) }}
-                      />
+                      <div className="absolute bottom-1 left-1 right-1 h-0.5" style={{ backgroundColor: resolveColor(color.border) }} />
                     </button>
                   );
                 }
@@ -224,7 +227,7 @@ export function PlanGanttChart({ plan, onSessionClick }: PlanGanttChartProps) {
           <p className="text-xs text-muted mb-2">Types de séance</p>
           <div className="flex flex-wrap gap-3">
             {Object.entries(sessionTypeColors).map(([type, colors]) => {
-              const hasType = weeks.some((w) => w.sessions.some((s) => s.type === type));
+              const hasType = weeks.some(w => w.sessions.some(s => s.type === type));
               if (!hasType) return null;
               return (
                 <div key={type} className="flex items-center gap-2">

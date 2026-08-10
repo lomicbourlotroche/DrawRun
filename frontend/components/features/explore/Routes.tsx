@@ -52,14 +52,14 @@ export function RouteList({ routes, onRouteClick, isLoading, showFavoriteButton 
     try {
       if (route.is_favorited || favorites.has(route.id)) {
         await api.removeRouteFromFavorites(route.id);
-        setFavorites((prev) => {
+        setFavorites(prev => {
           const next = new Set(prev);
           next.delete(route.id);
           return next;
         });
       } else {
         await api.addRouteToFavorites(route.id);
-        setFavorites((prev) => new Set(prev).add(route.id));
+        setFavorites(prev => new Set(prev).add(route.id));
       }
     } catch {
       /* silencieux — favorite toggle */
@@ -105,14 +105,15 @@ export function RouteList({ routes, onRouteClick, isLoading, showFavoriteButton 
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold truncate group-hover:text-primary transition-colors duration-200">
-                    {route.name}
-                  </h3>
+                  <h3 className="font-semibold truncate group-hover:text-primary transition-colors duration-200">{route.name}</h3>
                   <Badge variant="secondary" size="sm" className="bg-primary/10 text-primary">
                     {route.activity_type}
                   </Badge>
                   {route.difficulty && (
-                    <Badge className={`text-xs ${difficultyColors[route.difficulty] || 'bg-muted/20'}`} size="sm">
+                    <Badge
+                      className={`text-xs ${difficultyColors[route.difficulty] || 'bg-muted/20'}`}
+                      size="sm"
+                    >
                       {difficultyLabels[route.difficulty] || route.difficulty}
                     </Badge>
                   )}
@@ -143,9 +144,7 @@ export function RouteList({ routes, onRouteClick, isLoading, showFavoriteButton 
                   {route.avg_rating && (
                     <div className="flex items-center gap-1 text-xs">
                       <Star className="w-3.5 h-3.5 text-warning fill-yellow-500" />
-                      <span>
-                        {route.avg_rating.toFixed(1)} ({route.rating_count})
-                      </span>
+                      <span>{route.avg_rating.toFixed(1)} ({route.rating_count})</span>
                     </div>
                   )}
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">

@@ -3,7 +3,16 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, Button } from '@/components/ui';
-import { Activity, Calendar, Trophy, TrendingUp, Heart, Zap, BarChart3, Users } from '@/components/ui/icons';
+import {
+  Activity,
+  Calendar,
+  Trophy,
+  TrendingUp,
+  Heart,
+  Zap,
+  BarChart3,
+  Users,
+} from '@/components/ui/icons';
 
 // 6 features principales avec mockups visuels
 const features = [
@@ -34,7 +43,7 @@ const features = [
     id: 2,
     icon: Calendar,
     title: 'Coaching Adaptatif',
-    description: "Plans personnalisés qui s'adaptent à votre forme et fatigue en temps réel.",
+    description: 'Plans personnalisés qui s\'adaptent à votre forme et fatigue en temps réel.',
     color: 'success',
     mockup: (
       <div className="bg-gradient-to-br from-success/5 to-success/10 rounded-xl p-4 border border-success/20">
@@ -129,7 +138,10 @@ const features = [
               <div className={`w-3 h-3 rounded-full bg-hr-zone-${zone}`} />
               <span className="text-xs">Zone {zone}</span>
               <div className="w-full h-1 bg-muted/20 rounded-full ml-2">
-                <div className={`h-full rounded-full bg-hr-zone-${zone}`} style={{ width: `${zone * 20}%` }} />
+                <div
+                  className={`h-full rounded-full bg-hr-zone-${zone}`}
+                  style={{ width: `${zone * 20}%` }}
+                />
               </div>
             </div>
           ))}
@@ -193,7 +205,7 @@ export default function FeaturesSection() {
           setIsVisible(true);
         }
       },
-      { threshold: 0.1 },
+      { threshold: 0.1 }
     );
 
     const section = document.getElementById('features');
@@ -212,9 +224,7 @@ export default function FeaturesSection() {
     <section id="features" className="py-20 lg:py-32 bg-gradient-to-b from-background to-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div
-          className={`text-center mb-16 lg:mb-20 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-        >
+        <div className={`text-center mb-16 lg:mb-20 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-sm font-semibold text-primary mb-6">
             <Zap className="w-4 h-4" />
             Ingénierie de pointe
@@ -246,20 +256,24 @@ export default function FeaturesSection() {
               >
                 <div className="flex flex-col h-full">
                   {/* Icon avec couleur */}
-                  <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${iconColors[feature.color]} group-hover:scale-110 transition-transform duration-300`}
-                  >
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${iconColors[feature.color]} group-hover:scale-110 transition-transform duration-300`}>
                     <Icon className="w-6 h-6" />
                   </div>
 
                   {/* Titre */}
-                  <h3 className="text-lg font-bold text-foreground mb-2">{feature.title}</h3>
+                  <h3 className="text-lg font-bold text-foreground mb-2">
+                    {feature.title}
+                  </h3>
 
                   {/* Description */}
-                  <p className="text-sm text-muted leading-relaxed mb-4 flex-1">{feature.description}</p>
+                  <p className="text-sm text-muted leading-relaxed mb-4 flex-1">
+                    {feature.description}
+                  </p>
 
                   {/* Mockup visuel */}
-                  <div className="mb-4 p-3 bg-surface rounded-lg border border-border">{feature.mockup}</div>
+                  <div className="mb-4 p-3 bg-surface rounded-lg border border-border">
+                    {feature.mockup}
+                  </div>
 
                   {/* CTA */}
                   <Button
@@ -277,13 +291,11 @@ export default function FeaturesSection() {
         </div>
 
         {/* Bottom CTA avec stats */}
-        <div
-          className={`mt-16 transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-        >
+        <div className={`mt-16 transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <Card variant="glass" padding="lg" className="max-w-2xl mx-auto">
             <div className="grid grid-cols-3 gap-6 text-center">
               <div className="p-4">
-                <div className="w-12 h-12 mx-auto mb-3 bg-success/10 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 mx-auto mb-3 bg-success/10 rounded-xl flex items-center justify-center">
                   <Activity className="w-6 h-6 text-success" />
                 </div>
                 <div className="text-2xl font-bold text-foreground">15+</div>

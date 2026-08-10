@@ -1,7 +1,16 @@
 'use client';
 
 import React from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine
+} from 'recharts';
 import { Card } from '@/components/ui';
 import { Zap, Calendar, TrendingDown } from '@/components/ui/icons';
 
@@ -62,12 +71,17 @@ export const TaperingChart: React.FC<TaperingChartProps> = ({ data }) => {
           <AreaChart data={chartData}>
             <defs>
               <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
+                <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.2}/>
+                <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-            <XAxis dataKey="daysOut" reversed tickFormatter={(val) => `J-${val}`} tick={{ fontSize: 12 }} />
+            <XAxis
+              dataKey="daysOut"
+              reversed
+              tickFormatter={(val) => `J-${val}`}
+              tick={{ fontSize: 12 }}
+            />
             <YAxis
               label={{ value: 'Volume (%)', angle: -90, position: 'insideLeft' }}
               domain={[0, 100]}
@@ -111,9 +125,8 @@ export const TaperingChart: React.FC<TaperingChartProps> = ({ data }) => {
         <div className="bg-surface p-4 rounded-2xl space-y-3">
           <h4 className="text-sm font-bold">Pourquoi l&apos;affûtage ?</h4>
           <p className="text-[10px] text-muted leading-relaxed">
-            L&apos;affûtage (tapering) permet de dissiper la fatigue accumulée tout en maintenant les adaptations
-            physiologiques. Le modèle de Mujika utilisé ici privilégie une réduction **exponentielle** du volume pour
-            une fraîcheur maximale le jour J.
+            L&apos;affûtage (tapering) permet de dissiper la fatigue accumulée tout en maintenant les adaptations physiologiques.
+            Le modèle de Mujika utilisé ici privilégie une réduction **exponentielle** du volume pour une fraîcheur maximale le jour J.
           </p>
           <div className="pt-2 border-t border-border text-[10px] font-mono text-primary/70">
             Source : {data.reference}

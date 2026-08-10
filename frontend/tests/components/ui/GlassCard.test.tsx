@@ -10,7 +10,7 @@ import {
   GlassCardTitle,
   GlassCardDescription,
   GlassCardContent,
-  GlassCardFooter,
+  GlassCardFooter
 } from '@/components/ui';
 
 describe('GlassCard component', () => {
@@ -41,11 +41,7 @@ describe('GlassCard component', () => {
   });
 
   it('has hover effect when hover prop is true with elevated variant', () => {
-    render(
-      <GlassCard variant="elevated" hover>
-        Content
-      </GlassCard>,
-    );
+    render(<GlassCard variant="elevated" hover>Content</GlassCard>);
 
     const card = screen.getByText('Content');
     expect(card.className).toContain('hover:shadow-lg');
@@ -73,7 +69,7 @@ describe('GlassCard component', () => {
   it('applies padding classes correctly', () => {
     const paddings = ['none', 'xs', 'sm', 'md', 'lg', 'xl'] as const;
 
-    paddings.forEach((padding) => {
+    paddings.forEach(padding => {
       const { container, unmount } = render(<GlassCard padding={padding}>Content</GlassCard>);
 
       const card = container.querySelector('div') as HTMLElement;
@@ -108,7 +104,7 @@ describe('GlassCard component', () => {
   it('applies variant classes correctly', () => {
     const variants = ['default', 'elevated', 'subtle'] as const;
 
-    variants.forEach((variant) => {
+    variants.forEach(variant => {
       const { container } = render(<GlassCard variant={variant}>Content</GlassCard>);
 
       const card = container.firstChild as HTMLElement;
@@ -337,7 +333,7 @@ describe('GlassCard accessibility', () => {
         </GlassCardHeader>
         <GlassCardContent aria-label="Content">Content</GlassCardContent>
         <GlassCardFooter aria-label="Footer">Footer</GlassCardFooter>
-      </GlassCard>,
+      </GlassCard>
     );
 
     expect(screen.getByLabelText('Glass card')).toBeInTheDocument();
@@ -362,7 +358,7 @@ describe('GlassCard integration', () => {
         <GlassCardFooter>
           <span>Footer Actions</span>
         </GlassCardFooter>
-      </GlassCard>,
+      </GlassCard>
     );
 
     expect(screen.getByText('Card Title')).toBeInTheDocument();
@@ -378,7 +374,7 @@ describe('GlassCard integration', () => {
           <GlassCardTitle>Title</GlassCardTitle>
         </GlassCardHeader>
         <GlassCardContent>Content</GlassCardContent>
-      </GlassCard>,
+      </GlassCard>
     );
 
     const card = screen.getByText('Title').parentElement?.parentElement;

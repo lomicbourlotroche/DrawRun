@@ -32,19 +32,21 @@ export default function HeatmapView({
       return;
     }
     const radius = 10000;
-    api
-      .getHeatmap(mapCenter.lat, mapCenter.lng, radius, activeFilterType || undefined)
-      .then((res) => {
-        if (res.success) {
-          onHeatmapDataChange(res.heatmap || []);
-        }
-      })
-      .catch(() => {});
+    api.getHeatmap(mapCenter.lat, mapCenter.lng, radius, activeFilterType || undefined).then((res) => {
+      if (res.success) {
+        onHeatmapDataChange(res.heatmap || []);
+      }
+    }).catch(() => {});
   }, [showHeatmap, mapCenter, activeFilterType, onHeatmapDataChange]);
 
   return (
     <>
-      {mapInstance && <CommunityTracesLayer map={mapInstance} visible={showCommunityTraces && !routePlannerOpen} />}
+      {mapInstance && (
+        <CommunityTracesLayer
+          map={mapInstance}
+          visible={showCommunityTraces && !routePlannerOpen}
+        />
+      )}
       <button
         onClick={() => onShowHeatmapChange(!showHeatmap)}
         className={`flex items-center justify-center min-w-[44px] min-h-[44px] rounded-lg shadow-md border transition-all ${
@@ -56,14 +58,7 @@ export default function HeatmapView({
         aria-label={showHeatmap ? 'Désactiver la heatmap' : 'Activer la heatmap'}
         aria-pressed={showHeatmap}
       >
-        <svg
-          className="w-4 h-4"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          aria-hidden="true"
-        >
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
           <circle cx="12" cy="12" r="3" />
           <circle cx="12" cy="12" r="6" strokeDasharray="2 2" />
           <circle cx="12" cy="12" r="10" strokeDasharray="2 4" />
@@ -77,19 +72,10 @@ export default function HeatmapView({
             : 'bg-surface/90 backdrop-blur-sm border-border hover:bg-surface text-muted-foreground'
         }`}
         title="Traces de la communauté"
-        aria-label={
-          showCommunityTraces ? 'Masquer les traces de la communauté' : 'Afficher les traces de la communauté'
-        }
+        aria-label={showCommunityTraces ? 'Masquer les traces de la communauté' : 'Afficher les traces de la communauté'}
         aria-pressed={showCommunityTraces}
       >
-        <svg
-          className="w-4 h-4"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          aria-hidden="true"
-        >
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 5h16M4 12h16M4 19h7" />
         </svg>
       </button>

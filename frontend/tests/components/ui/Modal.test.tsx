@@ -21,7 +21,7 @@ describe('Modal component', () => {
     render(
       <Modal isOpen={false} onClose={() => {}}>
         <div>Modal Content</div>
-      </Modal>,
+      </Modal>
     );
 
     expect(screen.queryByText('Modal Content')).not.toBeInTheDocument();
@@ -31,7 +31,7 @@ describe('Modal component', () => {
     render(
       <Modal isOpen={true} onClose={() => {}}>
         <div>Modal Content</div>
-      </Modal>,
+      </Modal>
     );
 
     expect(screen.getByText('Modal Content')).toBeInTheDocument();
@@ -41,7 +41,7 @@ describe('Modal component', () => {
     render(
       <Modal isOpen={true} onClose={() => {}} title="Test Title">
         <div>Modal Content</div>
-      </Modal>,
+      </Modal>
     );
 
     expect(screen.getByText('Test Title')).toBeInTheDocument();
@@ -52,7 +52,7 @@ describe('Modal component', () => {
     render(
       <Modal isOpen={true} onClose={() => {}} description="Test Description">
         <div>Modal Content</div>
-      </Modal>,
+      </Modal>
     );
 
     expect(screen.getByText('Test Description')).toBeInTheDocument();
@@ -60,9 +60,14 @@ describe('Modal component', () => {
 
   it('renders with title and description', () => {
     render(
-      <Modal isOpen={true} onClose={() => {}} title="Test Title" description="Test Description">
+      <Modal
+        isOpen={true}
+        onClose={() => {}}
+        title="Test Title"
+        description="Test Description"
+      >
         <div>Modal Content</div>
-      </Modal>,
+      </Modal>
     );
 
     expect(screen.getByText('Test Title')).toBeInTheDocument();
@@ -75,7 +80,7 @@ describe('Modal component', () => {
     render(
       <Modal isOpen={true} onClose={onClose} title="Test Title">
         <div>Modal Content</div>
-      </Modal>,
+      </Modal>
     );
 
     const closeButton = screen.getByRole('button');
@@ -90,7 +95,7 @@ describe('Modal component', () => {
     render(
       <Modal isOpen={true} onClose={onClose}>
         <div>Modal Content</div>
-      </Modal>,
+      </Modal>
     );
 
     // Find the backdrop/overlay element
@@ -106,7 +111,7 @@ describe('Modal component', () => {
     render(
       <Modal isOpen={true} onClose={onClose}>
         <div>Modal Content</div>
-      </Modal>,
+      </Modal>
     );
 
     fireEvent.keyDown(document, { key: 'Escape' });
@@ -118,7 +123,7 @@ describe('Modal component', () => {
     render(
       <Modal isOpen={true} onClose={() => {}} showClose={false}>
         <div>Modal Content</div>
-      </Modal>,
+      </Modal>
     );
 
     // Should not have a close button
@@ -129,7 +134,7 @@ describe('Modal component', () => {
     render(
       <Modal isOpen={true} onClose={() => {}}>
         <div>Modal Content</div>
-      </Modal>,
+      </Modal>
     );
 
     expect(screen.getByRole('button')).toBeInTheDocument();
@@ -143,7 +148,7 @@ describe('Modal component', () => {
       const { unmount } = render(
         <Modal isOpen={true} onClose={() => {}} size={size}>
           <div>Modal Content</div>
-        </Modal>,
+        </Modal>
       );
 
       const modal = document.querySelector(`[class*="${expectedClasses[index]}"]`) as HTMLElement;
@@ -157,7 +162,7 @@ describe('Modal component', () => {
     render(
       <Modal isOpen={true} onClose={() => {}}>
         <div>Modal Content</div>
-      </Modal>,
+      </Modal>
     );
 
     expect(document.body.style.overflow).toBe('hidden');
@@ -167,7 +172,7 @@ describe('Modal component', () => {
     const { rerender } = render(
       <Modal isOpen={true} onClose={() => {}}>
         <div>Modal Content</div>
-      </Modal>,
+      </Modal>
     );
 
     expect(document.body.style.overflow).toBe('hidden');
@@ -175,7 +180,7 @@ describe('Modal component', () => {
     rerender(
       <Modal isOpen={false} onClose={() => {}}>
         <div>Modal Content</div>
-      </Modal>,
+      </Modal>
     );
 
     expect(document.body.style.overflow).toBe('unset');
@@ -185,7 +190,7 @@ describe('Modal component', () => {
     render(
       <Modal isOpen={true} onClose={() => {}} title="Accessible Modal" description="Modal description">
         <div>Modal Content</div>
-      </Modal>,
+      </Modal>
     );
 
     const modal = document.querySelector('[role="dialog"]') as HTMLElement;
@@ -199,7 +204,7 @@ describe('Modal component', () => {
     render(
       <Modal isOpen={true} onClose={() => {}}>
         <div>Modal Content</div>
-      </Modal>,
+      </Modal>
     );
 
     const modal = document.querySelector('[role="dialog"]') as HTMLElement;
@@ -210,7 +215,7 @@ describe('Modal component', () => {
     render(
       <Modal isOpen={true} onClose={() => {}}>
         <div>Modal Content</div>
-      </Modal>,
+      </Modal>
     );
 
     const backdrop = document.querySelector('[aria-hidden="true"]') as HTMLElement;
@@ -221,7 +226,7 @@ describe('Modal component', () => {
     render(
       <Modal isOpen={true} onClose={() => {}}>
         <div>Modal Content</div>
-      </Modal>,
+      </Modal>
     );
 
     const backdrop = document.querySelector('[aria-hidden="true"]') as HTMLElement;

@@ -16,11 +16,7 @@ export default function StepRenderer({ fields, formData, onChange, onSubmit }: S
         <div key={field.name} className="space-y-2">
           <label className="block text-sm font-medium text-foreground" htmlFor={`field-${field.name}`}>
             {field.label}
-            {field.required && (
-              <span className="text-danger/80 ml-1" aria-label="obligatoire">
-                *
-              </span>
-            )}
+            {field.required && <span className="text-danger/80 ml-1" aria-label="obligatoire">*</span>}
           </label>
           {field.type === 'text' && (
             <input

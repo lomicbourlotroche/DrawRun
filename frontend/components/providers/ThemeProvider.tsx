@@ -25,7 +25,9 @@ const defaultContext: ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType>(defaultContext);
 
 function loadGoogleFonts(fonts: string[]) {
-  const families = fonts.map((f) => f.replace(/ /g, '+')).join('&family=');
+  const families = fonts
+    .map((f) => f.replace(/ /g, '+'))
+    .join('&family=');
   if (!families) return;
   const id = 'drawrun-fonts';
   if (document.getElementById(id)) return;

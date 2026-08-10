@@ -28,14 +28,14 @@ const wizardSteps: WizardStep[] = [
         label: 'Quel est votre objectif principal ?',
         required: true,
         options: [
-          { value: 'health', label: 'Santé / Bien-être' },
-          { value: 'weight_loss', label: 'Perte de poids' },
-          { value: '5k', label: 'Course 5 km' },
-          { value: '10k', label: 'Course 10 km' },
-          { value: 'half', label: 'Semi-marathon (21 km)' },
-          { value: 'marathon', label: 'Marathon (42 km)' },
-          { value: 'custom', label: 'Distance personnalisée' },
-          { value: 'improvement', label: 'Améliorer mes performances' },
+          { value: 'health',       label: 'Santé / Bien-être' },
+          { value: 'weight_loss',  label: 'Perte de poids' },
+          { value: '5k',           label: 'Course 5 km' },
+          { value: '10k',          label: 'Course 10 km' },
+          { value: 'half',         label: 'Semi-marathon (21 km)' },
+          { value: 'marathon',     label: 'Marathon (42 km)' },
+          { value: 'custom',       label: 'Distance personnalisée' },
+          { value: 'improvement',  label: 'Améliorer mes performances' },
         ],
       },
       {
@@ -58,9 +58,9 @@ const wizardSteps: WizardStep[] = [
         label: 'Quel est votre niveau de course ?',
         required: true,
         options: [
-          { value: 'beginner', label: "Débutant — Je n'ai jamais ou très peu couru" },
+          { value: 'beginner',     label: "Débutant — Je n'ai jamais ou très peu couru" },
           { value: 'intermediate', label: 'Intermédiaire — Je cours régulièrement depuis 6 mois+' },
-          { value: 'advanced', label: 'Avancé — Je cours depuis plusieurs années' },
+          { value: 'advanced',     label: 'Avancé — Je cours depuis plusieurs années' },
         ],
       },
       {
@@ -104,7 +104,7 @@ const wizardSteps: WizardStep[] = [
   },
   {
     id: 3,
-    title: 'Votre Emploi du Temps',
+    title: "Votre Emploi du Temps",
     description: 'Quand voulez-vous vous entraîner ?',
     fields: [
       {
@@ -167,9 +167,9 @@ const wizardSteps: WizardStep[] = [
         required: true,
         options: [
           { value: 'minimal', label: 'Juste des chaussures' },
-          { value: 'watch', label: 'Montre GPS' },
-          { value: 'hrm', label: 'Montre + Cardiofréquencemètre' },
-          { value: 'full', label: 'Équipement complet (GPS, cardio, etc.)' },
+          { value: 'watch',   label: 'Montre GPS' },
+          { value: 'hrm',     label: 'Montre + Cardiofréquencemètre' },
+          { value: 'full',    label: 'Équipement complet (GPS, cardio, etc.)' },
         ],
       },
     ],
@@ -185,9 +185,9 @@ const wizardSteps: WizardStep[] = [
         label: 'Niveau de motivation',
         required: true,
         options: [
-          { value: 'low', label: 'Je vais faire de mon mieux' },
+          { value: 'low',    label: 'Je vais faire de mon mieux' },
           { value: 'medium', label: 'Je suis motivé(e)' },
-          { value: 'high', label: 'Je suis très engagé(e) !' },
+          { value: 'high',   label: 'Je suis très engagé(e) !' },
         ],
       },
       {
@@ -201,17 +201,9 @@ const wizardSteps: WizardStep[] = [
 ];
 
 const AUTO_FILLED_FIELDS = new Set([
-  'currentWeeklyKm',
-  'experienceLevel',
-  'fcm',
-  'vmaValue',
-  'hasVMA',
-  'vdotValue',
-  'hasVDOT',
-  'sessionsPerWeek',
-  'trainingDays',
-  'availableTimePerSession',
-  'equipment',
+  'currentWeeklyKm', 'experienceLevel', 'fcm',
+  'vmaValue', 'hasVMA', 'vdotValue', 'hasVDOT',
+  'sessionsPerWeek', 'trainingDays', 'availableTimePerSession', 'equipment',
 ]);
 
 const DEFAULT_FORM: Record<string, unknown> = {
@@ -257,14 +249,14 @@ export default function AdaptivePlanWizard({ onComplete }: { onComplete: (_plan:
             }
           }
 
-          setFormData((prev) => ({ ...prev, ...updates }));
+          setFormData(prev => ({ ...prev, ...updates }));
           setAutoFilledFields(filled);
           setActivitiesAnalyzed(result.activitiesAnalyzed ?? 0);
 
           if (filled.size > 0) {
             toast.success(
               `${result.activitiesAnalyzed} activité${result.activitiesAnalyzed > 1 ? 's' : ''} analysée${result.activitiesAnalyzed > 1 ? 's' : ''} — formulaire pré-rempli`,
-              { duration: 3000 },
+              { duration: 3000 }
             );
           }
         }
@@ -283,18 +275,20 @@ export default function AdaptivePlanWizard({ onComplete }: { onComplete: (_plan:
 
   const updateField = (name: string, value: unknown) => {
     if (autoFilledFields.has(name)) {
-      setAutoFilledFields((prev) => {
+      setAutoFilledFields(prev => {
         const next = new Set(prev);
         next.delete(name);
         return next;
       });
     }
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleMultiSelect = (name: string, value: string) => {
     const current = (formData[name] as string[]) || [];
-    const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
+    const next = current.includes(value)
+      ? current.filter(v => v !== value)
+      : [...current, value];
     updateField(name, next);
   };
 
@@ -302,13 +296,8 @@ export default function AdaptivePlanWizard({ onComplete }: { onComplete: (_plan:
     setIsSubmitting(true);
     try {
       const goalDistances: Record<string, number> = {
-        '5k': 5000,
-        '10k': 10000,
-        half: 21097,
-        marathon: 42195,
-        health: 5000,
-        weight_loss: 5000,
-        improvement: 10000,
+        '5k': 5000, '10k': 10000, 'half': 21097, 'marathon': 42195,
+        'health': 5000, 'weight_loss': 5000, 'improvement': 10000,
       };
       const targetDistanceMeters =
         formData.goal === 'custom' && formData.targetDistance
@@ -316,13 +305,15 @@ export default function AdaptivePlanWizard({ onComplete }: { onComplete: (_plan:
           : goalDistances[formData.goal as string] || 10000;
 
       const weeks =
-        formData.goal === 'marathon' ? 16 : formData.goal === 'half' ? 12 : formData.goal === 'improvement' ? 10 : 8;
+        formData.goal === 'marathon' ? 16 :
+        formData.goal === 'half'     ? 12 :
+        formData.goal === 'improvement' ? 10 : 8;
 
       const planData = await api.startAdaptivePlan({
         targetDistance: targetDistanceMeters,
         weeks,
         sessionsPerWeek: parseInt(formData.sessionsPerWeek as string),
-        trainingDays: ((formData.trainingDays as string[]) || []).map((d) => parseInt(d)),
+        trainingDays: ((formData.trainingDays as string[]) || []).map(d => parseInt(d)),
         hasVMA: formData.hasVMA as boolean,
         vmaValue: formData.vmaValue ? parseFloat(formData.vmaValue as string) : null,
         vdotValue: formData.vdotValue ? parseFloat(formData.vdotValue as string) : null,
@@ -372,7 +363,7 @@ export default function AdaptivePlanWizard({ onComplete }: { onComplete: (_plan:
 
       <CardContent>
         <div className="space-y-5">
-          {currentStepData.fields.map((field) => (
+          {currentStepData.fields.map(field => (
             <FieldRenderer
               key={field.name}
               field={field}
@@ -388,8 +379,8 @@ export default function AdaptivePlanWizard({ onComplete }: { onComplete: (_plan:
           isFirstStep={isFirstStep}
           isLastStep={isLastStep}
           isSubmitting={isSubmitting}
-          onPrevious={() => setCurrentStep((p) => p - 1)}
-          onNext={() => setCurrentStep((p) => p + 1)}
+          onPrevious={() => setCurrentStep(p => p - 1)}
+          onNext={() => setCurrentStep(p => p + 1)}
           onSubmit={handleSubmit}
         />
       </CardContent>

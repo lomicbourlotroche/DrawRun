@@ -2,7 +2,10 @@ const fs = require('fs');
 const path = require('path');
 
 // Liste des fichiers à corriger
-const filesToFix = ['../app/app/coach/CoachContent.tsx', '../app/app/profile/ProfileContent.tsx'];
+const filesToFix = [
+  '../app/app/coach/CoachContent.tsx',
+  '../app/app/profile/ProfileContent.tsx',
+];
 
 // Tableau de remplacements : [regex, remplacement]
 const replacements = [
@@ -68,10 +71,12 @@ function fixFile(filePath) {
   }
 
   // Nettoyer les className vides
-  const cleanedContent = content.replace(/className=""/g, '').replace(/className="([^"]*)"/g, (match, p1) => {
-    const cleaned = p1.replace(/\s+/g, ' ').trim();
-    return cleaned ? `className="${cleaned}"` : '';
-  });
+  const cleanedContent = content
+    .replace(/className=""/g, '')
+    .replace(/className="([^"]*)"/g, (match, p1) => {
+      const cleaned = p1.replace(/\s+/g, ' ').trim();
+      return cleaned ? `className="${cleaned}"` : '';
+    });
 
   if (cleanedContent !== content) {
     content = cleanedContent;

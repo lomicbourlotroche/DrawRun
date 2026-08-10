@@ -1,7 +1,15 @@
 'use client';
 
 import { useMemo } from 'react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from 'recharts';
 
 interface ElevationPoint {
   distance: number;
@@ -19,7 +27,11 @@ function formatDist(m: number): string {
   return `${Math.round(m)} m`;
 }
 
-export default function ElevationProfile({ data, height = 120, color = 'var(--primary)' }: ElevationProfileProps) {
+export default function ElevationProfile({
+  data,
+  height = 120,
+  color = 'var(--primary)',
+}: ElevationProfileProps) {
   const chartData = useMemo(() => {
     return data.map((pt) => ({
       dist: pt.distance,
@@ -29,7 +41,10 @@ export default function ElevationProfile({ data, height = 120, color = 'var(--pr
 
   if (data.length < 2) {
     return (
-      <div className="flex items-center justify-center text-xs text-muted bg-surface rounded-lg" style={{ height }}>
+      <div
+        className="flex items-center justify-center text-xs text-muted bg-surface rounded-lg"
+        style={{ height }}
+      >
         Pas assez de données d&apos;élévation
       </div>
     );

@@ -40,7 +40,9 @@ const navGroups = [
   },
   {
     key: 'account',
-    items: [{ href: '/app/profile', label: 'Profil', icon: User }],
+    items: [
+      { href: '/app/profile', label: 'Profil', icon: User },
+    ],
   },
 ];
 
@@ -74,12 +76,7 @@ export default function Sidebar() {
   };
 
   const initials = user?.name
-    ? user.name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
+    ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
     : 'U';
 
   if (!isAuthenticated) return null;
@@ -106,7 +103,7 @@ export default function Sidebar() {
           'fixed top-0 left-0 h-full bg-surface/80 backdrop-blur-xl border-r border-border z-50 transition-all duration-300 flex flex-col',
           'before:absolute before:top-0 before:left-0 before:w-[3px] before:h-1/3 before:bg-gradient-to-b before:from-primary before:to-transparent before:pointer-events-none',
           'w-full max-w-64 lg:max-w-64',
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
         <div className="flex items-center h-16 px-5 border-b border-border/60 flex-shrink-0">
@@ -115,13 +112,12 @@ export default function Sidebar() {
               <span className="text-white font-bold text-sm">DR</span>
             </div>
             <div className="min-w-0">
-              <span
-                className="text-base font-bold text-foreground tracking-tight truncate block leading-tight"
-                style={{ fontFamily: 'var(--font-display)' }}
-              >
+              <span className="text-base font-bold text-foreground tracking-tight truncate block leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
                 DrawRun
               </span>
-              <span className="text-[10px] text-muted font-medium tracking-wide uppercase">Performance Analytics</span>
+              <span className="text-[10px] text-muted font-medium tracking-wide uppercase">
+                Performance Analytics
+              </span>
             </div>
           </Link>
           <button
@@ -136,7 +132,9 @@ export default function Sidebar() {
         <nav className="flex-1 py-4 px-3 overflow-y-auto space-y-1">
           {navGroups.map((group, groupIdx) => (
             <div key={group.key}>
-              {groupIdx > 0 && <div className="my-3 border-t border-border/50" />}
+              {groupIdx > 0 && (
+                <div className="my-3 border-t border-border/50" />
+              )}
               <div className="space-y-0.5">
                 {group.items.map((item) => {
                   const active = isActive(item.href, item.exact);
@@ -151,16 +149,18 @@ export default function Sidebar() {
                         'hover:translate-x-0.5',
                         active
                           ? 'bg-primary/10 text-primary font-semibold shadow-sm before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-[3px] before:h-5 before:rounded-r-full before:bg-primary before:shadow-sm before:shadow-primary/40'
-                          : 'text-muted hover:text-foreground hover:bg-muted/10',
+                          : 'text-muted hover:text-foreground hover:bg-muted/10'
                       )}
                     >
                       <item.icon
                         className={cn(
                           'w-5 h-5 flex-shrink-0 transition-colors duration-200',
-                          active ? 'text-primary' : 'text-muted group-hover:text-foreground',
+                          active ? 'text-primary' : 'text-muted group-hover:text-foreground'
                         )}
                       />
-                      <span className={cn(active ? 'font-semibold' : 'font-medium')}>{item.label}</span>
+                      <span className={cn(active ? 'font-semibold' : 'font-medium')}>
+                        {item.label}
+                      </span>
                       {hasNotifications && (
                         <span className="ml-auto w-5 h-5 bg-danger rounded-full flex items-center justify-center text-[9px] font-bold text-white leading-none flex-shrink-0 shadow-sm shadow-danger/30">
                           {unreadCount > 9 ? '9+' : unreadCount}
@@ -192,7 +192,7 @@ export default function Sidebar() {
           <button
             onClick={handleLogout}
             className={cn(
-              'flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-muted hover:text-danger hover:bg-danger/10 transition-all duration-200',
+              'flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-muted hover:text-danger hover:bg-danger/10 transition-all duration-200'
             )}
           >
             <LogOut className="w-4 h-4 flex-shrink-0" />

@@ -2,20 +2,24 @@
 
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui';
-import { Users, UserPlus, Trophy, Check } from '@/components/ui/icons';
+import {
+  Users,
+  UserPlus,
+  Trophy,
+  Check
+} from '@/components/ui/icons';
 
 const socialFeatures = [
   {
     icon: UserPlus,
     title: 'Amis & Connaissances',
-    description:
-      'Ajoutez vos amis coureurs et suivez leurs activités. Recevez des notifications quand ils réalisent de nouvelles performances.',
+    description: 'Ajoutez vos amis coureurs et suivez leurs activités. Recevez des notifications quand ils réalisent de nouvelles performances.',
     color: 'primary',
-    features: ["Demandes d'amis", 'Activités partagées', 'Notifications temps réel'],
+    features: ['Demandes d\'amis', 'Activités partagées', 'Notifications temps réel'],
   },
   {
     icon: Users,
-    title: "Groupes d'Entraînement",
+    title: 'Groupes d\'Entraînement',
     description: 'Créez ou rejoignez des groupes privés avec vos coéquipiers, club ou communauté de running.',
     color: 'success',
     features: ['Codes invitation privés', 'Planning de groupe', 'Défis collectifs'],
@@ -23,8 +27,7 @@ const socialFeatures = [
   {
     icon: Trophy,
     title: 'Classements',
-    description:
-      'Comparez vos statistiques avec vos amis ou votre groupe. Distance, TSS, durée - qui sera en tête cette semaine ?',
+    description: 'Comparez vos statistiques avec vos amis ou votre groupe. Distance, TSS, durée - qui sera en tête cette semaine ?',
     color: 'peak',
     features: ['Classements hebdomadaires', 'Par distance, durée, TSS', 'Récompenses et badges'],
   },
@@ -46,7 +49,7 @@ export default function SocialSection() {
           setIsVisible(true);
         }
       },
-      { threshold: 0.1 },
+      { threshold: 0.1 }
     );
 
     const section = document.getElementById('social');
@@ -61,9 +64,7 @@ export default function SocialSection() {
     <section id="social" className="py-20 lg:py-32 bg-gradient-to-b from-background to-background overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div
-          className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-        >
+        <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-sm font-semibold text-primary mb-6">
             <Users className="w-4 h-4" />
             Fonctionnalité Communauté
@@ -71,11 +72,13 @@ export default function SocialSection() {
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight mb-6">
             Entraînez-vous
             <br />
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Ensemble</span>
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Ensemble
+            </span>
           </h2>
           <p className="text-lg text-muted max-w-2xl mx-auto">
-            Rejoignez une communauté de coureurs passionnés. Partagez vos progrès, comparez vos performances et
-            motivez-vous mutuellement.
+            Rejoignez une communauté de coureurs passionnés. Partagez vos progrès,
+            comparez vos performances et motivez-vous mutuellement.
           </p>
         </div>
 
@@ -92,19 +95,21 @@ export default function SocialSection() {
                 style={{ transitionDelay: `${index * 100}ms` }}
               >
                 <div className="flex flex-col h-full">
-                  <div
-                    className={`
+                  <div className={`
                     w-14 h-14 rounded-2xl flex items-center justify-center mb-5
                     ${iconColors[feature.color]}
                     group-hover:scale-110 transition-transform duration-300
-                  `}
-                  >
+                  `}>
                     <Icon className="w-7 h-7" />
                   </div>
 
-                  <h3 className="text-xl font-bold text-foreground mb-3">{feature.title}</h3>
+                  <h3 className="text-xl font-bold text-foreground mb-3">
+                    {feature.title}
+                  </h3>
 
-                  <p className="text-muted leading-relaxed mb-6 flex-1">{feature.description}</p>
+                  <p className="text-muted leading-relaxed mb-6 flex-1">
+                    {feature.description}
+                  </p>
 
                   <ul className="space-y-2">
                     {feature.features.map((item, i) => (
@@ -121,16 +126,13 @@ export default function SocialSection() {
         </div>
 
         {/* Community Preview */}
-        <div
-          className={`transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-        >
-          <Card
-            variant="glass"
-            className="relative overflow-hidden bg-gradient-to-br from-primary to-secondary p-8 text-white"
-          >
+        <div className={`transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <Card variant="glass" className="relative overflow-hidden bg-gradient-to-br from-primary to-secondary p-8 text-white">
             <div className="relative z-10 grid md:grid-cols-2 gap-8 items-center">
               <div>
-                <h3 className="text-2xl font-bold mb-4">Déjà 2,500+ athlètes nous font confiance</h3>
+                <h3 className="text-2xl font-bold mb-4">
+                  Déjà 2,500+ athlètes nous font confiance
+                </h3>
                 <p className="text-white/80 mb-6">
                   Rejoignez une communauté active qui partage la même passion pour la course et la performance.
                 </p>
@@ -138,7 +140,9 @@ export default function SocialSection() {
                   <span className="px-4 py-2 bg-surface/20 rounded-full text-sm font-medium">
                     50K+ activités partagées
                   </span>
-                  <span className="px-4 py-2 bg-surface/20 rounded-full text-sm font-medium">1,200+ groupes créés</span>
+                  <span className="px-4 py-2 bg-surface/20 rounded-full text-sm font-medium">
+                    1,200+ groupes créés
+                  </span>
                 </div>
               </div>
               <div className="flex items-center justify-center">

@@ -3,18 +3,7 @@
 import { useState, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
-import {
-  Navigation,
-  MapPin,
-  Plus,
-  X,
-  Trash2,
-  Loader2,
-  Settings,
-  ArrowRight,
-  Check,
-  ChevronLeft,
-} from '@/components/ui/icons';
+import { Navigation, MapPin, Plus, X, Trash2, Loader2, Settings, ArrowRight, Check, ChevronLeft } from '@/components/ui/icons';
 import DirectionsPanel from './DirectionsPanel';
 import type { Direction, GeneratedRouteResponse } from '@/lib/api';
 
@@ -54,16 +43,13 @@ export default function RoutePlanner({
   const [description, setDescription] = useState('');
   const [result, setResult] = useState<GeneratedRouteResponse | null>(null);
 
-  const removeWaypoint = useCallback(
-    (index: number) => {
-      if (waypoints.length <= 2) {
-        toast.error('Il faut au moins 2 points');
-        return;
-      }
-      onWaypointsChange(waypoints.filter((_, i) => i !== index));
-    },
-    [waypoints, onWaypointsChange],
-  );
+  const removeWaypoint = useCallback((index: number) => {
+    if (waypoints.length <= 2) {
+      toast.error('Il faut au moins 2 points');
+      return;
+    }
+    onWaypointsChange(waypoints.filter((_, i) => i !== index));
+  }, [waypoints, onWaypointsChange]);
 
   const clearWaypoints = useCallback(() => {
     onWaypointsChange([]);
@@ -133,6 +119,7 @@ export default function RoutePlanner({
   return (
     <div className="fixed inset-x-0 bottom-0 z-[600] sm:left-auto sm:right-4 sm:w-[420px] sm:bottom-4 sm:rounded-2xl sm:max-h-[80vh]">
       <div className="bg-surface border-t sm:border border-border sm:shadow-2xl sm:rounded-2xl flex flex-col max-h-[70vh] sm:max-h-[75vh]">
+
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-3">
@@ -199,7 +186,9 @@ export default function RoutePlanner({
                       <p className="text-xs font-medium text-foreground truncate">
                         {wp.lat.toFixed(5)}, {wp.lng.toFixed(5)}
                       </p>
-                      {idx === 0 && <span className="text-[10px] text-success font-semibold">Départ</span>}
+                      {idx === 0 && (
+                        <span className="text-[10px] text-success font-semibold">Départ</span>
+                      )}
                       {idx === waypoints.length - 1 && idx > 0 && (
                         <span className="text-[10px] text-danger font-semibold">Arrivée</span>
                       )}
@@ -248,9 +237,7 @@ export default function RoutePlanner({
                     className="w-full px-3 py-2.5 text-sm bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all appearance-none"
                   >
                     {ACTIVITY_TYPES.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
+                      <option key={t} value={t}>{t}</option>
                     ))}
                   </select>
                 </div>
@@ -264,9 +251,7 @@ export default function RoutePlanner({
                     className="w-full px-3 py-2.5 text-sm bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all appearance-none"
                   >
                     {DIFFICULTY_OPTIONS.map((d) => (
-                      <option key={d.value} value={d.value}>
-                        {d.label}
-                      </option>
+                      <option key={d.value} value={d.value}>{d.label}</option>
                     ))}
                   </select>
                 </div>
@@ -278,9 +263,7 @@ export default function RoutePlanner({
                     onClick={() => onLoopChange(!isLoop)}
                     className={`w-10 h-5 rounded-full transition-colors relative ${isLoop ? 'bg-primary' : 'bg-muted-foreground/30'}`}
                   >
-                    <div
-                      className={`w-3.5 h-3.5 rounded-full bg-white absolute top-0.5 transition-all ${isLoop ? 'left-5.5' : 'left-0.5'}`}
-                    />
+                    <div className={`w-3.5 h-3.5 rounded-full bg-white absolute top-0.5 transition-all ${isLoop ? 'left-5.5' : 'left-0.5'}`} />
                   </div>
                   <span className="text-xs font-medium text-foreground">Parcours en boucle</span>
                 </label>

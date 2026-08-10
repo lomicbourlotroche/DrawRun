@@ -717,7 +717,7 @@ export const SPORTS: Record<SportType, SportCategory> = {
 };
 
 export const SPORT_CATEGORIES = ['endurance', 'strength', 'team', 'racket', 'winter', 'water', 'other'] as const;
-export type SportCategoryType = (typeof SPORT_CATEGORIES)[number];
+export type SportCategoryType = typeof SPORT_CATEGORIES[number];
 
 export function getSportCategory(sport: SportType): SportCategory {
   return SPORTS[sport] || SPORTS.other;

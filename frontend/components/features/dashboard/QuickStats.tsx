@@ -39,8 +39,8 @@ export function QuickStats({ stats, isLoading }: QuickStatsProps) {
     ? stats.acwr >= 0.8 && stats.acwr <= 1.3
       ? 'optimal'
       : stats.acwr < 0.8
-        ? 'low'
-        : 'high'
+      ? 'low'
+      : 'high'
     : 'unknown';
 
   return (

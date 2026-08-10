@@ -20,62 +20,13 @@ interface PowerZone {
 }
 
 const POWER_ZONES: PowerZone[] = [
-  {
-    name: 'Récupération active',
-    range: '< 55%',
-    minPercent: 0,
-    maxPercent: 55,
-    color: 'var(--success)',
-    description: 'Récupération et endurance de base',
-  },
-  {
-    name: 'Endurance',
-    range: '56-75%',
-    minPercent: 56,
-    maxPercent: 75,
-    color: 'var(--primary)',
-    description: 'Endurance aérobie',
-  },
-  {
-    name: 'Tempo',
-    range: '76-90%',
-    minPercent: 76,
-    maxPercent: 90,
-    color: 'var(--peak)',
-    description: 'Tempo et endurance lactique',
-  },
-  {
-    name: 'Seuil',
-    range: '91-105%',
-    minPercent: 91,
-    maxPercent: 105,
-    color: 'var(--peak)',
-    description: 'Seuil anaérobie',
-  },
-  {
-    name: 'VO2 Max',
-    range: '106-120%',
-    minPercent: 106,
-    maxPercent: 120,
-    color: 'var(--danger)',
-    description: 'VO2 Max et capacité aérobie',
-  },
-  {
-    name: 'Anaérobie',
-    range: '121-150%',
-    minPercent: 121,
-    maxPercent: 150,
-    color: 'var(--secondary)',
-    description: 'Capacité anaérobie',
-  },
-  {
-    name: 'Neuromusculaire',
-    range: '> 150%',
-    minPercent: 150,
-    maxPercent: 999,
-    color: 'var(--danger)',
-    description: 'Puissance neuromusculaire',
-  },
+  { name: 'Récupération active', range: '< 55%', minPercent: 0, maxPercent: 55, color: 'var(--success)', description: 'Récupération et endurance de base' },
+  { name: 'Endurance', range: '56-75%', minPercent: 56, maxPercent: 75, color: 'var(--primary)', description: 'Endurance aérobie' },
+  { name: 'Tempo', range: '76-90%', minPercent: 76, maxPercent: 90, color: 'var(--peak)', description: 'Tempo et endurance lactique' },
+  { name: 'Seuil', range: '91-105%', minPercent: 91, maxPercent: 105, color: 'var(--peak)', description: 'Seuil anaérobie' },
+  { name: 'VO2 Max', range: '106-120%', minPercent: 106, maxPercent: 120, color: 'var(--danger)', description: 'VO2 Max et capacité aérobie' },
+  { name: 'Anaérobie', range: '121-150%', minPercent: 121, maxPercent: 150, color: 'var(--secondary)', description: 'Capacité anaérobie' },
+  { name: 'Neuromusculaire', range: '> 150%', minPercent: 150, maxPercent: 999, color: 'var(--danger)', description: 'Puissance neuromusculaire' },
 ];
 
 export function PowerAnalysis({ activityId: _activityId, wattsData, duration }: PowerAnalysisProps) {
@@ -91,7 +42,7 @@ export function PowerAnalysis({ activityId: _activityId, wattsData, duration }: 
     const minPower = Math.min(...wattsData);
 
     // Normalized Power (simplified calculation)
-    const fourthPower = wattsData.map((w) => Math.pow(w, 4));
+    const fourthPower = wattsData.map(w => Math.pow(w, 4));
     const avgFourthPower = fourthPower.reduce((a, b) => a + b, 0) / fourthPower.length;
     const normalizedPower = Math.pow(avgFourthPower, 0.25);
 
@@ -99,7 +50,9 @@ export function PowerAnalysis({ activityId: _activityId, wattsData, duration }: 
     const intensityFactor = ftp ? normalizedPower / ftp : null;
 
     // TSS (Training Stress Score)
-    const tss = ftp && duration ? ((duration / 3600) * normalizedPower * (normalizedPower / ftp)) / (ftp * 0.01) : null;
+    const tss = ftp && duration
+      ? ((duration / 3600) * normalizedPower * (normalizedPower / ftp)) / (ftp * 0.01)
+      : null;
 
     // Variability Index
     const variabilityIndex = normalizedPower / avgPower;
@@ -118,24 +71,24 @@ export function PowerAnalysis({ activityId: _activityId, wattsData, duration }: 
   const getZoneDistribution = useCallback(() => {
     if (!wattsData || !ftp) return [];
 
-    const zones = POWER_ZONES.map((zone) => ({
+    const zones = POWER_ZONES.map(zone => ({
       ...zone,
       count: 0,
       percentage: 0,
     }));
 
-    wattsData.forEach((watt) => {
+    wattsData.forEach(watt => {
       const percentOfFtp = (watt / ftp) * 100;
-      const zone = zones.find((z) => percentOfFtp >= z.minPercent && percentOfFtp < z.maxPercent);
+      const zone = zones.find(z => percentOfFtp >= z.minPercent && percentOfFtp < z.maxPercent);
       if (zone) zone.count++;
     });
 
     const total = wattsData.length;
-    zones.forEach((zone) => {
+    zones.forEach(zone => {
       zone.percentage = Math.round((zone.count / total) * 100);
     });
 
-    return zones.filter((z) => z.count > 0);
+    return zones.filter(z => z.count > 0);
   }, [wattsData, ftp]);
 
   const metrics = calculateMetrics();
@@ -172,17 +125,14 @@ export function PowerAnalysis({ activityId: _activityId, wattsData, duration }: 
               onChange={(e) => setManualFtp(e.target.value)}
               className="w-48"
             />
-            <Button onClick={() => setFtp(parseInt(manualFtp) || null)} variant={ftp ? 'outline' : 'default'}>
+            <Button
+              onClick={() => setFtp(parseInt(manualFtp) || null)}
+              variant={ftp ? 'outline' : 'default'}
+            >
               {ftp ? 'Modifier' : 'Définir FTP'}
             </Button>
             {ftp && (
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setFtp(null);
-                  setManualFtp('');
-                }}
-              >
+              <Button variant="ghost" onClick={() => { setFtp(null); setManualFtp(''); }}>
                 Effacer
               </Button>
             )}
@@ -198,8 +148,16 @@ export function PowerAnalysis({ activityId: _activityId, wattsData, duration }: 
       {/* Metrics Grid */}
       {metrics && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <MetricCard icon={<Zap className="w-4 h-4" />} label="Puissance moy." value={`${metrics.avgPower}W`} />
-          <MetricCard icon={<TrendingUp className="w-4 h-4" />} label="Puissance max." value={`${metrics.maxPower}W`} />
+          <MetricCard
+            icon={<Zap className="w-4 h-4" />}
+            label="Puissance moy."
+            value={`${metrics.avgPower}W`}
+          />
+          <MetricCard
+            icon={<TrendingUp className="w-4 h-4" />}
+            label="Puissance max."
+            value={`${metrics.maxPower}W`}
+          />
           <MetricCard
             icon={<Activity className="w-4 h-4" />}
             label="Puissance norm."
@@ -213,9 +171,17 @@ export function PowerAnalysis({ activityId: _activityId, wattsData, duration }: 
             />
           )}
           {metrics.tss && (
-            <MetricCard icon={<Battery className="w-4 h-4" />} label="TSS" value={metrics.tss.toString()} />
+            <MetricCard
+              icon={<Battery className="w-4 h-4" />}
+              label="TSS"
+              value={metrics.tss.toString()}
+            />
           )}
-          <MetricCard icon={<Activity className="w-4 h-4" />} label="Var. Index" value={metrics.variabilityIndex} />
+          <MetricCard
+            icon={<Activity className="w-4 h-4" />}
+            label="Var. Index"
+            value={metrics.variabilityIndex}
+          />
         </div>
       )}
 
@@ -238,13 +204,18 @@ export function PowerAnalysis({ activityId: _activityId, wattsData, duration }: 
               <div className="space-y-3">
                 {zoneDistribution.map((zone) => (
                   <div key={zone.name} className="flex items-center gap-4">
-                    <div className="w-4 h-4 rounded flex-shrink-0" style={{ backgroundColor: zone.color }} />
+                    <div
+                      className="w-4 h-4 rounded flex-shrink-0"
+                      style={{ backgroundColor: zone.color }}
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-sm">{zone.name}</span>
                         <span className="text-xs text-muted">({zone.range})</span>
                       </div>
-                      <p className="text-xs text-muted truncate">{zone.description}</p>
+                      <p className="text-xs text-muted truncate">
+                        {zone.description}
+                      </p>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="w-32 h-2 bg-border rounded-full overflow-hidden">
@@ -252,11 +223,13 @@ export function PowerAnalysis({ activityId: _activityId, wattsData, duration }: 
                           className="h-full rounded-full"
                           style={{
                             backgroundColor: zone.color,
-                            width: `${Math.max(zone.percentage, 5)}%`,
+                            width: `${Math.max(zone.percentage, 5)}%`
                           }}
                         />
                       </div>
-                      <span className="text-sm font-medium w-12 text-right">{zone.percentage}%</span>
+                      <span className="text-sm font-medium w-12 text-right">
+                        {zone.percentage}%
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -328,7 +301,7 @@ export function FTPCalculator() {
       ftp = power; // 60-min test = FTP
     } else {
       // Interpolate
-      const factor = 0.95 + (0.05 * (60 - duration)) / 40;
+      const factor = 0.95 + (0.05 * (60 - duration) / 40);
       ftp = power * factor;
     }
 

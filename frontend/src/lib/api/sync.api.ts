@@ -28,7 +28,7 @@ export const syncApi = {
     onProgress?: (_job: SyncJob) => void,
     intervalMs = 5000,
     timeoutMs = 5 * 60 * 1000,
-    days?: number,
+    days?: number
   ): Promise<SyncResult> {
     const { jobId } = await syncApi.startSync(days);
 
@@ -64,4 +64,6 @@ export const syncApi = {
   getSyncStatus(): Promise<SyncStatus> {
     return client.request('/api/sync/status');
   },
+
+
 };

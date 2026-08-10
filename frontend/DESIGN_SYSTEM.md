@@ -1,7 +1,7 @@
 # DrawRun Design System
 
 > **Système de design UNIQUE et PROFESSIONNEL** pour l'application DrawRun
-> _Inspiré des sciences du sport et des algorithmes scientifiques intégrés_
+> *Inspiré des sciences du sport et des algorithmes scientifiques intégrés*
 
 ---
 
@@ -55,7 +55,6 @@ frontend/
 ### Principe de la Source Unique
 
 **⚠️ RÈGLE ABSOLUE :**
-
 > Toutes les couleurs, espacements, et tokens de design **DOIVENT** être définis dans `src/lib/designTokens.ts`
 > **NE JAMAIS** dupliquer ces valeurs ailleurs dans le code
 
@@ -74,15 +73,15 @@ frontend/
 
 ### Couleurs Principales (Marque DrawRun)
 
-| Couleur       | Hex       | Usage               | Signification                                      |
-| ------------- | --------- | ------------------- | -------------------------------------------------- |
-| **Primary**   | `#0066FF` | CTA, liens, actions | Bleu Performance - Couleur principale de la marque |
-| **Secondary** | `#5856D6` | Accents secondaires | Violet - Complément du primary                     |
-| **Success**   | `#00C853` | Validation, succès  | Vert - States positifs                             |
-| **Recovery**  | `#00BCD4` | Récupération, forme | Cyan - État de fraîcheur (PMC)                     |
-| **Warning**   | `#FFAB00` | Alertes, attention  | Orange - Seuil à surveiller                        |
-| **Danger**    | `#FF5252` | Erreurs, risque     | Rouge - État critique                              |
-| **Peak**      | `#FF6D00` | Pic de performance  | Orange vif - Forme optimale                        |
+| Couleur | Hex | Usage | Signification |
+|---------|-----|-------|---------------|
+| **Primary** | `#0066FF` | CTA, liens, actions | Bleu Performance - Couleur principale de la marque |
+| **Secondary** | `#5856D6` | Accents secondaires | Violet - Complément du primary |
+| **Success** | `#00C853` | Validation, succès | Vert - States positifs |
+| **Recovery** | `#00BCD4` | Récupération, forme | Cyan - État de fraîcheur (PMC) |
+| **Warning** | `#FFAB00` | Alertes, attention | Orange - Seuil à surveiller |
+| **Danger** | `#FF5252` | Erreurs, risque | Rouge - État critique |
+| **Peak** | `#FF6D00` | Pic de performance | Orange vif - Forme optimale |
 
 ### Palettes Complètes (50-900)
 
@@ -109,29 +108,29 @@ primary: {
 
 ### Couleurs Neutres (60-30-10 Rule)
 
-| Token           | Hex       | Usage                    |
-| --------------- | --------- | ------------------------ |
-| `--neutral-50`  | `#F8FAFC` | Fond principal (60%)     |
-| `--neutral-100` | `#F1F5F9` | Fond alternatif          |
-| `--neutral-200` | `#E2E8F0` | Bordures légères         |
-| `--neutral-300` | `#CBD5E1` | Bordures                 |
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `--neutral-50` | `#F8FAFC` | Fond principal (60%) |
+| `--neutral-100` | `#F1F5F9` | Fond alternatif |
+| `--neutral-200` | `#E2E8F0` | Bordures légères |
+| `--neutral-300` | `#CBD5E1` | Bordures |
 | `--neutral-400` | `#94A3B8` | Texte secondaire (muted) |
-| `--neutral-600` | `#475569` | Texte emphase            |
-| `--neutral-800` | `#1E293B` | Surface (30%)            |
-| `--neutral-900` | `#0F172A` | Texte principal (10%)    |
+| `--neutral-600` | `#475569` | Texte emphase |
+| `--neutral-800` | `#1E293B` | Surface (30%) |
+| `--neutral-900` | `#0F172A` | Texte principal (10%) |
 
 ### Couleurs des Activités Sportives
 
-| Activité      | Couleur             | Hex       |
-| ------------- | ------------------- | --------- |
-| Course à pied | `--activity-run`    | `#FF3B30` |
-| Cyclisme      | `--activity-ride`   | `#FF9500` |
-| Natation      | `--activity-swim`   | `#007AFF` |
-| Randonnée     | `--activity-hike`   | `#34C759` |
-| Marche        | `--activity-walk`   | `#8E8E93` |
-| Ski           | `--activity-ski`    | `#007AFF` |
-| Trail running | `--activity-trail`  | `#FF6D00` |
-| Aviron        | `--activity-rowing` | `#00BCD4` |
+| Activité | Couleur | Hex |
+|----------|---------|-----|
+| Course à pied | `--activity-run` | `#FF3B30` |
+| Cyclisme | `--activity-ride` | `#FF9500` |
+| Natation | `--activity-swim` | `#007AFF` |
+| Randonnée | `--activity-hike` | `#34C759` |
+| Marche | `--activity-walk` | `#8E8E93` |
+| Ski | `--activity-ski` | `#007AFF` |
+| Trail running | `--activity-trail` | `#FF6D00` |
+| Aviron | `--activity-rowing` | `#00BCD4` |
 
 ---
 
@@ -141,16 +140,15 @@ primary: {
 
 Basées sur le **% de la Fréquence Cardiaque Maximale (FCM)** - Utilisées dans `cardiovascular.js`
 
-| Zone   | Couleur                   | Plage   | Intensité  | Signification                                   |
-| ------ | ------------------------- | ------- | ---------- | ----------------------------------------------- |
-| Zone 1 | `--hr-zone-1` / `#00C853` | 50-60%  | Très léger | Récupération active, échauffement               |
-| Zone 2 | `--hr-zone-2` / `#8BC34A` | 60-70%  | Léger      | Endurance fondamentale, combustion des graisses |
-| Zone 3 | `--hr-zone-3` / `#FFAB00` | 70-80%  | Modéré     | Amélioration de la capacité aérobie             |
-| Zone 4 | `--hr-zone-4` / `#FF6D00` | 80-90%  | Intense    | Amélioration de la puissance et de la vitesse   |
-| Zone 5 | `--hr-zone-5` / `#FF5252` | 90-100% | Maximum    | Sprints, efforts maximaux, compétition          |
+| Zone | Couleur | Plage | Intensité | Signification |
+|------|---------|-------|-----------|---------------|
+| Zone 1 | `--hr-zone-1` / `#00C853` | 50-60% | Très léger | Récupération active, échauffement |
+| Zone 2 | `--hr-zone-2` / `#8BC34A` | 60-70% | Léger | Endurance fondamentale, combustion des graisses |
+| Zone 3 | `--hr-zone-3` / `#FFAB00` | 70-80% | Modéré | Amélioration de la capacité aérobie |
+| Zone 4 | `--hr-zone-4` / `#FF6D00` | 80-90% | Intense | Amélioration de la puissance et de la vitesse |
+| Zone 5 | `--hr-zone-5` / `#FF5252` | 90-100% | Maximum | Sprints, efforts maximaux, compétition |
 
 **Utilisation :**
-
 ```typescript
 import { hrZones, getHRZoneColor } from '@/lib/designTokens';
 
@@ -165,18 +163,17 @@ const color = getHRZoneColor(3); // '#FFAB00'
 
 Basées sur le **% du FTP (Functional Threshold Power)** - Utilisées dans `critical_power.js`
 
-| Zone   | Couleur                      | Plage    | Nom             | Description                        |
-| ------ | ---------------------------- | -------- | --------------- | ---------------------------------- |
-| Zone 1 | `--power-zone-1` / `#00BCD4` | <55%     | Active Recovery | Récupération, très léger           |
-| Zone 2 | `--power-zone-2` / `#00C853` | 56-75%   | Endurance       | Endurance fondamentale             |
-| Zone 3 | `--power-zone-3` / `#8BC34A` | 76-90%   | Tempo           | Allure marathon, seuil aérobie     |
-| Zone 4 | `--power-zone-4` / `#FFAB00` | 91-105%  | Threshold       | Seuil lactique, allure 10km        |
-| Zone 5 | `--power-zone-5` / `#FF6D00` | 106-120% | VO2 Max         | Capacité anaérobie, allure 3km-5km |
-| Zone 6 | `--power-zone-6` / `#E91E63` | 121-150% | Anaerobic       | Efforts courts et intenses         |
-| Zone 7 | `--power-zone-7` / `#9C27B0` | >150%    | Neuromuscular   | Sprints, départs, accélérations    |
+| Zone | Couleur | Plage | Nom | Description |
+|------|---------|-------|-----|-------------|
+| Zone 1 | `--power-zone-1` / `#00BCD4` | <55% | Active Recovery | Récupération, très léger |
+| Zone 2 | `--power-zone-2` / `#00C853` | 56-75% | Endurance | Endurance fondamentale |
+| Zone 3 | `--power-zone-3` / `#8BC34A` | 76-90% | Tempo | Allure marathon, seuil aérobie |
+| Zone 4 | `--power-zone-4` / `#FFAB00` | 91-105% | Threshold | Seuil lactique, allure 10km |
+| Zone 5 | `--power-zone-5` / `#FF6D00` | 106-120% | VO2 Max | Capacité anaérobie, allure 3km-5km |
+| Zone 6 | `--power-zone-6` / `#E91E63` | 121-150% | Anaerobic | Efforts courts et intenses |
+| Zone 7 | `--power-zone-7` / `#9C27B0` | >150% | Neuromuscular | Sprints, départs, accélérations |
 
 **Utilisation :**
-
 ```typescript
 import { powerZones, getPowerZoneColor } from '@/lib/designTokens';
 
@@ -191,16 +188,15 @@ const color = getPowerZoneColor(5); // '#FF6D00'
 
 Modèle **scientifique** pour suivre la **fatigue**, la **fitness** et la **forme** (Form = Fitness - Fatigue)
 
-| État            | Couleur                          | Valeur TSB     | Signification                                   |
-| --------------- | -------------------------------- | -------------- | ----------------------------------------------- |
-| **Overtrained** | `--form-overtrained` / `#FF5252` | TSB < -20      | Risque de blessure ou de contre-performance     |
-| **Fatigued**    | `--form-fatigued` / `#FFAB00`    | -20 ≤ TSB < -5 | Fatigue accumulée, récupération nécessaire      |
-| **Normal**      | `--form-normal` / `#0066FF`      | -5 ≤ TSB < 5   | État de forme standard                          |
-| **Fresh**       | `--form-fresh` / `#00BCD4`       | 5 ≤ TSB < 25   | Bien récupéré, bonne forme générale             |
-| **Peak**        | `--form-peak` / `#FF6D00`        | TSB ≥ 25       | Performance optimale, prêt à battre des records |
+| État | Couleur | Valeur TSB | Signification |
+|------|---------|-------------|---------------|
+| **Overtrained** | `--form-overtrained` / `#FF5252` | TSB < -20 | Risque de blessure ou de contre-performance |
+| **Fatigued** | `--form-fatigued` / `#FFAB00` | -20 ≤ TSB < -5 | Fatigue accumulée, récupération nécessaire |
+| **Normal** | `--form-normal` / `#0066FF` | -5 ≤ TSB < 5 | État de forme standard |
+| **Fresh** | `--form-fresh` / `#00BCD4` | 5 ≤ TSB < 25 | Bien récupéré, bonne forme générale |
+| **Peak** | `--form-peak` / `#FF6D00` | TSB ≥ 25 | Performance optimale, prêt à battre des records |
 
 **Utilisation :**
-
 ```typescript
 import { pmcStates, getPMCFormColor } from '@/lib/designTokens';
 
@@ -213,50 +209,50 @@ const color = getPMCFormColor(30); // '#FF6D00' (peak)
 
 ### 💤 Niveaux de Fatigue
 
-| Niveau        | Couleur                             | Seuil  | Description                        |
-| ------------- | ----------------------------------- | ------ | ---------------------------------- |
-| Fresh         | `--fatigue-fresh` / `#00BCD4`       | < 10%  | Aucune fatigue significative       |
-| Normal        | `--fatigue-normal` / `#0066FF`      | 10-30% | Fatigue normale après entraînement |
-| Fatigued      | `--fatigue-fatigued` / `#FFAB00`    | 30-50% | Besoin de récupération             |
-| Very Fatigued | `#FF8F00`                           | 50-70% | Récupération active nécessaire     |
-| Overtrained   | `--fatigue-overtrained` / `#FF5252` | > 70%  | Risque élevé de blessure           |
+| Niveau | Couleur | Seuil | Description |
+|--------|---------|-------|-------------|
+| Fresh | `--fatigue-fresh` / `#00BCD4` | < 10% | Aucune fatigue significative |
+| Normal | `--fatigue-normal` / `#0066FF` | 10-30% | Fatigue normale après entraînement |
+| Fatigued | `--fatigue-fatigued` / `#FFAB00` | 30-50% | Besoin de récupération |
+| Very Fatigued | `#FF8F00` | 50-70% | Récupération active nécessaire |
+| Overtrained | `--fatigue-overtrained` / `#FF5252` | > 70% | Risque élevé de blessure |
 
 ### ✅ Niveaux de Readiness (Prêt à s'entraîner)
 
-| Niveau    | Couleur                             | Score | Description                          |
-| --------- | ----------------------------------- | ----- | ------------------------------------ |
-| Very Poor | `--readiness-very-poor` / `#FF5252` | 0-29  | Repos complet nécessaire             |
-| Poor      | `--readiness-poor` / `#FF6D00`      | 30-49 | Éviter les entraînements intenses    |
-| Fair      | `--readiness-fair` / `#FFAB00`      | 50-69 | Récupération active recommandée      |
-| Good      | `--readiness-good` / `#00BCD4`      | 70-89 | Bon pour un entraînement modéré      |
-| Excellent | `--readiness-excellent` / `#00C853` | ≥ 90  | Parfait pour un entraînement intense |
+| Niveau | Couleur | Score | Description |
+|--------|---------|-------|-------------|
+| Very Poor | `--readiness-very-poor` / `#FF5252` | 0-29 | Repos complet nécessaire |
+| Poor | `--readiness-poor` / `#FF6D00` | 30-49 | Éviter les entraînements intenses |
+| Fair | `--readiness-fair` / `#FFAB00` | 50-69 | Récupération active recommandée |
+| Good | `--readiness-good` / `#00BCD4` | 70-89 | Bon pour un entraînement modéré |
+| Excellent | `--readiness-excellent` / `#00C853` | ≥ 90 | Parfait pour un entraînement intense |
 
 ### 📊 Niveaux de Polarisation (80/20 Rule)
 
-| Élément             | Couleur                                 | Cible | Description                                 |
-| ------------------- | --------------------------------------- | ----- | ------------------------------------------- |
-| Zone 1 (Endurance)  | `--polarization-zone1` / `#00BCD4`      | 80%   | Entraînement en zone 1 (aérobie)            |
-| Zone 2+ (Intensité) | `--polarization-zone2-plus` / `#FF6D00` | 20%   | Entraînement en zones 2+ (anaérobie)        |
-| Déséquilibre        | `--polarization-imbalance` / `#FF5252`  | >85%  | Trop d'intensité, risque de surentraînement |
+| Élément | Couleur | Cible | Description |
+|---------|---------|-------|-------------|
+| Zone 1 (Endurance) | `--polarization-zone1` / `#00BCD4` | 80% | Entraînement en zone 1 (aérobie) |
+| Zone 2+ (Intensité) | `--polarization-zone2-plus` / `#FF6D00` | 20% | Entraînement en zones 2+ (anaérobie) |
+| Déséquilibre | `--polarization-imbalance` / `#FF5252` | >85% | Trop d'intensité, risque de surentraînement |
 
 ### 🌡️ Stress Thermique
 
-| Niveau   | Couleur   | Seuil (°C) | Description              |
-| -------- | --------- | ---------- | ------------------------ |
-| Low      | `#00BCD4` | < 20°C     | Conditions optimales     |
-| Moderate | `#00C853` | < 25°C     | Conditions acceptables   |
-| High     | `#FFAB00` | < 30°C     | Précautions nécessaires  |
-| Extreme  | `#FF5252` | ≥ 35°C     | Danger - Éviter l'effort |
+| Niveau | Couleur | Seuil (°C) | Description |
+|--------|---------|------------|-------------|
+| Low | `#00BCD4` | < 20°C | Conditions optimales |
+| Moderate | `#00C853` | < 25°C | Conditions acceptables |
+| High | `#FFAB00` | < 30°C | Précautions nécessaires |
+| Extreme | `#FF5252` | ≥ 35°C | Danger - Éviter l'effort |
 
 ### 💧 Niveaux d'Hydratation
 
-| Niveau   | Couleur   | Pourcentage | Description           |
-| -------- | --------- | ----------- | --------------------- |
-| Optimal  | `#00C853` | 100%        | Hydratation optimale  |
-| Good     | `#8BC34A` | 80%         | Bonne hydratation     |
-| Fair     | `#FFAB00` | 60%         | Hydratation moyenne   |
-| Poor     | `#FF6D00` | 40%         | Déshydratation légère |
-| Critical | `#FF5252` | 20%         | Déshydratation sévère |
+| Niveau | Couleur | Pourcentage | Description |
+|--------|---------|-------------|-------------|
+| Optimal | `#00C853` | 100% | Hydratation optimale |
+| Good | `#8BC34A` | 80% | Bonne hydratation |
+| Fair | `#FFAB00` | 60% | Hydratation moyenne |
+| Poor | `#FF6D00` | 40% | Déshydratation légère |
+| Critical | `#FF5252` | 20% | Déshydratation sévère |
 
 ---
 
@@ -266,50 +262,50 @@ const color = getPMCFormColor(30); // '#FF6D00' (peak)
 
 ```css
 /* Background */
---bg: #f8fafc; /* Fond principal */
---bg-secondary: #f1f5f9; /* Fond secondaire */
---surface: #ffffff; /* Cartes, surfaces élevées */
+--bg: #F8FAFC;              /* Fond principal */
+--bg-secondary: #F1F5F9;    /* Fond secondaire */
+--surface: #FFFFFF;          /* Cartes, surfaces élevées */
 
 /* Text */
---foreground: #0f172a; /* Texte principal */
---text-primary: #0f172a;
+--foreground: #0F172A;      /* Texte principal */
+--text-primary: #0F172A;
 --text-secondary: #475569;
---text-tertiary: #64748b;
---muted: #94a3b8; /* Texte atténué */
+--text-tertiary: #64748B;
+--muted: #94A3B8;           /* Texte atténué */
 
 /* Borders */
---border: #e2e8f0; /* Bordures */
---border-strong: #cbd5e1;
+--border: #E2E8F0;           /* Bordures */
+--border-strong: #CBD5E1;
 
 /* States */
---bg-success: #e8f9ee;
---bg-warning: #fff8e1;
---bg-danger: #ffebee;
---bg-info: #e6f2ff;
+--bg-success: #E8F9EE;
+--bg-warning: #FFF8E1;
+--bg-danger: #FFEBEE;
+--bg-info: #E6F2FF;
 ```
 
 ### Tokens Dark Mode
 
 ```css
 /* Dans .dark {} */
---bg: #080c14; /* Fond principal */
+--bg: #080C14;              /* Fond principal */
 --bg-secondary: #111827;
---surface: #111827; /* Cartes, surfaces élevées */
---surface-elevated: #1e2d45;
+--surface: #111827;          /* Cartes, surfaces élevées */
+--surface-elevated: #1E2D45;
 
---foreground: #e8edf5; /* Texte principal */
---text-secondary: #94a3b8;
---text-tertiary: #64748b;
---muted: #4a5568;
+--foreground: #E8EDF5;      /* Texte principal */
+--text-secondary: #94A3B8;
+--text-tertiary: #64748B;
+--muted: #4A5568;
 
---border: #1e2d45;
+--border: #1E2D45;
 --border-strong: #334155;
 
 /* Background status (variantes dark) */
---bg-success: #1a2e22;
---bg-warning: #2e2212;
---bg-danger: #2e1a1a;
---bg-info: #1a2332;
+--bg-success: #1A2E22;
+--bg-warning: #2E2212;
+--bg-danger: #2E1A1A;
+--bg-info: #1A2332;
 ```
 
 **⚠️ Note :** Les couleurs sémantiques (`--primary`, `--success`, etc.) restent les **mêmes** en light et dark mode pour maintenir la cohérence de la marque.
@@ -329,52 +325,52 @@ const color = getPMCFormColor(30); // '#FF6D00' (peak)
 
 ### Tailles de Police
 
-| Token         | Valeur | Usage                            |
-| ------------- | ------ | -------------------------------- |
-| `text-xs`     | 12px   | Texte très petit (labels, hints) |
-| `text-sm`     | 14px   | Texte petit (métadonnées)        |
-| `text-md`     | 16px   | Texte standard (body)            |
-| `text-lg`     | 18px   | Texte large (sous-titres)        |
-| `text-xl`     | 20px   | Titres de section                |
-| `text-2xl`    | 24px   | Données principales              |
-| `text-3xl`    | 30px   | Titres importants                |
-| `text-4xl`    | 36px   | Titres de page                   |
-| `text-5xl`    | 48px   | Titres principaux                |
-| `text-6xl`    | 60px   | Titres héro                      |
-| `text-7xl`    | 72px   | Grand hero                       |
-| `hero`        | 72px   | Hero desktop                     |
-| `hero-mobile` | 40px   | Hero mobile                      |
-| `data`        | 24px   | Données principales              |
-| `stat`        | 28px   | Statistiques                     |
+| Token | Valeur | Usage |
+|-------|--------|-------|
+| `text-xs` | 12px | Texte très petit (labels, hints) |
+| `text-sm` | 14px | Texte petit (métadonnées) |
+| `text-md` | 16px | Texte standard (body) |
+| `text-lg` | 18px | Texte large (sous-titres) |
+| `text-xl` | 20px | Titres de section |
+| `text-2xl` | 24px | Données principales |
+| `text-3xl` | 30px | Titres importants |
+| `text-4xl` | 36px | Titres de page |
+| `text-5xl` | 48px | Titres principaux |
+| `text-6xl` | 60px | Titres héro |
+| `text-7xl` | 72px | Grand hero |
+| `hero` | 72px | Hero desktop |
+| `hero-mobile` | 40px | Hero mobile |
+| `data` | 24px | Données principales |
+| `stat` | 28px | Statistiques |
 
 ### Poids de Police
 
-| Token            | Valeur | Usage                  |
-| ---------------- | ------ | ---------------------- |
-| `font-normal`    | 400    | Texte standard         |
-| `font-medium`    | 500    | Émphase légère         |
-| `font-semibold`  | 600    | Émphase                |
-| `font-bold`      | 700    | Émphase forte          |
-| `font-extrabold` | 800    | Titres                 |
-| `font-black`     | 900    | Titres très importants |
+| Token | Valeur | Usage |
+|-------|--------|-------|
+| `font-normal` | 400 | Texte standard |
+| `font-medium` | 500 | Émphase légère |
+| `font-semibold` | 600 | Émphase |
+| `font-bold` | 700 | Émphase forte |
+| `font-extrabold` | 800 | Titres |
+| `font-black` | 900 | Titres très importants |
 
 ### Letter Spacing
 
 ```css
---letter-spacing-tight: -0.02em; /* Pour les grands titres */
+--letter-spacing-tight: -0.02em;  /* Pour les grands titres */
 --letter-spacing-normal: 0;
 --letter-spacing-wide: 0.02em;
 ```
 
 ### Line Heights
 
-| Token        | Valeur | Usage            |
-| ------------ | ------ | ---------------- |
-| `leading-xs` | 16px   | Petit texte      |
-| `leading-sm` | 20px   | Texte standard   |
-| `leading-md` | 24px   | Body text        |
-| `leading-lg` | 28px   | Grand texte      |
-| `leading-xl` | 32px   | Très grand texte |
+| Token | Valeur | Usage |
+|-------|--------|-------|
+| `leading-xs` | 16px | Petit texte |
+| `leading-sm` | 20px | Texte standard |
+| `leading-md` | 24px | Body text |
+| `leading-lg` | 28px | Grand texte |
+| `leading-xl` | 32px | Très grand texte |
 
 ---
 
@@ -384,34 +380,34 @@ Tous les espacements sont basés sur un **système 8px** pour une cohérence par
 
 ### Base Units
 
-| Token        | Valeur | Multiplicateur |
-| ------------ | ------ | -------------- |
-| `spacing-0`  | 0px    | 0 × 8          |
-| `spacing-1`  | 4px    | 0.5 × 8        |
-| `spacing-2`  | 8px    | 1 × 8          |
-| `spacing-3`  | 12px   | 1.5 × 8        |
-| `spacing-4`  | 16px   | 2 × 8          |
-| `spacing-5`  | 20px   | 2.5 × 8        |
-| `spacing-6`  | 24px   | 3 × 8          |
-| `spacing-7`  | 28px   | 3.5 × 8        |
-| `spacing-8`  | 32px   | 4 × 8          |
-| `spacing-9`  | 36px   | 4.5 × 8        |
-| `spacing-10` | 40px   | 5 × 8          |
-| `spacing-11` | 44px   | 5.5 × 8        |
-| `spacing-12` | 48px   | 6 × 8          |
-| `spacing-14` | 56px   | 7 × 8          |
-| `spacing-16` | 64px   | 8 × 8          |
+| Token | Valeur | Multiplicateur |
+|-------|--------|---------------|
+| `spacing-0` | 0px | 0 × 8 |
+| `spacing-1` | 4px | 0.5 × 8 |
+| `spacing-2` | 8px | 1 × 8 |
+| `spacing-3` | 12px | 1.5 × 8 |
+| `spacing-4` | 16px | 2 × 8 |
+| `spacing-5` | 20px | 2.5 × 8 |
+| `spacing-6` | 24px | 3 × 8 |
+| `spacing-7` | 28px | 3.5 × 8 |
+| `spacing-8` | 32px | 4 × 8 |
+| `spacing-9` | 36px | 4.5 × 8 |
+| `spacing-10` | 40px | 5 × 8 |
+| `spacing-11` | 44px | 5.5 × 8 |
+| `spacing-12` | 48px | 6 × 8 |
+| `spacing-14` | 56px | 7 × 8 |
+| `spacing-16` | 64px | 8 × 8 |
 
 ### Named Aliases
 
-| Token         | Valeur | Usage                  |
-| ------------- | ------ | ---------------------- |
-| `spacing-xs`  | 4px    | Micro-espacement       |
-| `spacing-sm`  | 8px    | Petit espacement       |
-| `spacing-md`  | 16px   | Espacement standard    |
-| `spacing-lg`  | 24px   | Grand espacement       |
-| `spacing-xl`  | 32px   | Très grand espacement  |
-| `spacing-2xl` | 48px   | Espacement extra-large |
+| Token | Valeur | Usage |
+|-------|--------|-------|
+| `spacing-xs` | 4px | Micro-espacement |
+| `spacing-sm` | 8px | Petit espacement |
+| `spacing-md` | 16px | Espacement standard |
+| `spacing-lg` | 24px | Grand espacement |
+| `spacing-xl` | 32px | Très grand espacement |
+| `spacing-2xl` | 48px | Espacement extra-large |
 
 ### Component-Specific
 
@@ -435,26 +431,26 @@ button: {
 
 ## 🔺 Rayons (Border Radius)
 
-| Token         | Valeur | Usage                       |
-| ------------- | ------ | --------------------------- |
-| `radius-none` | 0px    | Sans bordure arrondie       |
-| `radius-sm`   | 6px    | Bordure légèrement arrondie |
-| `radius-md`   | 8px    | Bordure standard (boutons)  |
-| `radius-lg`   | 12px   | Bordure arrondie (cartes)   |
-| `radius-xl`   | 16px   | Bordure très arrondie       |
-| `radius-2xl`  | 24px   | Bordure extra-large         |
-| `radius-3xl`  | 32px   | Bordure énorme              |
-| `radius-full` | 9999px | Cercle / pilule             |
+| Token | Valeur | Usage |
+|-------|--------|-------|
+| `radius-none` | 0px | Sans bordure arrondie |
+| `radius-sm` | 6px | Bordure légèrement arrondie |
+| `radius-md` | 8px | Bordure standard (boutons) |
+| `radius-lg` | 12px | Bordure arrondie (cartes) |
+| `radius-xl` | 16px | Bordure très arrondie |
+| `radius-2xl` | 24px | Bordure extra-large |
+| `radius-3xl` | 32px | Bordure énorme |
+| `radius-full` | 9999px | Cercle / pilule |
 
 ### Component-Specific
 
-| Composant | Rayon  | Token                    |
-| --------- | ------ | ------------------------ |
-| Button    | 8px    | `radius-button`          |
-| Card      | 12px   | `radius-card`            |
-| Input     | 8px    | `radius-input`           |
-| Badge     | 9999px | `radius-badge` (pilule)  |
-| Avatar    | 50%    | `radius-avatar` (cercle) |
+| Composant | Rayon | Token |
+|-----------|-------|-------|
+| Button | 8px | `radius-button` |
+| Card | 12px | `radius-card` |
+| Input | 8px | `radius-input` |
+| Badge | 9999px | `radius-badge` (pilule) |
+| Avatar | 50% | `radius-avatar` (cercle) |
 
 ---
 
@@ -462,20 +458,20 @@ button: {
 
 Système de couches pour gérer le superposition des éléments :
 
-| Layer              | Valeur | Usage                      |
-| ------------------ | ------ | -------------------------- |
-| `z-base`           | 0      | Éléments de base           |
-| `z-raised`         | 10     | Éléments légèrement élevés |
-| `z-content`        | 20     | Contenu principal          |
-| `z-fixed`          | 20     | Éléments fixed             |
-| `z-sticky`         | 30     | Éléments sticky (headers)  |
-| `z-dropdown`       | 40     | Dropdowns, menus           |
-| `z-modal-backdrop` | 45     | Overlay des modales        |
-| `z-modal`          | 50     | Modales                    |
-| `z-drawer`         | 50     | Drawers (tiroirs)          |
-| `z-toast`          | 60     | Notifications toast        |
-| `z-tooltip`        | 70     | Tooltips                   |
-| `z-max`            | 9999   | Maximum (urgent)           |
+| Layer | Valeur | Usage |
+|-------|--------|-------|
+| `z-base` | 0 | Éléments de base |
+| `z-raised` | 10 | Éléments légèrement élevés |
+| `z-content` | 20 | Contenu principal |
+| `z-fixed` | 20 | Éléments fixed |
+| `z-sticky` | 30 | Éléments sticky (headers) |
+| `z-dropdown` | 40 | Dropdowns, menus |
+| `z-modal-backdrop` | 45 | Overlay des modales |
+| `z-modal` | 50 | Modales |
+| `z-drawer` | 50 | Drawers (tiroirs) |
+| `z-toast` | 60 | Notifications toast |
+| `z-tooltip` | 70 | Tooltips |
+| `z-max` | 9999 | Maximum (urgent) |
 
 ---
 
@@ -483,19 +479,19 @@ Système de couches pour gérer le superposition des éléments :
 
 ### Keyframes Disponibles
 
-| Nom             | Description             | Durée | Itération |
-| --------------- | ----------------------- | ----- | --------- |
-| `fadeIn`        | Fondu en entrée         | 0.3s  | 1×        |
-| `slideUp`       | Glisse vers le haut     | 0.3s  | 1×        |
-| `slideDown`     | Glisse vers le bas      | 0.2s  | 1×        |
-| `pulseSoft`     | Pulsation douce         | 2s    | ∞         |
-| `shimmer`       | Effet shimmer (loading) | 2s    | ∞         |
-| `float`         | Flottaison              | 3s    | ∞         |
-| `gradientShift` | Déplacement de gradient | 8s    | ∞         |
-| `countUp`       | Compteur animé          | 0.5s  | 1×        |
-| `spin`          | Rotation continue       | 1s    | ∞         |
-| `ping`          | Effet ping              | 1s    | ∞         |
-| `bounce`        | Rebond                  | 1s    | ∞         |
+| Nom | Description | Durée | Itération |
+|-----|-------------|-------|----------|
+| `fadeIn` | Fondu en entrée | 0.3s | 1× |
+| `slideUp` | Glisse vers le haut | 0.3s | 1× |
+| `slideDown` | Glisse vers le bas | 0.2s | 1× |
+| `pulseSoft` | Pulsation douce | 2s | ∞ |
+| `shimmer` | Effet shimmer (loading) | 2s | ∞ |
+| `float` | Flottaison | 3s | ∞ |
+| `gradientShift` | Déplacement de gradient | 8s | ∞ |
+| `countUp` | Compteur animé | 0.5s | 1× |
+| `spin` | Rotation continue | 1s | ∞ |
+| `ping` | Effet ping | 1s | ∞ |
+| `bounce` | Rebond | 1s | ∞ |
 
 ### Utilisation en CSS
 
@@ -513,11 +509,11 @@ Système de couches pour gérer le superposition des éléments :
 
 ### Transitions
 
-| Transition          | Durée | Timing Function                     | Usage             |
-| ------------------- | ----- | ----------------------------------- | ----------------- |
-| `transition-fast`   | 150ms | `cubic-bezier(0.4, 0, 0.2, 1)`      | Boutons, hover    |
-| `transition-normal` | 200ms | `cubic-bezier(0.4, 0, 0.2, 1)`      | Cartes, modales   |
-| `transition-slow`   | 300ms | `cubic-bezier(0.4, 0, 0.2, 1)`      | Drawers           |
+| Transition | Durée | Timing Function | Usage |
+|------------|-------|-----------------|-------|
+| `transition-fast` | 150ms | `cubic-bezier(0.4, 0, 0.2, 1)` | Boutons, hover |
+| `transition-normal` | 200ms | `cubic-bezier(0.4, 0, 0.2, 1)` | Cartes, modales |
+| `transition-slow` | 300ms | `cubic-bezier(0.4, 0, 0.2, 1)` | Drawers |
 | `transition-spring` | 300ms | `cubic-bezier(0.34, 1.56, 0.64, 1)` | Animations spring |
 
 ---
@@ -531,90 +527,69 @@ Système de couches pour gérer le superposition des éléments :
 --gradient-success: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
 --gradient-warning: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
 --gradient-dark: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
---gradient-peak: linear-gradient(135deg, #ff9100 0%, #ff6d00 100%);
---gradient-recovery: linear-gradient(135deg, #4dd0e1 0%, #00bcd4 100%);
---gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+--gradient-peak: linear-gradient(135deg, #FF9100 0%, #FF6D00 100%);
+--gradient-recovery: linear-gradient(135deg, #4DD0E1 0%, #00BCD4 100%);
+--gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
 ```
 
 ### Gradients PMC (Performance Management Chart)
 
 ```css
---gradient-pmc-fitness: linear-gradient(135deg, #0066ff 0%, #5856d6 100%);
---gradient-pmc-fatigue: linear-gradient(135deg, #ffab00 0%, #ff6d00 100%);
---gradient-pmc-form: linear-gradient(135deg, #00bcd4 0%, #00c853 100%);
+--gradient-pmc-fitness: linear-gradient(135deg, #0066FF 0%, #5856D6 100%);
+--gradient-pmc-fatigue: linear-gradient(135deg, #FFAB00 0%, #FF6D00 100%);
+--gradient-pmc-form: linear-gradient(135deg, #00BCD4 0%, #00C853 100%);
 ```
 
 ### Gradients de Zones
 
 ```css
 /* Zones cardiaques (horizontal) */
---gradient-hr-zones: linear-gradient(
-  90deg,
-  #00c853 0%,
-  #00c853 20%,
-  /* Zone 1 */ #8bc34a 20%,
-  #8bc34a 40%,
-  /* Zone 2 */ #ffab00 40%,
-  #ffab00 60%,
-  /* Zone 3 */ #ff6d00 60%,
-  #ff6d00 80%,
-  /* Zone 4 */ #ff5252 80%,
-  #ff5252 100% /* Zone 5 */
+--gradient-hr-zones: linear-gradient(90deg,
+  #00C853 0%, #00C853 20%,   /* Zone 1 */
+  #8BC34A 20%, #8BC34A 40%, /* Zone 2 */
+  #FFAB00 40%, #FFAB00 60%, /* Zone 3 */
+  #FF6D00 60%, #FF6D00 80%, /* Zone 4 */
+  #FF5252 80%, #FF5252 100% /* Zone 5 */
 );
 
 /* Zones cardiaques (vertical) */
 --gradient-hr-zones-vertical: linear-gradient(to bottom, ...);
 
 /* Zones de puissance */
---gradient-power-zones: linear-gradient(
-  90deg,
-  #00bcd4 0%,
-  #00bcd4 14.28%,
-  /* Zone 1 */ #00c853 14.28%,
-  #00c853 42.85%,
-  /* Zone 2 */ #8bc34a 42.85%,
-  #8bc34a 57.14%,
-  /* Zone 3 */ #ffab00 57.14%,
-  #ffab00 71.42%,
-  /* Zone 4 */ #ff6d00 71.42%,
-  #ff6d00 85.71%,
-  /* Zone 5 */ #e91e63 85.71%,
-  #e91e63 100% /* Zone 6+7 */
+--gradient-power-zones: linear-gradient(90deg,
+  #00BCD4 0%, #00BCD4 14.28%,   /* Zone 1 */
+  #00C853 14.28%, #00C853 42.85%, /* Zone 2 */
+  #8BC34A 42.85%, #8BC34A 57.14%, /* Zone 3 */
+  #FFAB00 57.14%, #FFAB00 71.42%, /* Zone 4 */
+  #FF6D00 71.42%, #FF6D00 85.71%, /* Zone 5 */
+  #E91E63 85.71%, #E91E63 100%  /* Zone 6+7 */
 );
 
 /* Niveaux de readiness */
---gradient-readiness: linear-gradient(
-  90deg,
-  #ff5252 0%,
-  #ff5252 20%,
-  /* Très faible */ #ff6d00 20%,
-  #ff6d00 40%,
-  /* Faible */ #ffab00 40%,
-  #ffab00 60%,
-  /* Moyen */ #00bcd4 60%,
-  #00bcd4 80%,
-  /* Bon */ #00c853 80%,
-  #00c853 100% /* Excellent */
+--gradient-readiness: linear-gradient(90deg,
+  #FF5252 0%, #FF5252 20%,   /* Très faible */
+  #FF6D00 20%, #FF6D00 40%,   /* Faible */
+  #FFAB00 40%, #FFAB00 60%,   /* Moyen */
+  #00BCD4 60%, #00BCD4 80%,   /* Bon */
+  #00C853 80%, #00C853 100%   /* Excellent */
 );
 
 /* État de forme PMC */
---gradient-form-state: linear-gradient(
-  135deg,
-  #ff5252 0%,
-  /* Overtrained */ #ff6d00 25%,
-  /* Fatigued */ #ffab00 50%,
-  /* Normal */ #00bcd4 75%,
-  /* Fresh */ #00c853 100% /* Peak */
+--gradient-form-state: linear-gradient(135deg,
+  #FF5252 0%,      /* Overtrained */
+  #FF6D00 25%,     /* Fatigued */
+  #FFAB00 50%,     /* Normal */
+  #00BCD4 75%,     /* Fresh */
+  #00C853 100%     /* Peak */
 );
 ```
 
 ### Mesh Gradient (Arrière-plan)
 
 ```css
---gradient-mesh:
-  radial-gradient(at 40% 20%, var(--primary-400) 0px, transparent 50%),
-  radial-gradient(at 80% 0%, var(--success-400) 0px, transparent 50%),
-  radial-gradient(at 0% 50%, var(--neutral-700) 0px, transparent 50%);
+--gradient-mesh: radial-gradient(at 40% 20%, var(--primary-400) 0px, transparent 50%),
+                  radial-gradient(at 80% 0%, var(--success-400) 0px, transparent 50%),
+                  radial-gradient(at 0% 50%, var(--neutral-700) 0px, transparent 50%);
 ```
 
 ---
@@ -667,21 +642,11 @@ import {
 }
 
 /* Couleurs des zones */
-.hr-zone-1 {
-  background-color: var(--hr-zone-1);
-}
-.hr-zone-2 {
-  background-color: var(--hr-zone-2);
-}
-.hr-zone-3 {
-  background-color: var(--hr-zone-3);
-}
-.hr-zone-4 {
-  background-color: var(--hr-zone-4);
-}
-.hr-zone-5 {
-  background-color: var(--hr-zone-5);
-}
+.hr-zone-1 { background-color: var(--hr-zone-1); }
+.hr-zone-2 { background-color: var(--hr-zone-2); }
+.hr-zone-3 { background-color: var(--hr-zone-3); }
+.hr-zone-4 { background-color: var(--hr-zone-4); }
+.hr-zone-5 { background-color: var(--hr-zone-5); }
 ```
 
 ### Utilisation en React (inline styles)
@@ -692,12 +657,10 @@ const ZoneIndicator = ({ zone }: { zone: number }) => {
   const zoneColor = getHRZoneColor(zone);
 
   return (
-    <div
-      style={{
-        backgroundColor: `color-mix(in srgb, ${zoneColor}, transparent 80%)`,
-        color: zoneColor,
-      }}
-    >
+    <div style={{
+      backgroundColor: `color-mix(in srgb, ${zoneColor}, transparent 80%)`,
+      color: zoneColor
+    }}>
       Zone {zone}
     </div>
   );
@@ -708,10 +671,8 @@ const PMCStatus = ({ tsb }: { tsb: number }) => {
   const formColor = getPMCFormColor(tsb);
 
   return (
-    <div
-      className={`px-3 py-1 rounded-full text-xs font-medium`}
-      style={{ backgroundColor: `color-mix(in srgb, ${formColor}, transparent 90%)` }}
-    >
+    <div className={`px-3 py-1 rounded-full text-xs font-medium`}
+         style={{ backgroundColor: `color-mix(in srgb, ${formColor}, transparent 90%)` }}>
       {tsb > 20 ? 'Pic de forme' : tsb > 10 ? 'Bonne forme' : 'Normal'}
     </div>
   );
@@ -735,8 +696,13 @@ import { LineChart, Line, AreaChart, Area } from 'recharts';
       <stop offset="100%" stopColor="var(--hr-zone-5)" stopOpacity={0} />
     </linearGradient>
   </defs>
-  <Area type="monotone" dataKey="value" stroke="var(--primary)" fill="url(#hrZones)" />
-</AreaChart>;
+  <Area
+    type="monotone"
+    dataKey="value"
+    stroke="var(--primary)"
+    fill="url(#hrZones)"
+  />
+</AreaChart>
 ```
 
 ---
@@ -774,11 +740,10 @@ node scripts/generate-design-tokens.js
 ### ✔️ À FAIRE
 
 1. **Toujours utiliser les tokens**
-
    ```css
    /* ❌ Mauvaise pratique */
-   background-color: #0066ff;
-   color: #ffffff;
+   background-color: #0066FF;
+   color: #FFFFFF;
 
    /* ✅ Bonne pratique */
    background-color: var(--primary);
@@ -786,7 +751,6 @@ node scripts/generate-design-tokens.js
    ```
 
 2. **Utiliser les fonctions utilitaires pour les couleurs dynamiques**
-
    ```typescript
    // ❌ Mauvaise pratique
    if (zone === 1) color = '#00C853';
@@ -797,7 +761,6 @@ node scripts/generate-design-tokens.js
    ```
 
 3. **Privilégier les variables CSS dans les styles**
-
    ```tsx
    // ❌ Mauvaise pratique
    <div style={{ backgroundColor: '#0066FF' }}>
@@ -809,7 +772,6 @@ node scripts/generate-design-tokens.js
    ```
 
 4. **Utiliser `color-mix()` pour les transparences**
-
    ```css
    /* ❌ Mauvaise pratique */
    background-color: rgba(0, 102, 255, 0.1);
@@ -823,15 +785,13 @@ node scripts/generate-design-tokens.js
 ### ❌ À ÉVITER
 
 1. **Dupliquer les couleurs**
-
    ```css
    /* ❌ À éviter - Duplication */
-   --my-blue: #0066ff;
-   --app-primary: #0066ff;
+   --my-blue: #0066FF;
+   --app-primary: #0066FF;
    ```
 
 2. **Utiliser des couleurs en dur (hex, rgba)**
-
    ```tsx
    /* ❌ À éviter */
    <div style={{ color: '#FF5252' }}>
@@ -839,7 +799,6 @@ node scripts/generate-design-tokens.js
    ```
 
 3. **Créer des gradients personnalisés sans utiliser les tokens**
-
    ```css
    /* ❌ À éviter */
    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -861,16 +820,11 @@ import { pmcStates, getPMCFormColor } from '@/lib/designTokens';
 
 const PMCCard = ({ fitness, fatigue, form }: { fitness: number; fatigue: number; form: number }) => {
   const formColor = getPMCFormColor(form);
-  const formState =
-    form > 20
-      ? pmcStates.peak
-      : form > 10
-        ? pmcStates.fresh
-        : form > -10
-          ? pmcStates.normal
-          : form > -20
-            ? pmcStates.fatigued
-            : pmcStates.overtrained;
+  const formState = form > 20 ? pmcStates.peak :
+                   form > 10 ? pmcStates.fresh :
+                   form > -10 ? pmcStates.normal :
+                   form > -20 ? pmcStates.fatigued :
+                   pmcStates.overtrained;
 
   return (
     <Card className="p-6">
@@ -880,9 +834,24 @@ const PMCCard = ({ fitness, fatigue, form }: { fitness: number; fatigue: number;
       </div>
 
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <MetricCard label="Fitness (CTL)" value={fitness} color="var(--primary)" trend={fitness > 50 ? 'up' : 'down'} />
-        <MetricCard label="Fatigue (ATL)" value={fatigue} color="var(--danger)" trend={fatigue > 30 ? 'up' : 'down'} />
-        <MetricCard label="Forme (TSB)" value={form} color={formColor} trend={form > 0 ? 'up' : 'down'} />
+        <MetricCard
+          label="Fitness (CTL)"
+          value={fitness}
+          color="var(--primary)"
+          trend={fitness > 50 ? 'up' : 'down'}
+        />
+        <MetricCard
+          label="Fatigue (ATL)"
+          value={fatigue}
+          color="var(--danger)"
+          trend={fatigue > 30 ? 'up' : 'down'}
+        />
+        <MetricCard
+          label="Forme (TSB)"
+          value={form}
+          color={formColor}
+          trend={form > 0 ? 'up' : 'down'}
+        />
       </div>
 
       <div className="flex items-center gap-2 text-sm">
@@ -909,7 +878,12 @@ const HRZoneChart = ({ data }: { data: { time: number; hr: number; zone: number 
         {/* Gradient basé sur les zones HR */}
         <linearGradient id="hrGradient" x1="0" y1="0" x2="0" y2="1">
           {Array.from({ length: 5 }, (_, i) => (
-            <stop key={i} offset={`${i * 20}%`} stopColor={getHRZoneColor(i + 1)} stopOpacity={0.3} />
+            <stop
+              key={i}
+              offset={`${i * 20}%`}
+              stopColor={getHRZoneColor(i + 1)}
+              stopOpacity={0.3}
+            />
           ))}
           <stop offset="100%" stopColor="transparent" stopOpacity={0} />
         </linearGradient>
@@ -922,11 +896,17 @@ const HRZoneChart = ({ data }: { data: { time: number; hr: number; zone: number 
         contentStyle={{
           backgroundColor: 'var(--surface)',
           border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-md)',
+          borderRadius: 'var(--radius-md)'
         }}
       />
 
-      <Area type="monotone" dataKey="hr" stroke="var(--primary)" strokeWidth={2} fill="url(#hrGradient)" />
+      <Area
+        type="monotone"
+        dataKey="hr"
+        stroke="var(--primary)"
+        strokeWidth={2}
+        fill="url(#hrGradient)"
+      />
     </AreaChart>
   );
 };
@@ -946,7 +926,7 @@ const PowerZoneBadge = ({ zone, value }: { zone: number; value: number }) => {
       className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1"
       style={{
         backgroundColor: `color-mix(in srgb, ${color}, transparent 85%)`,
-        color: zoneInfo.foreground,
+        color: zoneInfo.foreground
       }}
     >
       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
@@ -965,31 +945,22 @@ import { readinessLevels, getReadinessColor } from '@/lib/designTokens';
 
 const ReadinessIndicator = ({ score }: { score: number }) => {
   const color = getReadinessColor(score);
-  const level =
-    score >= 90
-      ? readinessLevels.excellent
-      : score >= 70
-        ? readinessLevels.good
-        : score >= 50
-          ? readinessLevels.fair
-          : score >= 30
-            ? readinessLevels.poor
-            : readinessLevels.veryPoor;
+  const level = score >= 90 ? readinessLevels.excellent :
+               score >= 70 ? readinessLevels.good :
+               score >= 50 ? readinessLevels.fair :
+               score >= 30 ? readinessLevels.poor :
+               readinessLevels.veryPoor;
 
   return (
     <div className="flex items-center gap-3 p-4 bg-surface rounded-2xl">
-      <div
-        className="w-12 h-12 rounded-xl flex items-center justify-center"
-        style={{ backgroundColor: `color-mix(in srgb, ${color}, transparent 80%)` }}
-      >
+      <div className="w-12 h-12 rounded-xl flex items-center justify-center"
+           style={{ backgroundColor: `color-mix(in srgb, ${color}, transparent 80%)` }}>
         <TrendingUp className="w-6 h-6" style={{ color }} />
       </div>
       <div>
         <p className="text-muted text-sm">Readiness Score</p>
         <p className="text-2xl font-bold">{score}/100</p>
-        <p className="text-sm" style={{ color }}>
-          {level.description}
-        </p>
+        <p className="text-sm" style={{ color }}>{level.description}</p>
       </div>
     </div>
   );
@@ -1010,13 +981,13 @@ const ReadinessIndicator = ({ score }: { score: number }) => {
 
 ## 📝 Historique des Changements
 
-| Version | Date    | Description                                           |
-| ------- | ------- | ----------------------------------------------------- |
-| 1.0.0   | 2025-01 | Création initiale du design system                    |
-| 1.1.0   | 2025-01 | Ajout des tokens métiers (HR zones, power zones, PMC) |
-| 1.2.0   | 2025-01 | Intégration complète avec Recharts                    |
-| 1.3.0   | 2025-01 | Script de génération automatique                      |
-| 1.4.0   | 2025-01 | Documentation complète                                |
+| Version | Date | Description |
+|---------|------|-------------|
+| 1.0.0 | 2025-01 | Création initiale du design system |
+| 1.1.0 | 2025-01 | Ajout des tokens métiers (HR zones, power zones, PMC) |
+| 1.2.0 | 2025-01 | Intégration complète avec Recharts |
+| 1.3.0 | 2025-01 | Script de génération automatique |
+| 1.4.0 | 2025-01 | Documentation complète |
 
 ---
 
@@ -1032,4 +1003,4 @@ Pour contribuer au design system :
 
 > **❤️ DrawRun - L'intelligence sportive à portée de main**
 >
-> _Conçu avec passion pour les athlètes exigeants_
+> *Conçu avec passion pour les athlètes exigeants*

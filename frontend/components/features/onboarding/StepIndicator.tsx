@@ -25,14 +25,12 @@ export default function StepIndicator({ title, icon: Icon, currentStep, totalSte
         </span>
       </div>
       <div className="mt-4">
-        <div
-          className="h-2 bg-muted rounded-full overflow-hidden"
-          role="progressbar"
-          aria-valuenow={progress}
-          aria-valuemin={0}
-          aria-valuemax={100}
-        >
-          <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} aria-hidden="true" />
+        <div className="h-2 bg-muted rounded-full overflow-hidden" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
+          <div
+            className="h-full bg-primary transition-all"
+            style={{ width: `${progress}%` }}
+            aria-hidden="true"
+          />
         </div>
       </div>
     </>

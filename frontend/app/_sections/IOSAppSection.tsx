@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { Card, Button } from '@/components/ui';
-import { Users, Activity, TrendingUp, Calendar, ArrowRight, Smartphone, Heart } from '@/components/ui/icons';
+import {
+  Users,
+  Activity,
+  TrendingUp,
+  Calendar,
+  ArrowRight,
+  Smartphone,
+  Heart
+} from '@/components/ui/icons';
 
 const iosFeatures = [
   {
@@ -26,7 +34,7 @@ const iosFeatures = [
   {
     icon: Calendar,
     title: 'Coaching Adaptatif',
-    description: "Plans d'entraînement personnalisés avec ajustements automatiques basés sur votre récupération.",
+    description: 'Plans d\'entraînement personnalisés avec ajustements automatiques basés sur votre récupération.',
     color: 'recovery',
   },
 ];
@@ -48,7 +56,7 @@ export default function IOSAppSection() {
           setIsVisible(true);
         }
       },
-      { threshold: 0.1 },
+      { threshold: 0.1 }
     );
 
     const section = document.getElementById('ios');
@@ -64,9 +72,7 @@ export default function IOSAppSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left Content */}
-          <div
-            className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}
-          >
+          <div className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
             <span className="inline-flex items-center gap-2 px-4 py-2 bg-surface/10 border border-white/20 rounded-full text-sm font-semibold text-white mb-6">
               <Smartphone className="w-4 h-4" />
               iOS App - NOUVEAU
@@ -109,16 +115,17 @@ export default function IOSAppSection() {
                 <Smartphone className="w-5 h-5" />
                 Bientôt sur l&apos;App Store
               </Button>
-              <Button variant="glass" size="lg">
+              <Button
+                variant="glass"
+                size="lg"
+              >
                 En savoir plus
               </Button>
             </div>
           </div>
 
           {/* Right Content - Features Grid */}
-          <div
-            className={`transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}
-          >
+          <div className={`transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
             <div className="grid grid-cols-2 gap-4">
               {iosFeatures.map((feature, index) => {
                 const Icon = feature.icon;
@@ -129,13 +136,11 @@ export default function IOSAppSection() {
                     className={`group transition-all duration-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
                     style={{ transitionDelay: `${index * 100 + 200}ms` }}
                   >
-                    <div
-                      className={`
+                    <div className={`
                       w-12 h-12 rounded-xl flex items-center justify-center mb-4
                       ${iconColors[feature.color]}
                       group-hover:scale-110 transition-transform duration-300
-                    `}
-                    >
+                    `}>
                       <Icon className="w-6 h-6" />
                     </div>
                     <h3 className="text-lg font-bold text-white mb-2">{feature.title}</h3>

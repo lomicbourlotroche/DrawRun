@@ -111,7 +111,10 @@ class ApiClient {
     }
   }
 
-  async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
     const token = this.getToken();
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -133,7 +136,8 @@ class ApiClient {
 
       if (!response.ok) {
         if (response.status === 401) {
-          const isAuthEndpoint = endpoint === '/api/auth/login' || endpoint === '/api/auth/refresh';
+          const isAuthEndpoint =
+            endpoint === '/api/auth/login' || endpoint === '/api/auth/refresh';
 
           if (isAuthEndpoint) {
             throw new ApiError('Unauthorized', 401);
@@ -187,12 +191,16 @@ class ApiClient {
             });
             if (!retryResponse.ok) {
               const errorData = await retryResponse.json().catch(() => ({}));
-              throw new ApiError(errorData.error || `HTTP error ${retryResponse.status}`, retryResponse.status);
+              throw new ApiError(
+                errorData.error || `HTTP error ${retryResponse.status}`,
+                retryResponse.status
+              );
             }
             return retryResponse.json();
           } catch (refreshError) {
             this.isRefreshing = false;
-            const err = refreshError instanceof Error ? refreshError : new Error('Refresh failed');
+            const err =
+              refreshError instanceof Error ? refreshError : new Error('Refresh failed');
             this.drainRefreshQueue(null, err);
             const { useAuthStore } = await import('@/stores');
             useAuthStore.getState().logout();
@@ -202,7 +210,10 @@ class ApiClient {
         }
 
         const errorData = await response.json().catch(() => ({}));
-        const error = new ApiError(errorData.error || `HTTP error ${response.status}`, response.status);
+        const error = new ApiError(
+          errorData.error || `HTTP error ${response.status}`,
+          response.status
+        );
         throw error;
       }
 
@@ -268,7 +279,8 @@ class ApiClient {
 
       if (!response.ok) {
         if (response.status === 401) {
-          const isAuthEndpoint = endpoint === '/api/auth/login' || endpoint === '/api/auth/refresh';
+          const isAuthEndpoint =
+            endpoint === '/api/auth/login' || endpoint === '/api/auth/refresh';
 
           if (isAuthEndpoint) {
             throw new ApiError('Unauthorized', 401);
@@ -320,7 +332,8 @@ class ApiClient {
             return retryResponse.blob();
           } catch (refreshError) {
             this.isRefreshing = false;
-            const err = refreshError instanceof Error ? refreshError : new Error('Refresh failed');
+            const err =
+              refreshError instanceof Error ? refreshError : new Error('Refresh failed');
             this.drainRefreshQueue(null, err);
             const { useAuthStore } = await import('@/stores');
             useAuthStore.getState().logout();
@@ -330,7 +343,10 @@ class ApiClient {
         }
 
         const errorData = await response.json().catch(() => ({}));
-        throw new ApiError(errorData.error || `HTTP error ${response.status}`, response.status);
+        throw new ApiError(
+          errorData.error || `HTTP error ${response.status}`,
+          response.status
+        );
       }
 
       return response.blob();

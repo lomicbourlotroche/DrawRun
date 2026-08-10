@@ -7,8 +7,10 @@ import { Bell, BellOff } from '@/components/ui/icons';
 import { toast } from 'sonner';
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
-  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
   const rawData = window.atob(base64);
   const outputArray = new Uint8Array(rawData.length);
   for (let i = 0; i < rawData.length; ++i) {
@@ -39,9 +41,7 @@ export function NotificationSection() {
         const subscription = await registration.pushManager.getSubscription();
         setPushEnabled(!!subscription);
         setPushSubscription(subscription);
-      } catch {
-        /* silencieux */
-      }
+      } catch { /* silencieux */ }
     };
     check();
   }, []);
@@ -86,7 +86,7 @@ export function NotificationSection() {
       toast.success('Notifications push activées');
     } catch (error) {
       console.error('Push subscription error:', error);
-      toast.error("Erreur lors de l'activation des notifications");
+      toast.error('Erreur lors de l\'activation des notifications');
     } finally {
       setIsLoadingPush(false);
     }
@@ -123,11 +123,17 @@ export function NotificationSection() {
       <GlassCardContent>
         <div className="flex items-center justify-between p-4 rounded-xl bg-card border border-border">
           <div className="flex items-center gap-3">
-            {pushEnabled ? <Bell className="w-5 h-5 text-success" /> : <BellOff className="w-5 h-5 text-muted" />}
+            {pushEnabled ? (
+              <Bell className="w-5 h-5 text-success" />
+            ) : (
+              <BellOff className="w-5 h-5 text-muted" />
+            )}
             <div>
               <p className="font-medium">Notifications push</p>
               <p className="text-sm text-muted">
-                {pushEnabled ? 'Recevez des notifications sur cet appareil' : 'Activez pour recevoir des notifications'}
+                {pushEnabled
+                  ? 'Recevez des notifications sur cet appareil'
+                  : 'Activez pour recevoir des notifications'}
               </p>
             </div>
           </div>
@@ -142,14 +148,19 @@ export function NotificationSection() {
               Désactiver
             </Button>
           ) : (
-            <Button variant="secondary" size="sm" onClick={enablePushNotifications} isLoading={isLoadingPush}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={enablePushNotifications}
+              isLoading={isLoadingPush}
+            >
               Activer
             </Button>
           )}
         </div>
         <p className="text-xs text-muted mt-3">
-          Les notifications push vous alertent en temps réel des nouvelles demandes d&apos;ami, draws et commentaires
-          sur vos activités.
+          Les notifications push vous alertent en temps réel des nouvelles demandes d&apos;ami,
+          draws et commentaires sur vos activités.
         </p>
       </GlassCardContent>
     </GlassCard>

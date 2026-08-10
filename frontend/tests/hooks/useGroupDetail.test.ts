@@ -348,14 +348,11 @@ describe('useGroupDetail hook', () => {
       await result.current.handleCreateChallenge(form);
     });
 
-    expect(mockApi.createGroupChallenge).toHaveBeenCalledWith(
-      mockGroupId,
-      expect.objectContaining({
-        title: form.title,
-        description: form.description,
-        type: form.type,
-      }),
-    );
+    expect(mockApi.createGroupChallenge).toHaveBeenCalledWith(mockGroupId, expect.objectContaining({
+      title: form.title,
+      description: form.description,
+      type: form.type,
+    }));
   });
 
   it('should handle join challenge', async () => {

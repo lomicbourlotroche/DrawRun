@@ -1,17 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import {
-  ArrowLeft,
-  Activity,
-  Calendar,
-  Trophy,
-  TrendingUp,
-  Heart,
-  CloudSun,
-  Users,
-  ArrowRight,
-} from '@/components/ui/icons';
+import { ArrowLeft, Activity, Calendar, Trophy, TrendingUp, Heart, CloudSun, Users, ArrowRight } from '@/components/ui/icons';
 
 const guides = [
   {
@@ -28,7 +18,7 @@ const guides = [
     icon: Calendar,
     title: 'Coaching Adaptatif',
     subtitle: 'Plans personnalisés dynamiques',
-    description: "Comment votre plan s'adapte chaque semaine selon votre forme, fatigue et feedback.",
+    description: 'Comment votre plan s\'adapte chaque semaine selon votre forme, fatigue et feedback.',
     href: '/guides/coaching-adaptatif',
     gradient: 'from-green-500 to-emerald-500',
     bgLight: 'bg-green-50',
@@ -136,9 +126,7 @@ export default function GuidesIndex() {
               </div>
               <div className="p-4">
                 <p className="text-sm text-muted mb-3">{guide.description}</p>
-                <div
-                  className={`inline-flex items-center gap-1 text-sm font-semibold ${guide.textColor} group-hover:gap-2 transition-all`}
-                >
+                <div className={`inline-flex items-center gap-1 text-sm font-semibold ${guide.textColor} group-hover:gap-2 transition-all`}>
                   Lire le guide
                   <ArrowRight className="w-4 h-4" />
                 </div>

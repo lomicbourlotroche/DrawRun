@@ -24,7 +24,7 @@ export const metricsApi = {
     success: boolean;
     calculated: number;
     vdot?: number;
-    message?: string;
+    message?: string
   }> {
     return client.request('/api/metrics/recalculate', { method: 'POST' });
   },

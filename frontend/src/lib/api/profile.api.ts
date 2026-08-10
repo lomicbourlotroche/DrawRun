@@ -2,6 +2,7 @@ import { client } from './client';
 
 import type { User, AthleteStats } from '@/types';
 
+
 /**
 
  * Extended profile data with additional user information
@@ -9,6 +10,7 @@ import type { User, AthleteStats } from '@/types';
  */
 
 export interface ExtendedProfile {
+
   id: string;
 
   userId: string;
@@ -30,6 +32,7 @@ export interface ExtendedProfile {
   preferredUnits?: 'metric' | 'imperial';
 
   notificationPreferences?: {
+
     email?: boolean;
 
     push?: boolean;
@@ -39,9 +42,11 @@ export interface ExtendedProfile {
     achievementNotifications?: boolean;
 
     socialNotifications?: boolean;
+
   };
 
   privacySettings?: {
+
     profileVisibility?: 'public' | 'friends' | 'private';
 
     activityVisibility?: 'public' | 'friends' | 'private';
@@ -51,9 +56,11 @@ export interface ExtendedProfile {
     showAge?: boolean;
 
     showWeight?: boolean;
+
   };
 
   socialLinks?: {
+
     strava?: string;
 
     garmin?: string;
@@ -63,12 +70,16 @@ export interface ExtendedProfile {
     instagram?: string;
 
     facebook?: string;
+
   };
 
   createdAt: string;
 
   updatedAt: string;
+
 }
+
+
 
 /**
 
@@ -77,6 +88,7 @@ export interface ExtendedProfile {
  */
 
 export interface AthleteInfo {
+
   id: string;
 
   userId: string;
@@ -100,6 +112,7 @@ export interface AthleteInfo {
   syncEnabled: boolean;
 
   profileData?: {
+
     athleteType?: string;
 
     sex?: string;
@@ -123,6 +136,7 @@ export interface AthleteInfo {
     thresholdHR?: number;
 
     zones?: Array<{
+
       zone: number;
 
       name: string;
@@ -130,7 +144,9 @@ export interface AthleteInfo {
       minHR: number;
 
       maxHR: number;
+
     }>;
+
   };
 
   connectedAt: string;
@@ -139,6 +155,7 @@ export interface AthleteInfo {
 }
 
 export const profileApi = {
+
   /**
 
    * Récupère le profil utilisateur
@@ -146,8 +163,12 @@ export const profileApi = {
    */
 
   getProfile(): Promise<User> {
+
     return client.request('/api/profile');
+
   },
+
+
 
   /**
 
@@ -156,12 +177,18 @@ export const profileApi = {
    */
 
   updateProfile(data: Partial<User>): Promise<{ success: boolean }> {
+
     return client.request('/api/profile', {
+
       method: 'PUT',
 
       body: JSON.stringify(data),
+
     });
+
   },
+
+
 
   /**
 
@@ -169,13 +196,19 @@ export const profileApi = {
 
    */
 
-  uploadAvatar(imageData: string): Promise<{ success: boolean; avatar_url: string }> {
+   uploadAvatar(imageData: string): Promise<{ success: boolean; avatar_url: string }> {
+
     return client.request('/api/profile/avatar', {
+
       method: 'POST',
 
       body: JSON.stringify({ avatar: imageData }),
+
     });
+
   },
+
+
 
   /**
 
@@ -184,8 +217,12 @@ export const profileApi = {
    */
 
   getExtendedProfile(): Promise<ExtendedProfile> {
+
     return client.request('/api/profile/extended');
+
   },
+
+
 
   /**
 
@@ -194,14 +231,21 @@ export const profileApi = {
    */
 
   updateExtendedProfile(data: Partial<ExtendedProfile>): Promise<{ success: boolean }> {
+
     return client.request('/api/profile/extended', {
+
       method: 'PUT',
 
       body: JSON.stringify(data),
+
     });
+
   },
 
+
+
   getConstants(): Promise<{
+
     fcm: number | null;
 
     fcmSource: string;
@@ -221,9 +265,14 @@ export const profileApi = {
     sex: string;
 
     weight: number | null;
+
   }> {
+
     return client.request('/api/metrics/constants');
+
   },
+
+
 
   /**
 
@@ -232,10 +281,19 @@ export const profileApi = {
    */
 
   getAthlete(): Promise<AthleteInfo> {
+
     return client.request('/api/profile/athlete');
+
   },
 
+
+
   getAthleteStats(): Promise<AthleteStats> {
+
     return client.request('/api/profile/athlete/stats');
+
   },
+
+
+
 };

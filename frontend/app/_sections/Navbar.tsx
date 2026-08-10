@@ -28,7 +28,9 @@ export default function Navbar() {
   return (
     <nav
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-surface/95 backdrop-blur-xl border-b border-surface shadow-sm py-3' : 'bg-transparent py-3'
+        scrolled
+          ? 'bg-surface/95 backdrop-blur-xl border-b border-surface shadow-sm py-3'
+          : 'bg-transparent py-3'
       }`}
     >
       <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
@@ -83,11 +85,9 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Menu */}
-        <div
-          className={`md:hidden overflow-hidden transition-all duration-300 ${
-            mobileMenuOpen ? 'max-h-[500px] mt-4' : 'max-h-0'
-          }`}
-        >
+        <div className={`md:hidden overflow-hidden transition-all duration-300 ${
+          mobileMenuOpen ? 'max-h-[500px] mt-4' : 'max-h-0'
+        }`}>
           <div className="bg-surface rounded-2xl border border-surface shadow-lg p-4 space-y-2">
             {navLinks.map((link, index) => (
               <a

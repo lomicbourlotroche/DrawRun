@@ -86,10 +86,12 @@ function fixFile(filePath) {
   }
 
   // Nettoyer les className vides
-  const cleanedContent = content.replace(/className=""/g, '').replace(/className="([^"]*)"/g, (match, p1) => {
-    const cleaned = p1.replace(/\s+/g, ' ').trim();
-    return cleaned ? `className="${cleaned}"` : '';
-  });
+  const cleanedContent = content
+    .replace(/className=""/g, '')
+    .replace(/className="([^"]*)"/g, (match, p1) => {
+      const cleaned = p1.replace(/\s+/g, ' ').trim();
+      return cleaned ? `className="${cleaned}"` : '';
+    });
 
   if (cleanedContent !== content) {
     content = cleanedContent;

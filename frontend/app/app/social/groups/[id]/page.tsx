@@ -4,23 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Avatar, Skeleton } from '@/components/ui';
 import type { Activity } from '@/types';
 import { NavTabs } from '@/components/ui/NavTabs';
-import {
-  Users,
-  Settings,
-  Activity as ActivityIcon,
-  Trophy,
-  ChevronLeft,
-  Copy,
-  Trash2,
-  Edit2,
-  UserX,
-  Crown,
-  Shield,
-  Flame,
-  Save,
-  Eye,
-  Sparkles,
-} from '@/components/ui/icons';
+import { Users, Settings, Activity as ActivityIcon, Trophy, ChevronLeft, Copy, Trash2, Edit2, UserX, Crown, Shield, Flame, Save, Eye, Sparkles } from '@/components/ui/icons';
 import ChallengeWizard from '../../modals/ChallengeWizard';
 import { getModeInfo, getTypeInfo } from '../../tabs/challenge-constants';
 import { useGroupDetail } from '@/hooks/useGroupDetail';
@@ -48,9 +32,7 @@ export default function GroupDetailPage() {
     handleJoinChallenge,
   } = useGroupDetail();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'members' | 'activities' | 'challenges' | 'settings'>(
-    'overview',
-  );
+  const [activeTab, setActiveTab] = useState<'overview' | 'members' | 'activities' | 'challenges' | 'settings'>('overview');
 
   // Show errors
   useEffect(() => {
@@ -60,11 +42,11 @@ export default function GroupDetailPage() {
   }, [error]);
 
   const tabs = [
-    { id: 'overview', label: 'Aperçu', icon: <Eye className="w-4 h-4" /> },
-    { id: 'members', label: `Membres (${members.length})`, icon: <Users className="w-4 h-4" /> },
-    { id: 'activities', label: 'Activités', icon: <ActivityIcon className="w-4 h-4" /> },
-    { id: 'challenges', label: `Défis (${challenges.length})`, icon: <Trophy className="w-4 h-4" /> },
-    { id: 'settings', label: 'Paramètres', icon: <Settings className="w-4 h-4" /> },
+    { id: 'overview',    label: 'Aperçu',                          icon: <Eye className="w-4 h-4" /> },
+    { id: 'members',     label: `Membres (${members.length})`,     icon: <Users className="w-4 h-4" /> },
+    { id: 'activities',  label: 'Activités',                       icon: <ActivityIcon className="w-4 h-4" /> },
+    { id: 'challenges',  label: `Défis (${challenges.length})`,    icon: <Trophy className="w-4 h-4" /> },
+    { id: 'settings',    label: 'Paramètres',                      icon: <Settings className="w-4 h-4" /> },
   ];
 
   if (isLoading) {
@@ -83,54 +65,32 @@ export default function GroupDetailPage() {
     <div className="space-y-6 animate-fade-in max-w-4xl mx-auto pb-8">
       {/* ── HEADER ── */}
       <div className="flex items-start gap-4">
-        <button
-          onClick={() => window.history.back()}
-          className="p-2 rounded-xl bg-card border border-border hover:bg-border transition-colors mt-1"
-          aria-label="Retour"
-        >
+        <button onClick={() => window.history.back()} className="p-2 rounded-xl bg-card border border-border hover:bg-border transition-colors mt-1" aria-label="Retour">
           <ChevronLeft className="w-5 h-5" />
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-2xl font-bold truncate">{group.name}</h1>
-            <span
-              className={`text-xs px-2 py-1 rounded-full font-medium ${group.is_private ? 'bg-peak/10 text-peak' : 'bg-success/10 text-success'}`}
-            >
+            <span className={`text-xs px-2 py-1 rounded-full font-medium ${group.is_private ? 'bg-peak/10 text-peak' : 'bg-success/10 text-success'}`}>
               {group.is_private ? '🔒 Privé' : '🌍 Public'}
             </span>
             {group.user_role && (
-              <span
-                className={`text-xs px-2 py-1 rounded-full font-medium ${group.user_role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-border text-muted'}`}
-              >
+              <span className={`text-xs px-2 py-1 rounded-full font-medium ${group.user_role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-border text-muted'}`}>
                 {group.user_role === 'admin' ? '👑 Admin' : 'Membre'}
               </span>
             )}
           </div>
           {group.description && <p className="text-muted mt-1 text-sm">{group.description}</p>}
-          <p className="text-xs text-muted mt-2">
-            {group.member_count} membres · {challenges.length} défis
-          </p>
+          <p className="text-xs text-muted mt-2">{group.member_count} membres · {challenges.length} défis</p>
         </div>
         <div className="flex gap-2 shrink-0">
           {group.invite_code && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={copyInvite}
-              leftIcon={<Copy className="w-4 h-4" />}
-              aria-label="Copier le code d'invitation"
-            >
+            <Button variant="secondary" size="sm" onClick={copyInvite} leftIcon={<Copy className="w-4 h-4" />} aria-label="Copier le code d'invitation">
               Code
             </Button>
           )}
           {!isAdmin && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-danger"
-              onClick={handleLeave}
-              aria-label="Quitter le groupe"
-            >
+            <Button variant="ghost" size="sm" className="text-danger" onClick={handleLeave} aria-label="Quitter le groupe">
               Quitter
             </Button>
           )}
@@ -148,7 +108,7 @@ export default function GroupDetailPage() {
               { icon: ActivityIcon, color: 'text-peak', bg: 'bg-peak/10', val: activities.length, label: 'Activités' },
               { icon: Trophy, color: 'text-warning', bg: 'bg-warning/10', val: challenges.length, label: 'Défis' },
               { icon: Crown, color: 'text-warning', bg: 'bg-warning/10', val: group.admin_count || 1, label: 'Admins' },
-            ].map((s) => (
+            ].map(s => (
               <div key={s.label} className="p-4 rounded-xl bg-card border border-border text-center">
                 <div className={`w-10 h-10 rounded-xl ${s.bg} flex items-center justify-center mx-auto mb-2`}>
                   <s.icon className={`w-5 h-5 ${s.color}`} />
@@ -161,30 +121,15 @@ export default function GroupDetailPage() {
 
           {activities.length > 0 && (
             <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Activités récentes</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle className="text-base">Activités récentes</CardTitle></CardHeader>
               <CardContent className="space-y-2">
                 {activities.slice(0, 5).map((a: Activity) => (
-                  <div
-                    key={a.id}
-                    className="flex items-center justify-between p-3 rounded-xl bg-background border border-border"
-                  >
+                  <div key={a.id} className="flex items-center justify-between p-3 rounded-xl bg-background border border-border">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                        <Flame className="w-4 h-4 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">{a.name || a.type}</p>
-                        <p className="text-xs text-muted">
-                          {a.start_date ? new Date(a.start_date).toLocaleDateString('fr-FR') : ''}
-                        </p>
-                      </div>
+                      <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center"><Flame className="w-4 h-4 text-primary" /></div>
+                      <div><p className="font-medium text-sm">{a.name || a.type}</p><p className="text-xs text-muted">{a.start_date ? new Date(a.start_date).toLocaleDateString('fr-FR') : ''}</p></div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium">{((a.distance || 0) / 1000).toFixed(1)} km</p>
-                      <p className="text-xs text-muted">{Math.floor((a.moving_time || 0) / 60)} min</p>
-                    </div>
+                    <div className="text-right"><p className="text-sm font-medium">{((a.distance || 0) / 1000).toFixed(1)} km</p><p className="text-xs text-muted">{Math.floor((a.moving_time || 0) / 60)} min</p></div>
                   </div>
                 ))}
               </CardContent>
@@ -193,30 +138,15 @@ export default function GroupDetailPage() {
 
           {challenges.length > 0 && (
             <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-warning" />
-                  Défis actifs
-                </CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle className="text-base flex items-center gap-2"><Trophy className="w-4 h-4 text-warning" />Défis actifs</CardTitle></CardHeader>
               <CardContent className="space-y-2">
-                {challenges.slice(0, 3).map((c) => (
-                  <div
-                    key={c.id}
-                    className="flex items-center justify-between p-3 rounded-xl bg-background border border-border"
-                  >
+                {challenges.slice(0, 3).map(c => (
+                  <div key={c.id} className="flex items-center justify-between p-3 rounded-xl bg-background border border-border">
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{c.badge_icon || '🏆'}</span>
-                      <div>
-                        <p className="font-medium text-sm">{c.title}</p>
-                        <p className="text-xs text-muted">
-                          {getModeInfo(c.challenge_mode || 'quota').label} · {c.target_value} {c.target_unit}
-                        </p>
-                      </div>
+                      <div><p className="font-medium text-sm">{c.title}</p><p className="text-xs text-muted">{getModeInfo(c.challenge_mode || 'quota').label} · {c.target_value} {c.target_unit}</p></div>
                     </div>
-                    <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
-                      {c.participant_count || 0} participants
-                    </span>
+                    <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">{c.participant_count || 0} participants</span>
                   </div>
                 ))}
               </CardContent>
@@ -228,11 +158,8 @@ export default function GroupDetailPage() {
       {/* ── MEMBERS ── */}
       {activeTab === 'members' && (
         <div className="space-y-2">
-          {members.map((member) => (
-            <div
-              key={member.id}
-              className="flex items-center justify-between p-4 bg-card border border-border rounded-2xl"
-            >
+          {members.map(member => (
+            <div key={member.id} className="flex items-center justify-between p-4 bg-card border border-border rounded-2xl">
               <div className="flex items-center gap-3">
                 <Avatar name={member.name} size="md" />
                 <div>
@@ -242,36 +169,20 @@ export default function GroupDetailPage() {
               </div>
               <div className="flex items-center gap-2">
                 {member.role === 'admin' ? (
-                  <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium flex items-center gap-1">
-                    <Crown className="w-3 h-3" />
-                    Admin
-                  </span>
+                  <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium flex items-center gap-1"><Crown className="w-3 h-3" />Admin</span>
                 ) : member.role === 'moderator' ? (
-                  <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium flex items-center gap-1">
-                    <Shield className="w-3 h-3" />
-                    Modo
-                  </span>
+                  <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium flex items-center gap-1"><Shield className="w-3 h-3" />Modo</span>
                 ) : (
                   <span className="text-xs px-2 py-1 rounded-full bg-border text-muted font-medium">Membre</span>
                 )}
                 {isAdmin && member.role !== 'admin' && (
                   <div className="flex gap-1">
                     {member.role !== 'moderator' && (
-                      <button
-                        onClick={() => handlePromote(member.user_id, 'moderator')}
-                        className="p-1.5 rounded-lg hover:bg-border transition-colors"
-                        title="Promouvoir modérateur"
-                        aria-label="Promouvoir modérateur"
-                      >
+                      <button onClick={() => handlePromote(member.user_id, 'moderator')} className="p-1.5 rounded-lg hover:bg-border transition-colors" title="Promouvoir modérateur" aria-label="Promouvoir modérateur">
                         <Shield className="w-4 h-4 text-primary" />
                       </button>
                     )}
-                    <button
-                      onClick={() => handleKick(member.user_id)}
-                      className="p-1.5 rounded-lg hover:bg-danger/10 transition-colors"
-                      title="Exclure"
-                      aria-label="Exclure le membre"
-                    >
+                    <button onClick={() => handleKick(member.user_id)} className="p-1.5 rounded-lg hover:bg-danger/10 transition-colors" title="Exclure" aria-label="Exclure le membre">
                       <UserX className="w-4 h-4 text-danger" />
                     </button>
                   </div>
@@ -291,24 +202,20 @@ export default function GroupDetailPage() {
               <p className="text-muted text-sm">Aucune activité partagée dans ce groupe</p>
               <p className="text-xs text-muted mt-1">Les membres doivent partager leurs activités avec ce groupe</p>
             </div>
-          ) : (
-            activities.map((a: Activity) => (
-              <div key={a.id} className="p-4 bg-card border border-border rounded-2xl">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-sm">{a.name || a.type}</p>
-                    <p className="text-xs text-muted">
-                      {a.type} · {a.start_date ? new Date(a.start_date).toLocaleDateString('fr-FR') : ''}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium text-sm">{((a.distance || 0) / 1000).toFixed(1)} km</p>
-                    <p className="text-xs text-muted">{Math.floor((a.moving_time || 0) / 60)} min</p>
-                  </div>
+          ) : activities.map((a: Activity) => (
+            <div key={a.id} className="p-4 bg-card border border-border rounded-2xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-sm">{a.name || a.type}</p>
+                  <p className="text-xs text-muted">{a.type} · {a.start_date ? new Date(a.start_date).toLocaleDateString('fr-FR') : ''}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-medium text-sm">{((a.distance || 0) / 1000).toFixed(1)} km</p>
+                  <p className="text-xs text-muted">{Math.floor((a.moving_time || 0) / 60)} min</p>
                 </div>
               </div>
-            ))
-          )}
+            </div>
+          ))}
         </div>
       )}
 
@@ -316,11 +223,7 @@ export default function GroupDetailPage() {
       {activeTab === 'challenges' && (
         <div className="space-y-4">
           {isAdmin && (
-            <Button
-              className="w-full rounded-xl gap-2"
-              onClick={() => setShowWizard(true)}
-              aria-label="Créer un défi de groupe"
-            >
+            <Button className="w-full rounded-xl gap-2" onClick={() => setShowWizard(true)} aria-label="Créer un défi de groupe">
               <Sparkles className="w-4 h-4" /> Créer un défi de groupe
             </Button>
           )}
@@ -333,7 +236,7 @@ export default function GroupDetailPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {challenges.map((c) => (
+              {challenges.map(c => (
                 <div key={c.id} className="p-4 bg-card border border-border rounded-2xl">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 min-w-0 flex-1">
@@ -342,30 +245,15 @@ export default function GroupDetailPage() {
                         <p className="font-semibold text-sm truncate">{c.title}</p>
                         {c.description && <p className="text-xs text-muted line-clamp-1 mt-0.5">{c.description}</p>}
                         <div className="flex flex-wrap gap-1 mt-2">
-                          <span className="text-xs px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">
-                            {getModeInfo(c.challenge_mode || 'quota').icon}{' '}
-                            {getModeInfo(c.challenge_mode || 'quota').label}
-                          </span>
-                          <span className="text-xs px-1.5 py-0.5 rounded-md bg-border text-muted">
-                            {getTypeInfo(c.type).icon} {c.target_value} {c.target_unit}
-                          </span>
-                          <span className="text-xs px-1.5 py-0.5 rounded-md bg-border text-muted">
-                            ⏳ {c.duration_days}j
-                          </span>
-                          <span className="text-xs px-1.5 py-0.5 rounded-md bg-border text-muted">
-                            👥 {c.participant_count || 0}
-                          </span>
+                          <span className="text-xs px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">{getModeInfo(c.challenge_mode || 'quota').icon} {getModeInfo(c.challenge_mode || 'quota').label}</span>
+                          <span className="text-xs px-1.5 py-0.5 rounded-md bg-border text-muted">{getTypeInfo(c.type).icon} {c.target_value} {c.target_unit}</span>
+                          <span className="text-xs px-1.5 py-0.5 rounded-md bg-border text-muted">⏳ {c.duration_days}j</span>
+                          <span className="text-xs px-1.5 py-0.5 rounded-md bg-border text-muted">👥 {c.participant_count || 0}</span>
                         </div>
                         {c.creator_name && <p className="text-xs text-muted mt-1">par {c.creator_name}</p>}
                       </div>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => handleJoinChallenge(c.id)}
-                      className="rounded-xl shrink-0"
-                      aria-label="Rejoindre le défi"
-                    >
+                    <Button size="sm" variant="secondary" onClick={() => handleJoinChallenge(c.id)} className="rounded-xl shrink-0" aria-label="Rejoindre le défi">
                       Rejoindre
                     </Button>
                   </div>
@@ -380,105 +268,40 @@ export default function GroupDetailPage() {
       {activeTab === 'settings' && isAdmin && (
         <div className="space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Edit2 className="w-4 h-4 text-primary" />
-                Modifier le groupe
-              </CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Edit2 className="w-4 h-4 text-primary" />Modifier le groupe</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <Input
-                label="Nom"
-                value={editForm.name}
-                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                aria-required="true"
-              />
+              <Input label="Nom" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} aria-required="true" />
               <div>
                 <label className="text-xs font-medium text-muted uppercase tracking-wide mb-1 block">Description</label>
-                <textarea
-                  value={editForm.description}
-                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                  rows={3}
-                  aria-label="Description du groupe"
-                  className="w-full px-3 py-2 rounded-xl bg-background border border-border text-sm focus:border-primary outline-none resize-none"
-                />
+                <textarea value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} rows={3} aria-label="Description du groupe" className="w-full px-3 py-2 rounded-xl bg-background border border-border text-sm focus:border-primary outline-none resize-none" />
               </div>
               <div className="flex items-center justify-between p-3 rounded-xl bg-background border border-border">
-                <div>
-                  <p className="text-sm font-medium">Groupe privé</p>
-                  <p className="text-xs text-muted">Accès par code d&apos;invitation uniquement</p>
-                </div>
-                <button
-                  onClick={() => setEditForm({ ...editForm, is_private: !editForm.is_private })}
-                  aria-label={editForm.is_private ? 'Passer en groupe public' : 'Passer en groupe privé'}
-                  className={`w-12 h-6 rounded-full transition-all relative ${editForm.is_private ? 'bg-primary' : 'bg-border'}`}
-                >
-                  <div
-                    className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${editForm.is_private ? 'left-7' : 'left-1'}`}
-                  />
+                <div><p className="text-sm font-medium">Groupe privé</p><p className="text-xs text-muted">Accès par code d&apos;invitation uniquement</p></div>
+                <button onClick={() => setEditForm({ ...editForm, is_private: !editForm.is_private })} aria-label={editForm.is_private ? 'Passer en groupe public' : 'Passer en groupe privé'} className={`w-12 h-6 rounded-full transition-all relative ${editForm.is_private ? 'bg-primary' : 'bg-border'}`}>
+                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${editForm.is_private ? 'left-7' : 'left-1'}`} />
                 </button>
               </div>
               {group.invite_code && (
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-background border border-border">
-                  <div className="flex-1">
-                    <p className="text-xs text-muted">Code d&apos;invitation</p>
-                    <p className="font-mono font-bold text-lg tracking-widest">{group.invite_code}</p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={copyInvite}
-                    leftIcon={<Copy className="w-4 h-4" />}
-                    aria-label="Copier le code"
-                  >
-                    Copier
-                  </Button>
+                  <div className="flex-1"><p className="text-xs text-muted">Code d&apos;invitation</p><p className="font-mono font-bold text-lg tracking-widest">{group.invite_code}</p></div>
+                  <Button size="sm" variant="secondary" onClick={copyInvite} leftIcon={<Copy className="w-4 h-4" />} aria-label="Copier le code">Copier</Button>
                 </div>
               )}
               <div className="flex gap-3">
-                <Button
-                  variant="secondary"
-                  className="flex-1 rounded-xl"
-                  onClick={() =>
-                    setEditForm({
-                      name: group.name,
-                      description: group.description || '',
-                      is_private: group.is_private ?? true,
-                    })
-                  }
-                  aria-label="Réinitialiser le formulaire"
-                >
+                <Button variant="secondary" className="flex-1 rounded-xl" onClick={() => setEditForm({ name: group.name, description: group.description || '', is_private: group.is_private ?? true })} aria-label="Réinitialiser le formulaire">
                   Réinitialiser
                 </Button>
-                <Button
-                  className="flex-1 rounded-xl"
-                  onClick={handleEdit}
-                  leftIcon={<Save className="w-4 h-4" />}
-                  aria-label="Enregistrer les modifications"
-                >
+                <Button className="flex-1 rounded-xl" onClick={handleEdit} leftIcon={<Save className="w-4 h-4" />} aria-label="Enregistrer les modifications">
                   Enregistrer
                 </Button>
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2 text-danger">
-                <Trash2 className="w-4 h-4" />
-                Zone de danger
-              </CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-base flex items-center gap-2 text-danger"><Trash2 className="w-4 h-4" />Zone de danger</CardTitle></CardHeader>
             <CardContent>
-              <p className="text-sm text-muted mb-4">
-                La suppression est irréversible. Tous les membres seront retirés et les défis supprimés.
-              </p>
-              <Button
-                variant="ghost"
-                className="text-danger w-full rounded-xl"
-                onClick={handleDelete}
-                leftIcon={<Trash2 className="w-4 h-4" />}
-                aria-label="Supprimer le groupe"
-              >
+              <p className="text-sm text-muted mb-4">La suppression est irréversible. Tous les membres seront retirés et les défis supprimés.</p>
+              <Button variant="ghost" className="text-danger w-full rounded-xl" onClick={handleDelete} leftIcon={<Trash2 className="w-4 h-4" />} aria-label="Supprimer le groupe">
                 Supprimer le groupe
               </Button>
             </CardContent>

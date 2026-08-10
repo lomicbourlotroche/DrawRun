@@ -8,8 +8,7 @@ import { Star, User, TrendingUp, Heart, Medal } from '@/components/ui/icons';
 const testimonials = [
   {
     id: 1,
-    quote:
-      "DrawRun a transformé mon entraînement. Le coaching adaptatif m'a permis de battre mon record sur 10km en seulement 8 semaines.",
+    quote: 'DrawRun a transformé mon entraînement. Le coaching adaptatif m\'a permis de battre mon record sur 10km en seulement 8 semaines.',
     author: 'Thomas Dupont',
     role: 'Coureur - Marathonien',
     rating: 5,
@@ -20,7 +19,7 @@ const testimonials = [
   },
   {
     id: 2,
-    quote: "Les plans basés sur le VDOT sont incroyablement précis. J'ai enfin compris comment structurer mes séances.",
+    quote: 'Les plans basés sur le VDOT sont incroyablement précis. J\'ai enfin compris comment structurer mes séances.',
     author: 'Claire Martin',
     role: 'Cycliste - Gran Fondo',
     rating: 5,
@@ -31,8 +30,7 @@ const testimonials = [
   },
   {
     id: 3,
-    quote:
-      "La gestion de la fatigue et la PMC m'ont évité le surentraînement. Indispensable pour les athlètes sérieux.",
+    quote: 'La gestion de la fatigue et la PMC m\'ont évité le surentraînement. Indispensable pour les athlètes sérieux.',
     author: 'Marc Bernard',
     role: 'Triathlète',
     rating: 5,
@@ -43,7 +41,7 @@ const testimonials = [
   },
   {
     id: 4,
-    quote: "L'intégration avec Garmin et Strava est parfaite. Plus besoin de saisir mes activités manuellement.",
+    quote: 'L\'intégration avec Garmin et Strava est parfaite. Plus besoin de saisir mes activités manuellement.',
     author: 'Sophie Leroy',
     role: 'Coureuse - Trail',
     rating: 5,
@@ -86,7 +84,9 @@ export default function TestimonialsSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">TÉMOIGNAGES</p>
+          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">
+            TÉMOIGNAGES
+          </p>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-foreground tracking-tight">
             Ils font confiance à DrawRun
           </h2>
@@ -110,9 +110,7 @@ export default function TestimonialsSection() {
               >
                 {/* Header avec sport et note */}
                 <div className="flex items-center justify-between mb-4">
-                  <div
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r ${gradient} text-white text-xs font-semibold`}
-                  >
+                  <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r ${gradient} text-white text-xs font-semibold`}>
                     {icon}
                     {testimonial.sport}
                   </div>

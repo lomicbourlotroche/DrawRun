@@ -26,17 +26,14 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches
-      .keys()
-      .then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((name) => {
-            console.log('[SW] Deleting cache:', name);
-            return caches.delete(name);
-          }),
-        );
-      })
-      .then(() => self.clients.claim()),
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((name) => {
+          console.log('[SW] Deleting cache:', name);
+          return caches.delete(name);
+        })
+      );
+    }).then(() => self.clients.claim())
   );
 });
 
@@ -62,7 +59,9 @@ self.addEventListener('push', (event) => {
     tag: data.tag || 'drawrun-notification',
   };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
 });
 
 // ============================================================================
@@ -92,7 +91,7 @@ self.addEventListener('notificationclick', (event) => {
       if (clients.openWindow) {
         return clients.openWindow(url);
       }
-    }),
+    })
   );
 });
 

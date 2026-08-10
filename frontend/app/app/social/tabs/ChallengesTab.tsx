@@ -5,12 +5,25 @@ import { Button, Skeleton, GlassCard, GlassCardContent } from '@/components/ui';
 import { api } from '@/lib/api';
 import { Trophy, Sparkles } from '@/components/ui/icons';
 import { toast } from 'sonner';
-import { getModeInfo, getTypeInfo, getMilestones, getProgressColor, formatDaysLeft } from './challenge-constants';
+import {
+  getModeInfo,
+  getTypeInfo,
+  getMilestones,
+  getProgressColor,
+  formatDaysLeft,
+} from './challenge-constants';
 import ChallengeWizard from '../modals/ChallengeWizard';
 import { useChallenges } from '@/hooks/useSocial';
 
 export default function ChallengesTab() {
-  const { publicChallenges, myChallenges, isLoading, error, loadChallenges, handleJoin } = useChallenges();
+  const {
+    publicChallenges,
+    myChallenges,
+    isLoading,
+    error,
+    loadChallenges,
+    handleJoin,
+  } = useChallenges();
 
   const [showCreate, setShowCreate] = useState(false);
 
@@ -59,11 +72,12 @@ export default function ChallengesTab() {
       setShowCreate(false);
       loadChallenges();
     },
-    [loadChallenges],
+    [loadChallenges]
   );
 
   if (isLoading) {
-    return (
+
+        return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
           <Skeleton key={i} className="h-28 rounded-2xl" />
@@ -112,7 +126,9 @@ export default function ChallengesTab() {
                       </div>
                       <span
                         className={`text-xs px-2 py-1 rounded-full font-medium shrink-0 ${
-                          c.user_status === 'completed' ? 'bg-success/10 text-success' : 'bg-primary/10 text-primary'
+                          c.user_status === 'completed'
+                            ? 'bg-success/10 text-success'
+                            : 'bg-primary/10 text-primary'
                         }`}
                       >
                         {c.user_status === 'completed' ? '✓ Terminé' : formatDaysLeft(c.end_date)}
@@ -144,7 +160,11 @@ export default function ChallengesTab() {
                             className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2"
                             style={{ left: `${m.pct}%` }}
                           >
-                            <div className={`w-0.5 h-4 rounded-full ${pct >= m.pct ? 'bg-white/80' : 'bg-muted/40'}`} />
+                            <div
+                              className={`w-0.5 h-4 rounded-full ${
+                                pct >= m.pct ? 'bg-white/80' : 'bg-muted/40'
+                              }`}
+                            />
                           </div>
                         ))}
                       </div>
@@ -152,7 +172,8 @@ export default function ChallengesTab() {
                         <span className="font-medium text-foreground">{pct.toFixed(0)}%</span>
                         {nextMilestone && (
                           <span>
-                            {(nextMilestone as { icon: string }).icon} {(nextMilestone as { label: string }).label} à{' '}
+                            {(nextMilestone as { icon: string }).icon}{' '}
+                            {(nextMilestone as { label: string }).label} à{' '}
                             {(nextMilestone as { pct: number }).pct}%
                           </span>
                         )}
@@ -166,7 +187,9 @@ export default function ChallengesTab() {
                         <div
                           key={m.pct}
                           className={`flex-1 text-center py-1 rounded-lg text-xs transition-all ${
-                            pct >= m.pct ? 'bg-warning/20 text-warning-600 font-medium' : 'bg-border/50 text-muted'
+                            pct >= m.pct
+                              ? 'bg-warning/20 text-warning-600 font-medium'
+                              : 'bg-border/50 text-muted'
                           }`}
                         >
                           {m.icon} {m.label}
@@ -201,7 +224,9 @@ export default function ChallengesTab() {
                       <span className="text-2xl shrink-0">{c.badge_icon || '🏆'}</span>
                       <div className="min-w-0">
                         <p className="font-semibold text-sm truncate">{c.title}</p>
-                        {c.description && <p className="text-xs text-muted mb-1 line-clamp-1">{c.description}</p>}
+                        {c.description && (
+                          <p className="text-xs text-muted mb-1 line-clamp-1">{c.description}</p>
+                        )}
                         <div className="flex flex-wrap gap-1 mt-1">
                           <span className="text-xs px-1.5 py-0.5 rounded-md bg-primary/10 text-primary">
                             {mode.icon} {mode.label}
@@ -216,7 +241,9 @@ export default function ChallengesTab() {
                             👥 {c.participant_count || 0}
                           </span>
                         </div>
-                        {c.creator_name && <p className="text-xs text-muted mt-1">par {c.creator_name}</p>}
+                        {c.creator_name && (
+                          <p className="text-xs text-muted mt-1">par {c.creator_name}</p>
+                        )}
                       </div>
                     </div>
                     {!alreadyJoined ? (
@@ -242,7 +269,9 @@ export default function ChallengesTab() {
         )}
       </div>
 
-      {showCreate && <ChallengeWizard onClose={() => setShowCreate(false)} onCreate={handleCreate} />}
+      {showCreate && (
+        <ChallengeWizard onClose={() => setShowCreate(false)} onCreate={handleCreate} />
+      )}
     </div>
   );
 }

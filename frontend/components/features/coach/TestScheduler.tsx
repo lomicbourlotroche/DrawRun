@@ -12,11 +12,7 @@ interface TestSchedulerProps {
 }
 
 const testTypes = [
-  {
-    value: 'vma',
-    label: 'Test VMA (Vitesse Maximale Aérobie)',
-    description: 'Test sur piste de 6 minutes ou semi-Cooper',
-  },
+  { value: 'vma', label: 'Test VMA (Vitesse Maximale Aérobie)', description: 'Test sur piste de 6 minutes ou semi-Cooper' },
   { value: 'cooper', label: 'Test Cooper', description: 'Courir la plus grande distance en 12 minutes' },
   { value: 'vdot', label: 'Test VDOT', description: 'Course de référence pour calculer votre VDOT' },
   { value: 'fitness', label: 'Test Fitness', description: 'Évaluation globale de la condition physique' },
@@ -55,16 +51,17 @@ export default function TestScheduler({ planId, onTestScheduled }: TestScheduler
 
   return (
     <>
-      <Button variant="secondary" onClick={() => setIsOpen(true)} leftIcon={<Activity className="w-4 h-4" />}>
+      <Button
+        variant="secondary"
+        onClick={() => setIsOpen(true)}
+        leftIcon={<Activity className="w-4 h-4" />}
+      >
         Planifier un test
       </Button>
 
       <Modal
         isOpen={isOpen}
-        onClose={() => {
-          setIsOpen(false);
-          setTestProtocol(null);
-        }}
+        onClose={() => { setIsOpen(false); setTestProtocol(null); }}
         title="Planifier un test d'évaluation"
         size="lg"
       >
@@ -74,7 +71,7 @@ export default function TestScheduler({ planId, onTestScheduled }: TestScheduler
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-foreground">Type de test</label>
                 <div className="space-y-2">
-                  {testTypes.map((type) => (
+                  {testTypes.map(type => (
                     <div
                       key={type.value}
                       className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
@@ -85,11 +82,9 @@ export default function TestScheduler({ planId, onTestScheduled }: TestScheduler
                       onClick={() => setTestType(type.value)}
                     >
                       <div className="flex items-center gap-2">
-                        <div
-                          className={`w-4 h-4 rounded-full border-2 ${
-                            testType === type.value ? 'border-primary bg-primary' : 'border-border'
-                          }`}
-                        >
+                        <div className={`w-4 h-4 rounded-full border-2 ${
+                          testType === type.value ? 'border-primary bg-primary' : 'border-border'
+                        }`}>
                           {testType === type.value && <CheckCircle2 className="w-3 h-3 text-foreground" />}
                         </div>
                         <span className="font-medium text-foreground">{type.label}</span>

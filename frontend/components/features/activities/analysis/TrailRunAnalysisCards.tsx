@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { Mountain } from '@/components/ui/icons';
@@ -10,12 +10,7 @@ export function TrailRunAnalysisCards({ analysis }: { analysis: TrailRunAnalysis
     <>
       {/* Trail-specific metrics */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Mountain className="w-4 h-4 text-success/80" />
-            Métriques Trail
-          </CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Mountain className="w-4 h-4 text-success/80" />Métriques Trail</CardTitle></CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {analysis.vam && (
@@ -26,17 +21,12 @@ export function TrailRunAnalysisCards({ analysis }: { analysis: TrailRunAnalysis
             )}
             {analysis.technicalScore && (
               <div className="text-center p-3 rounded-lg bg-background border border-border">
-                <p
-                  className={`text-lg font-bold capitalize ${
-                    analysis.technicalScore === 'expert'
-                      ? 'text-danger/80'
-                      : analysis.technicalScore === 'advanced'
-                        ? 'text-peak/80'
-                        : analysis.technicalScore === 'moderate'
-                          ? 'text-warning/80'
-                          : 'text-success/80'
-                  }`}
-                >
+                <p className={`text-lg font-bold capitalize ${
+                  analysis.technicalScore === 'expert' ? 'text-danger/80'
+                  : analysis.technicalScore === 'advanced' ? 'text-peak/80'
+                  : analysis.technicalScore === 'moderate' ? 'text-warning/80'
+                  : 'text-success/80'
+                }`}>
                   {analysis.technicalScore}
                 </p>
                 <p className="text-xs text-muted">Niveau technique</p>

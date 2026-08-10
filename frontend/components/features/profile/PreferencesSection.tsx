@@ -20,9 +20,7 @@ export function PreferencesSection() {
         const prefs = await api.getPreferences();
         if (prefs.theme) setTheme(prefs.theme as 'light' | 'dark' | 'auto');
         if (prefs.units) setUnits(prefs.units as 'metric' | 'imperial');
-      } catch {
-        /* silencieux */
-      }
+      } catch { /* silencieux */ }
     };
     load();
   }, []);
@@ -80,7 +78,9 @@ export function PreferencesSection() {
             <button
               onClick={() => handleThemeChange('light')}
               className={`p-3 rounded-lg border-2 transition-all ${
-                theme === 'light' ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
+                theme === 'light'
+                  ? 'border-primary bg-primary/10'
+                  : 'border-border hover:border-primary/50'
               }`}
             >
               <Sun className="w-5 h-5 mx-auto mb-1 text-warning" />
@@ -89,7 +89,9 @@ export function PreferencesSection() {
             <button
               onClick={() => handleThemeChange('dark')}
               className={`p-3 rounded-lg border-2 transition-all ${
-                theme === 'dark' ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
+                theme === 'dark'
+                  ? 'border-primary bg-primary/10'
+                  : 'border-border hover:border-primary/50'
               }`}
             >
               <Moon className="w-5 h-5 mx-auto mb-1 text-primary" />
@@ -98,7 +100,9 @@ export function PreferencesSection() {
             <button
               onClick={() => handleThemeChange('auto')}
               className={`p-3 rounded-lg border-2 transition-all ${
-                theme === 'auto' ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
+                theme === 'auto'
+                  ? 'border-primary bg-primary/10'
+                  : 'border-border hover:border-primary/50'
               }`}
             >
               <Monitor className="w-5 h-5 mx-auto mb-1 text-muted" />
@@ -113,7 +117,9 @@ export function PreferencesSection() {
             <button
               onClick={() => handleUnitsChange('metric')}
               className={`p-3 rounded-lg border-2 transition-all ${
-                units === 'metric' ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
+                units === 'metric'
+                  ? 'border-primary bg-primary/10'
+                  : 'border-border hover:border-primary/50'
               }`}
             >
               <p className="text-sm font-medium">Métrique</p>
@@ -122,7 +128,9 @@ export function PreferencesSection() {
             <button
               onClick={() => handleUnitsChange('imperial')}
               className={`p-3 rounded-lg border-2 transition-all ${
-                units === 'imperial' ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
+                units === 'imperial'
+                  ? 'border-primary bg-primary/10'
+                  : 'border-border hover:border-primary/50'
               }`}
             >
               <p className="text-sm font-medium">Impérial</p>
@@ -140,7 +148,9 @@ export function PreferencesSection() {
             <button
               onClick={() => handleLanguageChange('fr')}
               className={`p-3 rounded-lg border-2 transition-all ${
-                language === 'fr' ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
+                language === 'fr'
+                  ? 'border-primary bg-primary/10'
+                  : 'border-border hover:border-primary/50'
               }`}
             >
               <p className="text-sm font-medium">Français</p>
@@ -148,7 +158,9 @@ export function PreferencesSection() {
             <button
               onClick={() => handleLanguageChange('en')}
               className={`p-3 rounded-lg border-2 transition-all ${
-                language === 'en' ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
+                language === 'en'
+                  ? 'border-primary bg-primary/10'
+                  : 'border-border hover:border-primary/50'
               }`}
             >
               <p className="text-sm font-medium">English</p>
@@ -165,7 +177,9 @@ export function PreferencesSection() {
             <button
               onClick={() => setDensity('compact')}
               className={`p-3 rounded-lg border-2 transition-all ${
-                density === 'compact' ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
+                density === 'compact'
+                  ? 'border-primary bg-primary/10'
+                  : 'border-border hover:border-primary/50'
               }`}
             >
               <p className="text-sm font-medium">Compact</p>
@@ -174,7 +188,9 @@ export function PreferencesSection() {
             <button
               onClick={() => setDensity('normal')}
               className={`p-3 rounded-lg border-2 transition-all ${
-                density === 'normal' ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
+                density === 'normal'
+                  ? 'border-primary bg-primary/10'
+                  : 'border-border hover:border-primary/50'
               }`}
             >
               <p className="text-sm font-medium">Normal</p>
@@ -183,7 +199,9 @@ export function PreferencesSection() {
             <button
               onClick={() => setDensity('comfortable')}
               className={`p-3 rounded-lg border-2 transition-all ${
-                density === 'comfortable' ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
+                density === 'comfortable'
+                  ? 'border-primary bg-primary/10'
+                  : 'border-border hover:border-primary/50'
               }`}
             >
               <p className="text-sm font-medium">Confort</p>

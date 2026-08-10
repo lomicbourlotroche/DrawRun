@@ -34,8 +34,8 @@ export default function SocialGuide() {
             </span>
           </h2>
           <p className="text-lg text-muted max-w-2xl mx-auto">
-            DrawRun intègre des fonctionnalités sociales pour vous connecter avec d&apos;autres athlètes, partager vos
-            progrès et vous motiver mutuellement.
+            DrawRun intègre des fonctionnalités sociales pour vous connecter avec d&apos;autres athlètes,
+            partager vos progrès et vous motiver mutuellement.
           </p>
         </div>
 
@@ -52,7 +52,7 @@ export default function SocialGuide() {
             {[
               'Terminent une nouvelle activité',
               'Battent un record personnel (PR)',
-              "Complètent une semaine d'entraînement",
+              'Complètent une semaine d\'entraînement',
               'Participent à un challenge',
             ].map((item, i) => (
               <li key={i} className="flex items-center gap-2 text-sm text-muted">
@@ -75,9 +75,7 @@ export default function SocialGuide() {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="p-4 bg-indigo-50 rounded-xl">
               <h4 className="font-semibold text-indigo-700 mb-2">Codes d&apos;invitation</h4>
-              <p className="text-sm text-indigo-600">
-                Chaque groupe a un code unique à 6 caractères pour rejoindre facilement.
-              </p>
+              <p className="text-sm text-indigo-600">Chaque groupe a un code unique à 6 caractères pour rejoindre facilement.</p>
             </div>
             <div className="p-4 bg-purple-50 rounded-xl">
               <h4 className="font-semibold text-purple-700 mb-2">Planning de groupe</h4>
@@ -98,10 +96,10 @@ export default function SocialGuide() {
           <div className="space-y-3">
             {[
               { label: 'Distance totale', icon: '📏', desc: 'Km parcourus sur la période' },
-              { label: 'TSS total', icon: '⚡', desc: "Charge d'entraînement cumulée" },
-              { label: 'Durée totale', icon: '⏱️', desc: "Temps d'activité cumulé" },
-              { label: "Nombre d'activités", icon: '🏃', desc: 'Sessions complétées' },
-              { label: 'Série en cours', icon: '🔥', desc: "Jours consécutifs d'activité" },
+              { label: 'TSS total', icon: '⚡', desc: 'Charge d\'entraînement cumulée' },
+              { label: 'Durée totale', icon: '⏱️', desc: 'Temps d\'activité cumulé' },
+              { label: 'Nombre d\'activités', icon: '🏃', desc: 'Sessions complétées' },
+              { label: 'Série en cours', icon: '🔥', desc: 'Jours consécutifs d\'activité' },
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-3 p-3 bg-background rounded-xl">
                 <span className="text-xl">{item.icon}</span>
@@ -121,8 +119,8 @@ export default function SocialGuide() {
             Draws & Commentaires
           </h3>
           <p className="text-muted leading-relaxed">
-            Comme un « like » sur vos activités, les <strong>draws</strong> (tracés) permettent d&apos;encourager les
-            autres membres. Ajoutez un commentaire pour féliciter un PR ou donner un conseil.
+            Comme un « like » sur vos activités, les <strong>draws</strong> (tracés) permettent d&apos;encourager
+            les autres membres. Ajoutez un commentaire pour féliciter un PR ou donner un conseil.
           </p>
         </div>
 

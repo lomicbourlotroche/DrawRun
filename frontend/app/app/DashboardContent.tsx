@@ -12,18 +12,30 @@ import { useDashboardStore } from '@/stores';
 import type { Readiness } from '@/types';
 import { api } from '@/lib/api';
 import { logger } from '@/lib/logger';
-import { OvertrainingAlert, ModernDashboard } from '@/components/features/dashboard';
+import {
+  OvertrainingAlert,
+  ModernDashboard,
+} from '@/components/features/dashboard';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { Activity, Heart, TrendingUp, Zap } from '@/components/ui/icons';
 import Link from 'next/link';
 import { Card, GradientBadge, PrimaryButton } from '@/components/ui';
 import dynamic from 'next/dynamic';
 
-const OnboardingWizard = dynamic(() => import('@/components/features/onboarding/OnboardingWizard'), { ssr: false });
+const OnboardingWizard = dynamic(
+  () => import('@/components/features/onboarding/OnboardingWizard'),
+  { ssr: false }
+);
 
 export default function DashboardContent() {
   const { t } = useLanguage();
-  const { isLoading, setReadiness, setPmcData, setRecentActivities, setLoading } = useDashboardStore();
+  const {
+    isLoading,
+    setReadiness,
+    setPmcData,
+    setRecentActivities,
+    setLoading,
+  } = useDashboardStore();
   const [hasData, setHasData] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingChecked, setOnboardingChecked] = useState(false);
@@ -38,9 +50,7 @@ export default function DashboardContent() {
         if (onboardingStatus && !onboardingStatus.completed) {
           setShowOnboarding(true);
         }
-      } catch {
-        /* onboarding optionnel */
-      }
+      } catch { /* onboarding optionnel */ }
       setOnboardingChecked(true);
 
       const [activities, pmc, _recommendations] = await Promise.allSettled([
@@ -92,8 +102,8 @@ export default function DashboardContent() {
             hrv: readinessResult.factors?.hrv ?? (readinessResult.factors?.hrvValue ? 80 : 60),
             sleep: readinessResult.factors?.sleep ?? (readinessResult.factors?.sleepHours ? 80 : 70),
             restingHR: readinessResult.factors?.restingHR ?? 60,
-            stress: readinessResult.factors?.stress ?? 30,
-          },
+            stress: readinessResult.factors?.stress ?? 30
+          }
         };
         setReadiness(readinessWithScore);
       }
@@ -115,7 +125,9 @@ export default function DashboardContent() {
   if (!isLoading && !hasData) {
     return (
       <div className="space-y-8 animate-fade-in max-w-3xl mx-auto">
-        {onboardingChecked && showOnboarding && <OnboardingWizard onComplete={() => setShowOnboarding(false)} />}
+        {onboardingChecked && showOnboarding && (
+          <OnboardingWizard onComplete={() => setShowOnboarding(false)} />
+        )}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground tracking-tight">{t.dashboard.title}</h1>
@@ -133,8 +145,8 @@ export default function DashboardContent() {
 
           <h2 className="text-xl font-bold text-foreground mb-2 tracking-tight">Aucune activité</h2>
           <p className="text-muted mb-8 max-w-md mx-auto leading-relaxed">
-            Connectez Strava ou Garmin pour importer vos activités et voir vos statistiques. Vos données seront
-            automatiquement synchronisées.
+            Connectez Strava ou Garmin pour importer vos activités et voir vos statistiques.
+            Vos données seront automatiquement synchronisées.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -157,10 +169,7 @@ export default function DashboardContent() {
             { title: 'Analyse avancée', desc: 'VDOT, PMC et métriques scientifiques' },
             { title: 'Coaching adaptatif', desc: 'Plans personnalisés selon vos objectifs' },
           ].map((tip, i) => (
-            <div
-              key={i}
-              className="bg-surface/70 backdrop-blur-sm border border-border rounded-xl p-4 shadow-sm transition-all duration-200 ease-smooth hover:shadow-md hover:border-primary/20"
-            >
+            <div key={i} className="bg-surface/70 backdrop-blur-sm border border-border rounded-xl p-4 shadow-sm transition-all duration-200 ease-smooth hover:shadow-md hover:border-primary/20">
               <h3 className="font-semibold text-foreground text-sm mb-1">{tip.title}</h3>
               <p className="text-xs text-muted">{tip.desc}</p>
             </div>
@@ -175,7 +184,9 @@ export default function DashboardContent() {
       <div className="fixed inset-0 bg-gradient-to-b from-muted/5 to-background pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {onboardingChecked && showOnboarding && <OnboardingWizard onComplete={() => setShowOnboarding(false)} />}
+        {onboardingChecked && showOnboarding && (
+          <OnboardingWizard onComplete={() => setShowOnboarding(false)} />
+        )}
         <OvertrainingAlert />
         <ModernDashboard />
       </div>

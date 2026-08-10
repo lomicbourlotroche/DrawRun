@@ -48,7 +48,11 @@ export function Select({
 
   return (
     <div className={cn('w-full', className)} ref={ref}>
-      {label && <label className="block text-sm font-medium text-muted mb-1.5">{label}</label>}
+      {label && (
+        <label className="block text-sm font-medium text-muted mb-1.5">
+          {label}
+        </label>
+      )}
       <div className="relative">
         <button
           type="button"
@@ -59,7 +63,7 @@ export function Select({
             'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary',
             'transition-all duration-200',
             error ? 'border-danger' : 'border-border',
-            disabled && 'opacity-50 cursor-not-allowed',
+            disabled && 'opacity-50 cursor-not-allowed'
           )}
         >
           <span className={cn(selectedOption ? 'text-foreground' : 'text-muted')}>
@@ -72,7 +76,12 @@ export function Select({
               placeholder
             )}
           </span>
-          <ChevronDown className={cn('w-4 h-4 text-muted transition-transform duration-200', isOpen && 'rotate-180')} />
+          <ChevronDown
+            className={cn(
+              'w-4 h-4 text-muted transition-transform duration-200',
+              isOpen && 'rotate-180'
+            )}
+          />
         </button>
 
         {isOpen && (
@@ -87,7 +96,7 @@ export function Select({
                 }}
                 className={cn(
                   'w-full flex items-center gap-2 px-4 py-3 min-h-[44px] text-left hover:bg-background/50 transition-colors',
-                  option.value === value && 'bg-primary/10 text-primary',
+                  option.value === value && 'bg-primary/10 text-primary'
                 )}
               >
                 {option.icon}

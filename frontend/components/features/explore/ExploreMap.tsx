@@ -106,14 +106,21 @@ export default function ExploreMap({
           <RouteOverlay map={mapInstance} routes={routes} />
           <SegmentOverlay map={mapInstance} segments={segments} />
           <UserLocationMarker map={mapInstance} userLocation={userLocation} />
-          <HeatmapOverlay map={mapInstance} heatmapData={heatmapData} showHeatmap={showHeatmap} />
+          <HeatmapOverlay
+            map={mapInstance}
+            heatmapData={heatmapData}
+            showHeatmap={showHeatmap}
+          />
           <RouteCreationOverlay
             map={mapInstance}
             routeCreationPoints={routeCreationPoints}
             onWaypointDrag={onWaypointDrag}
             isLoop={isLoop}
           />
-          <CurrentRouteOverlay map={mapInstance} currentRoutePolyline={currentRoutePolyline} />
+          <CurrentRouteOverlay
+            map={mapInstance}
+            currentRoutePolyline={currentRoutePolyline}
+          />
         </>
       )}
     </>

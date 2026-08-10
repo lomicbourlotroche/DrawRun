@@ -1,3 +1,4 @@
+
 import { forwardRef, type HTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -14,57 +15,54 @@ export interface MetricCardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const MetricCard = forwardRef<HTMLDivElement, MetricCardProps>(
-  (
-    {
-      className,
-      label,
-      value,
-      unit,
-      icon,
-      trend,
-      trendValue,
-      color = 'neutral',
-      size = 'md',
-      variant = 'default',
-      ...props
-    },
-    ref,
-  ) => {
+  ({
+    className,
+    label,
+    value,
+    unit,
+    icon,
+    trend,
+    trendValue,
+    color = 'neutral',
+    size = 'md',
+    variant = 'default',
+    ...props
+  }, ref) => {
     const colorStyles = {
       primary: {
         icon: 'bg-primary-100 text-primary-600',
         glow: 'shadow-glow-primary',
-        trend: { up: 'text-primary-600', down: 'text-danger-500', neutral: 'text-muted' },
+        trend: { up: 'text-primary-600', down: 'text-danger-500', neutral: 'text-muted' }
       },
       success: {
         icon: 'bg-success-100 text-success-600',
         glow: 'shadow-glow-success',
-        trend: { up: 'text-success-500', down: 'text-danger-500', neutral: 'text-muted' },
+        trend: { up: 'text-success-500', down: 'text-danger-500', neutral: 'text-muted' }
       },
       recovery: {
         icon: 'bg-recovery-100 text-recovery-600',
         glow: 'shadow-glow-recovery',
-        trend: { up: 'text-recovery-500', down: 'text-danger-500', neutral: 'text-muted' },
+        trend: { up: 'text-recovery-500', down: 'text-danger-500', neutral: 'text-muted' }
       },
       warning: {
         icon: 'bg-warning-100 text-warning-600',
         glow: '',
-        trend: { up: 'text-warning-500', down: 'text-danger-500', neutral: 'text-muted' },
+        trend: { up: 'text-warning-500', down: 'text-danger-500', neutral: 'text-muted' }
       },
       danger: {
         icon: 'bg-danger-100 text-danger-600',
         glow: '',
-        trend: { up: 'text-danger-500', down: 'text-success-500', neutral: 'text-muted' },
+        trend: { up: 'text-danger-500', down: 'text-success-500', neutral: 'text-muted' }
       },
       peak: {
         icon: 'bg-peak-100 text-peak-600',
         glow: 'shadow-glow-peak',
-        trend: { up: 'text-peak-500', down: 'text-danger-500', neutral: 'text-muted' },
+        trend: { up: 'text-peak-500', down: 'text-danger-500', neutral: 'text-muted' }
       },
       neutral: {
         icon: 'bg-background text-muted',
         glow: '',
-        trend: { up: 'text-muted', down: 'text-muted', neutral: 'text-muted' },
+        trend: { up: 'text-muted', down: 'text-muted', neutral: 'text-muted' }
       },
     };
 
@@ -115,21 +113,36 @@ const MetricCard = forwardRef<HTMLDivElement, MetricCardProps>(
           sizeStyles.card,
           styles.glow,
           'hover:-translate-y-0.5',
-          className,
+          className
         )}
         {...props}
       >
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <span className={cn('font-semibold text-muted uppercase tracking-wider', sizeStyles.label)}>{label}</span>
+            <span className={cn(
+              'font-semibold text-muted uppercase tracking-wider',
+              sizeStyles.label
+            )}>
+              {label}
+            </span>
             <div className="flex items-baseline gap-1.5 mt-1">
-              <span className={cn('font-bold text-foreground tabular-nums tracking-tight', sizeStyles.value)}>
+              <span className={cn(
+                'font-bold text-foreground tabular-nums tracking-tight',
+                sizeStyles.value
+              )}>
                 {value}
               </span>
-              {unit && <span className={cn('font-medium text-muted', sizeStyles.unit)}>{unit}</span>}
+              {unit && (
+                <span className={cn('font-medium text-muted', sizeStyles.unit)}>
+                  {unit}
+                </span>
+              )}
             </div>
             {mappedTrend && trendValue && (
-              <div className={cn('flex items-center gap-1 text-sm font-medium mt-1', styles.trend[mappedTrend])}>
+              <div className={cn(
+                'flex items-center gap-1 text-sm font-medium mt-1',
+                styles.trend[mappedTrend]
+              )}>
                 <span>
                   {mappedTrend === 'up' && '↑'}
                   {mappedTrend === 'down' && '↓'}
@@ -140,14 +153,18 @@ const MetricCard = forwardRef<HTMLDivElement, MetricCardProps>(
             )}
           </div>
           {icon && (
-            <div className={cn('flex items-center justify-center rounded-xl shrink-0', sizeStyles.icon, styles.icon)}>
+            <div className={cn(
+              'flex items-center justify-center rounded-xl shrink-0',
+              sizeStyles.icon,
+              styles.icon
+            )}>
               {icon}
             </div>
           )}
         </div>
       </div>
     );
-  },
+  }
 );
 
 MetricCard.displayName = 'MetricCard';

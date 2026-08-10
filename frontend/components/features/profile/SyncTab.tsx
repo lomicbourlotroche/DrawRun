@@ -1,16 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
-  GlassCard,
-  GlassCardHeader,
-  GlassCardTitle,
-  GlassCardContent,
-  Button,
-  GradientBadge,
-  Modal,
-  Input,
-} from '@/components/ui';
+import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent, Button, GradientBadge, Modal, Input } from '@/components/ui';
 import { useAuthStore, useSyncStore } from '@/stores';
 import { api } from '@/lib/api';
 import { SuuntoConnect } from '@/components/features/auth';
@@ -46,9 +37,7 @@ export function ServiceCard({
   return (
     <div className="flex items-center justify-between p-4 rounded-xl bg-card border border-border">
       <div className="flex items-center gap-4">
-        <div
-          className={`w-12 h-12 rounded-xl ${service === 'decathlon' ? 'bg-gradient-to-br from-purple-500 to-pink-500' : service === 'suunto' ? 'bg-gradient-to-br from-green-500 to-emerald-500' : `bg-${c.color}-500/20`} flex items-center justify-center`}
-        >
+        <div className={`w-12 h-12 rounded-xl ${service === 'decathlon' ? 'bg-gradient-to-br from-purple-500 to-pink-500' : service === 'suunto' ? 'bg-gradient-to-br from-green-500 to-emerald-500' : `bg-${c.color}-500/20`} flex items-center justify-center`}>
           {service === 'decathlon' ? (
             <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
@@ -56,12 +45,10 @@ export function ServiceCard({
           ) : service === 'suunto' ? (
             <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-12h2v6h-2zm0 8h2v2h-2z" />
-              <text x="12" y="16" fontSize="8" textAnchor="middle" fill="currentColor">
-                S
-              </text>
+              <text x="12" y="16" fontSize="8" textAnchor="middle" fill="currentColor">S</text>
             </svg>
-          ) : (
-            Icon && <Icon className={`w-6 h-6 text-${c.color}-500`} />
+          ) : Icon && (
+            <Icon className={`w-6 h-6 text-${c.color}-500`} />
           )}
         </div>
         <div>
@@ -69,19 +56,14 @@ export function ServiceCard({
           <p className="text-sm text-muted">
             {isConnected && lastSync
               ? `Sync: ${new Date(lastSync).toLocaleDateString('fr-FR')}`
-              : isConnected
-                ? 'Connecté'
-                : 'Non connecté'}
+              : isConnected ? 'Connecté' : 'Non connecté'}
           </p>
         </div>
       </div>
-      {children ||
-        (isConnected ? (
+      {children || (
+        isConnected ? (
           <div className="flex items-center gap-2">
-            <GradientBadge variant="success" size="sm">
-              <CheckCircle className="w-3 h-3" />
-              Connecté
-            </GradientBadge>
+            <GradientBadge variant="success" size="sm"><CheckCircle className="w-3 h-3" />Connecté</GradientBadge>
             <Button variant="ghost" size="sm" onClick={onDisconnect} isLoading={isDisconnecting}>
               <XCircle className="w-4 h-4 text-danger" />
             </Button>
@@ -90,7 +72,8 @@ export function ServiceCard({
           <Button variant="secondary" size="sm" onClick={onConnect}>
             Connecter
           </Button>
-        ))}
+        )
+      )}
     </div>
   );
 }
@@ -99,7 +82,7 @@ export function CredentialModal({
   isOpen,
   onClose,
   service,
-  onConnect,
+  onConnect
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -113,26 +96,16 @@ export function CredentialModal({
 
   useEffect(() => {
     if (!isOpen) {
-      setEmail('');
-      setPassword('');
-      setShowPassword(false);
+      setEmail(''); setPassword(''); setShowPassword(false);
     }
   }, [isOpen]);
 
   const handleSubmit = async () => {
-    if (!email || !password) {
-      toast.error('Veuillez remplir tous les champs');
-      return;
-    }
+    if (!email || !password) { toast.error('Veuillez remplir tous les champs'); return; }
     setIsLoading(true);
-    try {
-      await onConnect(email, password);
-      onClose();
-    } catch {
-      /* handled by parent */
-    } finally {
-      setIsLoading(false);
-    }
+    try { await onConnect(email, password); onClose(); }
+    catch { /* handled by parent */ }
+    finally { setIsLoading(false); }
   };
 
   const titles = {
@@ -145,40 +118,16 @@ export function CredentialModal({
     <Modal isOpen={isOpen} onClose={onClose} title={titles[service]} size="sm">
       <div className="space-y-4">
         <p className="text-sm text-muted">Entrez vos identifiants pour synchroniser vos activités.</p>
-        <Input
-          label="Email"
-          type="email"
-          placeholder="email@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          leftIcon={<Mail className="w-4 h-4" />}
-          onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-        />
+        <Input label="Email" type="email" placeholder="email@example.com" value={email} onChange={(e) => setEmail(e.target.value)} leftIcon={<Mail className="w-4 h-4" />} onKeyDown={(e) => e.key === 'Enter' && handleSubmit()} />
         <div className="relative">
-          <Input
-            label="Mot de passe"
-            type={showPassword ? 'text' : 'password'}
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            leftIcon={<Lock className="w-4 h-4" />}
-            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-          />
-          <button
-            type="button"
-            className="absolute right-3 top-9 text-muted hover:text-foreground"
-            onClick={() => setShowPassword(!showPassword)}
-          >
+          <Input label="Mot de passe" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} leftIcon={<Lock className="w-4 h-4" />} onKeyDown={(e) => e.key === 'Enter' && handleSubmit()} />
+          <button type="button" className="absolute right-3 top-9 text-muted hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         </div>
         <div className="flex gap-3 pt-2">
-          <Button variant="secondary" onClick={onClose} className="flex-1">
-            Annuler
-          </Button>
-          <Button onClick={handleSubmit} isLoading={isLoading} className="flex-1">
-            Connecter
-          </Button>
+          <Button variant="secondary" onClick={onClose} className="flex-1">Annuler</Button>
+          <Button onClick={handleSubmit} isLoading={isLoading} className="flex-1">Connecter</Button>
         </div>
       </div>
     </Modal>
@@ -203,9 +152,7 @@ export function SyncTab() {
       await api.connectGarmin(email, password);
       toast.success('Garmin connecté');
       fetchStatus();
-    } catch {
-      toast.error('Erreur connexion Garmin');
-    }
+    } catch { toast.error('Erreur connexion Garmin'); }
   };
 
   const handleConnectDecathlon = async (email: string, password: string) => {
@@ -213,9 +160,7 @@ export function SyncTab() {
       await api.saveDecathlonCredentials(email, password);
       toast.success('Decathlon connecté');
       fetchStatus();
-    } catch {
-      toast.error('Erreur connexion Decathlon');
-    }
+    } catch { toast.error('Erreur connexion Decathlon'); }
   };
 
   const handleDisconnect = async (service: string) => {
@@ -266,11 +211,7 @@ export function SyncTab() {
               <p className="font-medium">Dernière sync</p>
               <p className="text-sm text-muted">{lastSync}</p>
             </div>
-            <Button
-              onClick={handleSync}
-              isLoading={isSyncing}
-              disabled={!garminConnected && !decathlonConnected && !suuntoConnected}
-            >
+            <Button onClick={handleSync} isLoading={isSyncing} disabled={!garminConnected && !decathlonConnected && !suuntoConnected}>
               <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
             </Button>
           </div>
@@ -303,9 +244,7 @@ export function SyncTab() {
               isDisconnecting={disconnecting === 'suunto'}
             >
               <SuuntoConnect
-                onSuccess={() => {
-                  fetchStatus();
-                }}
+                onSuccess={() => { fetchStatus(); }}
                 onError={(err) => toast.error(err)}
               />
             </ServiceCard>
@@ -313,18 +252,8 @@ export function SyncTab() {
         </GlassCardContent>
       </GlassCard>
 
-      <CredentialModal
-        isOpen={showGarminModal}
-        onClose={() => setShowGarminModal(false)}
-        service="garmin"
-        onConnect={handleConnect}
-      />
-      <CredentialModal
-        isOpen={showDecathlonModal}
-        onClose={() => setShowDecathlonModal(false)}
-        service="decathlon"
-        onConnect={handleConnectDecathlon}
-      />
+      <CredentialModal isOpen={showGarminModal} onClose={() => setShowGarminModal(false)} service="garmin" onConnect={handleConnect} />
+      <CredentialModal isOpen={showDecathlonModal} onClose={() => setShowDecathlonModal(false)} service="decathlon" onConnect={handleConnectDecathlon} />
     </div>
   );
 }

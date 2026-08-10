@@ -151,10 +151,7 @@ export const socialApi = {
     return client.request(`/api/social/groups/${groupId}/events`);
   },
 
-  createEvent(
-    groupId: number,
-    event: CreateEventParams,
-  ): Promise<{ success: boolean; eventId?: number; error?: string }> {
+  createEvent(groupId: number, event: CreateEventParams): Promise<{ success: boolean; eventId?: number; error?: string }> {
     return client.request(`/api/social/groups/${groupId}/events`, {
       method: 'POST',
       body: JSON.stringify(event),
@@ -165,10 +162,7 @@ export const socialApi = {
     return client.request(`/api/social/events/${eventId}/join`, { method: 'POST' });
   },
 
-  createGroupConversation(
-    groupId: number,
-    title?: string,
-  ): Promise<{ success: boolean; conversation?: unknown; existing?: boolean; error?: string }> {
+  createGroupConversation(groupId: number, title?: string): Promise<{ success: boolean; conversation?: unknown; existing?: boolean; error?: string }> {
     return client.request(`/api/social/groups/${groupId}/conversation`, {
       method: 'POST',
       body: JSON.stringify({ title }),
@@ -195,10 +189,7 @@ export const socialApi = {
     return client.request('/api/social/liked-activities');
   },
 
-  toggleActivityDraw(
-    activityId: number,
-    ownerId: number,
-  ): Promise<{
+  toggleActivityDraw(activityId: number, ownerId: number): Promise<{
     success: boolean;
     draw_count: number;
     has_drawn: boolean;
@@ -290,11 +281,7 @@ export const socialApi = {
   // Comments
   // ============================================================================
 
-  addComment(
-    activityId: number,
-    content: string,
-    ownerId?: number,
-  ): Promise<{ success: boolean; comment?: Comment; error?: string }> {
+  addComment(activityId: number, content: string, ownerId?: number): Promise<{ success: boolean; comment?: Comment; error?: string }> {
     return client.request(`/api/social/activities/${activityId}/comments`, {
       method: 'POST',
       body: JSON.stringify({ content, ownerId }),
@@ -313,10 +300,7 @@ export const socialApi = {
   // Reactions
   // ============================================================================
 
-  addReaction(
-    activityId: number,
-    reactionType: string,
-  ): Promise<{ success: boolean; message?: string; error?: string }> {
+  addReaction(activityId: number, reactionType: string): Promise<{ success: boolean; message?: string; error?: string }> {
     return client.request(`/api/social/activities/${activityId}/reactions`, {
       method: 'POST',
       body: JSON.stringify({ reaction_type: reactionType }),
@@ -346,7 +330,7 @@ export const socialApi = {
     success: boolean;
     conversation?: unknown;
     existing?: boolean;
-    error?: string;
+    error?: string
   }> {
     return client.request('/api/social/conversations', {
       method: 'POST',
@@ -361,9 +345,7 @@ export const socialApi = {
 
   async getConversationMessages(conversationId: number, limit = 50, offset = 0): Promise<unknown[]> {
     const params = new URLSearchParams({ limit: String(limit), offset: String(offset) });
-    const response = await client.request<{ success: boolean; messages: unknown[] }>(
-      `/api/social/conversations/${conversationId}/messages?${params.toString()}`,
-    );
+    const response = await client.request<{ success: boolean; messages: unknown[] }>(`/api/social/conversations/${conversationId}/messages?${params.toString()}`);
     return response.messages ?? [];
   },
 
@@ -373,15 +355,13 @@ export const socialApi = {
       body: JSON.stringify({
         content: params.content,
         message_type: params.messageType,
-        attachment_url: params.attachmentUrl,
+        attachment_url: params.attachmentUrl
       }),
     });
   },
 
   async getConversationParticipants(conversationId: number): Promise<unknown[]> {
-    const response = await client.request<{ success: boolean; participants: unknown[] }>(
-      `/api/social/conversations/${conversationId}/participants`,
-    );
+    const response = await client.request<{ success: boolean; participants: unknown[] }>(`/api/social/conversations/${conversationId}/participants`);
     return response.participants ?? [];
   },
 
@@ -392,7 +372,7 @@ export const socialApi = {
   createChallenge(params: CreateChallengeParams): Promise<{
     success: boolean;
     challenge?: unknown;
-    error?: string;
+    error?: string
   }> {
     return client.request('/api/social/challenges', {
       method: 'POST',
@@ -408,32 +388,17 @@ export const socialApi = {
   // Group Challenges
   // ============================================================================
 
-  getGroupChallenges(groupId: number): Promise<
-    Array<{
-      id: number;
-      title: string;
-      description: string;
-      type: string;
-      target_value: number;
-      target_unit: string;
-      duration_days: number;
-      participant_count: number;
-      created_at: string;
-      challenge_mode?: string;
-      badge_icon?: string;
-      sport_type?: string;
-      milestones?: string;
-      creator_name?: string;
-      group_id: number;
-    }>
-  > {
+  getGroupChallenges(groupId: number): Promise<Array<{
+    id: number; title: string; description: string; type: string;
+    target_value: number; target_unit: string; duration_days: number;
+    participant_count: number; created_at: string; challenge_mode?: string;
+    badge_icon?: string; sport_type?: string; milestones?: string;
+    creator_name?: string; group_id: number;
+  }>> {
     return client.request(`/api/social/groups/${groupId}/challenges`);
   },
 
-  createGroupChallenge(
-    groupId: number,
-    params: CreateChallengeParams,
-  ): Promise<{ success: boolean; challengeId?: number; error?: string }> {
+  createGroupChallenge(groupId: number, params: CreateChallengeParams): Promise<{ success: boolean; challengeId?: number; error?: string }> {
     return client.request(`/api/social/groups/${groupId}/challenges`, {
       method: 'POST',
       body: JSON.stringify(params),
@@ -444,7 +409,7 @@ export const socialApi = {
     success: boolean;
     status?: string;
     progress?: number;
-    error?: string;
+    error?: string
   }> {
     return client.request(`/api/social/challenges/${params.challengeId}/progress`, {
       method: 'PUT',
@@ -467,18 +432,15 @@ export const socialApi = {
     challenge?: unknown;
     participants?: unknown[];
     user_participation?: unknown;
-    error?: string;
+    error?: string
   }> {
     return client.request(`/api/social/challenges/${challengeId}`);
   },
 
-  createChallengeTeam(
-    challengeId: number,
-    name: string,
-  ): Promise<{
+  createChallengeTeam(challengeId: number, name: string): Promise<{
     success: boolean;
     team?: unknown;
-    error?: string;
+    error?: string
   }> {
     return client.request(`/api/social/challenges/${challengeId}/teams`, {
       method: 'POST',
@@ -491,9 +453,7 @@ export const socialApi = {
   },
 
   async getChallengeTeams(challengeId: number): Promise<unknown[]> {
-    const response = await client.request<{ success: boolean; teams: unknown[] }>(
-      `/api/social/challenges/${challengeId}/teams`,
-    );
+    const response = await client.request<{ success: boolean; teams: unknown[] }>(`/api/social/challenges/${challengeId}/teams`);
     return response.teams ?? [];
   },
 
@@ -523,7 +483,7 @@ export const socialApi = {
   createBadge(params: CreateBadgeParams): Promise<{
     success: boolean;
     badge?: unknown;
-    error?: string;
+    error?: string
   }> {
     return client.request('/api/social/badges', {
       method: 'POST',
@@ -566,15 +526,12 @@ export const socialApi = {
   // Activity Photos
   // ============================================================================
 
-  addActivityPhoto(
-    activityId: number,
-    data: {
-      url: string;
-      caption?: string;
-      lat?: number;
-      lng?: number;
-    },
-  ): Promise<{ success: boolean; photo_id?: number; message?: string }> {
+  addActivityPhoto(activityId: number, data: {
+    url: string;
+    caption?: string;
+    lat?: number;
+    lng?: number;
+  }): Promise<{ success: boolean; photo_id?: number; message?: string }> {
     return client.request(`/api/social/activities/${activityId}/photos`, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -604,9 +561,7 @@ export const socialApi = {
   // Notifications
   // ============================================================================
 
-  getNotifications(
-    params?: PaginationParams,
-  ): Promise<{ success: boolean; notifications: unknown[]; unread_count: number }> {
+  getNotifications(params?: PaginationParams): Promise<{ success: boolean; notifications: unknown[]; unread_count: number }> {
     const query = new URLSearchParams();
     if (params?.limit) query.set('limit', String(params.limit));
     if (params?.offset) query.set('offset', String(params.offset));

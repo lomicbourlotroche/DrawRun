@@ -31,7 +31,7 @@ export default function GearPage() {
     model: '',
     type: 'shoes',
     max_distance: 800,
-    initial_distance: 0,
+    initial_distance: 0
   });
 
   const fetchGear = useCallback(async () => {
@@ -77,7 +77,7 @@ export default function GearPage() {
       model: gear.model,
       type: gear.type,
       max_distance: gear.max_distance,
-      initial_distance: gear.current_distance,
+      initial_distance: gear.current_distance
     });
     setIsModalOpen(true);
   };
@@ -94,13 +94,13 @@ export default function GearPage() {
     }
   };
 
-  const activeGear = gearList.filter((g) => g.is_active);
-  const archivedGear = gearList.filter((g) => !g.is_active);
+  const activeGear = gearList.filter(g => g.is_active);
+  const archivedGear = gearList.filter(g => !g.is_active);
 
   const totalKm = gearList.reduce((sum, g) => sum + (g.current_distance || 0), 0);
-  const shoesCount = gearList.filter((g) => g.type === 'shoes').length;
-  const bikeCount = gearList.filter((g) => g.type === 'bike').length;
-  const nearLimitCount = gearList.filter((g) => {
+  const shoesCount = gearList.filter(g => g.type === 'shoes').length;
+  const bikeCount = gearList.filter(g => g.type === 'bike').length;
+  const nearLimitCount = gearList.filter(g => {
     const pct = g.max_distance > 0 ? (g.current_distance / g.max_distance) * 100 : 0;
     return pct >= 80;
   }).length;
@@ -117,9 +117,7 @@ export default function GearPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-foreground tracking-tight">Mon Mat\u00e9riel</h1>
-                <p className="text-muted-foreground text-sm mt-0.5">
-                  Suivez l&apos;usure de vos chaussures et \u00e9quipements pour pr\u00e9venir les blessures.
-                </p>
+                <p className="text-muted-foreground text-sm mt-0.5">Suivez l&apos;usure de vos chaussures et \u00e9quipements pour pr\u00e9venir les blessures.</p>
               </div>
             </div>
             <PrimaryButton
@@ -162,15 +160,14 @@ export default function GearPage() {
           {nearLimitCount > 0 && (
             <div className="mt-3 p-3 rounded-xl bg-warning/10 border border-warning/20 text-sm text-warning flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
-              {nearLimitCount} \u00e9quipement{nearLimitCount > 1 ? 's' : ''} proche{nearLimitCount > 1 ? 's' : ''} de
-              la limite d&apos;usure
+              {nearLimitCount} \u00e9quipement{nearLimitCount > 1 ? 's' : ''} proche{nearLimitCount > 1 ? 's' : ''} de la limite d&apos;usure
             </div>
           )}
         </Card>
 
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-slide-up delay-200">
-            {[1, 2, 3].map((i) => (
+            {[1, 2, 3].map(i => (
               <div key={i} className="h-48 bg-surface/50 rounded-xl animate-pulse" />
             ))}
           </div>
@@ -191,7 +188,7 @@ export default function GearPage() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {activeGear.map((gear, i) => (
-                <div key={gear.id} className={`animate-slide-up delay-${((i % 6) + 2) * 100}`}>
+                <div key={gear.id} className={`animate-slide-up delay-${(i % 6 + 2) * 100}`}>
                   <Card variant="glass" accent="primary" hover padding="none">
                     <GearCard gear={gear} onEdit={handleEdit} onDelete={handleDelete} />
                   </Card>
@@ -207,7 +204,7 @@ export default function GearPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   {archivedGear.map((gear, i) => (
-                    <div key={gear.id} className={`animate-slide-up delay-${((i % 6) + 4) * 100}`}>
+                    <div key={gear.id} className={`animate-slide-up delay-${(i % 6 + 4) * 100}`}>
                       <Card variant="glass" accent="primary" hover padding="none">
                         <GearCard gear={gear} onEdit={handleEdit} onDelete={handleDelete} />
                       </Card>
@@ -229,7 +226,7 @@ export default function GearPage() {
               label="Nom du mat\u00e9riel"
               placeholder="ex: Pegasus 40, Speed Concept..."
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
               required
             />
             <div className="grid grid-cols-2 gap-4">
@@ -237,13 +234,13 @@ export default function GearPage() {
                 label="Marque"
                 placeholder="ex: Nike, Trek..."
                 value={formData.brand}
-                onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                onChange={(e) => setFormData({...formData, brand: e.target.value})}
               />
               <Input
                 label="Mod\u00e8le"
                 placeholder="ex: v4, 2024..."
                 value={formData.model}
-                onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                onChange={(e) => setFormData({...formData, model: e.target.value})}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -252,7 +249,7 @@ export default function GearPage() {
                 <select
                   className="w-full h-11 bg-surface border border-border rounded-xl px-4 text-sm text-foreground focus:ring-2 focus:ring-primary outline-none"
                   value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  onChange={(e) => setFormData({...formData, type: e.target.value})}
                 >
                   <option value="shoes">Chaussures</option>
                   <option value="bike">V\u00e9lo</option>
@@ -263,7 +260,7 @@ export default function GearPage() {
                 label="Distance max (km)"
                 type="number"
                 value={formData.max_distance}
-                onChange={(e) => setFormData({ ...formData, max_distance: parseInt(e.target.value) })}
+                onChange={(e) => setFormData({...formData, max_distance: parseInt(e.target.value)})}
               />
             </div>
             {!editingGear && (
@@ -271,7 +268,7 @@ export default function GearPage() {
                 label="Kilom\u00e9trage initial (km)"
                 type="number"
                 value={formData.initial_distance}
-                onChange={(e) => setFormData({ ...formData, initial_distance: parseInt(e.target.value) })}
+                onChange={(e) => setFormData({...formData, initial_distance: parseInt(e.target.value)})}
               />
             )}
             <div className="pt-4 flex justify-end gap-3">

@@ -83,7 +83,7 @@ export const translations = {
     },
     social: {
       title: 'Communauté',
-      subtitle: "Connectez-vous avec d'autres coureurs",
+      subtitle: 'Connectez-vous avec d\'autres coureurs',
       friends: 'Amis',
       groups: 'Groupes',
       leaderboard: 'Classement',
@@ -118,7 +118,7 @@ export const translations = {
       noAccount: 'Pas de compte ?',
       hasAccount: 'Déjà un compte ?',
       signIn: 'Se connecter',
-      signUp: "S'inscrire",
+      signUp: 'S\'inscrire',
       or: 'ou',
     },
     landing: {
@@ -126,7 +126,7 @@ export const translations = {
       subtitle: 'DrawRun combine les dernières avancées en Sciences du sport avec un coaching intelligent.',
       startFree: 'Commencer',
       viewDemo: 'Démo',
-      downloadApp: "Télécharger l'app",
+      downloadApp: 'Télécharger l\'app',
       downloadApk: 'APK Android',
       features: 'Tout pour vous améliorer',
       getStarted: 'Prêt à passer à la vitesse supérieure ?',
@@ -894,5 +894,5 @@ export const translations = {
 };
 
 export const supportedLanguages = ['fr', 'en', 'es', 'de', 'it', 'pt'] as const;
-export type Language = (typeof supportedLanguages)[number];
+export type Language = typeof supportedLanguages[number];
 export type TranslationKeys = typeof translations.fr;

@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -9,32 +9,10 @@ import { api } from '@/lib/api';
 import type { ActivityDetail as ActivityDetailType, ActivityStreams, ActivityAnalysisResponse } from '@/types';
 import { isRunAnalysis, isRideAnalysis, isSwimAnalysis, isTrailRunAnalysis } from '@/types';
 import type { SplitData, SplitSummary } from '@/types';
-import {
-  ArrowLeft,
-  Heart,
-  Timer,
-  Gauge,
-  Mountain,
-  Activity as ActivityIcon,
-  Zap,
-  Wind,
-  MapPin,
-  Clock,
-  Pencil,
-  Check,
-  X,
-  Cpu,
-  Flag,
-} from '@/components/ui/icons';
+import { ArrowLeft, Heart, Timer, Gauge, Mountain, Activity as ActivityIcon, Zap, Wind, MapPin, Clock, Pencil, Check, X, Cpu, Flag } from '@/components/ui/icons';
 import { toast } from 'sonner';
 import { ShareSettingsPanel } from '@/components/features/activities';
-import {
-  RunAnalysisCards,
-  RideAnalysisCards,
-  SwimAnalysisCards,
-  SimpleAnalysisCards,
-  TrailRunAnalysisCards,
-} from '@/components/features/activities/analysis';
+import { RunAnalysisCards, RideAnalysisCards, SwimAnalysisCards, SimpleAnalysisCards, TrailRunAnalysisCards } from '@/components/features/activities/analysis';
 
 function fmt(s: number) {
   const h = Math.floor(s / 3600);
@@ -91,23 +69,18 @@ export default function ActivityDetailPage() {
       setStreams(s);
       setAnalysis(an);
       setSplits(sp);
-    } catch {
-      toast.error('Erreur de chargement');
-    } finally {
-      setIsLoading(false);
-    }
+    } catch { toast.error('Erreur de chargement'); }
+    finally { setIsLoading(false); }
   }, [id]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
   const saveNotes = async () => {
     if (!activity) return;
     setSavingNotes(true);
     try {
       await api.updateActivity(Number(id), { notes: notesValue });
-      setActivity((prev) => (prev ? { ...prev, notes: notesValue } : prev));
+      setActivity(prev => prev ? { ...prev, notes: notesValue } : prev);
       setEditingNotes(false);
       toast.success('Notes sauvegard\u00e9es');
     } catch {
@@ -140,9 +113,7 @@ export default function ActivityDetailPage() {
         <Card variant="glass" padding="xl" className="text-center">
           <ActivityIcon className="w-12 h-12 mx-auto mb-4 text-muted opacity-50" />
           <p className="text-muted mb-4">Activit\u00e9 non trouv\u00e9e</p>
-          <Button variant="glass" onClick={() => router.push('/app/activities')}>
-            Retour
-          </Button>
+          <Button variant="glass" onClick={() => router.push('/app/activities')}>Retour</Button>
         </Card>
       </div>
     );
@@ -150,8 +121,7 @@ export default function ActivityDetailPage() {
 
   const src = activity.source || 'manual';
   const srcLabel = src === 'garmin' ? 'Garmin' : src === 'strava' ? 'Strava' : 'Manuel';
-  const srcColor: 'primary' | 'warning' | 'default' =
-    src === 'garmin' ? 'primary' : src === 'strava' ? 'warning' : 'default';
+  const srcColor: 'primary' | 'warning' | 'default' = src === 'garmin' ? 'primary' : src === 'strava' ? 'warning' : 'default';
 
   const extractData = (stream: unknown): number[] | null => {
     if (!stream) return null;
@@ -168,23 +138,21 @@ export default function ActivityDetailPage() {
   const cadData = extractData(streams?.cadence);
   const wattsData = extractData(streams?.watts);
 
-  const latlngData = streams?.latlng && Array.isArray(streams.latlng) ? (streams.latlng as [number, number][]) : null;
+  const latlngData = streams?.latlng && Array.isArray(streams.latlng)
+    ? streams.latlng as [number, number][]
+    : null;
 
   const avgHR = activity.average_heartrate;
   const maxHR = activity.max_heartrate;
   const fcm = (analysis?.profileFcm as number) || (avgHR ? Math.round(avgHR / 0.85) : null);
 
-  const sportIcon =
-    activity.type === 'Run' || activity.type === 'TrailRun'
-      ? '🏃'
-      : activity.type === 'Ride' || activity.type === 'VirtualRide'
-        ? '🚴'
-        : activity.type === 'Swim'
-          ? '🏊'
-          : '🏋️';
+  const sportIcon = activity.type === 'Run' || activity.type === 'TrailRun' ? '🏃' :
+    activity.type === 'Ride' || activity.type === 'VirtualRide' ? '🚴' :
+    activity.type === 'Swim' ? '🏊' : '🏋️';
 
   return (
     <div className="animate-fade-in max-w-5xl mx-auto space-y-5">
+
       {/* TOP BAR */}
       <div className="animate-slide-up flex items-start gap-4">
         <button
@@ -211,14 +179,9 @@ export default function ActivityDetailPage() {
 
       {/* MAP */}
       <div className="animate-slide-up delay-100">
-        {activity.map_polyline || (latlngData && latlngData.length > 0) ? (
+        {(activity.map_polyline || (latlngData && latlngData.length > 0)) ? (
           <Card variant="glass" accent="primary">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-primary" />
-                Parcours
-              </CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><MapPin className="w-4 h-4 text-primary" />Parcours</CardTitle></CardHeader>
             <CardContent>
               <ActivityMap
                 polyline={activity.map_polyline || undefined}
@@ -230,21 +193,13 @@ export default function ActivityDetailPage() {
           </Card>
         ) : (
           <Card variant="glass-subtle">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-muted" />
-                Parcours
-              </CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><MapPin className="w-4 h-4 text-muted" />Parcours</CardTitle></CardHeader>
             <CardContent className="p-8 text-center">
               <div className="text-muted">
                 <MapPin className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p>Aucune trace GPS disponible</p>
                 <p className="text-xs mt-1">L&apos;activit\u00e9 ne contient pas de donn\u00e9es de parcours</p>
-                <p className="text-xs text-muted mt-1">
-                  Cette activit\u00e9 n&apos;a pas \u00e9t\u00e9 synchronis\u00e9e avec GPS ou le service ne fournit pas
-                  de trace
-                </p>
+                <p className="text-xs text-muted mt-1">Cette activit\u00e9 n&apos;a pas \u00e9t\u00e9 synchronis\u00e9e avec GPS ou le service ne fournit pas de trace</p>
               </div>
             </CardContent>
           </Card>
@@ -254,52 +209,27 @@ export default function ActivityDetailPage() {
       {/* HERO STATS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-slide-up delay-100">
         <Card variant="glass" accent="primary" padding="lg">
-          <div className="flex items-center gap-2 mb-1">
-            <Gauge className="w-4 h-4 text-primary" />
-            <span className="text-xs text-muted uppercase font-semibold">Distance</span>
-          </div>
-          <p className="text-2xl font-bold text-foreground">
-            {activity.distance > 1000
-              ? `${(activity.distance / 1000).toFixed(2)} km`
-              : `${Math.round(activity.distance)} m`}
-          </p>
+          <div className="flex items-center gap-2 mb-1"><Gauge className="w-4 h-4 text-primary" /><span className="text-xs text-muted uppercase font-semibold">Distance</span></div>
+          <p className="text-2xl font-bold text-foreground">{activity.distance > 1000 ? `${(activity.distance / 1000).toFixed(2)} km` : `${Math.round(activity.distance)} m`}</p>
         </Card>
         <Card variant="glass" accent="info" padding="lg">
-          <div className="flex items-center gap-2 mb-1">
-            <Timer className="w-4 h-4 text-peak" />
-            <span className="text-xs text-muted uppercase font-semibold">Dur\u00e9e</span>
-          </div>
+          <div className="flex items-center gap-2 mb-1"><Timer className="w-4 h-4 text-peak" /><span className="text-xs text-muted uppercase font-semibold">Dur\u00e9e</span></div>
           <p className="text-2xl font-bold text-foreground">{fmt(activity.moving_time)}</p>
-          {activity.elapsed_time && activity.elapsed_time > activity.moving_time && (
-            <p className="text-xs text-muted mt-0.5">Temps: {fmt(activity.elapsed_time)}</p>
-          )}
+          {activity.elapsed_time && activity.elapsed_time > activity.moving_time && <p className="text-xs text-muted mt-0.5">Temps: {fmt(activity.elapsed_time)}</p>}
         </Card>
         <Card variant="glass" accent="success" padding="lg">
-          <div className="flex items-center gap-2 mb-1">
-            <Zap className="w-4 h-4 text-success" />
-            <span className="text-xs text-muted uppercase font-semibold">Allure moy.</span>
-          </div>
-          <p className="text-2xl font-bold text-foreground">
-            {pace(activity.average_speed)} <span className="text-sm font-normal text-muted">/km</span>
-          </p>
+          <div className="flex items-center gap-2 mb-1"><Zap className="w-4 h-4 text-success" /><span className="text-xs text-muted uppercase font-semibold">Allure moy.</span></div>
+          <p className="text-2xl font-bold text-foreground">{pace(activity.average_speed)} <span className="text-sm font-normal text-muted">/km</span></p>
         </Card>
         {avgHR ? (
           <Card variant="glass" accent="danger" padding="lg">
-            <div className="flex items-center gap-2 mb-1">
-              <Heart className="w-4 h-4 text-danger" />
-              <span className="text-xs text-muted uppercase font-semibold">FC moy.</span>
-            </div>
-            <p className="text-2xl font-bold text-foreground">
-              {Math.round(avgHR)} <span className="text-sm font-normal text-muted">bpm</span>
-            </p>
+            <div className="flex items-center gap-2 mb-1"><Heart className="w-4 h-4 text-danger" /><span className="text-xs text-muted uppercase font-semibold">FC moy.</span></div>
+            <p className="text-2xl font-bold text-foreground">{Math.round(avgHR)} <span className="text-sm font-normal text-muted">bpm</span></p>
             <p className="text-xs text-muted mt-0.5">{maxHR ? `Max: ${Math.round(maxHR)} bpm` : ''}</p>
           </Card>
         ) : (
           <Card variant="glass" padding="lg">
-            <div className="flex items-center gap-2 mb-1">
-              <Heart className="w-4 h-4 text-muted" />
-              <span className="text-xs text-muted uppercase font-semibold">FC</span>
-            </div>
+            <div className="flex items-center gap-2 mb-1"><Heart className="w-4 h-4 text-muted" /><span className="text-xs text-muted uppercase font-semibold">FC</span></div>
             <p className="text-2xl font-bold text-muted">—</p>
           </Card>
         )}
@@ -349,35 +279,13 @@ export default function ActivityDetailPage() {
       {hrData && Array.isArray(hrData) && hrData.length > 10 && (
         <div className="animate-slide-up delay-200">
           <Card variant="glass" accent="danger" padding="lg">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Heart className="w-4 h-4 text-danger" />
-                Fr\u00e9quence Cardiaque
-              </CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Heart className="w-4 h-4 text-danger" />Fr\u00e9quence Cardiaque</CardTitle></CardHeader>
             <CardContent>
-              <StreamChart
-                data={hrData}
-                color="#EF4444"
-                fillColor="rgba(239,68,68,0.1)"
-                unit="bpm"
-                min={fcm ? fcm * 0.5 : undefined}
-                max={fcm || undefined}
-                formatValue={(v) => `${Math.round(v)}`}
-              />
+              <StreamChart data={hrData} color="#EF4444" fillColor="rgba(239,68,68,0.1)" unit="bpm" min={fcm ? fcm * 0.5 : undefined} max={fcm || undefined} formatValue={v => `${Math.round(v)}`} />
               <div className="grid grid-cols-3 gap-2 mt-3 text-center">
-                <div className="p-2 rounded-lg bg-danger/10">
-                  <p className="text-sm font-bold text-danger">{Math.round(avgHR || 0)}</p>
-                  <p className="text-xs text-muted">Moyenne</p>
-                </div>
-                <div className="p-2 rounded-lg bg-danger/10">
-                  <p className="text-sm font-bold text-danger">{Math.round(maxHR || 0)}</p>
-                  <p className="text-xs text-muted">Max</p>
-                </div>
-                <div className="p-2 rounded-lg bg-danger/10">
-                  <p className="text-sm font-bold text-danger">{Math.min(...hrData)}</p>
-                  <p className="text-xs text-muted">Min</p>
-                </div>
+                <div className="p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-danger">{Math.round(avgHR || 0)}</p><p className="text-xs text-muted">Moyenne</p></div>
+                <div className="p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-danger">{Math.round(maxHR || 0)}</p><p className="text-xs text-muted">Max</p></div>
+                <div className="p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-danger">{Math.min(...hrData)}</p><p className="text-xs text-muted">Min</p></div>
               </div>
             </CardContent>
           </Card>
@@ -388,19 +296,14 @@ export default function ActivityDetailPage() {
       {spdData && Array.isArray(spdData) && spdData.length > 10 && (
         <div className="animate-slide-up delay-200">
           <Card variant="glass" accent="primary" padding="lg">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Zap className="w-4 h-4 text-primary" />
-                Vitesse
-              </CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Zap className="w-4 h-4 text-primary" />Vitesse</CardTitle></CardHeader>
             <CardContent>
               <StreamChart
                 data={spdData.map((v: number) => paceFromMs(v) || 0).filter((v: number) => v > 0)}
                 color="#3B82F6"
                 fillColor="rgba(59,130,246,0.1)"
                 unit="min/km"
-                formatValue={(v) => `${Math.floor(v)}'${String(Math.round((v % 1) * 60)).padStart(2, '0')}`}
+                formatValue={v => `${Math.floor(v)}'${String(Math.round((v % 1) * 60)).padStart(2, '0')}`}
               />
             </CardContent>
           </Card>
@@ -411,20 +314,9 @@ export default function ActivityDetailPage() {
       {altData && Array.isArray(altData) && altData.length > 10 && (
         <div className="animate-slide-up delay-200">
           <Card variant="glass" accent="success" padding="lg">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Mountain className="w-4 h-4 text-success" />
-                Altitude
-              </CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Mountain className="w-4 h-4 text-success" />Altitude</CardTitle></CardHeader>
             <CardContent>
-              <StreamChart
-                data={altData}
-                color="#22C55E"
-                fillColor="rgba(34,197,94,0.1)"
-                unit="m"
-                formatValue={(v) => `${Math.round(v)}m`}
-              />
+              <StreamChart data={altData} color="#22C55E" fillColor="rgba(34,197,94,0.1)" unit="m" formatValue={v => `${Math.round(v)}m`} />
             </CardContent>
           </Card>
         </div>
@@ -434,20 +326,9 @@ export default function ActivityDetailPage() {
       {cadData && Array.isArray(cadData) && cadData.length > 10 && (
         <div className="animate-slide-up delay-200">
           <Card variant="glass" padding="lg">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Wind className="w-4 h-4 text-muted" />
-                Cadence
-              </CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Wind className="w-4 h-4 text-muted" />Cadence</CardTitle></CardHeader>
             <CardContent>
-              <StreamChart
-                data={cadData}
-                color="#A855F7"
-                fillColor="rgba(168,85,247,0.1)"
-                unit="spm"
-                formatValue={(v) => `${Math.round(v)}`}
-              />
+              <StreamChart data={cadData} color="#A855F7" fillColor="rgba(168,85,247,0.1)" unit="spm" formatValue={v => `${Math.round(v)}`} />
             </CardContent>
           </Card>
         </div>
@@ -457,12 +338,7 @@ export default function ActivityDetailPage() {
       {wattsData && Array.isArray(wattsData) && wattsData.length > 10 && (
         <div className="animate-slide-up delay-200">
           <Card variant="glass" accent="warning" padding="lg">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Zap className="w-4 h-4 text-peak" />
-                Puissance
-              </CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Zap className="w-4 h-4 text-peak" />Puissance</CardTitle></CardHeader>
             <CardContent>
               <StreamChart
                 data={wattsData}
@@ -471,22 +347,18 @@ export default function ActivityDetailPage() {
                 unit="W"
                 min={Math.max(0, Math.min(...wattsData) - 20)}
                 max={Math.max(...wattsData) + 20}
-                formatValue={(v) => `${Math.round(v)}W`}
+                formatValue={v => `${Math.round(v)}W`}
               />
               <div className="grid grid-cols-3 gap-2 mt-3 text-center">
                 {(activity.average_watts || activity.average_power) && (
                   <div className="p-2 rounded-lg bg-peak/10">
-                    <p className="text-sm font-bold text-peak">
-                      {Math.round(activity.average_watts || activity.average_power || 0)}W
-                    </p>
+                    <p className="text-sm font-bold text-peak">{Math.round(activity.average_watts || activity.average_power || 0)}W</p>
                     <p className="text-xs text-muted">Moyenne</p>
                   </div>
                 )}
                 {(activity.normalized_power || activity.np) && (
                   <div className="p-2 rounded-lg bg-peak/10">
-                    <p className="text-sm font-bold text-peak">
-                      {Math.round(activity.normalized_power || activity.np || 0)}W
-                    </p>
+                    <p className="text-sm font-bold text-peak">{Math.round(activity.normalized_power || activity.np || 0)}W</p>
                     <p className="text-xs text-muted">NP</p>
                   </div>
                 )}
@@ -520,13 +392,7 @@ export default function ActivityDetailPage() {
       )}
 
       {/* ADVANCED METRICS */}
-      {(activity.elev_high !== null ||
-        activity.elev_low !== null ||
-        activity.running_index !== null ||
-        activity.hrv_rmssd !== null ||
-        activity.is_race ||
-        activity.is_commute ||
-        activity.device_name) && (
+      {(activity.elev_high !== null || activity.elev_low !== null || activity.running_index !== null || activity.hrv_rmssd !== null || activity.is_race || activity.is_commute || activity.device_name) && (
         <div className="animate-slide-up delay-200">
           <Card variant="glass" accent="primary" padding="lg">
             <CardHeader>
@@ -539,9 +405,7 @@ export default function ActivityDetailPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {activity.elev_low !== null && activity.elev_high !== null && (
                   <Card variant="glass-subtle" padding="sm" className="text-center">
-                    <p className="text-lg font-bold text-foreground">
-                      {Math.round(toNum(activity.elev_low))}m {'\u2013'} {Math.round(toNum(activity.elev_high))}m
-                    </p>
+                    <p className="text-lg font-bold text-foreground">{Math.round(toNum(activity.elev_low))}m {'\u2013'} {Math.round(toNum(activity.elev_high))}m</p>
                     <p className="text-xs text-muted">Altitude min {'\u2013'} max</p>
                   </Card>
                 )}
@@ -566,16 +430,8 @@ export default function ActivityDetailPage() {
               </div>
               {(activity.is_race || activity.is_commute) && (
                 <div className="flex gap-2 mt-3">
-                  {!!activity.is_race && (
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-warning/20 text-warning flex items-center gap-1">
-                      <Flag className="w-3 h-3" /> Course
-                    </span>
-                  )}
-                  {!!activity.is_commute && (
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary flex items-center gap-1">
-                      <ActivityIcon className="w-3 h-3" /> Trajet
-                    </span>
-                  )}
+                  {!!activity.is_race && <span className="px-2 py-1 rounded-full text-xs font-medium bg-warning/20 text-warning flex items-center gap-1"><Flag className="w-3 h-3" /> Course</span>}
+                  {!!activity.is_commute && <span className="px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary flex items-center gap-1"><ActivityIcon className="w-3 h-3" /> Trajet</span>}
                 </div>
               )}
             </CardContent>
@@ -593,14 +449,7 @@ export default function ActivityDetailPage() {
                 Notes
               </CardTitle>
               {!editingNotes && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setNotesValue(activity.notes || activity.description || '');
-                    setEditingNotes(true);
-                  }}
-                >
+                <Button variant="ghost" size="sm" onClick={() => { setNotesValue(activity.notes || activity.description || ''); setEditingNotes(true); }}>
                   <Pencil className="w-3.5 h-3.5 mr-1" />
                   Modifier
                 </Button>
@@ -612,7 +461,7 @@ export default function ActivityDetailPage() {
               <div className="space-y-3">
                 <textarea
                   value={notesValue}
-                  onChange={(e) => setNotesValue(e.target.value)}
+                  onChange={e => setNotesValue(e.target.value)}
                   className="w-full p-3 rounded-lg border border-border bg-surface/80 backdrop-blur-sm text-foreground text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
                   rows={4}
                   placeholder="Ajouter des notes sur cette activit\u00e9\u2026"
@@ -631,13 +480,10 @@ export default function ActivityDetailPage() {
               </div>
             ) : (
               <p className="text-sm text-muted whitespace-pre-wrap">
-                {activity.notes || activity.description ? (
-                  activity.notes || activity.description
-                ) : (
-                  <span className="italic opacity-50">
-                    Aucune note {'\u2014'} cliquez sur Modifier pour en ajouter.
-                  </span>
-                )}
+                {activity.notes || activity.description
+                  ? (activity.notes || activity.description)
+                  : <span className="italic opacity-50">Aucune note {'\u2014'} cliquez sur Modifier pour en ajouter.</span>
+                }
               </p>
             )}
           </CardContent>
@@ -656,32 +502,11 @@ export default function ActivityDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-4 mb-4 p-3 bg-surface/50 backdrop-blur-sm rounded-lg text-sm border border-border/60">
-                <div>
-                  <span className="text-muted">D\u00e9nivel\u00e9:</span>{' '}
-                  <span className="font-medium">{splits.summary.elevationGain || 0}m</span>
-                </div>
-                <div>
-                  <span className="text-muted">FC moy:</span>{' '}
-                  <span className="font-medium">{splits.summary.averageHR || '-'}</span>
-                </div>
-                {splits.summary.maxHR && (
-                  <div>
-                    <span className="text-muted">FC max:</span>{' '}
-                    <span className="font-medium">{splits.summary.maxHR}</span>
-                  </div>
-                )}
-                {splits.summary.averageCadence && (
-                  <div>
-                    <span className="text-muted">Cadence:</span>{' '}
-                    <span className="font-medium">{splits.summary.averageCadence}</span>
-                  </div>
-                )}
-                {splits.summary.averageWatts && (
-                  <div>
-                    <span className="text-muted">Watts:</span>{' '}
-                    <span className="font-medium">{splits.summary.averageWatts}</span>
-                  </div>
-                )}
+                <div><span className="text-muted">D\u00e9nivel\u00e9:</span> <span className="font-medium">{splits.summary.elevationGain || 0}m</span></div>
+                <div><span className="text-muted">FC moy:</span> <span className="font-medium">{splits.summary.averageHR || '-'}</span></div>
+                {splits.summary.maxHR && <div><span className="text-muted">FC max:</span> <span className="font-medium">{splits.summary.maxHR}</span></div>}
+                {splits.summary.averageCadence && <div><span className="text-muted">Cadence:</span> <span className="font-medium">{splits.summary.averageCadence}</span></div>}
+                {splits.summary.averageWatts && <div><span className="text-muted">Watts:</span> <span className="font-medium">{splits.summary.averageWatts}</span></div>}
               </div>
 
               <div className="overflow-x-auto">
@@ -702,45 +527,28 @@ export default function ActivityDetailPage() {
                   </thead>
                   <tbody>
                     {splits.splits.map((split) => {
-                      const paceColor =
-                        split.pace && split.pace < 300
-                          ? 'text-success'
-                          : split.pace && split.pace > 360
-                            ? 'text-danger'
-                            : 'text-foreground';
-                      const gradientColor =
-                        split.gradient > 2 ? 'text-peak' : split.gradient < -2 ? 'text-primary' : 'text-muted';
+                      const paceColor = split.pace && split.pace < 300 ? 'text-success' : split.pace && split.pace > 360 ? 'text-danger' : 'text-foreground';
+                      const gradientColor = split.gradient > 2 ? 'text-peak' : split.gradient < -2 ? 'text-primary' : 'text-muted';
                       return (
-                        <tr
-                          key={split.split}
-                          className="border-b border-border/50 hover:bg-surface/50 transition-colors"
-                        >
+                        <tr key={split.split} className="border-b border-border/50 hover:bg-surface/50 transition-colors">
                           <td className="py-2 font-medium">
                             {split.split}
                             {split.isPartial && <span className="text-xs text-muted ml-1">(partiel)</span>}
                           </td>
                           <td className="py-2 text-right font-mono">{fmt(split.duration)}</td>
                           <td className={`py-2 text-right font-mono ${paceColor}`}>
-                            {split.pace
-                              ? `${Math.floor(split.pace / 60)}'${String(Math.round(split.pace % 60)).padStart(2, '0')}`
-                              : '-'}
+                            {split.pace ? `${Math.floor(split.pace / 60)}'${String(Math.round(split.pace % 60)).padStart(2, '0')}` : '-'}
                           </td>
                           <td className="py-2 text-right font-mono font-bold text-primary">
-                            {split.gap
-                              ? `${Math.floor(split.gap / 60)}'${String(Math.round(split.gap % 60)).padStart(2, '0')}`
-                              : '-'}
+                            {split.gap ? `${Math.floor(split.gap / 60)}'${String(Math.round(split.gap % 60)).padStart(2, '0')}` : '-'}
                           </td>
                           <td className="py-2 text-right font-mono">{split.speed.toFixed(1)} km/h</td>
                           <td className="py-2 text-right">{split.avgHR || '-'}</td>
-                          <td
-                            className={`py-2 text-right ${split.elevationChange > 0 ? 'text-success' : split.elevationChange < 0 ? 'text-danger' : 'text-muted'}`}
-                          >
-                            {split.elevationChange > 0 ? '+' : ''}
-                            {split.elevationChange || '-'}m
+                          <td className={`py-2 text-right ${split.elevationChange > 0 ? 'text-success' : split.elevationChange < 0 ? 'text-danger' : 'text-muted'}`}>
+                            {split.elevationChange > 0 ? '+' : ''}{split.elevationChange || '-'}m
                           </td>
                           <td className={`py-2 text-right ${gradientColor}`}>
-                            {split.gradient > 0 ? '+' : ''}
-                            {split.gradient || 0}%
+                            {split.gradient > 0 ? '+' : ''}{split.gradient || 0}%
                           </td>
                           <td className="py-2 text-right">{split.avgCadence || '-'}</td>
                           {split.avgWatts !== null && <td className="py-2 text-right">{split.avgWatts || '-'}</td>}
@@ -775,13 +583,11 @@ export default function ActivityDetailPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ShareSettingsPanel
-              activityId={Number(id)}
-              onSave={() => toast.success('Param\u00e8tres de partage mis \u00e0 jour')}
-            />
+            <ShareSettingsPanel activityId={Number(id)} onSave={() => toast.success('Param\u00e8tres de partage mis \u00e0 jour')} />
           </CardContent>
         </Card>
       </div>
+
     </div>
   );
 }

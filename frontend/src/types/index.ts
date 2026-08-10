@@ -22,15 +22,7 @@
 import type { SportType } from './sports';
 
 export type { SportType } from './sports';
-export {
-  SPORTS,
-  getSportCategory,
-  isEnduranceSport,
-  isCyclingSport,
-  isRunningSport,
-  isSwimmingSport,
-  isWinterSport,
-} from './sports';
+export { SPORTS, getSportCategory, isEnduranceSport, isCyclingSport, isRunningSport, isSwimmingSport, isWinterSport } from './sports';
 
 export interface User {
   id: number | string;
@@ -600,11 +592,14 @@ export interface SimpleAnalysis {
   paceFormatted: string | null;
 }
 
-export type ActivityAnalysisResponse = RunAnalysis | RideAnalysis | SwimAnalysis | TrailRunAnalysis | SimpleAnalysis;
+export type ActivityAnalysisResponse =
+  | RunAnalysis
+  | RideAnalysis
+  | SwimAnalysis
+  | TrailRunAnalysis
+  | SimpleAnalysis;
 
-export function isDetailedAnalysis(
-  a: ActivityAnalysisResponse,
-): a is RunAnalysis | RideAnalysis | SwimAnalysis | TrailRunAnalysis {
+export function isDetailedAnalysis(a: ActivityAnalysisResponse): a is RunAnalysis | RideAnalysis | SwimAnalysis | TrailRunAnalysis {
   return a.analysisType === 'detailed';
 }
 
@@ -994,13 +989,10 @@ export interface RacePrediction {
     optimistic: number;
     conservative: number;
   };
-  predictions: Record<
-    string,
-    {
-      distance: number;
-      estimatedTime: number;
-    }
-  >;
+  predictions: Record<string, {
+    distance: number;
+    estimatedTime: number;
+  }>;
 }
 
 export interface NutritionStop {
@@ -1049,17 +1041,17 @@ export interface RaceNutritionStrategy {
 }
 
 export interface RacePlanningRequest {
-  distance?: number; // Optionnel en mode GPX (auto-détecté)
+  distance?: number;       // Optionnel en mode GPX (auto-détecté)
   targetTime?: string;
   targetPace?: number;
   elevationProfile?: 'flat' | 'rolling' | 'mountainous'; // Auto-détecté en mode GPX
-  fatigue?: number; // Auto-détecté depuis TSB en mode GPX
+  fatigue?: number;        // Auto-détecté depuis TSB en mode GPX
   temperature?: number;
   humidity?: number;
   altitude?: number;
   windSpeed?: number;
-  gpxData?: string; // GPX XML brut pour auto-détection
-  strategyBias?: number; // -1 (negative split) to +1 (positive split)
+  gpxData?: string;        // GPX XML brut pour auto-détection
+  strategyBias?: number;   // -1 (negative split) to +1 (positive split)
 }
 
 export interface GpxProfile {
@@ -1099,26 +1091,24 @@ export interface RacePlanningResponse {
     style: string;
     reference: string;
   };
-  environmentalImpact?:
-    | {
-        temperature: string;
-        humidity: string;
-        altitude: string;
-        wind: string;
-        overall: string;
-      }
-    | {
-        correctedTime: number;
-        timeLoss: number;
-        factor: number;
-      };
+  environmentalImpact?: {
+    temperature: string;
+    humidity: string;
+    altitude: string;
+    wind: string;
+    overall: string;
+  } | {
+    correctedTime: number;
+    timeLoss: number;
+    factor: number;
+  };
   pacingStrategy?: {
     type: string;
     name: string;
     description: string;
     phases?: Array<{ start: number; end: number; factor: number; label: string }>;
   };
-  gpxProfile?: GpxProfile; // NEW: auto-detected terrain info
+  gpxProfile?: GpxProfile;  // NEW: auto-detected terrain info
   summary: {
     distance: number;
     targetPace: number;

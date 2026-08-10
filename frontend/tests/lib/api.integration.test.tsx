@@ -17,6 +17,7 @@ const _createWrapper = () => {
   };
 };
 
+
 // Mock API
 vi.mock('@/lib/api', () => ({
   api: {
@@ -39,36 +40,12 @@ describe('API Integration Tests', () => {
   describe('Activities API', () => {
     it('fetches activities successfully', async () => {
       const mockActivities: Activity[] = [
-        {
-          id: 1,
-          title: 'Morning Run',
-          distance: 5000,
-          moving_time: 1800,
-          type: 'run',
-          date: '',
-          dist: '',
-          pace: '',
-          duration: '',
-          avgSpeed: 0,
-          avgHR: 0,
-        },
-        {
-          id: 2,
-          title: 'Evening Ride',
-          distance: 15000,
-          moving_time: 3600,
-          type: 'bike',
-          date: '',
-          dist: '',
-          pace: '',
-          duration: '',
-          avgSpeed: 0,
-          avgHR: 0,
-        },
+        { id: 1, title: 'Morning Run', distance: 5000, moving_time: 1800, type: 'run', date: '', dist: '', pace: '', duration: '', avgSpeed: 0, avgHR: 0 },
+        { id: 2, title: 'Evening Ride', distance: 15000, moving_time: 3600, type: 'bike', date: '', dist: '', pace: '', duration: '', avgSpeed: 0, avgHR: 0 },
       ];
       const mockResponse = {
         data: mockActivities,
-        pagination: { page: 1, per_page: 20, total: 2, total_pages: 1, has_next: false, has_prev: false },
+        pagination: { page: 1, per_page: 20, total: 2, total_pages: 1, has_next: false, has_prev: false }
       };
 
       vi.mocked(api.getActivities).mockResolvedValueOnce(mockResponse);
@@ -94,17 +71,8 @@ describe('API Integration Tests', () => {
       };
 
       vi.mocked(api.createActivity).mockResolvedValueOnce({
-        id: 3,
-        title: 'Test Activity',
-        type: 'run',
-        distance: 5000,
-        moving_time: 1800,
-        date: '',
-        dist: '',
-        pace: '',
-        duration: '',
-        avgSpeed: 0,
-        avgHR: 0,
+        id: 3, title: 'Test Activity', type: 'run', distance: 5000, moving_time: 1800,
+        date: '', dist: '', pace: '', duration: '', avgSpeed: 0, avgHR: 0,
       } as unknown as Activity);
 
       const result = await api.createActivity(newActivity);
@@ -133,7 +101,9 @@ describe('API Integration Tests', () => {
     it('fetches segments successfully', async () => {
       const mockSegments = {
         success: true,
-        segments: [{ id: 1, name: 'Test Segment', distance: 1000 }],
+        segments: [
+          { id: 1, name: 'Test Segment', distance: 1000 },
+        ],
       };
 
       vi.mocked(api.getPublicSegments).mockResolvedValueOnce(mockSegments);

@@ -29,13 +29,8 @@ interface RecordingStatsPanelProps {
 }
 
 export function RecordingStatsPanel({
-  stats,
-  currentGPS,
-  hrConnected,
-  hrData,
-  laps,
-  formatPace,
-  formatDuration,
+  stats, currentGPS, hrConnected, hrData, laps,
+  formatPace, formatDuration,
 }: RecordingStatsPanelProps) {
   return (
     <>
@@ -89,9 +84,7 @@ export function RecordingStatsPanel({
         {laps.length > 0 && (
           <div className="bg-surface rounded-md px-2.5 py-1.5 flex items-center gap-1.5 text-xs">
             <Flag className="w-3.5 h-3.5 text-warning" />
-            <span className="text-foreground font-medium">
-              {laps.length} tour{laps.length > 1 ? 's' : ''}
-            </span>
+            <span className="text-foreground font-medium">{laps.length} tour{(laps.length > 1 ? 's' : '')}</span>
           </div>
         )}
       </div>

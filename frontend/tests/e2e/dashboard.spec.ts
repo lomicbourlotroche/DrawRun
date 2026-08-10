@@ -16,21 +16,18 @@ test.describe('Dashboard Functionality', () => {
   test.beforeEach(async ({ page }) => {
     // Mock authenticated state
     await page.addInitScript(() => {
-      window.sessionStorage.setItem(
-        'auth-storage',
-        JSON.stringify({
-          state: {
-            isAuthenticated: true,
-            user: { id: 1, email: 'test@example.com', name: 'Test User' },
-            token: 'mock-jwt-token',
-          },
-          version: 0,
-        }),
-      );
+      window.sessionStorage.setItem('auth-storage', JSON.stringify({
+        state: {
+          isAuthenticated: true,
+          user: { id: 1, email: 'test@example.com', name: 'Test User' },
+          token: 'mock-jwt-token'
+        },
+        version: 0
+      }));
     });
 
     // Mock API responses
-    await page.route('**/api/dashboard/metrics', async (route) => {
+    await page.route('**/api/dashboard/metrics', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -43,13 +40,13 @@ test.describe('Dashboard Functionality', () => {
           monthlyLoad: 1800,
           recentActivities: [
             { id: 1, title: 'Morning Run', distance: 10.5, duration: '52:30', type: 'running' },
-            { id: 2, title: 'Evening Ride', distance: 25.0, duration: '1:15:00', type: 'cycling' },
-          ],
-        }),
+            { id: 2, title: 'Evening Ride', distance: 25.0, duration: '1:15:00', type: 'cycling' }
+          ]
+        })
       });
     });
 
-    await page.route('**/api/pmc/data', async (route) => {
+    await page.route('**/api/pmc/data', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -57,9 +54,9 @@ test.describe('Dashboard Functionality', () => {
           data: [
             { date: '2024-01-01', ctl: 45, atl: 50, tsb: -5 },
             { date: '2024-01-02', ctl: 46, atl: 48, tsb: -2 },
-            { date: '2024-01-03', ctl: 47, atl: 45, tsb: 2 },
-          ],
-        }),
+            { date: '2024-01-03', ctl: 47, atl: 45, tsb: 2 }
+          ]
+        })
       });
     });
   });
@@ -133,12 +130,12 @@ test.describe('Dashboard Functionality', () => {
 
   test('should display loading states', async ({ page }) => {
     // Slow API response
-    await page.route('**/api/dashboard/metrics', async (route) => {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+    await page.route('**/api/dashboard/metrics', async route => {
+      await new Promise(resolve => setTimeout(resolve, 2000));
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ readiness: 75, fitness: 85 }),
+        body: JSON.stringify({ readiness: 75, fitness: 85 })
       });
     });
 
@@ -153,11 +150,11 @@ test.describe('Dashboard Functionality', () => {
 
   test('should handle API errors gracefully', async ({ page }) => {
     // Mock API error
-    await page.route('**/api/dashboard/metrics', async (route) => {
+    await page.route('**/api/dashboard/metrics', async route => {
       await route.fulfill({
         status: 500,
         contentType: 'application/json',
-        body: JSON.stringify({ error: 'Internal server error' }),
+        body: JSON.stringify({ error: 'Internal server error' })
       });
     });
 
@@ -173,12 +170,12 @@ test.describe('Dashboard Functionality', () => {
 
     // Mock API call counter
     let apiCallCount = 0;
-    await page.route('**/api/dashboard/metrics', async (route) => {
+    await page.route('**/api/dashboard/metrics', async route => {
       apiCallCount++;
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ readiness: 75 + apiCallCount }),
+        body: JSON.stringify({ readiness: 75 + apiCallCount })
       });
     });
 

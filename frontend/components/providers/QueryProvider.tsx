@@ -1,3 +1,4 @@
+
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -14,12 +15,14 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
             refetchOnWindowFocus: false,
           },
         },
-      }),
+      })
   );
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>{children}</ThemeProvider>
+      <ThemeProvider>
+        {children}
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

@@ -87,7 +87,7 @@ export function calculateReadinessColor(score: number): string {
 
 export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
-  wait: number,
+  wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout;
   return (...args: Parameters<T>) => {
@@ -134,7 +134,9 @@ export function decodePolyline(encoded: string): [number, number][] {
   return points;
 }
 
-export function encodePolyline(points: ([number, number] | { lat: number; lng: number })[]): string {
+export function encodePolyline(
+  points: ([number, number] | { lat: number; lng: number })[]
+): string {
   if (!points || points.length === 0) return '';
 
   let result = '';

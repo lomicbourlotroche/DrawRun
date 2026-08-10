@@ -39,10 +39,7 @@ export function SavedPlansModal({
       ) : (
         <div className="space-y-3">
           {savedPlans.map((plan) => (
-            <div
-              key={plan.id}
-              className="p-4 rounded-lg border border-border hover:border-primary/50 transition-colors"
-            >
+            <div key={plan.id} className="p-4 rounded-lg border border-border hover:border-primary/50 transition-colors">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{plan.name}</p>
@@ -57,7 +54,9 @@ export function SavedPlansModal({
                     </span>
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
-                      {plan.created_at ? new Date(plan.created_at).toLocaleDateString('fr-FR') : '-'}
+                      {plan.created_at
+                        ? new Date(plan.created_at).toLocaleDateString('fr-FR')
+                        : '-'}
                     </span>
                   </div>
                 </div>

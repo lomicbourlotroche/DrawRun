@@ -78,7 +78,8 @@ export const useAuthStore = create<AuthState>()(
             api.setRefreshToken(response.refreshToken);
           }
 
-          const hasGarmin = response.has_garmin !== undefined ? !!response.has_garmin : !!response.user?.has_garmin;
+          const hasGarmin =
+            response.has_garmin !== undefined ? !!response.has_garmin : !!response.user?.has_garmin;
           const hasDecathlon =
             response.has_decathlon !== undefined ? !!response.has_decathlon : !!response.user?.has_decathlon;
 
@@ -167,7 +168,7 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'drawrun-auth',
       storage: createJSONStorage(() => sessionStorage),
-      partialize: (state) => ({
+       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
         user: state.user,
         token: state.token,
@@ -189,8 +190,8 @@ export const useAuthStore = create<AuthState>()(
           }
         }
       },
-    },
-  ),
+    }
+  )
 );
 
 interface DashboardState {
@@ -363,9 +364,9 @@ export const useSyncStore = create<SyncState>((set, get) => ({
 
     set({ isSyncing: true, lastError: null });
     try {
-      const result = await api.sync(() => {
-        set({ isSyncing: true });
-      });
+      const result = await api.sync(
+        () => { set({ isSyncing: true }); }
+      );
 
       let message = 'Synchronisation terminée';
       let hasError = false;
@@ -429,12 +430,12 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
       const notifications: SocialNotification[] = (data.notifications as SocialNotification[]) ?? [];
       set({
         notifications,
-        unreadCount: data.unread_count ?? notifications.filter((n) => n.unread).length,
+        unreadCount: data.unread_count ?? notifications.filter(n => n.unread).length,
         isLoading: false,
       });
     } catch (error) {
       logger.error('Failed to fetch notifications', {
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
       set({ isLoading: false });
     }
@@ -445,8 +446,10 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
       await api.markNotificationAsRead(notificationId);
 
       const { notifications, unreadCount } = get();
-      const wasUnread = notifications.find((n) => n.id === notificationId)?.unread;
-      const updatedNotifications = notifications.map((n) => (n.id === notificationId ? { ...n, unread: false } : n));
+      const wasUnread = notifications.find(n => n.id === notificationId)?.unread;
+      const updatedNotifications = notifications.map(n =>
+        n.id === notificationId ? { ...n, unread: false } : n
+      );
       set({
         notifications: updatedNotifications,
         unreadCount: wasUnread ? Math.max(0, unreadCount - 1) : unreadCount,
@@ -454,7 +457,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
     } catch (error) {
       logger.error('Error marking notification as read', {
         notificationId,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   },
@@ -464,27 +467,25 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
       await api.markAllNotificationsAsRead();
 
       const { notifications } = get();
-      const updatedNotifications = notifications.map((n) => ({ ...n, unread: false }));
+      const updatedNotifications = notifications.map(n => ({ ...n, unread: false }));
       set({
         notifications: updatedNotifications,
         unreadCount: 0,
       });
     } catch (error) {
       logger.error('Error marking all notifications as read', {
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   },
 
-  incrementUnread: () =>
-    set((state) => ({
-      unreadCount: state.unreadCount + 1,
-    })),
+  incrementUnread: () => set((state) => ({
+    unreadCount: state.unreadCount + 1
+  })),
 
-  decrementUnread: () =>
-    set((state) => ({
-      unreadCount: Math.max(0, state.unreadCount - 1),
-    })),
+  decrementUnread: () => set((state) => ({
+    unreadCount: Math.max(0, state.unreadCount - 1)
+  })),
 }));
 
 // ============================================================================
@@ -545,7 +546,7 @@ export const useUserConstantsStore = create<UserConstantsState>()((set, get) => 
       return data;
     } catch (error) {
       logger.error('Failed to fetch user constants', {
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
       set({ isLoading: false });
       return null;

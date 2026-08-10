@@ -112,11 +112,7 @@ describe('Badge component', () => {
   });
 
   it('applies zone color when variant is zone and zone is provided', () => {
-    render(
-      <Badge variant="zone" zone={1}>
-        Zone 1
-      </Badge>,
-    );
+    render(<Badge variant="zone" zone={1}>Zone 1</Badge>);
 
     const badge = screen.getByText('Zone 1');
     // Zone 1 should have a background color
@@ -128,7 +124,7 @@ describe('Badge component', () => {
     render(
       <Badge variant="primary">
         <span>🏆</span> With Icon
-      </Badge>,
+      </Badge>
     );
 
     const badge = screen.getByText('With Icon');

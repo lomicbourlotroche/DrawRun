@@ -13,8 +13,8 @@ export async function fetchWeather(lat: number, lng: number): Promise<WeatherDat
   try {
     const res = await fetch(
       `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}` +
-        `&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m`,
-      { signal: AbortSignal.timeout(5000) },
+      `&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m`,
+      { signal: AbortSignal.timeout(5000) }
     );
     if (!res.ok) return null;
     const data = await res.json();

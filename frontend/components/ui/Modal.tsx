@@ -16,7 +16,15 @@ interface ModalProps {
   showClose?: boolean;
 }
 
-export function Modal({ isOpen, onClose, title, description, children, size = 'md', showClose = true }: ModalProps) {
+export function Modal({
+  isOpen,
+  onClose,
+  title,
+  description,
+  children,
+  size = 'md',
+  showClose = true,
+}: ModalProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -48,12 +56,7 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'm
   };
 
   const modalContent = (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={title ? 'modal-title' : undefined}
-      className="fixed inset-0 z-modal flex items-center justify-center p-4"
-    >
+    <div role="dialog" aria-modal="true" aria-labelledby={title ? 'modal-title' : undefined} className="fixed inset-0 z-modal flex items-center justify-center p-4">
       <div
         className="fixed inset-0 bg-foreground/60 backdrop-blur-sm animate-fade-in"
         onClick={onClose}
@@ -62,17 +65,13 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'm
       <div
         className={cn(
           'relative w-full bg-surface border border-border rounded-lg shadow-xl animate-slide-up max-h-[90vh] flex flex-col',
-          sizes[size],
+          sizes[size]
         )}
       >
         {(title || showClose) && (
           <div className="flex items-start justify-between p-4 border-b border-border flex-shrink-0">
             <div>
-              {title && (
-                <h2 id="modal-title" className="text-lg font-semibold text-foreground">
-                  {title}
-                </h2>
-              )}
+              {title && <h2 id="modal-title" className="text-lg font-semibold text-foreground">{title}</h2>}
               {description && <p className="text-sm text-muted mt-1">{description}</p>}
             </div>
             {showClose && (

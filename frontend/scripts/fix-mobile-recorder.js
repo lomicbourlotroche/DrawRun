@@ -132,13 +132,10 @@ const replacements = [
   [/className=""/g, ''],
 
   // Clean up multiple spaces in className
-  [
-    /className="([^"]*)"/g,
-    (match, p1) => {
-      const cleaned = p1.replace(/\s+/g, ' ').trim();
-      return cleaned ? `className="${cleaned}"` : '';
-    },
-  ],
+  [/className="([^"]*)"/g, (match, p1) => {
+    const cleaned = p1.replace(/\s+/g, ' ').trim();
+    return cleaned ? `className="${cleaned}"` : '';
+  }],
 
   // Couleurs neutres
   [/bg-neutral-950/g, 'bg-background'],

@@ -22,19 +22,19 @@ function getDirectionIcon(type: string, modifier: string): string {
     'turn-slight-right': '↗',
     'turn-sharp-left': '↰',
     'turn-sharp-right': '↱',
-    straight: '↑',
-    uturn: '↩',
+    'straight': '↑',
+    'uturn': '↩',
     'fork-left': '↙',
     'fork-right': '↘',
     'ramp-left': '↙',
     'ramp-right': '↘',
-    roundabout: '⟳',
+    'roundabout': '⟳',
     'roundabout-turn': '⟳',
-    arrive: '📍',
-    depart: '🏁',
-    merge: '⇉',
-    continue: '↑',
-    end: '🏁',
+    'arrive': '📍',
+    'depart': '🏁',
+    'merge': '⇉',
+    'continue': '↑',
+    'end': '🏁',
   };
 
   const key = modifier ? `${type}-${modifier}` : type;
@@ -50,15 +50,12 @@ export default function DirectionsPanel({
   onClose,
   onBack,
 }: DirectionsPanelProps) {
-  const stats = useMemo(
-    () => [
-      { label: 'Distance', value: totalDistance },
-      { label: 'Durée estimée', value: totalDuration },
-      { label: 'Dénivelé +', value: `${elevationGain} m` },
-      { label: 'Directions', value: `${directions.length}` },
-    ],
-    [directions.length, elevationGain, totalDistance, totalDuration],
-  );
+  const stats = useMemo(() => [
+    { label: 'Distance', value: totalDistance },
+    { label: 'Durée estimée', value: totalDuration },
+    { label: 'Dénivelé +', value: `${elevationGain} m` },
+    { label: 'Directions', value: `${directions.length}` },
+  ], [directions.length, elevationGain, totalDistance, totalDuration]);
 
   return (
     <div className="flex flex-col h-full bg-surface">
@@ -122,18 +119,15 @@ export default function DirectionsPanel({
                 <div key={dir.index || idx} className="relative flex items-start gap-4 p-4 pl-0">
                   {/* Timeline dot + icon */}
                   <div className="relative z-10 flex-shrink-0 flex items-center justify-center w-[60px]">
-                    <div
-                      className={`
+                    <div className={`
                       w-10 h-10 rounded-full flex items-center justify-center text-lg
-                      ${
-                        isFirst
-                          ? 'bg-primary text-white shadow-md shadow-primary/25'
-                          : isLast
-                            ? 'bg-success text-white'
-                            : 'bg-muted text-muted-foreground'
+                      ${isFirst
+                        ? 'bg-primary text-white shadow-md shadow-primary/25'
+                        : isLast
+                          ? 'bg-success text-white'
+                          : 'bg-muted text-muted-foreground'
                       }
-                    `}
-                    >
+                    `}>
                       {getDirectionIcon(dir.type, dir.modifier)}
                     </div>
                   </div>
@@ -141,12 +135,18 @@ export default function DirectionsPanel({
                   {/* Content */}
                   <div className="flex-1 min-w-0 pt-1.5">
                     <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-semibold text-foreground leading-tight">{dir.instruction}</p>
+                      <p className="text-sm font-semibold text-foreground leading-tight">
+                        {dir.instruction}
+                      </p>
                       <span className="text-xs font-bold text-primary whitespace-nowrap flex-shrink-0">
                         {dir.distance_formatted}
                       </span>
                     </div>
-                    {dir.street && <p className="text-xs text-muted-foreground mt-0.5 font-medium">{dir.street}</p>}
+                    {dir.street && (
+                      <p className="text-xs text-muted-foreground mt-0.5 font-medium">
+                        {dir.street}
+                      </p>
+                    )}
                   </div>
                 </div>
               );

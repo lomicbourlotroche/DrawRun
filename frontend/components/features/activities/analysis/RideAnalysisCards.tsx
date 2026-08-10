@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { Heart, Zap, Timer, Wind, Cpu, BarChart3, Bike } from '@/components/ui/icons';
@@ -10,7 +10,7 @@ function toNum(val: unknown): number {
 
 function PowerCurveChart({ curve }: { curve: PowerCurvePoint[] }) {
   if (!curve || curve.length === 0) return null;
-  const maxPower = Math.max(...curve.map((p) => p.power));
+  const maxPower = Math.max(...curve.map(p => p.power));
   return (
     <div className="mt-2">
       <div className="flex items-end gap-1 h-24">
@@ -61,12 +61,7 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
       {/* HR Analysis */}
       {analysis.hrZones && (
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Heart className="w-4 h-4 text-danger/80" />
-              Analyse Cardiaque
-            </CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Heart className="w-4 h-4 text-danger/80" />Analyse Cardiaque</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="text-center p-3 rounded-lg bg-background border border-border">
@@ -97,31 +92,14 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
       {/* HR Zone Distribution */}
       {analysis.hrDistribution && (
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Répartition zones cardiaques</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-base">Répartition zones cardiaques</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-5 gap-2">
-              <div className="text-center p-2 rounded-lg bg-muted/10">
-                <p className="text-sm font-bold text-muted">{analysis.hrDistribution.zone1Percent}%</p>
-                <p className="text-xs text-muted">Z1</p>
-              </div>
-              <div className="text-center p-2 rounded-lg bg-success/10">
-                <p className="text-sm font-bold text-success/80">{analysis.hrDistribution.zone2Percent}%</p>
-                <p className="text-xs text-muted">Z2</p>
-              </div>
-              <div className="text-center p-2 rounded-lg bg-primary/10">
-                <p className="text-sm font-bold text-primary/80">{analysis.hrDistribution.zone3Percent}%</p>
-                <p className="text-xs text-muted">Z3</p>
-              </div>
-              <div className="text-center p-2 rounded-lg bg-peak/10">
-                <p className="text-sm font-bold text-peak/80">{analysis.hrDistribution.zone4Percent}%</p>
-                <p className="text-xs text-muted">Z4</p>
-              </div>
-              <div className="text-center p-2 rounded-lg bg-danger/10">
-                <p className="text-sm font-bold text-danger/80">{analysis.hrDistribution.zone5Percent}%</p>
-                <p className="text-xs text-muted">Z5</p>
-              </div>
+              <div className="text-center p-2 rounded-lg bg-muted/10"><p className="text-sm font-bold text-muted">{analysis.hrDistribution.zone1Percent}%</p><p className="text-xs text-muted">Z1</p></div>
+              <div className="text-center p-2 rounded-lg bg-success/10"><p className="text-sm font-bold text-success/80">{analysis.hrDistribution.zone2Percent}%</p><p className="text-xs text-muted">Z2</p></div>
+              <div className="text-center p-2 rounded-lg bg-primary/10"><p className="text-sm font-bold text-primary/80">{analysis.hrDistribution.zone3Percent}%</p><p className="text-xs text-muted">Z3</p></div>
+              <div className="text-center p-2 rounded-lg bg-peak/10"><p className="text-sm font-bold text-peak/80">{analysis.hrDistribution.zone4Percent}%</p><p className="text-xs text-muted">Z4</p></div>
+              <div className="text-center p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-danger/80">{analysis.hrDistribution.zone5Percent}%</p><p className="text-xs text-muted">Z5</p></div>
             </div>
           </CardContent>
         </Card>
@@ -129,12 +107,7 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
 
       {/* Power Analysis */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Zap className="w-4 h-4 text-peak/80" />
-            Analyse de Puissance
-          </CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Zap className="w-4 h-4 text-peak/80" />Analyse de Puissance</CardTitle></CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {analysis.avgPower > 0 && (
@@ -183,12 +156,7 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
       {/* Enhanced Power Metrics */}
       {(analysis.totalWorkKj || analysis.powerToWeight || analysis.tssPerHour) && (
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-primary" />
-              Métriques Avancées
-            </CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><BarChart3 className="w-4 h-4 text-primary" />Métriques Avancées</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {analysis.totalWorkKj && (
@@ -217,17 +185,10 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
       {/* Power Zone Distribution */}
       {analysis.powerZoneDistribution && analysis.powerZoneDistribution.length > 0 && (
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Bike className="w-4 h-4 text-success/80" />
-              Répartition zones de puissance
-            </CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Bike className="w-4 h-4 text-success/80" />Répartition zones de puissance</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-7 gap-1.5">
-              {analysis.powerZoneDistribution.map((z) => (
-                <PowerZoneRow key={z.zone} zone={z} />
-              ))}
+              {analysis.powerZoneDistribution.map(z => <PowerZoneRow key={z.zone} zone={z} />)}
             </div>
             <div className="flex justify-between mt-2 text-[9px] text-muted px-1">
               <span>Récup</span>
@@ -245,21 +206,15 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
       {/* Best Power Efforts */}
       {analysis.powerEfforts && analysis.powerEfforts.length > 0 && (
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Timer className="w-4 h-4 text-primary" />
-              Meilleurs Efforts
-            </CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Timer className="w-4 h-4 text-primary" />Meilleurs Efforts</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-1.5">
               {analysis.powerEfforts.map((eff, i) => {
-                const label = eff.duration < 60 ? `${eff.duration}s` : `${Math.floor(eff.duration / 60)}min`;
+                const label = eff.duration < 60
+                  ? `${eff.duration}s`
+                  : `${Math.floor(eff.duration / 60)}min`;
                 return (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between p-2 rounded-lg bg-background border border-border"
-                  >
+                  <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-background border border-border">
                     <span className="text-sm text-muted">{label}</span>
                     <span className="text-sm font-bold text-peak/80">{Math.round(eff.value)}W</span>
                   </div>
@@ -273,12 +228,7 @@ export function RideAnalysisCards({ analysis }: { analysis: RideAnalysis }) {
       {/* Critical Power */}
       {(analysis.estimatedCP || analysis.estimatedWPrime) && (
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-primary" />
-              Puissance Critique
-            </CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Cpu className="w-4 h-4 text-primary" />Puissance Critique</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-3">
               {analysis.estimatedCP && (

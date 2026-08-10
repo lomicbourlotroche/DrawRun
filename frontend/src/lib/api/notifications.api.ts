@@ -64,10 +64,7 @@ async function unsubscribePush(endpoint: string): Promise<UnsubscribeResponse> {
  * @param body Notification body
  * @returns Promise with test result
  */
-async function sendTestNotification(
-  title?: string,
-  body?: string,
-): Promise<{ success: boolean; sent: number; failed: number; message: string }> {
+async function sendTestNotification(title?: string, body?: string): Promise<{ success: boolean; sent: number; failed: number; message: string }> {
   return client.post('/api/notifications/test', { title, body });
 }
 

@@ -13,17 +13,13 @@ import LeaderboardTab from './tabs/LeaderboardTab';
 export default function SocialContent() {
   const [activeTab, setActiveTab] = useState<'feed' | 'friends' | 'groups' | 'challenges' | 'rankings'>('feed');
 
-  const tabs = useMemo(
-    () =>
-      [
-        { id: 'feed', label: 'Fil', icon: <Flame className="w-4 h-4" /> },
-        { id: 'friends', label: 'Amis', icon: <Users className="w-4 h-4" /> },
-        { id: 'groups', label: 'Groupes', icon: <Users2 className="w-4 h-4" /> },
-        { id: 'challenges', label: 'D\u00e9fis', icon: <Trophy className="w-4 h-4" /> },
-        { id: 'rankings', label: 'Classement', icon: <TrendingUp className="w-4 h-4" /> },
-      ] as const,
-    [],
-  );
+  const tabs = useMemo(() => [
+    { id: 'feed', label: 'Fil', icon: <Flame className="w-4 h-4" /> },
+    { id: 'friends', label: 'Amis', icon: <Users className="w-4 h-4" /> },
+    { id: 'groups', label: 'Groupes', icon: <Users2 className="w-4 h-4" /> },
+    { id: 'challenges', label: 'D\u00e9fis', icon: <Trophy className="w-4 h-4" /> },
+    { id: 'rankings', label: 'Classement', icon: <TrendingUp className="w-4 h-4" /> },
+  ] as const, []);
 
   return (
     <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
@@ -48,12 +44,12 @@ export default function SocialContent() {
               key={tab.id}
               role="tab"
               aria-selected={activeTab === tab.id}
-              onClick={() => setActiveTab(tab.id as (typeof tabs)[number]['id'])}
+              onClick={() => setActiveTab(tab.id as typeof tabs[number]['id'])}
               className={cn(
                 'flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200',
                 activeTab === tab.id
                   ? 'bg-primary text-white shadow-sm shadow-primary/20'
-                  : 'text-muted hover:text-foreground hover:bg-muted/20',
+                  : 'text-muted hover:text-foreground hover:bg-muted/20'
               )}
             >
               <span className="w-4 h-4">{tab.icon}</span>
@@ -63,11 +59,7 @@ export default function SocialContent() {
         </div>
       </div>
 
-      <div
-        className="animate-slide-up opacity-0 fill-mode-forwards delay-[200ms]"
-        role="tabpanel"
-        aria-label={`Contenu de l'onglet ${tabs.find((t) => t.id === activeTab)?.label}`}
-      >
+      <div className="animate-slide-up opacity-0 fill-mode-forwards delay-[200ms]" role="tabpanel" aria-label={`Contenu de l'onglet ${tabs.find(t => t.id === activeTab)?.label}`}>
         {activeTab === 'feed' && <FeedTab />}
         {activeTab === 'friends' && <FriendsTab />}
         {activeTab === 'groups' && <GroupsTab />}

@@ -28,16 +28,9 @@ interface SegmentRacingPanelProps {
 }
 
 export function SegmentRacingPanel({
-  nearbySegments,
-  showSegmentsOnMap,
-  activeSegment,
-  onToggleShowOnMap,
-  onGhostRace,
-  onImportGpx,
-  onCreateSegment,
-  onClose,
-  formatDistance,
-  formatDuration,
+  nearbySegments, showSegmentsOnMap, activeSegment,
+  onToggleShowOnMap, onGhostRace, onImportGpx, onCreateSegment, onClose,
+  formatDistance, formatDuration,
 }: SegmentRacingPanelProps) {
   return (
     <div className="space-y-2">
@@ -66,26 +59,24 @@ export function SegmentRacingPanel({
         </button>
       </div>
       <label className="flex items-center gap-2 text-sm text-foreground mb-3">
-        <input
-          type="checkbox"
-          checked={showSegmentsOnMap}
-          onChange={(e) => onToggleShowOnMap(e.target.checked)}
-          className="rounded bg-surface border-surface"
-        />
+        <input type="checkbox" checked={showSegmentsOnMap} onChange={e => onToggleShowOnMap(e.target.checked)} className="rounded bg-surface border-surface" />
         Afficher les segments sur la carte
       </label>
-      {nearbySegments.length === 0 && <p className="text-center text-muted py-8">Aucun segment à proximité</p>}
-      {nearbySegments.map((seg) => (
-        <div key={seg.id} className="p-3 rounded-lg bg-surface/50">
+      {nearbySegments.length === 0 && (
+        <p className="text-center text-muted py-8">Aucun segment à proximité</p>
+      )}
+      {nearbySegments.map(seg => (
+        <div
+          key={seg.id}
+          className="p-3 rounded-lg bg-surface/50"
+        >
           <div className="flex items-center justify-between mb-1">
             <p className="font-medium text-foreground">{seg.name}</p>
             {seg.personalRecord && (
               <span className="text-xs text-success font-mono">{formatDuration(seg.personalRecord)}</span>
             )}
           </div>
-          <p className="text-sm text-muted">
-            {formatDistance(seg.distance)} · {Math.round(seg.elevationGain)}m D+
-          </p>
+          <p className="text-sm text-muted">{formatDistance(seg.distance)} · {Math.round(seg.elevationGain)}m D+</p>
           <div className="flex gap-2 mt-2">
             <button
               onClick={() => onGhostRace(seg)}
@@ -102,13 +93,7 @@ export function SegmentRacingPanel({
           <p className="text-sm font-medium text-peak-400">Segment en cours: {activeSegment.name}</p>
         </div>
       )}
-      <button
-        type="button"
-        onClick={onClose}
-        className="w-full h-12 rounded-lg bg-surface hover:bg-surface-hover text-foreground text-sm font-medium transition-colors"
-      >
-        Retour
-      </button>
+      <button type="button" onClick={onClose} className="w-full h-12 rounded-lg bg-surface hover:bg-surface-hover text-foreground text-sm font-medium transition-colors">Retour</button>
     </div>
   );
 }

@@ -18,43 +18,18 @@ import { RouteSelectionSheet } from './RouteSelectionSheet';
 import { SegmentRacingPanel } from './SegmentRacingPanel';
 import { logger } from '@/lib/logger';
 import {
-  MapPin,
-  Navigation,
-  Mountain,
-  X,
-  Save,
-  Battery,
-  BatteryMedium,
-  BatteryLow,
-  Footprints,
-  Bike,
-  Waves,
-  Heart,
-  Sun,
-  CloudSun,
-  Cloud,
-  CloudDrizzle,
-  CloudRain,
-  CloudSnow,
-  CloudLightning,
-  Flag,
-  Zap,
-  AlertTriangle,
-  Gauge,
-  ChevronRight,
-  Ghost,
+  MapPin, Navigation, Mountain, X, Save,
+  Battery, BatteryMedium, BatteryLow, Footprints, Bike, Waves,
+  Heart, Sun, CloudSun, Cloud, CloudDrizzle, CloudRain, CloudSnow,
+  CloudLightning, Flag, Zap,
+  AlertTriangle, Gauge, ChevronRight, Ghost,
 } from '@/components/ui/icons';
 import { createGPSFilter, isSpuriousJump, type FilteredGPSPoint } from '@/lib/gpsFilter';
 import { useBluetoothHR } from '@/lib/hooks/useBluetoothHR';
 import { useScreenLock, ScreenLockOverlay } from '@/lib/screenLock';
 import {
-  saveCheckpoint,
-  clearCheckpoint,
-  loadCheckpoint,
-  enqueueSave,
-  processSaveQueue,
-  type LapData,
-  type RecordingCheckpoint,
+  saveCheckpoint, clearCheckpoint, loadCheckpoint,
+  enqueueSave, processSaveQueue, type LapData, type RecordingCheckpoint,
 } from '@/lib/offlineQueue';
 import { fetchWeather, type WeatherData } from '@/lib/weather';
 /**
@@ -142,31 +117,16 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   const [showSportPicker, setShowSportPicker] = useState(false);
   const [points, setPoints] = useState<RecordedPoint[]>([]);
   const [stats, setStats] = useState<RecordingStats>({
-    distance: 0,
-    duration: 0,
-    elapsedTime: 0,
-    avgSpeed: 0,
-    maxSpeed: 0,
-    elevationGain: 0,
-    elevationLoss: 0,
-    cadence: null,
-    avgHR: null,
-    maxHR: null,
-    currentHR: null,
-    gap: null,
+    distance: 0, duration: 0, elapsedTime: 0, avgSpeed: 0, maxSpeed: 0,
+    elevationGain: 0, elevationLoss: 0, cadence: null,
+    avgHR: null, maxHR: null, currentHR: null, gap: null,
   });
   const [currentGPS, setCurrentGPS] = useState<FilteredGPSPoint | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<string>('checking');
   const [batteryLevel, setBatteryLevel] = useState<number | null>(null);
   const [activityName, setActivityName] = useState('');
   // Bluetooth HR
-  const {
-    hrData,
-    isConnected: hrConnected,
-    isScanning,
-    connect: connectHR,
-    disconnect: disconnectHR,
-  } = useBluetoothHR();
+  const { hrData, isConnected: hrConnected, isScanning, connect: connectHR, disconnect: disconnectHR } = useBluetoothHR();
   // Screen lock
   const { isLocked: screenLocked, lock: lockScreen, unlock: unlockScreen } = useScreenLock();
   // Weather
@@ -206,9 +166,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   const [ghostState, setGhostState] = useState<GhostState | null>(null);
   const [ghostRaceMode, setGhostRaceMode] = useState(false);
   const [selectedRaceSegment, setSelectedRaceSegment] = useState<Segment | null>(null);
-  const [segmentEfforts, setSegmentEfforts] = useState<
-    Map<string, { startTime: number; elapsedTime: number; prOffset: number }>
-  >(new Map());
+  const [segmentEfforts, setSegmentEfforts] = useState<Map<string, { startTime: number; elapsedTime: number; prOffset: number }>>(new Map());
   // Create Segment
   const [showCreateSegment, setShowCreateSegment] = useState(false);
   const [segmentStartIdx, setSegmentStartIdx] = useState<number | null>(null);
@@ -224,10 +182,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const elapsedTimeRef = useRef<number>(0);
   const stateRef = useRef<RecordingState>('idle');
-  const setStateAndRef = (s: RecordingState) => {
-    stateRef.current = s;
-    setState(s);
-  };
+  const setStateAndRef = (s: RecordingState) => { stateRef.current = s; setState(s); };
   const currentGPSRef = useRef<FilteredGPSPoint | null>(null);
   const gpsFilterRef = useRef(createGPSFilter());
   const checkpointIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -263,9 +218,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     } else {
       if (checkpointIntervalRef.current) clearInterval(checkpointIntervalRef.current);
     }
-    return () => {
-      if (checkpointIntervalRef.current) clearInterval(checkpointIntervalRef.current);
-    };
+    return () => { if (checkpointIntervalRef.current) clearInterval(checkpointIntervalRef.current); };
   }, [state, points, stats, laps]);
   // Weather fetch on first GPS fix
   useEffect(() => {
@@ -276,13 +229,12 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   // Update HR stats
   useEffect(() => {
     if (hrData) {
-      setStats((s) => ({
+      setStats(s => ({
         ...s,
         currentHR: hrData.heartRate,
-        avgHR:
-          s.avgHR !== null
-            ? Math.round((s.avgHR * (s.duration / 60) + hrData.heartRate) / (s.duration / 60 + 1))
-            : hrData.heartRate,
+        avgHR: s.avgHR !== null
+          ? Math.round((s.avgHR * (s.duration / 60) + hrData.heartRate) / ((s.duration / 60) + 1))
+          : hrData.heartRate,
         maxHR: s.maxHR !== null ? Math.max(s.maxHR, hrData.heartRate) : hrData.heartRate,
       }));
     }
@@ -291,7 +243,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   useEffect(() => {
     if (state !== 'recording' || !currentInterval) return;
     const timer = setInterval(() => {
-      setIntervalTimeLeft((prev) => {
+      setIntervalTimeLeft(prev => {
         if (prev <= 1) {
           if (currentInterval.phase === 'work') {
             if (currentInterval.round < (intervalConfig?.repeats || 1)) {
@@ -336,22 +288,16 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           battery.removeEventListener('levelchange', updateBatteryLevel);
         });
       }
-    } catch {
-      /* silent */
-    }
+    } catch { /* silent */ }
     releaseWakeLock();
     if (stationaryTimerRef.current) clearTimeout(stationaryTimerRef.current);
   };
   const requestWakeLock = async () => {
     try {
       if (navigator.wakeLock) {
-        navigator.wakeLock.request('screen').then((lock) => {
-          wakeLockRef.current = lock;
-        });
+        navigator.wakeLock.request('screen').then((lock) => { wakeLockRef.current = lock; });
       }
-    } catch {
-      /* silent */
-    }
+    } catch { /* silent */ }
   };
   const releaseWakeLock = () => {
     wakeLockRef.current?.release();
@@ -371,9 +317,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
         battery.removeEventListener('levelchange', updateBatteryLevel);
         battery.addEventListener('levelchange', updateBatteryLevel);
       }
-    } catch {
-      /* silent */
-    }
+    } catch { /* silent */ }
   };
   const updateBatteryLevel = () => {
     try {
@@ -382,9 +326,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           setBatteryLevel(Math.round(battery.level * 100));
         });
       }
-    } catch {
-      /* silent */
-    }
+    } catch { /* silent */ }
   };
   useEffect(() => {
     return () => {
@@ -396,37 +338,31 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             battery.removeEventListener('levelchange', updateBatteryLevel);
           });
         }
-      } catch {
-        /* silent */
-      }
+      } catch { /* silent */ }
       releaseWakeLock();
       disconnectHR();
     };
   }, []);
-  const haversine = (
-    p1: { latitude: number; longitude: number },
-    p2: { latitude: number; longitude: number },
-  ): number => {
+  const haversine = (p1: { latitude: number; longitude: number }, p2: { latitude: number; longitude: number }): number => {
     const R = 6371e3;
-    const φ1 = (p1.latitude * Math.PI) / 180;
-    const φ2 = (p2.latitude * Math.PI) / 180;
-    const Δφ = ((p2.latitude - p1.latitude) * Math.PI) / 180;
-    const Δλ = ((p2.longitude - p1.longitude) * Math.PI) / 180;
+    const φ1 = p1.latitude * Math.PI / 180;
+    const φ2 = p2.latitude * Math.PI / 180;
+    const Δφ = (p2.latitude - p1.latitude) * Math.PI / 180;
+    const Δλ = (p2.longitude - p1.longitude) * Math.PI / 180;
     const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   };
   const calculateGAP = (paceSecPerKm: number, gradePercent: number): number => {
     // Grade Adjusted Pace based on Daniels' formula
     if (gradePercent === 0) return paceSecPerKm;
-    const adjustment =
-      gradePercent > 0
-        ? paceSecPerKm * (gradePercent * 0.032) // uphill
-        : paceSecPerKm * (Math.abs(gradePercent) * 0.015); // downhill
+    const adjustment = gradePercent > 0
+      ? paceSecPerKm * (gradePercent * 0.032) // uphill
+      : paceSecPerKm * (Math.abs(gradePercent) * 0.015); // downhill
     return paceSecPerKm + adjustment;
   };
   const calculateRouteProgress = (pgps: RecordedPoint[], routePolyline: string): number => {
     if (pgps.length < 2 || !routePolyline) return 0;
-    const routePoints = routePolyline.split(';').map((pair) => {
+    const routePoints = routePolyline.split(';').map(pair => {
       const [lat, lng] = pair.split(',').map(parseFloat);
       return { latitude: lat, longitude: lng };
     });
@@ -436,10 +372,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     let closestIndex = 0;
     for (let i = 0; i < routePoints.length; i++) {
       const dist = haversine(lastPoint, { latitude: routePoints[i].latitude, longitude: routePoints[i].longitude });
-      if (dist < minDistance) {
-        minDistance = dist;
-        closestIndex = i;
-      }
+      if (dist < minDistance) { minDistance = dist; closestIndex = i; }
     }
     return Math.min(100, (closestIndex / (routePoints.length - 1)) * 100);
   };
@@ -448,9 +381,8 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     const maxLat = Math.max(segment.startLat, segment.endLat);
     const minLng = Math.min(segment.startLng, segment.endLng);
     const maxLng = Math.max(segment.startLng, segment.endLng);
-    return (
-      point.latitude >= minLat && point.latitude <= maxLat && point.longitude >= minLng && point.longitude <= maxLng
-    );
+    return point.latitude >= minLat && point.latitude <= maxLat &&
+           point.longitude >= minLng && point.longitude <= maxLng;
   };
   // Checkpoint recovery
   const checkForCheckpoint = () => {
@@ -459,16 +391,11 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       const age = (Date.now() - cp.timestamp) / 1000;
       if (age < 3600) {
         const resume = window.confirm(
-          `Enregistrement non terminé trouvé (${(cp.stats.distance / 1000).toFixed(1)}km, il y a ${Math.round(age / 60)}min). Reprendre ?`,
+          `Enregistrement non terminé trouvé (${(cp.stats.distance / 1000).toFixed(1)}km, il y a ${Math.round(age / 60)}min). Reprendre ?`
         );
         if (resume) {
-          setPoints(
-            cp.points.map((p) => ({
-              gps: { ...p.gps, smoothedSpeed: 0, verticalAccuracy: 0 },
-              timestamp: p.timestamp,
-            })),
-          );
-          setStats((s) => ({ ...s, ...cp.stats }));
+          setPoints(cp.points.map(p => ({ gps: { ...p.gps, smoothedSpeed: 0, verticalAccuracy: 0 }, timestamp: p.timestamp })));
+          setStats(s => ({ ...s, ...cp.stats }));
           setActivityType(cp.activityType as SportType);
           setActivityName(cp.activityName);
           setLaps(cp.laps || []);
@@ -486,34 +413,22 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       if (result.success > 0) {
         toast.success(`${result.success} activité(s) synchronisée(s) depuis la file d'attente`);
       }
-    } catch {
-      /* silent */
-    }
+    } catch { /* silent */ }
   };
   const saveCurrentCheckpoint = () => {
     if (points.length < 2) return;
     const cp: RecordingCheckpoint = {
-      points: points.map((p) => ({ gps: { ...p.gps, smoothedSpeed: 0, verticalAccuracy: 0 }, timestamp: p.timestamp })),
+      points: points.map(p => ({ gps: { ...p.gps, smoothedSpeed: 0, verticalAccuracy: 0 }, timestamp: p.timestamp })),
       stats: {
-        distance: stats.distance,
-        duration: stats.duration,
-        elapsedTime: elapsedTimeRef.current,
-        elevationGain: stats.elevationGain,
-        elevationLoss: stats.elevationLoss,
+        distance: stats.distance, duration: stats.duration, elapsedTime: elapsedTimeRef.current,
+        elevationGain: stats.elevationGain, elevationLoss: stats.elevationLoss,
       },
-      activityType,
-      activityName,
-      laps,
-      timestamp: Date.now(),
+      activityType, activityName, laps, timestamp: Date.now(),
     };
     saveCheckpoint(cp);
   };
   const vibrate = (pattern: number | number[]) => {
-    try {
-      navigator.vibrate(pattern);
-    } catch {
-      /* silent */
-    }
+    try { navigator.vibrate(pattern); } catch { /* silent */ }
   };
   const startRecording = async () => {
     vibrate(50);
@@ -548,14 +463,12 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             addPoint(filtered);
           }
         },
-        () => {
-          /* GPS error — silent */
-        },
+        () => { /* GPS error — silent */ },
         {
           enableHighAccuracy: gpsHighAccuracy,
           maximumAge: gpsHighAccuracy ? 1000 : 3000,
           timeout: gpsHighAccuracy ? 5000 : 10000,
-        },
+        }
       );
       startTimeRef.current = Date.now();
       originalStartTimeRef.current = Date.now();
@@ -569,7 +482,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   };
   const addPoint = (gpsData: FilteredGPSPoint) => {
     const newPoint: RecordedPoint = { gps: gpsData, timestamp: Date.now() };
-    setPoints((prev) => {
+    setPoints(prev => {
       const newPoints = [...prev, newPoint];
       if (lastPointRef.current && gpsData.accuracy < 50) {
         if (isSpuriousJump(lastPointRef.current, gpsData)) {
@@ -579,7 +492,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
         const speedMs = gpsData.smoothedSpeed > 0 ? gpsData.smoothedSpeed : (gpsData.speed ?? 0);
         const isMoving = speedMs > 0.5 || distance > 5;
         if (isMoving && distance < 150) {
-          setStats((s) => ({ ...s, distance: s.distance + distance }));
+          setStats(s => ({ ...s, distance: s.distance + distance }));
           // Auto-pause — reset timer when moving
           if (autoPauseEnabledRef.current) {
             if (stationaryTimerRef.current) clearTimeout(stationaryTimerRef.current);
@@ -593,8 +506,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           }
         } else if (autoPauseEnabledRef.current && stateRef.current === 'recording') {
           // Not moving — start auto-pause countdown
-          stationaryDurationRef.current +=
-            (gpsData.timestamp - (lastPointRef.current?.timestamp || gpsData.timestamp)) / 1000;
+          stationaryDurationRef.current += (gpsData.timestamp - (lastPointRef.current?.timestamp || gpsData.timestamp)) / 1000;
           if (stationaryDurationRef.current > 8 && !isAutoPausedRef.current) {
             isAutoPausedRef.current = true;
             setIsAutoPaused(true);
@@ -605,17 +517,16 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
         // Elevation
         if (gpsData.altitude !== null && lastPointRef.current?.altitude !== null) {
           const elevationChange = gpsData.altitude - lastPointRef.current.altitude;
-          if (elevationChange > 2) setStats((s) => ({ ...s, elevationGain: s.elevationGain + elevationChange }));
-          else if (elevationChange < -2)
-            setStats((s) => ({ ...s, elevationLoss: s.elevationLoss + Math.abs(elevationChange) }));
+          if (elevationChange > 2) setStats(s => ({ ...s, elevationGain: s.elevationGain + elevationChange }));
+          else if (elevationChange < -2) setStats(s => ({ ...s, elevationLoss: s.elevationLoss + Math.abs(elevationChange) }));
         }
         // GAP calculation
         if (gpsData.altitude !== null && lastPointRef.current?.altitude !== null && distance > 0) {
           const grade = (gpsData.altitude - lastPointRef.current.altitude) / distance;
-          const paceSecPerKm = speedMs > 0 ? 1000 / speedMs : 0;
+          const paceSecPerKm = speedMs > 0 ? (1000 / speedMs) : 0;
           if (paceSecPerKm > 0) {
             const gap = calculateGAP(paceSecPerKm, grade);
-            setStats((s) => ({ ...s, gap: Math.round(gap) }));
+            setStats(s => ({ ...s, gap: Math.round(gap) }));
           }
         }
         // Route progress
@@ -625,33 +536,31 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
         }
         // Segment detection
         if (showSegmentsOnMap && segments.length > 0) {
-          const nowInSegment = segments.find((segment) => isPointInSegment(gpsData, segment));
+          const nowInSegment = segments.find(segment => isPointInSegment(gpsData, segment));
           if (nowInSegment && !activeSegment) {
             setActiveSegment(nowInSegment);
             setSegmentStartTime(Date.now());
             toast.info(`Segment: ${nowInSegment.name}`);
             // Start ghost race if in race mode
             if (ghostRaceMode && selectedRaceSegment?.id === nowInSegment.id) {
-              setSegmentEfforts((prev) =>
-                new Map(prev).set(nowInSegment.id, {
-                  startTime: Date.now(),
-                  elapsedTime: 0,
-                  prOffset: 0,
-                }),
-              );
+              setSegmentEfforts(prev => new Map(prev).set(nowInSegment.id, {
+                startTime: Date.now(),
+                elapsedTime: 0,
+                prOffset: 0,
+              }));
             }
           } else if (!nowInSegment && activeSegment) {
             const segDuration = (Date.now() - (segmentStartTime || Date.now())) / 1000;
             if ((activeSegment.personalRecord ?? Infinity) > segDuration) {
-              setSegments((prevSegments) =>
-                prevSegments.map((seg) =>
-                  seg.id === activeSegment.id ? { ...seg, personalRecord: segDuration } : seg,
-                ),
+              setSegments(prevSegments =>
+                prevSegments.map(seg =>
+                  seg.id === activeSegment.id ? { ...seg, personalRecord: segDuration } : seg
+                )
               );
             }
             // Save effort if in ghost race mode
             if (ghostRaceMode && selectedRaceSegment?.id === activeSegment.id) {
-              setSegmentEfforts((prev) => {
+              setSegmentEfforts(prev => {
                 const next = new Map(prev);
                 const effort = next.get(activeSegment.id);
                 if (effort) {
@@ -671,7 +580,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           updateGhostPosition(gpsData.latitude, gpsData.longitude);
           // Track elapsed time for active ghost segment
           if (activeSegment && ghostRaceMode) {
-            setSegmentEfforts((prev) => {
+            setSegmentEfforts(prev => {
               const next = new Map(prev);
               const effort = next.get(activeSegment.id);
               if (effort) {
@@ -696,15 +605,15 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   };
   const updateStatsLoop = () => {
     if (stateRef.current !== 'recording' && stateRef.current !== 'paused') return;
-    const duration = stateRef.current === 'recording' ? (Date.now() - startTimeRef.current) / 1000 : stats.duration;
+    const duration = stateRef.current === 'recording'
+      ? (Date.now() - startTimeRef.current) / 1000
+      : stats.duration;
     const elpTime = (Date.now() - originalStartTimeRef.current) / 1000;
-    setStats((s) => {
+    setStats(s => {
       const avgSpeed = duration > 0 ? (s.distance / duration) * 3.6 : 0;
       const currentSpeed = currentGPSRef.current?.smoothedSpeed
         ? currentGPSRef.current.smoothedSpeed * 3.6
-        : currentGPSRef.current?.speed
-          ? currentGPSRef.current.speed * 3.6
-          : 0;
+        : (currentGPSRef.current?.speed ? currentGPSRef.current.speed * 3.6 : 0);
       return {
         ...s,
         duration,
@@ -719,7 +628,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     if (stateRef.current === 'recording') {
       vibrate(30);
       setStateAndRef('paused');
-      startTimeRef.current = Date.now() - stats.duration * 1000;
+      startTimeRef.current = Date.now() - (stats.duration * 1000);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     }
   };
@@ -730,7 +639,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
         isAutoPausedRef.current = false;
         setIsAutoPaused(false);
       }
-      startTimeRef.current = Date.now() - stats.duration * 1000;
+      startTimeRef.current = Date.now() - (stats.duration * 1000);
       setStateAndRef('recording');
       updateStatsLoop();
     }
@@ -753,16 +662,13 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     vibrate(100);
     const lapNum = laps.length + 1;
     const lapDistance = stats.distance - lastLapEnd;
-    setLaps((prev) => [
-      ...prev,
-      {
-        number: lapNum,
-        startTime: lastLapEnd > 0 ? laps[laps.length - 1].startTime : originalStartTimeRef.current,
-        endTime: Date.now(),
-        distance: lapDistance,
-        duration: stats.duration - (laps.length > 0 ? laps.reduce((a, l) => a + l.duration, 0) : 0),
-      },
-    ]);
+    setLaps(prev => [...prev, {
+      number: lapNum,
+      startTime: lastLapEnd > 0 ? laps[laps.length - 1].startTime : originalStartTimeRef.current,
+      endTime: Date.now(),
+      distance: lapDistance,
+      duration: stats.duration - (laps.length > 0 ? laps.reduce((a, l) => a + l.duration, 0) : 0),
+    }]);
     setLastLapEnd(stats.distance);
     toast.success(`Tour ${lapNum} — ${(lapDistance / 1000).toFixed(2)} km`);
   };
@@ -778,8 +684,8 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       canvas.height = video.videoHeight;
       canvas.getContext('2d')!.drawImage(video, 0, 0);
       const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-      stream.getTracks().forEach((t) => t.stop());
-      setPhotos((prev) => [...prev, dataUrl]);
+      stream.getTracks().forEach(t => t.stop());
+      setPhotos(prev => [...prev, dataUrl]);
     } catch {
       toast.error('Appareil photo non disponible');
     }
@@ -796,7 +702,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       try {
         await api.addActivityPhoto(activityId, { url: photo });
       } catch {
-        toast.error("Erreur lors de l'upload d'une photo");
+        toast.error('Erreur lors de l\'upload d\'une photo');
       }
     }
   };
@@ -810,32 +716,22 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           '<?xml version="1.0" encoding="UTF-8"?>',
           '<gpx version="1.1" creator="DrawRun" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1">',
           `<metadata><time>${startTime}</time></metadata>`,
-          '<trk><name>' +
-            name.replace(
-              /[<>&"']/g,
-              (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&apos;' })[c] ?? c,
-            ) +
-            '</name><trkseg>',
+          '<trk><name>' + name.replace(/[<>&"']/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&apos;' }[c] ?? c)) + '</name><trkseg>',
           ...points.map((p, i) => {
             const hrTag = hrData && i % 5 === 0 ? `<gpxtpx:hr>${hrData.heartRate}</gpxtpx:hr>` : '';
-            return (
-              `<trkpt lat="${p.gps.latitude.toFixed(6)}" lon="${p.gps.longitude.toFixed(6)}">` +
+            return `<trkpt lat="${p.gps.latitude.toFixed(6)}" lon="${p.gps.longitude.toFixed(6)}">` +
               (p.gps.altitude !== null ? `<ele>${p.gps.altitude.toFixed(1)}</ele>` : '') +
-              `<time>${new Date(p.timestamp).toISOString()}</time>${hrTag}</trkpt>`
-            );
+              `<time>${new Date(p.timestamp).toISOString()}</time>${hrTag}</trkpt>`;
           }),
           ...(() => {
             let cumulativeDist = 0;
-            return laps.map((lap) => {
+            return laps.map(lap => {
               cumulativeDist += lap.distance;
               const targetDist = cumulativeDist;
               let ptIdx = 0;
               for (let i = 1; i < points.length; i++) {
                 const d = haversine(points[0].gps, points[i].gps);
-                if (d >= targetDist) {
-                  ptIdx = i;
-                  break;
-                }
+                if (d >= targetDist) { ptIdx = i; break; }
               }
               const pt = points[Math.min(ptIdx, points.length - 1)].gps;
               return `<wpt lat="${pt.latitude.toFixed(6)}" lon="${pt.longitude.toFixed(6)}"><name>Tour ${lap.number}</name></wpt>`;
@@ -848,7 +744,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           activityId = result.id;
         } catch {
           enqueueSave({ gpxData: gpxLines, name, type: activityType, timestamp: Date.now(), retries: 0 });
-          toast.success("Activité mise en file d'attente (hors-ligne)");
+          toast.success('Activité mise en file d\'attente (hors-ligne)');
           resetState();
           onSave?.();
           return;
@@ -886,20 +782,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   };
   const resetState = () => {
     setPoints([]);
-    setStats({
-      distance: 0,
-      duration: 0,
-      elapsedTime: 0,
-      avgSpeed: 0,
-      maxSpeed: 0,
-      elevationGain: 0,
-      elevationLoss: 0,
-      cadence: null,
-      avgHR: null,
-      maxHR: null,
-      currentHR: null,
-      gap: null,
-    });
+    setStats({ distance: 0, duration: 0, elapsedTime: 0, avgSpeed: 0, maxSpeed: 0, elevationGain: 0, elevationLoss: 0, cadence: null, avgHR: null, maxHR: null, currentHR: null, gap: null });
     setStateAndRef('idle');
     lastPointRef.current = null;
     currentGPSRef.current = null;
@@ -937,16 +820,14 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       setLoadingRoutes(true);
       const result = await api.getMyRoutes();
       if (result?.routes) {
-        setUserRoutes(
-          result.routes.map((r) => ({
-            id: String(r.id),
-            name: r.name,
-            description: r.description,
-            polyline: r.polyline || '',
-            distance: r.distance || 0,
-            elevationGain: r.elevation_gain || 0,
-          })),
-        );
+        setUserRoutes(result.routes.map((r) => ({
+          id: String(r.id),
+          name: r.name,
+          description: r.description,
+          polyline: r.polyline || '',
+          distance: r.distance || 0,
+          elevationGain: r.elevation_gain || 0,
+        })));
       }
     } catch {
       setUserRoutes([]);
@@ -959,25 +840,21 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       if (currentGPS) {
         const result = await api.getNearbySegments(currentGPS.latitude, currentGPS.longitude, 50000);
         if (result?.segments) {
-          setNearbySegments(
-            (result.segments as unknown as Array<Record<string, unknown>>).map((s) => ({
-              id: String(s.id),
-              name: String(s.name || ''),
-              description: s.description as string | undefined,
-              startLat: Number(s.start_lat) || 0,
-              startLng: Number(s.start_lng) || 0,
-              endLat: Number(s.end_lat) || 0,
-              endLng: Number(s.end_lng) || 0,
-              distance: Number(s.distance) || 0,
-              elevationGain: Number(s.elevation_gain) || 0,
-              personalRecord: s.pr_time ? Number(s.pr_time) : undefined,
-            })),
-          );
+          setNearbySegments((result.segments as unknown as Array<Record<string, unknown>>).map((s) => ({
+            id: String(s.id),
+            name: String(s.name || ''),
+            description: s.description as string | undefined,
+            startLat: Number(s.start_lat) || 0,
+            startLng: Number(s.start_lng) || 0,
+            endLat: Number(s.end_lat) || 0,
+            endLng: Number(s.end_lng) || 0,
+            distance: Number(s.distance) || 0,
+            elevationGain: Number(s.elevation_gain) || 0,
+            personalRecord: s.pr_time ? Number(s.pr_time) : undefined,
+          })));
         }
       }
-    } catch {
-      /* silent */
-    }
+    } catch { /* silent */ }
   };
   const loadActiveCoachSession = async () => {
     try {
@@ -991,19 +868,11 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           duration: (session.estimated_duration as number) || (session.duration as number) || 3600,
           distance: session.distance as number | undefined,
           targetPace: session.target_pace as number | undefined,
-          targetHeartRateZone: session.target_hr_zone
-            ? {
-                min: (session.target_hr_zone as { min: number }).min,
-                max: (session.target_hr_zone as { max: number }).max,
-              }
-            : undefined,
-          intervalStructure: session.interval_structure as
-            Array<{ work: number; rest: number; repeats: number }> | undefined,
+          targetHeartRateZone: session.target_hr_zone ? { min: (session.target_hr_zone as { min: number }).min, max: (session.target_hr_zone as { max: number }).max } : undefined,
+          intervalStructure: session.interval_structure as Array<{ work: number; rest: number; repeats: number }> | undefined,
         });
       }
-    } catch {
-      /* silent */
-    }
+    } catch { /* silent */ }
   };
   const formatDuration = (seconds: number): string => {
     const hrs = Math.floor(seconds / 3600);
@@ -1051,7 +920,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       const nameEl = doc.querySelector('name');
       const name = nameEl?.textContent || 'Parcours importé';
       // Simple polyline encoding
-      const polyline = pts.map((p) => `${p.latitude.toFixed(5)},${p.longitude.toFixed(5)}`).join(';');
+      const polyline = pts.map(p => `${p.latitude.toFixed(5)},${p.longitude.toFixed(5)}`).join(';');
       return { name, points: pts, distance: totalDistance, elevationGain: totalElevation, polyline };
     } catch {
       return null;
@@ -1116,36 +985,28 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     // Calculate progress along segment
     const segDist = haversine(
       { latitude: selectedRaceSegment.startLat, longitude: selectedRaceSegment.startLng },
-      { latitude: selectedRaceSegment.endLat, longitude: selectedRaceSegment.endLng },
+      { latitude: selectedRaceSegment.endLat, longitude: selectedRaceSegment.endLng }
     );
     const userDistFromStart = haversine(
       { latitude: selectedRaceSegment.startLat, longitude: selectedRaceSegment.startLng },
-      { latitude: currentLat, longitude: currentLng },
+      { latitude: currentLat, longitude: currentLng }
     );
     const progress = Math.min(100, (userDistFromStart / segDist) * 100);
     // Calculate ghost position based on time elapsed since start
     const elapsed = (Date.now() - ghostState.startTime) / 1000;
     const ghostProgress = Math.min(100, (elapsed / ghostState.prTime) * 100);
     // Interpolate ghost position
-    const ghostLat =
-      selectedRaceSegment.startLat +
-      (selectedRaceSegment.endLat - selectedRaceSegment.startLat) * (ghostProgress / 100);
-    const ghostLng =
-      selectedRaceSegment.startLng +
-      (selectedRaceSegment.endLng - selectedRaceSegment.startLng) * (ghostProgress / 100);
+    const ghostLat = selectedRaceSegment.startLat + (selectedRaceSegment.endLat - selectedRaceSegment.startLat) * (ghostProgress / 100);
+    const ghostLng = selectedRaceSegment.startLng + (selectedRaceSegment.endLng - selectedRaceSegment.startLng) * (ghostProgress / 100);
     // Calculate time offset: positive if user is ahead, negative if behind
     const userExpectedTime = (progress / 100) * ghostState.prTime;
     const offset = userExpectedTime - elapsed;
-    setGhostState((prev) =>
-      prev
-        ? {
-            ...prev,
-            currentOffset: offset, // Positive = ahead, Negative = behind
-            ghostPosition: [ghostLat, ghostLng],
-            progress,
-          }
-        : null,
-    );
+    setGhostState(prev => prev ? {
+      ...prev,
+      currentOffset: offset, // Positive = ahead, Negative = behind
+      ghostPosition: [ghostLat, ghostLng],
+      progress,
+    } : null);
   };
   const saveSegmentEffortToBackend = async (activityId: number) => {
     for (const [segmentId, effort] of segmentEfforts.entries()) {
@@ -1189,7 +1050,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
     }
     // Create polyline for the segment
     const segmentPoints = points.slice(segmentStartIdx, segmentEndIdx + 1);
-    const polyline = segmentPoints.map((p) => `${p.gps.latitude.toFixed(5)},${p.gps.longitude.toFixed(5)}`).join(';');
+    const polyline = segmentPoints.map(p => `${p.gps.latitude.toFixed(5)},${p.gps.longitude.toFixed(5)}`).join(';');
     try {
       const result = await api.createSegment({
         name: newSegmentName || `Segment ${sport.nameFr}`,
@@ -1226,46 +1087,31 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   };
   const getSportIcon = () => {
     if (sportCategory.category === 'water') return <Waves className="w-6 h-6" />;
-    if (['bike', 'mountain_bike', 'gravel_bike', 'indoor_cycling', 'virtual_ride'].includes(activityType))
-      return <Bike className="w-6 h-6" />;
+    if (['bike', 'mountain_bike', 'gravel_bike', 'indoor_cycling', 'virtual_ride'].includes(activityType)) return <Bike className="w-6 h-6" />;
     return <Footprints className="w-6 h-6" />;
   };
   const getWeatherIcon = () => {
     if (!weather) return null;
-    const cls = 'w-5 h-5 text-foreground/80';
+    const cls = "w-5 h-5 text-foreground/80";
     switch (weather.icon) {
-      case 'sun':
-        return <Sun className={cls} />;
-      case 'cloud-sun':
-        return <CloudSun className={cls} />;
-      case 'cloud':
-        return <Cloud className={cls} />;
-      case 'clouds':
-        return <Cloud className={cls} />;
-      case 'fog':
-        return <Cloud className={cls} />;
-      case 'drizzle':
-        return <CloudDrizzle className={cls} />;
-      case 'rain':
-      case 'rain-heavy':
-        return <CloudRain className={cls} />;
-      case 'snow':
-      case 'sleet':
-        return <CloudSnow className={cls} />;
-      case 'thunderstorm':
-        return <CloudLightning className={cls} />;
-      default:
-        return <Sun className={cls} />;
+      case 'sun': return <Sun className={cls} />;
+      case 'cloud-sun': return <CloudSun className={cls} />;
+      case 'cloud': return <Cloud className={cls} />;
+      case 'clouds': return <Cloud className={cls} />;
+      case 'fog': return <Cloud className={cls} />;
+      case 'drizzle': return <CloudDrizzle className={cls} />;
+      case 'rain': case 'rain-heavy': return <CloudRain className={cls} />;
+      case 'snow': case 'sleet': return <CloudSnow className={cls} />;
+      case 'thunderstorm': return <CloudLightning className={cls} />;
+      default: return <Sun className={cls} />;
     }
   };
   // ── Picker overlays — dark bottom sheet style ──
   if (showSportPicker || showRoutePicker || showSegmentPicker) {
     const title = showSportPicker ? 'Choisir un sport' : showRoutePicker ? 'Choisir un parcours' : 'Gérer les segments';
-    const onClose = showSportPicker
-      ? () => setShowSportPicker(false)
-      : showRoutePicker
-        ? () => setShowRoutePicker(false)
-        : () => setShowSegmentPicker(false);
+    const onClose = showSportPicker ? () => setShowSportPicker(false) :
+                    showRoutePicker ? () => setShowRoutePicker(false) :
+                    () => setShowSegmentPicker(false);
     return (
       <motion.div
         initial={{ opacity: 0 }}
@@ -1280,7 +1126,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           exit={{ y: '100%' }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           className="bg-background rounded-t-2xl shadow-2xl w-full max-w-[90vw] lg:max-w-lg max-h-[85vh] overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
         >
           <div className="p-4 border-b border-surface flex items-center justify-between">
             <h3 className="text-lg font-semibold text-foreground">{title}</h3>
@@ -1292,21 +1138,14 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             {showSportPicker && (
               <SportPicker
                 selectedSport={activityType}
-                onSelect={(sport) => {
-                  setActivityType(sport);
-                  setShowSportPicker(false);
-                }}
+                onSelect={(sport) => { setActivityType(sport); setShowSportPicker(false); }}
               />
             )}
             {showRoutePicker && (
               <RouteSelectionSheet
                 userRoutes={userRoutes}
                 loadingRoutes={loadingRoutes}
-                onSelect={(route) => {
-                  setSelectedRoute(route);
-                  setShowRoutePicker(false);
-                  toast.info(`Parcours: ${route.name}`);
-                }}
+                onSelect={(route) => { setSelectedRoute(route); setShowRoutePicker(false); toast.info(`Parcours: ${route.name}`); }}
                 onClose={() => setShowRoutePicker(false)}
                 formatDistance={formatDistance}
               />
@@ -1317,18 +1156,9 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
                 showSegmentsOnMap={showSegmentsOnMap}
                 activeSegment={activeSegment}
                 onToggleShowOnMap={setShowSegmentsOnMap}
-                onGhostRace={(seg) => {
-                  setShowSegmentPicker(false);
-                  startGhostRace(seg);
-                }}
-                onImportGpx={() => {
-                  setShowSegmentPicker(false);
-                  fileInputRef.current?.click();
-                }}
-                onCreateSegment={() => {
-                  setShowSegmentPicker(false);
-                  setShowCreateSegment(true);
-                }}
+                onGhostRace={(seg) => { setShowSegmentPicker(false); startGhostRace(seg); }}
+                onImportGpx={() => { setShowSegmentPicker(false); fileInputRef.current?.click(); }}
+                onCreateSegment={() => { setShowSegmentPicker(false); setShowCreateSegment(true); }}
                 onClose={() => setShowSegmentPicker(false)}
                 formatDistance={formatDistance}
                 formatDuration={formatDuration}
@@ -1352,7 +1182,9 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       {/* Header */}
       <div className="px-4 pt-12 pb-4">
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-10 h-10 rounded-lg bg-surface flex items-center justify-center">{getSportIcon()}</div>
+          <div className="w-10 h-10 rounded-lg bg-surface flex items-center justify-center">
+            {getSportIcon()}
+          </div>
           <div>
             <h2 className="text-lg font-bold text-foreground">Résumé de l&apos;activité</h2>
             <p className="text-xs text-muted">{activityName || sport.nameFr}</p>
@@ -1372,9 +1204,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           </div>
           <div className="bg-surface rounded-lg p-4">
             <div className="text-xs text-muted mb-1">Vitesse moy</div>
-            <div className="text-2xl font-bold text-foreground">
-              {stats.avgSpeed.toFixed(1)} <span className="text-sm text-muted">km/h</span>
-            </div>
+            <div className="text-2xl font-bold text-foreground">{stats.avgSpeed.toFixed(1)} <span className="text-sm text-muted">km/h</span></div>
           </div>
           <div className="bg-surface rounded-lg p-4">
             <div className="text-xs text-muted mb-1">Allure moy</div>
@@ -1431,7 +1261,11 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             </div>
           )}
         </div>
-        <LapListSheet laps={laps} formatDistance={formatDistance} formatDuration={formatDuration} />
+        <LapListSheet
+          laps={laps}
+          formatDistance={formatDistance}
+          formatDuration={formatDuration}
+        />
         {/* Photos */}
         {photos.length > 0 && (
           <div>
@@ -1439,12 +1273,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             <div className="flex gap-2 overflow-x-auto">
               {photos.map((photo, i) => (
                 /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                  key={i}
-                  src={photo}
-                  alt={`Photo de l'activité ${i + 1}`}
-                  className="w-16 h-16 md:w-24 md:h-24 rounded-lg object-cover shrink-0"
-                />
+                <img key={i} src={photo} alt={`Photo de l'activité ${i + 1}`} className="w-16 h-16 md:w-24 md:h-24 rounded-lg object-cover shrink-0" />
               ))}
             </div>
           </div>
@@ -1458,21 +1287,11 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
         />
       </div>
       <div className="px-4 pb-8 pt-4 border-t border-surface flex gap-3">
-        <button
-          type="button"
-          onClick={() => setStateAndRef('finished')}
-          className="flex-1 min-w-[120px] h-12 rounded-lg bg-surface hover:bg-surface-hover active:bg-muted text-foreground flex items-center justify-center gap-2 text-sm font-medium transition-colors"
-        >
-          <X className="w-4 h-4" />
-          Retour
+        <button type="button" onClick={() => setStateAndRef('finished')} className="flex-1 min-w-[120px] h-12 rounded-lg bg-surface hover:bg-surface-hover active:bg-muted text-foreground flex items-center justify-center gap-2 text-sm font-medium transition-colors">
+          <X className="w-4 h-4" />Retour
         </button>
-        <button
-          type="button"
-          onClick={saveActivity}
-          className="flex-1 h-12 rounded-lg bg-peak hover:bg-peak/90 active:bg-peak/80 text-foreground flex items-center justify-center gap-2 text-sm font-medium transition-colors"
-        >
-          <Save className="w-4 h-4" />
-          Sauvegarder
+        <button type="button" onClick={saveActivity} className="flex-1 h-12 rounded-lg bg-peak hover:bg-peak/90 active:bg-peak/80 text-foreground flex items-center justify-center gap-2 text-sm font-medium transition-colors">
+          <Save className="w-4 h-4" />Sauvegarder
         </button>
       </div>
     </motion.div>
@@ -1495,7 +1314,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             onClick={() => {
               if (state === 'idle') cancelRecording();
               else if (state === 'recording' || state === 'paused') {
-                if (window.confirm("Abandonner l'enregistrement en cours ?")) {
+                if (window.confirm('Abandonner l\'enregistrement en cours ?')) {
                   stopRecording();
                   setTimeout(() => cancelRecording(), 100);
                 }
@@ -1505,11 +1324,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             }}
             className="p-2 rounded-lg hover:bg-surface active:bg-surface-hover transition-colors"
           >
-            {state === 'finished' ? (
-              <Save className="w-5 h-5 text-foreground" />
-            ) : (
-              <X className="w-5 h-5 text-foreground" />
-            )}
+            {state === 'finished' ? <Save className="w-5 h-5 text-foreground" /> : <X className="w-5 h-5 text-foreground" />}
           </button>
           <div className="flex items-center gap-3">
             {weather && (
@@ -1553,7 +1368,9 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
           </div>
           <div className="text-left flex-1 min-w-0">
             <p className="font-semibold text-foreground truncate">{sport.nameFr}</p>
-            <p className="text-xs text-muted truncate">{selectedRoute ? selectedRoute.name : 'Appuyez pour changer'}</p>
+            <p className="text-xs text-muted truncate">
+              {selectedRoute ? selectedRoute.name : 'Appuyez pour changer'}
+            </p>
           </div>
           {state === 'idle' && <ChevronRight className="w-4 h-4 text-muted shrink-0" />}
         </button>
@@ -1565,10 +1382,7 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
               <span>{Math.round(routeProgress)}%</span>
             </div>
             <div className="h-1 bg-surface rounded-full overflow-hidden">
-              <div
-                className="h-full bg-peak rounded-full transition-all duration-500"
-                style={{ width: `${routeProgress}%` }}
-              />
+              <div className="h-full bg-peak rounded-full transition-all duration-500" style={{ width: `${routeProgress}%` }} />
             </div>
           </div>
         )}
@@ -1588,15 +1402,11 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-4 overflow-y-auto">
         {/* Timer */}
         <div className="text-center mb-6">
-          <div
-            className={`font-mono font-bold tracking-tight ${
-              state === 'recording'
-                ? 'text-6xl text-foreground'
-                : state === 'paused'
-                  ? 'text-5xl text-warning'
-                  : 'text-4xl text-muted'
-            }`}
-          >
+          <div className={`font-mono font-bold tracking-tight ${
+            state === 'recording' ? 'text-6xl text-foreground' :
+            state === 'paused' ? 'text-5xl text-warning' :
+            'text-4xl text-muted'
+          }`}>
             <SimpleTimer seconds={stats.duration} />
           </div>
           {state === 'recording' && (
@@ -1605,7 +1415,9 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-danger opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-danger" />
               </span>
-              <span className="text-xs font-medium text-muted uppercase tracking-widest">Enregistrement</span>
+              <span className="text-xs font-medium text-muted uppercase tracking-widest">
+                Enregistrement
+              </span>
             </div>
           )}
           {state === 'paused' && (
@@ -1614,7 +1426,9 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             </span>
           )}
           {state === 'finished' && (
-            <span className="text-xs font-medium text-muted uppercase tracking-widest mt-2 block">Terminé</span>
+            <span className="text-xs font-medium text-muted uppercase tracking-widest mt-2 block">
+              Terminé
+            </span>
           )}
           {/* Interval display */}
           {currentInterval && (
@@ -1622,13 +1436,11 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface text-sm font-medium">
                 <Zap className="w-4 h-4 text-peak/80" />
                 <span className="text-foreground">{currentInterval.phase === 'work' ? 'Effort' : 'Récup'}</span>
-                <span className="text-muted">
-                  | Série {currentInterval.round}/{intervalConfig?.repeats}
-                </span>
+                <span className="text-muted">| Série {currentInterval.round}/{intervalConfig?.repeats}</span>
               </div>
               <IntervalRing
                 timeLeft={intervalTimeLeft}
-                total={currentInterval.phase === 'work' ? intervalConfig?.work || 60 : intervalConfig?.rest || 30}
+                total={currentInterval.phase === 'work' ? (intervalConfig?.work || 60) : (intervalConfig?.rest || 30)}
                 phase={currentInterval.phase}
               />
             </div>
@@ -1656,17 +1468,11 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
               height={state === 'finished' ? 'h-32' : 'h-28'}
               currentPosition={currentGPS ? [currentGPS.latitude, currentGPS.longitude] : null}
               accuracy={currentGPS?.accuracy}
-              segments={
-                showSegmentsOnMap && segments.length > 0
-                  ? segments.map((s) => ({
-                      startLat: s.startLat,
-                      startLng: s.startLng,
-                      endLat: s.endLat,
-                      endLng: s.endLng,
-                      color: 'var(--secondary)',
-                    }))
-                  : undefined
-              }
+              segments={showSegmentsOnMap && segments.length > 0 ? segments.map(s => ({
+                startLat: s.startLat, startLng: s.startLng,
+                endLat: s.endLat, endLng: s.endLng,
+                color: 'var(--secondary)',
+              })) : undefined}
             />
           </motion.div>
         )}
@@ -1741,21 +1547,22 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
   return (
     <>
       {/* Hidden file input for GPX upload */}
-      <input ref={fileInputRef} type="file" accept=".gpx" className="hidden" onChange={handleGpxUpload} />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".gpx"
+        className="hidden"
+        onChange={handleGpxUpload}
+      />
       {/* Create Segment Modal */}
       {showCreateSegment && (
-        <div
-          className="fixed inset-0 z-50 bg-foreground/70 flex items-end justify-center"
-          onClick={() => setShowCreateSegment(false)}
-          role="presentation"
-          aria-hidden="true"
-        >
+        <div className="fixed inset-0 z-50 bg-foreground/70 flex items-end justify-center" onClick={() => setShowCreateSegment(false)} role="presentation" aria-hidden="true">
           <motion.div
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             className="bg-surface rounded-t-2xl w-full max-w-lg p-4"
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-foreground">Créer un segment</h3>
@@ -1828,13 +1635,10 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
               </div>
             </div>
             <div className="text-right">
-              <div
-                className={`text-lg font-bold font-mono ${
-                  ghostState.currentOffset > 0 ? 'text-success/80' : 'text-danger/80'
-                }`}
-              >
-                {ghostState.currentOffset > 0 ? '+' : ''}
-                {ghostState.currentOffset.toFixed(1)}s
+              <div className={`text-lg font-bold font-mono ${
+                ghostState.currentOffset > 0 ? 'text-success/80' : 'text-danger/80'
+              }`}>
+                {ghostState.currentOffset > 0 ? '+' : ''}{ghostState.currentOffset.toFixed(1)}s
               </div>
               <p className="text-[10px] text-muted">{ghostState.currentOffset > 0 ? 'en avance' : 'en retard'}</p>
             </div>
@@ -1848,17 +1652,16 @@ export function MobileActivityRecorder({ onSave, onCancel }: MobileActivityRecor
             />
           </div>
           <button
-            onClick={() => {
-              setGhostRaceMode(false);
-              setGhostState(null);
-            }}
+            onClick={() => { setGhostRaceMode(false); setGhostState(null); }}
             className="mt-2 text-xs text-muted hover:text-foreground"
           >
             Quitter le ghost race
           </button>
         </div>
       )}
-      <AnimatePresence mode="wait">{state === 'review' ? reviewScreen : mainScreen}</AnimatePresence>
+      <AnimatePresence mode="wait">
+        {state === 'review' ? reviewScreen : mainScreen}
+      </AnimatePresence>
     </>
   );
 }

@@ -7,7 +7,7 @@ describe('Card Component', () => {
     render(
       <Card>
         <CardContent>Card Content</CardContent>
-      </Card>,
+      </Card>
     );
     expect(screen.getByText('Card Content')).toBeInTheDocument();
   });
@@ -19,7 +19,7 @@ describe('Card Component', () => {
           <CardTitle>Card Title</CardTitle>
         </CardHeader>
         <CardContent>Content</CardContent>
-      </Card>,
+      </Card>
     );
     expect(screen.getByText('Card Title')).toBeInTheDocument();
     expect(screen.getByText('Content')).toBeInTheDocument();
@@ -30,7 +30,7 @@ describe('Card Component', () => {
       <Card>
         <CardContent>Content</CardContent>
         <CardFooter>Footer Content</CardFooter>
-      </Card>,
+      </Card>
     );
     expect(screen.getByText('Footer Content')).toBeInTheDocument();
   });
@@ -39,7 +39,7 @@ describe('Card Component', () => {
     render(
       <Card className="custom-class">
         <CardContent>Content</CardContent>
-      </Card>,
+      </Card>
     );
     const card = screen.getByText('Content').parentElement;
     expect(card).toHaveClass('custom-class');
@@ -53,7 +53,7 @@ describe('Card Component', () => {
         </CardHeader>
         <CardContent>Body</CardContent>
         <CardFooter>Footer</CardFooter>
-      </Card>,
+      </Card>
     );
 
     expect(screen.getByText('Title')).toBeInTheDocument();

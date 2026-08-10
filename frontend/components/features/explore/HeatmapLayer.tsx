@@ -2,7 +2,11 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { api } from '@/lib/api';
-import type { HeatmapLayerProps, HeatmapPoint, LatLngWithIntensity } from '@/types/leaflet';
+import type {
+  HeatmapLayerProps,
+  HeatmapPoint,
+  LatLngWithIntensity,
+} from '@/types/leaflet';
 import L from 'leaflet';
 
 /**
@@ -17,7 +21,12 @@ import L from 'leaflet';
  *
  * @param props - HeatmapLayerProps containing map, bounds, activity type, and visibility
  */
-export default function HeatmapLayer({ map, bounds, activityType = 'Run', visible }: HeatmapLayerProps) {
+export default function HeatmapLayer({
+  map,
+  bounds,
+  activityType = 'Run',
+  visible,
+}: HeatmapLayerProps) {
   const [data, setData] = useState<HeatmapPoint[]>([]);
   const layerRef = useRef<L.HeatLayer | null>(null);
   const prevVisible = useRef(false);
@@ -28,10 +37,12 @@ export default function HeatmapLayer({ map, bounds, activityType = 'Run', visibl
 
     const centerLat = (bounds.north + bounds.south) / 2;
     const centerLng = (bounds.east + bounds.west) / 2;
-    const radiusLat = Math.max(1000, (bounds.north - bounds.south) * 111000 * 0.6);
+    const radiusLat = Math.max(
+      1000,
+      (bounds.north - bounds.south) * 111000 * 0.6
+    );
 
-    api
-      .getHeatmap(centerLat, centerLng, Math.round(radiusLat), activityType)
+    api.getHeatmap(centerLat, centerLng, Math.round(radiusLat), activityType)
       .then((res) => {
         if (res.success) {
           setData(res.heatmap);
@@ -57,11 +68,7 @@ export default function HeatmapLayer({ map, bounds, activityType = 'Run', visibl
     // Create heatmap layer if visible and data is available
     if (visible && (L as unknown as { heatLayer: unknown }).heatLayer) {
       const points = data.map((d) => [d.lat, d.lng, d.intensity] as LatLngWithIntensity);
-      const heat = (
-        L as unknown as {
-          heatLayer: (_points: [number, number, number][], _options?: Record<string, unknown>) => L.Layer;
-        }
-      ).heatLayer(points, {
+      const heat = (L as unknown as { heatLayer: (_points: [number, number, number][], _options?: Record<string, unknown>) => L.Layer }).heatLayer(points, {
         radius: 18,
         blur: 12,
         maxZoom: 16,

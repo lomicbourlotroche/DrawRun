@@ -133,18 +133,9 @@ async function calculateRaceStrategy(params: RaceStrategyParams): Promise<RaceSt
  * Export race plan splits to CSV format
  */
 function exportToCsv(splits: RacePlanningResponse['splits']): string {
-  const headers = [
-    'KM',
-    'Distance (km)',
-    'Temps (sec)',
-    'Temps cumulé (sec)',
-    'Allure (sec/km)',
-    'Zone FC',
-    'FC (bpm)',
-    'Nutrition',
-  ];
+  const headers = ['KM', 'Distance (km)', 'Temps (sec)', 'Temps cumulé (sec)', 'Allure (sec/km)', 'Zone FC', 'FC (bpm)', 'Nutrition'];
 
-  const rows = splits.map((split) => [
+  const rows = splits.map(split => [
     split.km,
     split.distance,
     split.splitTime,
@@ -152,10 +143,10 @@ function exportToCsv(splits: RacePlanningResponse['splits']): string {
     split.pace,
     split.hrZone,
     split.hrRange,
-    (split.nutrition || []).map((n) => `${n.label} (${n.quantity})`).join(', ') || '-',
+    (split.nutrition || []).map(n => `${n.label} (${n.quantity})`).join(', ') || '-'
   ]);
 
-  return [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+  return [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
 }
 
 /**

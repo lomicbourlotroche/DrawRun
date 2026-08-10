@@ -10,14 +10,19 @@ import { LEADERBOARD_CATEGORIES, LEADERBOARD_PERIODS, PODIUM_STYLES } from '@/co
 import { toast } from 'sonner';
 
 const ICON_MAP: Record<string, React.FC<{ className?: string }>> = {
-  MapPin,
-  Clock,
-  Activity,
-  Trophy,
+  MapPin, Clock, Activity, Trophy,
 };
 
 export default function LeaderboardTab() {
-  const { entries, isLoading, error, category, period, setCategory, setPeriod } = useLeaderboard();
+  const {
+    entries,
+    isLoading,
+    error,
+    category,
+    period,
+    setCategory,
+    setPeriod,
+  } = useLeaderboard();
 
   // Show errors
   useEffect(() => {
@@ -31,15 +36,7 @@ export default function LeaderboardTab() {
 
   // Get podium style (fallback to default if index > 2)
   const getPodiumStyle = (index: number) => {
-    return (
-      PODIUM_STYLES[index] || {
-        bg: 'from-muted to-muted/50',
-        text: 'text-muted',
-        badge: `#${index + 1}`,
-        label: '',
-        ring: 'ring-border',
-      }
-    );
+    return PODIUM_STYLES[index] || { bg: 'from-muted to-muted/50', text: 'text-muted', badge: `#${index + 1}`, label: '', ring: 'ring-border' };
   };
 
   if (isLoading) {
@@ -80,10 +77,7 @@ export default function LeaderboardTab() {
                   : 'bg-card border border-border text-muted hover:border-primary/30'
               }`}
             >
-              {(() => {
-                const Icon = ICON_MAP[c.icon];
-                return Icon ? <Icon className="w-4 h-4" /> : null;
-              })()}
+              {(() => { const Icon = ICON_MAP[c.icon]; return Icon ? <Icon className="w-4 h-4" /> : null; })()}
               {c.label}
             </button>
           ))}
@@ -95,7 +89,9 @@ export default function LeaderboardTab() {
               onClick={() => setPeriod(p.id)}
               aria-label={`Période: ${p.label}`}
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                period === p.id ? 'bg-primary/10 text-primary' : 'text-muted hover:text-foreground'
+                period === p.id
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted hover:text-foreground'
               }`}
             >
               {p.label}
@@ -122,8 +118,12 @@ export default function LeaderboardTab() {
                 <p className={`font-semibold text-sm mt-2 ${idx === 0 ? 'text-white' : 'text-foreground'}`}>
                   {entry.name}
                 </p>
-                <p className={`text-lg font-bold ${idx === 0 ? 'text-white' : 'text-primary'}`}>{entry.value}</p>
-                <p className={`text-xs ${idx === 0 ? 'text-white/80' : 'text-muted'}`}>{currentCategory.unit}</p>
+                <p className={`text-lg font-bold ${idx === 0 ? 'text-white' : 'text-primary'}`}>
+                  {entry.value}
+                </p>
+                <p className={`text-xs ${idx === 0 ? 'text-white/80' : 'text-muted'}`}>
+                  {currentCategory.unit}
+                </p>
               </div>
             );
           })}

@@ -1,7 +1,17 @@
 'use client';
 
 import React from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Bar, Cell } from 'recharts';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Bar,
+  Cell,
+} from 'recharts';
 
 interface StrategyChartProps {
   segments: Array<Record<string, unknown>>;
@@ -45,11 +55,7 @@ export default function StrategyChart({ segments, segmentsWithGrade }: StrategyC
             <Tooltip
               contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
               formatter={(value: number, name: string) => {
-                if (name === 'targetPaceSec')
-                  return [
-                    formatPace(`${Math.floor(value / 60)}:${String(Math.round(value % 60)).padStart(2, '0')}`),
-                    'Allure',
-                  ];
+                if (name === 'targetPaceSec') return [formatPace(`${Math.floor(value / 60)}:${String(Math.round(value % 60)).padStart(2, '0')}`), 'Allure'];
                 if (name === 'elevGain') return [`+${value}m`, 'Dénivelé'];
                 return [value, name];
               }}
@@ -63,12 +69,15 @@ export default function StrategyChart({ segments, segmentsWithGrade }: StrategyC
               fill="url(#colorElev)"
               name="Elevation"
             />
-            <Bar yAxisId="right" dataKey="targetPaceSec" fill="var(--danger)" fillOpacity={0.6} name="Allure">
+            <Bar
+              yAxisId="right"
+              dataKey="targetPaceSec"
+              fill="var(--danger)"
+              fillOpacity={0.6}
+              name="Allure"
+            >
               {segmentsWithGrade.map((entry: { grade: number }, index: number) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={entry.grade > 1 ? 'var(--danger)' : entry.grade < -1 ? 'var(--success)' : 'var(--danger)'}
-                />
+                <Cell key={`cell-${index}`} fill={entry.grade > 1 ? 'var(--danger)' : entry.grade < -1 ? 'var(--success)' : 'var(--danger)'} />
               ))}
             </Bar>
           </AreaChart>

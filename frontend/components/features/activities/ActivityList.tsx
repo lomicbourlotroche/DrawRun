@@ -5,16 +5,7 @@ import Link from 'next/link';
 import { Card, Select, EmptyState } from '@/components/ui';
 import { formatDate, formatDistance, getSportColor } from '@/lib/utils';
 import type { Activity } from '@/types';
-import {
-  Clock,
-  Heart,
-  TrendingUp,
-  ChevronRight,
-  Search,
-  RefreshCw,
-  ChevronDown,
-  Mountain,
-} from '@/components/ui/icons';
+import { Clock, Heart, TrendingUp, ChevronRight, Search, RefreshCw, ChevronDown, Mountain } from '@/components/ui/icons';
 import { DrawButton } from '@/components/features/social/DrawButton';
 
 const PAGE_SIZE = 20;
@@ -43,9 +34,9 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (a) =>
-          (a.title || a.name || '').toLowerCase().includes(query) || (a.date || a.start_date || '').includes(query),
+      filtered = filtered.filter((a) =>
+        (a.title || a.name || '').toLowerCase().includes(query) ||
+        (a.date || a.start_date || '').includes(query)
       );
     }
 
@@ -82,36 +73,16 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
   const validActivities = Array.isArray(activities) ? activities : [];
   const filterOptions = [
     { id: 'all', label: 'Tous', count: validActivities.length },
-    {
-      id: 'run',
-      label: 'Course',
-      count: validActivities.filter((a) => (a.type as string).toLowerCase().startsWith('run')).length,
-    },
-    {
-      id: 'bike',
-      label: 'Vélo',
-      count: validActivities.filter(
-        (a) =>
-          (a.type as string).toLowerCase().startsWith('bike') || (a.type as string).toLowerCase().startsWith('ride'),
-      ).length,
-    },
-    {
-      id: 'swim',
-      label: 'Natation',
-      count: validActivities.filter((a) => (a.type as string).toLowerCase().startsWith('swim')).length,
-    },
+    { id: 'run', label: 'Course', count: validActivities.filter((a) => (a.type as string).toLowerCase().startsWith('run')).length },
+    { id: 'bike', label: 'Vélo', count: validActivities.filter((a) => (a.type as string).toLowerCase().startsWith('bike') || (a.type as string).toLowerCase().startsWith('ride')).length },
+    { id: 'swim', label: 'Natation', count: validActivities.filter((a) => (a.type as string).toLowerCase().startsWith('swim')).length },
   ];
 
   const sportIcons: Record<string, string> = {
-    run: '🏃',
-    running: '🏃',
-    bike: '🚴',
-    ride: '🚴',
-    cycling: '🚴',
-    swim: '🏊',
-    swimming: '🏊',
-    hike: '🥾',
-    walk: '🚶',
+    run: '🏃', running: '🏃',
+    bike: '🚴', ride: '🚴', cycling: '🚴',
+    swim: '🏊', swimming: '🏊',
+    hike: '🥾', walk: '🚶',
     workout: '💪',
   };
 
@@ -184,7 +155,9 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
             }`}
           >
             {opt.label}
-            <span className={`text-xs px-1.5 py-0.5 rounded-full ${filter === opt.id ? 'bg-white/20' : 'bg-muted/20'}`}>
+            <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+              filter === opt.id ? 'bg-white/20' : 'bg-muted/20'
+            }`}>
               {opt.count}
             </span>
           </button>
@@ -206,7 +179,11 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
           const avgHR = activity.avgHR || activity.average_heartrate || 0;
 
           return (
-            <Link key={activity.id} href={`/app/activities/${activity.id}`} className="group block">
+            <Link
+              key={activity.id}
+              href={`/app/activities/${activity.id}`}
+              className="group block"
+            >
               <Card variant="elevated" hover padding="none" className="relative overflow-hidden">
                 {/* Sport color accent */}
                 <div
@@ -253,9 +230,7 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
                         <div>
                           <p className="text-sm font-bold text-foreground tabular-nums">
                             {Math.floor(durationS / 3600) > 0
-                              ? `${Math.floor(durationS / 3600)}h${Math.floor((durationS % 3600) / 60)
-                                  .toString()
-                                  .padStart(2, '0')}`
+                              ? `${Math.floor(durationS / 3600)}h${Math.floor((durationS % 3600) / 60).toString().padStart(2, '0')}`
                               : `${Math.floor(durationS / 60)} min`}
                           </p>
                           <p className="text-[10px] text-muted-foreground">durée</p>
@@ -330,9 +305,7 @@ export function ActivityList({ activities, isLoading, onRefresh }: ActivityListP
         <EmptyState
           icon={<Search className="w-8 h-8" />}
           title="Aucun résultat"
-          description={
-            searchQuery ? `Aucune activité ne correspond à "${searchQuery}"` : `Aucune activité de type "${filter}"`
-          }
+          description={searchQuery ? `Aucune activité ne correspond à "${searchQuery}"` : `Aucune activité de type "${filter}"`}
         />
       )}
     </div>

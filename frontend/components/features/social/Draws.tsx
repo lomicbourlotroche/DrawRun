@@ -1,10 +1,14 @@
+
 'use client';
 
 import { useState } from 'react';
 import { Button, Avatar } from '@/components/ui';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
-import { Heart, Users, MessageCircle, Share2, Trophy, Flame, TrendingUp, Award, Star } from '@/components/ui/icons';
+import {
+  Heart, Users, MessageCircle, Share2, Trophy,
+  Flame, TrendingUp, Award, Star
+} from '@/components/ui/icons';
 
 interface Draw {
   id: number;
@@ -29,7 +33,7 @@ export function ActivityDraws({
   draws,
   drawCount,
   userHasDrawn,
-  onDrawUpdate,
+  onDrawUpdate
 }: ActivityDrawsProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDrawers, setShowDrawers] = useState(false);
@@ -43,7 +47,7 @@ export function ActivityDraws({
         // Retirer le draw (ownerId only needed for add case; backend tolerates missing for remove)
         const response = await api.toggleActivityDraw(activityId, ownerId);
         if (response.success) {
-          const newDraws = (draws ?? []).filter((d) => d.user_id !== ownerId);
+          const newDraws = (draws ?? []).filter(d => d.user_id !== ownerId);
           const newCount = response.draw_count;
           onDrawUpdate?.(newDraws, newCount, false);
           toast.success('Draw retiré');
@@ -120,7 +124,9 @@ export function ActivityDraws({
                   <Avatar size="sm" src={draw.user_avatar} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{draw.user_name}</p>
-                    <p className="text-xs text-muted">{new Date(draw.created_at).toLocaleDateString()}</p>
+                    <p className="text-xs text-muted">
+                      {new Date(draw.created_at).toLocaleDateString()}
+                    </p>
                   </div>
                   <Heart className="w-3 h-3 text-danger" />
                 </div>
@@ -150,7 +156,7 @@ export function SocialDraw({
   initialCount,
   userHasDrawn,
   ownerId,
-  compact = false,
+  compact = false
 }: SocialDrawProps) {
   const [draws, setDraws] = useState<Draw[]>(initialDraws);
   const [drawCount, setDrawCount] = useState(initialCount);
@@ -165,7 +171,7 @@ export function SocialDraw({
       if (hasDrawn) {
         const response = await api.toggleActivityDraw(itemId, ownerId);
         if (response.success) {
-          setDraws((draws ?? []).filter((d) => d.user_id !== ownerId));
+          setDraws((draws ?? []).filter(d => d.user_id !== ownerId));
           setDrawCount(response.draw_count);
           setHasDrawn(false);
         }
@@ -212,9 +218,7 @@ export function SocialDraw({
         }`}
       >
         <Heart className={`w-4 h-4 ${hasDrawn ? 'fill-current' : ''}`} />
-        <span>
-          {drawCount} Draw{drawCount !== 1 ? 's' : ''}
-        </span>
+        <span>{drawCount} Draw{drawCount !== 1 ? 's' : ''}</span>
       </button>
 
       <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-muted hover:bg-muted hover:text-foreground">

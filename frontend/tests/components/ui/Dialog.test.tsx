@@ -11,7 +11,7 @@ describe('Dialog component', () => {
     render(
       <Dialog open={false} onOpenChange={() => {}}>
         <DialogContent>Test Content</DialogContent>
-      </Dialog>,
+      </Dialog>
     );
 
     expect(screen.queryByText('Test Content')).not.toBeInTheDocument();
@@ -21,7 +21,7 @@ describe('Dialog component', () => {
     render(
       <Dialog open={true} onOpenChange={() => {}}>
         <DialogContent>Test Content</DialogContent>
-      </Dialog>,
+      </Dialog>
     );
 
     expect(screen.getByText('Test Content')).toBeInTheDocument();
@@ -33,7 +33,7 @@ describe('Dialog component', () => {
     render(
       <Dialog open={true} onOpenChange={onOpenChange}>
         <DialogContent>Test Content</DialogContent>
-      </Dialog>,
+      </Dialog>
     );
 
     // The Dialog component uses Modal internally, which has a close button
@@ -48,7 +48,7 @@ describe('Dialog component', () => {
     render(
       <Dialog open={true} onOpenChange={() => {}}>
         <div>Child Content</div>
-      </Dialog>,
+      </Dialog>
     );
 
     expect(screen.getByText('Child Content')).toBeInTheDocument();
@@ -75,7 +75,7 @@ describe('DialogContent component', () => {
       <DialogContent>
         <span>First</span>
         <span>Second</span>
-      </DialogContent>,
+      </DialogContent>
     );
 
     expect(screen.getByText('First')).toBeInTheDocument();

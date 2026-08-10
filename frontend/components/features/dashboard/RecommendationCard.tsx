@@ -13,20 +13,13 @@ interface RecommendationCardProps {
 
 const getIntensityColor = (intensity: string) => {
   switch (intensity) {
-    case 'rest':
-      return { bg: 'bg-muted/20', text: 'text-muted-foreground', border: 'border-border' };
-    case 'easy':
-      return { bg: 'bg-success/10', text: 'text-success', border: 'border-success/20' };
-    case 'moderate':
-      return { bg: 'bg-primary/10', text: 'text-primary', border: 'border-primary/20' };
-    case 'threshold':
-      return { bg: 'bg-peak/10', text: 'text-peak', border: 'border-peak/20' };
-    case 'hard':
-      return { bg: 'bg-danger/10', text: 'text-danger', border: 'border-danger/20' };
-    case 'varied':
-      return { bg: 'bg-secondary/10', text: 'text-secondary', border: 'border-secondary/20' };
-    default:
-      return { bg: 'bg-muted/20', text: 'text-muted-foreground', border: 'border-border' };
+    case 'rest': return { bg: 'bg-muted/20', text: 'text-muted-foreground', border: 'border-border' };
+    case 'easy': return { bg: 'bg-success/10', text: 'text-success', border: 'border-success/20' };
+    case 'moderate': return { bg: 'bg-primary/10', text: 'text-primary', border: 'border-primary/20' };
+    case 'threshold': return { bg: 'bg-peak/10', text: 'text-peak', border: 'border-peak/20' };
+    case 'hard': return { bg: 'bg-danger/10', text: 'text-danger', border: 'border-danger/20' };
+    case 'varied': return { bg: 'bg-secondary/10', text: 'text-secondary', border: 'border-secondary/20' };
+    default: return { bg: 'bg-muted/20', text: 'text-muted-foreground', border: 'border-border' };
   }
 };
 
@@ -68,7 +61,9 @@ export function RecommendationCard({ recommendation, isLoading, onViewDetails }:
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Entra\u00eenement recommand\u00e9</CardTitle>
-          <div className={cn('px-2.5 py-1 rounded-full text-xs font-medium', intensityStyle.bg, intensityStyle.text)}>
+          <div
+            className={cn('px-2.5 py-1 rounded-full text-xs font-medium', intensityStyle.bg, intensityStyle.text)}
+          >
             {recommendation.intensity}
           </div>
         </div>

@@ -29,13 +29,7 @@ export const LEADERBOARD_PERIODS = [
 // ============================================================
 
 export const PODIUM_STYLES = [
-  {
-    bg: 'from-yellow-400 to-amber-500',
-    text: 'text-yellow-600',
-    badge: '🥇',
-    label: 'Leader',
-    ring: 'ring-yellow-400',
-  },
+  { bg: 'from-yellow-400 to-amber-500', text: 'text-yellow-600', badge: '🥇', label: 'Leader', ring: 'ring-yellow-400' },
   { bg: 'from-gray-300 to-gray-400', text: 'text-gray-500', badge: '🥈', label: '2ème', ring: 'ring-gray-400' },
   { bg: 'from-orange-400 to-amber-600', text: 'text-orange-600', badge: '🥉', label: '3ème', ring: 'ring-orange-400' },
 ] as const;
@@ -127,21 +121,21 @@ export const SOCIAL_FEED_CONSTANTS = {
 
 export const A11Y = {
   FEED: {
-    LOAD_MORE_BUTTON: "Charger plus d'activités",
-    LIKE_BUTTON: (liked: boolean) => (liked ? 'Retirer le like' : 'Ajouter un like'),
+    LOAD_MORE_BUTTON: 'Charger plus d\'activités',
+    LIKE_BUTTON: (liked: boolean) => liked ? 'Retirer le like' : 'Ajouter un like',
     COMMENT_BUTTON: 'Commenter cette activité',
   },
   FRIENDS: {
     ADD_FRIEND_BUTTON: 'Ajouter comme ami',
-    ACCEPT_REQUEST_BUTTON: "Accepter la demande d'ami",
-    REJECT_REQUEST_BUTTON: "Refuser la demande d'ami",
+    ACCEPT_REQUEST_BUTTON: 'Accepter la demande d\'ami',
+    REJECT_REQUEST_BUTTON: 'Refuser la demande d\'ami',
     REMOVE_FRIEND_BUTTON: 'Supprimer de mes amis',
   },
   GROUPS: {
     CREATE_GROUP_BUTTON: 'Créer un nouveau groupe',
     JOIN_GROUP_BUTTON: 'Rejoindre ce groupe',
     LEAVE_GROUP_BUTTON: 'Quitter ce groupe',
-    COPY_INVITE_CODE_BUTTON: "Copier le code d'invitation",
+    COPY_INVITE_CODE_BUTTON: 'Copier le code d\'invitation',
   },
   CHALLENGES: {
     CREATE_CHALLENGE_BUTTON: 'Créer un nouveau défi',
@@ -154,11 +148,11 @@ export const A11Y = {
 // ============================================================
 
 export const SOCIAL_ERRORS = {
-  FETCH_FRIENDS: "Impossible de charger la liste d'amis",
-  FETCH_FRIEND_REQUESTS: "Impossible de charger les demandes d'amis",
-  SEND_FRIEND_REQUEST: "Impossible d'envoyer la demande d'ami",
-  ACCEPT_FRIEND_REQUEST: "Impossible d'accepter la demande d'ami",
-  REJECT_FRIEND_REQUEST: "Impossible de refuser la demande d'ami",
+  FETCH_FRIENDS: 'Impossible de charger la liste d\'amis',
+  FETCH_FRIEND_REQUESTS: 'Impossible de charger les demandes d\'amis',
+  SEND_FRIEND_REQUEST: 'Impossible d\'envoyer la demande d\'ami',
+  ACCEPT_FRIEND_REQUEST: 'Impossible d\'accepter la demande d\'ami',
+  REJECT_FRIEND_REQUEST: 'Impossible de refuser la demande d\'ami',
   REMOVE_FRIEND: 'Impossible de supprimer cet ami',
   FETCH_GROUPS: 'Impossible de charger les groupes',
   CREATE_GROUP: 'Impossible de créer le groupe',
@@ -168,9 +162,9 @@ export const SOCIAL_ERRORS = {
   CREATE_CHALLENGE: 'Impossible de créer le défi',
   JOIN_CHALLENGE: 'Impossible de rejoindre le défi',
   FETCH_LEADERBOARD: 'Impossible de charger le classement',
-  FETCH_FEED: "Impossible de charger le fil d'actualité",
-  LIKE_ACTIVITY: "Impossible d'aimer cette activité",
+  FETCH_FEED: 'Impossible de charger le fil d\'actualité',
+  LIKE_ACTIVITY: 'Impossible d\'aimer cette activité',
   UNLIKE_ACTIVITY: 'Impossible de retirer le like',
-  ADD_COMMENT: "Impossible d'ajouter un commentaire",
+  ADD_COMMENT: 'Impossible d\'ajouter un commentaire',
   FETCH_COMMENTS: 'Impossible de charger les commentaires',
 } as const;

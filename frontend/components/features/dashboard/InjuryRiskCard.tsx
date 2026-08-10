@@ -63,14 +63,14 @@ export const InjuryRiskCard: React.FC<InjuryRiskCardProps> = ({ acwr, trend }) =
   const isDanger = acwr > 1.5;
 
   return (
-    <Card
-      className={`relative overflow-hidden border ${status.borderColor} ${status.bgColor} ${isDanger ? 'ring-2 ring-danger/50' : ''}`}
-    >
+    <Card className={`relative overflow-hidden border ${status.borderColor} ${status.bgColor} ${isDanger ? 'ring-2 ring-danger/50' : ''}`}>
       <div className="flex justify-between items-start mb-4">
         <div>
           <h3 className="text-sm font-medium text-muted mb-1">Pr\u00e9vention Blessure</h3>
           <div className="flex items-center gap-2">
-            <span className={`text-2xl font-bold ${status.color}`}>{acwr.toFixed(2)}</span>
+            <span className={`text-2xl font-bold ${status.color}`}>
+              {acwr.toFixed(2)}
+            </span>
             <span className="text-xs text-muted">ACWR</span>
             {trend === 'up' && <TrendingUp className="w-3 h-3 text-danger/80" />}
             {trend === 'down' && <TrendingDown className="w-3 h-3 text-success" />}
@@ -83,7 +83,9 @@ export const InjuryRiskCard: React.FC<InjuryRiskCardProps> = ({ acwr, trend }) =
 
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <span className={`text-sm font-semibold ${status.color}`}>{status.label}</span>
+          <span className={`text-sm font-semibold ${status.color}`}>
+            {status.label}
+          </span>
           <div className="h-1.5 flex-1 bg-surface rounded-full overflow-hidden relative">
             <div className="absolute left-[40%] right-[35%] h-full bg-success/20" title="Zone Optimale (0.8 - 1.3)" />
             <div
@@ -93,11 +95,15 @@ export const InjuryRiskCard: React.FC<InjuryRiskCardProps> = ({ acwr, trend }) =
           </div>
         </div>
 
-        <p className="text-xs text-muted/80 leading-relaxed italic">{status.message}</p>
+        <p className="text-xs text-muted/80 leading-relaxed italic">
+          {status.message}
+        </p>
 
         <div className="flex justify-between items-center pt-2 border-t border-border/50">
           <div className="text-[10px] uppercase tracking-wider text-muted">Niveau de Risque</div>
-          <div className={`text-[10px] font-bold uppercase tracking-wider ${status.color}`}>{status.risk}</div>
+          <div className={`text-[10px] font-bold uppercase tracking-wider ${status.color}`}>
+            {status.risk}
+          </div>
         </div>
       </div>
 

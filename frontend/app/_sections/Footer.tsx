@@ -10,13 +10,15 @@ const footerLinks = {
     { label: 'Fonctionnalités', href: '#features' },
     { label: 'App Garmin', href: '#garmin' },
     { label: 'VDOT', href: '#vdot' },
-    { label: "Télécharger l'App", href: '/drawrun-debug.apk', download: true },
+    { label: 'Télécharger l\'App', href: '/drawrun-debug.apk', download: true },
   ],
   compte: [
-    { label: "S'inscrire", href: '/login?mode=register' },
+    { label: 'S\'inscrire', href: '/login?mode=register' },
     { label: 'Connexion', href: '/login' },
   ],
-  communaute: [{ label: 'GitHub', href: 'https://github.com/lomicbourlotroche/DrawRun', external: true }],
+  communaute: [
+    { label: 'GitHub', href: 'https://github.com/lomicbourlotroche/DrawRun', external: true },
+  ],
 };
 
 export default function Footer() {
@@ -33,8 +35,8 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-muted mb-6 max-w-sm">
-              L&apos;application de performance ultime intégrant le moteur Jack Daniels VDOT V6.4 et 15+ métriques
-              avancées.
+              L&apos;application de performance ultime intégrant le moteur Jack Daniels VDOT V6.4
+              et 15+ métriques avancées.
             </p>
             {/* Social Links */}
             <div className="flex items-center gap-3">
@@ -140,12 +142,8 @@ export default function Footer() {
               © 2026 DrawRun • Powered by <span className="text-primary">ScienceEngine™</span>
             </p>
             <div className="flex items-center gap-6 text-sm text-muted">
-              <a href="#" className="hover:text-white transition-colors">
-                Confidentialité
-              </a>
-              <a href="#" className="hover:text-white transition-colors">
-                Conditions
-              </a>
+              <a href="#" className="hover:text-white transition-colors">Confidentialité</a>
+              <a href="#" className="hover:text-white transition-colors">Conditions</a>
             </div>
           </div>
         </div>

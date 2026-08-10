@@ -7,19 +7,8 @@ import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
 import type { DrawRunMap } from '@/types/leaflet';
 import {
-  Search,
-  X,
-  Compass,
-  MapPin,
-  Layers,
-  Plus,
-  LocateFixed,
-  Route,
-  Heart,
-  Navigation,
-  List,
-  Grid3x3,
-  ArrowRight,
+  Search, X, Compass, MapPin, Layers, Plus, LocateFixed,
+  Route, Heart, Navigation, List, Grid3x3, ArrowRight
 } from '@/components/ui/icons';
 import { Card, Button } from '@/components/ui';
 import ExplorePanel from '@/components/features/explore/ExplorePanel';
@@ -29,7 +18,10 @@ import RoutePlanner from '@/components/features/explore/RoutePlanner';
 import RouteDetailPopup from '@/components/features/explore/RouteDetailPopup';
 import HeatmapView from './HeatmapView';
 
-const ExploreMap = dynamic(() => import('@/components/features/explore/ExploreMap'), { ssr: false });
+const ExploreMap = dynamic(
+  () => import('@/components/features/explore/ExploreMap'),
+  { ssr: false }
+);
 
 interface Segment {
   id: number;
@@ -93,16 +85,7 @@ interface MapSegment {
 
 type Waypoint = { lat: number; lng: number };
 
-const ROUTE_COLORS = [
-  'var(--danger)',
-  'var(--primary)',
-  'var(--success)',
-  'var(--peak)',
-  'var(--secondary)',
-  'var(--danger)',
-  'var(--recovery)',
-  'var(--peak)',
-];
+const ROUTE_COLORS = ['var(--danger)', 'var(--primary)', 'var(--success)', 'var(--peak)', 'var(--secondary)', 'var(--danger)', 'var(--recovery)', 'var(--peak)'];
 const DEFAULT_CENTER = { lat: 48.400771, lng: -4.502407 };
 
 export default function ExplorePage() {
@@ -150,47 +133,44 @@ export default function ExplorePage() {
 
   const locatedRef = useRef(false);
 
-  const loadSegments = useCallback(
-    async (lat?: number, lng?: number) => {
-      setSegmentsLoading(true);
-      try {
-        const useLat = lat ?? mapCenter.lat;
-        const useLng = lng ?? mapCenter.lng;
+  const loadSegments = useCallback(async (lat?: number, lng?: number) => {
+    setSegmentsLoading(true);
+    try {
+      const useLat = lat ?? mapCenter.lat;
+      const useLng = lng ?? mapCenter.lng;
 
-        if (useLat && useLng) {
-          const res = await api.getNearbySegments(useLat, useLng, 10000);
-          if (res.success) {
-            const segs = (res.segments ?? []) as Segment[];
-            setSegments(segs);
-            setMapSegments(
-              segs
-                .filter((s) => s.start_lat && s.start_lng && s.end_lat && s.end_lng)
-                .map((s) => ({
-                  id: s.id,
-                  startLat: s.start_lat!,
-                  startLng: s.start_lng!,
-                  endLat: s.end_lat!,
-                  endLng: s.end_lng!,
-                  polyline: s.polyline,
-                  name: s.name,
-                  onClick: () => router.push(`/app/explore/segments/${s.id}`),
-                })),
-            );
-          }
-        } else {
-          const res = await api.getPublicSegments();
-          if (res.success) {
-            setSegments((res.segments ?? []) as Segment[]);
-          }
+      if (useLat && useLng) {
+        const res = await api.getNearbySegments(useLat, useLng, 10000);
+        if (res.success) {
+          const segs = (res.segments ?? []) as Segment[];
+          setSegments(segs);
+          setMapSegments(
+            segs
+              .filter((s) => s.start_lat && s.start_lng && s.end_lat && s.end_lng)
+              .map((s) => ({
+                id: s.id,
+                startLat: s.start_lat!,
+                startLng: s.start_lng!,
+                endLat: s.end_lat!,
+                endLng: s.end_lng!,
+                polyline: s.polyline,
+                name: s.name,
+                onClick: () => router.push(`/app/explore/segments/${s.id}`),
+              }))
+          );
         }
-      } catch {
-        /* ignore */
-      } finally {
-        setSegmentsLoading(false);
+      } else {
+        const res = await api.getPublicSegments();
+        if (res.success) {
+          setSegments((res.segments ?? []) as Segment[]);
+        }
       }
-    },
-    [router, mapCenter],
-  );
+    } catch {
+      /* ignore */
+    } finally {
+      setSegmentsLoading(false);
+    }
+  }, [router, mapCenter]);
 
   const loadRoutes = useCallback(async (type?: string, difficulty?: string) => {
     setRoutesLoading(true);
@@ -200,15 +180,13 @@ export default function ExplorePage() {
         const r = (res.routes ?? []) as RouteItem[];
         setRoutes(r);
         setMapRoutes(
-          r
-            .filter((rt) => rt.polyline)
-            .map((rt, idx) => ({
-              id: rt.id,
-              polyline: rt.polyline,
-              color: ROUTE_COLORS[idx % ROUTE_COLORS.length],
-              name: rt.name,
-              onClick: () => setSelectedRoute(rt),
-            })),
+          r.filter((rt) => rt.polyline).map((rt, idx) => ({
+            id: rt.id,
+            polyline: rt.polyline,
+            color: ROUTE_COLORS[idx % ROUTE_COLORS.length],
+            name: rt.name,
+            onClick: () => setSelectedRoute(rt),
+          }))
         );
       }
     } catch {
@@ -265,7 +243,7 @@ export default function ExplorePage() {
           loadSegments(DEFAULT_CENTER.lat, DEFAULT_CENTER.lng);
           locatedRef.current = true;
         },
-        { timeout: 5000, enableHighAccuracy: true },
+        { timeout: 5000, enableHighAccuracy: true }
       );
     };
 
@@ -294,7 +272,7 @@ export default function ExplorePage() {
         loadSegments(latitude, longitude);
         toast.success('Position détectée');
       },
-      () => toast.error("Impossible d'obtenir votre position"),
+      () => toast.error('Impossible d\'obtenir votre position')
     );
   }, [loadSegments]);
 
@@ -340,7 +318,9 @@ export default function ExplorePage() {
             </div>
             <div className="text-white">
               <h1 className="text-xl font-black tracking-tight leading-none">EXPLORER</h1>
-              <p className="text-[11px] opacity-80 font-medium tracking-wide">DÉCOUVREZ — PARCOURS & SEGMENTS</p>
+              <p className="text-[11px] opacity-80 font-medium tracking-wide">
+                DÉCOUVREZ — PARCOURS & SEGMENTS
+              </p>
             </div>
           </div>
 
@@ -531,7 +511,7 @@ export default function ExplorePage() {
                 toast.success('Parcours ajouté à vos activités');
                 setSelectedRoute(null);
               } catch {
-                toast.error("Erreur lors de l'utilisation du parcours");
+                toast.error('Erreur lors de l\'utilisation du parcours');
               }
             }}
           />

@@ -101,19 +101,11 @@ export default function OvertrainingAlert() {
 
       {data.acwr !== null && data.acwr !== undefined && (
         <div className="flex items-center justify-between text-xs">
-          <span className="text-muted">
-            ACWR: <strong className="text-foreground">{data.acwr.toFixed(2)}</strong>
-          </span>
+          <span className="text-muted">ACWR: <strong className="text-foreground">{data.acwr.toFixed(2)}</strong></span>
           <div className="flex gap-2 text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-success" /> Bon
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-warning" /> Modéré
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-danger" /> Risque
-            </span>
+            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-success" /> Bon</span>
+            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-warning" /> Modéré</span>
+            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-danger" /> Risque</span>
           </div>
         </div>
       )}

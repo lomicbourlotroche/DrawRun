@@ -18,7 +18,10 @@ export interface GradientBadgeProps extends HTMLAttributes<HTMLSpanElement> {
  * Inspiré des badges de la section Hero
  */
 const GradientBadge = forwardRef<HTMLSpanElement, GradientBadgeProps>(
-  ({ className, variant = 'primary', size = 'md', icon: Icon, dot = false, dotColor, children, ...props }, ref) => {
+  (
+    { className, variant = 'primary', size = 'md', icon: Icon, dot = false, dotColor, children, ...props },
+    ref
+  ) => {
     const variantStyles = {
       primary: 'bg-primary-100/80 text-primary-700 border-primary-200',
       success: 'bg-success-100/80 text-success-700 border-success-200',
@@ -48,16 +51,23 @@ const GradientBadge = forwardRef<HTMLSpanElement, GradientBadgeProps>(
           'transition-all duration-200',
           variantStyles[variant],
           sizeStyles[size],
-          className,
+          className
         )}
         {...props}
       >
-        {dot && <span className={cn('w-2 h-2 rounded-full animate-pulse', dotColor || 'bg-current')} />}
+        {dot && (
+          <span
+            className={cn(
+              'w-2 h-2 rounded-full animate-pulse',
+              dotColor || 'bg-current'
+            )}
+          />
+        )}
         {Icon && <Icon className={cn('flex-shrink-0', iconSizes[size])} />}
         {children}
       </span>
     );
-  },
+  }
 );
 
 GradientBadge.displayName = 'GradientBadge';
@@ -97,7 +107,7 @@ const StatusBadge = forwardRef<HTMLSpanElement, StatusBadgeProps>(
         {children}
       </GradientBadge>
     );
-  },
+  }
 );
 
 StatusBadge.displayName = 'StatusBadge';

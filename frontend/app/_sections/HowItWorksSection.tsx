@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { Card, Button } from '@/components/ui';
-import { UserPlus, Link2, TrendingUp, ArrowRight, Sparkles, Shield, Lock } from '@/components/ui/icons';
+import {
+  UserPlus,
+  Link2,
+  TrendingUp,
+  ArrowRight,
+  Sparkles,
+  Shield,
+  Lock
+} from '@/components/ui/icons';
 
 const steps = [
   {
@@ -44,7 +52,7 @@ export default function HowItWorksSection() {
           setIsVisible(true);
         }
       },
-      { threshold: 0.1 },
+      { threshold: 0.1 }
     );
 
     const section = document.getElementById('comment-ca-marche');
@@ -59,9 +67,7 @@ export default function HowItWorksSection() {
     <section id="comment-ca-marche" className="py-20 lg:py-32 bg-surface overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div
-          className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-        >
+        <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-recovery/10 border border-recovery/20 rounded-full text-sm font-semibold text-recovery mb-6">
             <Sparkles className="w-4 h-4" />
             Simple et rapide
@@ -69,11 +75,13 @@ export default function HowItWorksSection() {
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight mb-6">
             Comment ça
             <br />
-            <span className="bg-gradient-to-r from-recovery to-primary bg-clip-text text-transparent">Marche ?</span>
+            <span className="bg-gradient-to-r from-recovery to-primary bg-clip-text text-transparent">
+              Marche ?
+            </span>
           </h2>
           <p className="text-lg text-muted max-w-2xl mx-auto">
-            Commencez à utiliser DrawRun en 3 étapes simples. Pas de configuration complexe, juste vos données et votre
-            motivation.
+            Commencez à utiliser DrawRun en 3 étapes simples.
+            Pas de configuration complexe, juste vos données et votre motivation.
           </p>
         </div>
 
@@ -92,15 +100,17 @@ export default function HowItWorksSection() {
                     {/* Step Number & Icon */}
                     <div className="flex items-center justify-between mb-6">
                       <span className="text-5xl font-black text-muted">{step.number}</span>
-                      <div
-                        className={`w-14 h-14 rounded-2xl flex items-center justify-center ${iconColors[step.color]}`}
-                      >
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${iconColors[step.color]}`}>
                         <Icon className="w-7 h-7" />
                       </div>
                     </div>
 
-                    <h3 className="text-xl font-bold text-foreground mb-3">{step.title}</h3>
-                    <p className="text-muted leading-relaxed flex-1">{step.description}</p>
+                    <h3 className="text-xl font-bold text-foreground mb-3">
+                      {step.title}
+                    </h3>
+                    <p className="text-muted leading-relaxed flex-1">
+                      {step.description}
+                    </p>
                   </div>
                 </Card>
 
@@ -116,10 +126,12 @@ export default function HowItWorksSection() {
         </div>
 
         {/* CTA */}
-        <div
-          className={`text-center transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-        >
-          <Button size="lg" glow rightIcon={<ArrowRight className="w-5 h-5" />}>
+        <div className={`text-center transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <Button
+            size="lg"
+            glow
+            rightIcon={<ArrowRight className="w-5 h-5" />}
+          >
             Commencer gratuitement
           </Button>
 

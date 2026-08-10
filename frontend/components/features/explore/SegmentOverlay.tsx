@@ -54,7 +54,7 @@ export default function SegmentOverlay({ map, segments }: SegmentOverlayProps) {
         polyline.on('click', segment.onClick);
       }
 
-      const markerSize = typeof window !== 'undefined' && window.innerWidth < 640 ? 14 : 10;
+      const markerSize = (typeof window !== 'undefined' && window.innerWidth < 640) ? 14 : 10;
       const startIcon = L.divIcon({
         className: 'segment-marker-start',
         html: `<div style="width:${markerSize}px;height:${markerSize}px;background:var(--success);border:2px solid var(--surface);border-radius:50%;"></div>`,

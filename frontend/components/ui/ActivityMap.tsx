@@ -202,16 +202,13 @@ export default function ActivityMap({
         segments.forEach((seg) => {
           const segColor = seg.color || 'var(--secondary)';
           const segLine = L.polyline(
-            [
-              [seg.startLat, seg.startLng],
-              [seg.endLat, seg.endLng],
-            ],
+            [[seg.startLat, seg.startLng], [seg.endLat, seg.endLng]],
             {
               color: segColor,
               weight: 6,
               opacity: 0.6,
               dashArray: '10 6',
-            },
+            }
           ) as DrawRunPolyline;
           segLine.addTo(map);
           segmentLayersRef.current.push(segLine);
@@ -289,17 +286,9 @@ export default function ActivityMap({
     >
       <style jsx>{`
         @keyframes gps-pulse {
-          0% {
-            box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary), transparent 70%);
-          }
-          50% {
-            box-shadow:
-              0 0 0 4px color-mix(in srgb, var(--primary), transparent 70%),
-              0 0 0 12px color-mix(in srgb, var(--primary), transparent 90%);
-          }
-          100% {
-            box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary), transparent 70%);
-          }
+          0% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary), transparent 70%); }
+          50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary), transparent 70%), 0 0 0 12px color-mix(in srgb, var(--primary), transparent 90%); }
+          100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary), transparent 70%); }
         }
       `}</style>
       <div

@@ -45,9 +45,7 @@ export interface QueuedSave {
 export function saveCheckpoint(data: RecordingCheckpoint): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch {
-    /* quota exceeded */
-  }
+  } catch { /* quota exceeded */ }
 }
 
 export function loadCheckpoint(): RecordingCheckpoint | null {
@@ -70,9 +68,7 @@ export function enqueueSave(save: QueuedSave): void {
     const queue = getSaveQueue();
     queue.push(save);
     localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
-  } catch {
-    /* quota exceeded */
-  }
+  } catch { /* quota exceeded */ }
 }
 
 export function getSaveQueue(): QueuedSave[] {
@@ -93,7 +89,7 @@ export function removeFromQueue(index: number): void {
 }
 
 export async function processSaveQueue(
-  importFn: (_name: string, _gpx: string, _type: string) => Promise<unknown>,
+  importFn: (_name: string, _gpx: string, _type: string) => Promise<unknown>
 ): Promise<{ success: number; failed: number }> {
   const queue = getSaveQueue();
   if (queue.length === 0) return { success: 0, failed: 0 };

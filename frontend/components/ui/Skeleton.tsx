@@ -79,7 +79,11 @@ export function ChartSkeleton({ className }: { className?: string }) {
 // Skeleton pour le tableau de bord complet
 export function DashboardSkeleton({ className }: { className?: string }) {
   return (
-    <div role="status" aria-label="Tableau de bord en chargement" className={cn('space-y-6', className)}>
+    <div
+      role="status"
+      aria-label="Tableau de bord en chargement"
+      className={cn('space-y-6', className)}
+    >
       <div>
         <Skeleton className="h-8 w-48 mb-2" />
         <Skeleton className="h-4 w-64" />
@@ -95,7 +99,10 @@ export function DashboardSkeleton({ className }: { className?: string }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {[1, 2].map((i) => (
-          <div key={i} className="bg-surface border border-border rounded-xl p-4 md:p-6">
+          <div
+            key={i}
+            className="bg-surface border border-border rounded-xl p-4 md:p-6"
+          >
             <Skeleton className="h-6 w-48 mb-4" />
             <Skeleton className="h-4 w-full mb-2" />
             <Skeleton className="h-4 w-3/4" />
@@ -109,7 +116,11 @@ export function DashboardSkeleton({ className }: { className?: string }) {
 // Skeleton pour la liste des activités
 export function ActivitiesSkeleton({ className }: { className?: string }) {
   return (
-    <div role="status" aria-label="Activités en chargement" className={cn('space-y-4', className)}>
+    <div
+      role="status"
+      aria-label="Activités en chargement"
+      className={cn('space-y-4', className)}
+    >
       <div className="flex justify-between items-center mb-4">
         <div>
           <Skeleton className="h-8 w-32 mb-2" />
@@ -130,7 +141,11 @@ export function ActivitiesSkeleton({ className }: { className?: string }) {
 // Skeleton pour la page de profil
 export function ProfileSkeleton({ className }: { className?: string }) {
   return (
-    <div role="status" aria-label="Profil en chargement" className={cn('space-y-6', className)}>
+    <div
+      role="status"
+      aria-label="Profil en chargement"
+      className={cn('space-y-6', className)}
+    >
       <div className="bg-surface border border-border rounded-xl p-6 flex items-center gap-6">
         <Skeleton className="h-24 w-24 rounded-full" />
         <div className="flex-1">
@@ -155,7 +170,11 @@ export function ProfileSkeleton({ className }: { className?: string }) {
 // Skeleton pour la page coach
 export function CoachSkeleton({ className }: { className?: string }) {
   return (
-    <div role="status" aria-label="Coach en chargement" className={cn('space-y-6', className)}>
+    <div
+      role="status"
+      aria-label="Coach en chargement"
+      className={cn('space-y-6', className)}
+    >
       <Skeleton className="h-8 w-40 mb-2" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -170,7 +189,11 @@ export function CoachSkeleton({ className }: { className?: string }) {
 // Skeleton pour la page sociale
 export function SocialSkeleton({ className }: { className?: string }) {
   return (
-    <div role="status" aria-label="Réseau social en chargement" className={cn('space-y-6', className)}>
+    <div
+      role="status"
+      aria-label="Réseau social en chargement"
+      className={cn('space-y-6', className)}
+    >
       <div className="flex gap-2 border-b border-border pb-4">
         {[1, 2, 3, 4].map((i) => (
           <Skeleton key={i} className="h-10 w-24" />
@@ -179,7 +202,10 @@ export function SocialSkeleton({ className }: { className?: string }) {
 
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-surface border border-border rounded-xl p-4">
+          <div
+            key={i}
+            className="bg-surface border border-border rounded-xl p-4"
+          >
             <div className="flex items-center gap-3 mb-4">
               <Skeleton className="h-10 w-10 rounded-full" />
               <div>
@@ -199,7 +225,11 @@ export function SocialSkeleton({ className }: { className?: string }) {
 // Skeleton pour la page performance
 export function PerformanceSkeleton({ className }: { className?: string }) {
   return (
-    <div role="status" aria-label="Performance en chargement" className={cn('space-y-6', className)}>
+    <div
+      role="status"
+      aria-label="Performance en chargement"
+      className={cn('space-y-6', className)}
+    >
       <Skeleton className="h-8 w-48 mb-2" />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -219,7 +249,11 @@ export function PerformanceSkeleton({ className }: { className?: string }) {
 // Skeleton pour une page générique
 export function PageSkeleton({ title = true, className }: { title?: boolean; className?: string }) {
   return (
-    <div role="status" aria-label="Page en chargement" className={cn('space-y-6', className)}>
+    <div
+      role="status"
+      aria-label="Page en chargement"
+      className={cn('space-y-6', className)}
+    >
       {title && <Skeleton className="h-8 w-48" />}
       <div className="bg-surface border border-border rounded-xl p-6 space-y-4">
         <Skeleton className="h-4 w-full" />
@@ -255,7 +289,13 @@ export function TableSkeleton({
 
       {/* Rows */}
       {Array.from({ length: rows }).map((_, rowIndex) => (
-        <div key={rowIndex} className={cn('flex border-b border-border p-4', rowIndex === rows - 1 && 'border-b-0')}>
+        <div
+          key={rowIndex}
+          className={cn(
+            'flex border-b border-border p-4',
+            rowIndex === rows - 1 && 'border-b-0'
+          )}
+        >
           {Array.from({ length: columns }).map((_, colIndex) => (
             <Skeleton key={colIndex} className="h-4 w-full mx-2" />
           ))}
@@ -284,7 +324,11 @@ export function MetricCardSkeleton({ className }: { className?: string }) {
 
 // Skeleton pour un badge
 export function BadgeSkeleton({ className }: { className?: string }) {
-  return <Skeleton className={cn('h-6 w-16 rounded-full', className)} />;
+  return (
+    <Skeleton
+      className={cn('h-6 w-16 rounded-full', className)}
+    />
+  );
 }
 
 // Skeleton pour une ligne de stats

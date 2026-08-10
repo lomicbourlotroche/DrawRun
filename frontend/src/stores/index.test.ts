@@ -21,15 +21,9 @@ describe('Auth Store — Property-Based Tests', () => {
     Object.defineProperty(window, 'sessionStorage', {
       value: {
         getItem: vi.fn((key: string) => sessionStorageData[key] ?? null),
-        setItem: vi.fn((key: string, value: string) => {
-          sessionStorageData[key] = value;
-        }),
-        removeItem: vi.fn((key: string) => {
-          delete sessionStorageData[key];
-        }),
-        clear: vi.fn(() => {
-          sessionStorageData = {};
-        }),
+        setItem: vi.fn((key: string, value: string) => { sessionStorageData[key] = value; }),
+        removeItem: vi.fn((key: string) => { delete sessionStorageData[key]; }),
+        clear: vi.fn(() => { sessionStorageData = {}; }),
       },
       writable: true,
       configurable: true,
@@ -38,15 +32,9 @@ describe('Auth Store — Property-Based Tests', () => {
     Object.defineProperty(window, 'localStorage', {
       value: {
         getItem: vi.fn((key: string) => localStorageData[key] ?? null),
-        setItem: vi.fn((key: string, value: string) => {
-          localStorageData[key] = value;
-        }),
-        removeItem: vi.fn((key: string) => {
-          delete localStorageData[key];
-        }),
-        clear: vi.fn(() => {
-          localStorageData = {};
-        }),
+        setItem: vi.fn((key: string, value: string) => { localStorageData[key] = value; }),
+        removeItem: vi.fn((key: string) => { delete localStorageData[key]; }),
+        clear: vi.fn(() => { localStorageData = {}; }),
       },
       writable: true,
       configurable: true,
@@ -66,27 +54,30 @@ describe('Auth Store — Property-Based Tests', () => {
     // Validates: Requirement 7.3
     it('Property 8: logout clears token from store and both sessionStorage keys', () => {
       fc.assert(
-        fc.property(fc.string({ minLength: 10, maxLength: 100 }), (token) => {
-          // Reset between runs
-          sessionStorageData = {};
-          localStorageData = {};
+        fc.property(
+          fc.string({ minLength: 10, maxLength: 100 }),
+          (token) => {
+            // Reset between runs
+            sessionStorageData = {};
+            localStorageData = {};
 
-          // Set up auth state
-          api.setToken(token);
-          api.setRefreshToken(token);
-          useAuthStore.setState({ isAuthenticated: true, token, user: null });
+            // Set up auth state
+            api.setToken(token);
+            api.setRefreshToken(token);
+            useAuthStore.setState({ isAuthenticated: true, token, user: null });
 
-          // Logout
-          useAuthStore.getState().logout();
+            // Logout
+            useAuthStore.getState().logout();
 
-          // Assert all cleared
-          return (
-            sessionStorage.getItem('drawrun_token') === null &&
-            sessionStorage.getItem('drawrun_refresh_token') === null &&
-            useAuthStore.getState().token === null
-          );
-        }),
-        { numRuns: 50 },
+            // Assert all cleared
+            return (
+              sessionStorage.getItem('drawrun_token') === null &&
+              sessionStorage.getItem('drawrun_refresh_token') === null &&
+              useAuthStore.getState().token === null
+            );
+          }
+        ),
+        { numRuns: 50 }
       );
     });
   });
@@ -96,15 +87,18 @@ describe('Auth Store — Property-Based Tests', () => {
     // Validates: Requirement 7.4
     it('Property 9: token never written to localStorage', () => {
       fc.assert(
-        fc.property(fc.string({ minLength: 10, maxLength: 100 }), (token) => {
-          // Reset between runs
-          localStorageData = {};
+        fc.property(
+          fc.string({ minLength: 10, maxLength: 100 }),
+          (token) => {
+            // Reset between runs
+            localStorageData = {};
 
-          api.setToken(token);
-          api.setToken(null);
-          return localStorage.getItem('drawrun_token') === null;
-        }),
-        { numRuns: 50 },
+            api.setToken(token);
+            api.setToken(null);
+            return localStorage.getItem('drawrun_token') === null;
+          }
+        ),
+        { numRuns: 50 }
       );
     });
   });

@@ -209,25 +209,23 @@ export default function GamificationWidget({ planId }: GamificationWidgetProps) 
           </div>
         </div>
 
-        {data.badges.filter((b) => b.earnedAt).length > 0 && (
+        {data.badges.filter(b => b.earnedAt).length > 0 && (
           <div className="space-y-2">
             <p className="text-sm font-medium text-foreground">Badges obtenus</p>
             <div className="flex flex-wrap gap-2">
-              {data.badges
-                .filter((b) => b.earnedAt)
-                .map((badge) => {
-                  const Icon = iconMap[badge.icon] || Star;
-                  return (
-                    <div
-                      key={badge.id}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-warning/20 to-peak/20 border border-warning/30"
-                      title={badge.description}
-                    >
-                      <Icon className="w-4 h-4 text-warning/80" />
-                      <span className="text-xs font-medium text-foreground">{badge.name}</span>
-                    </div>
-                  );
-                })}
+              {data.badges.filter(b => b.earnedAt).map(badge => {
+                const Icon = iconMap[badge.icon] || Star;
+                return (
+                  <div
+                    key={badge.id}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-warning/20 to-peak/20 border border-warning/30"
+                    title={badge.description}
+                  >
+                    <Icon className="w-4 h-4 text-warning/80" />
+                    <span className="text-xs font-medium text-foreground">{badge.name}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -235,13 +233,11 @@ export default function GamificationWidget({ planId }: GamificationWidgetProps) 
         {data.achievements.length > 0 && (
           <div className="space-y-2">
             <p className="text-sm font-medium text-foreground">Objectifs</p>
-            {data.achievements.map((ach) => (
+            {data.achievements.map(ach => (
               <div key={ach.id} className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
                   <span className={ach.unlocked ? 'text-primary' : 'text-muted'}>{ach.name}</span>
-                  <span className="text-foreground">
-                    {ach.progress}/{ach.target}
-                  </span>
+                  <span className="text-foreground">{ach.progress}/{ach.target}</span>
                 </div>
                 <div className="h-1.5 bg-background rounded-full overflow-hidden">
                   <div

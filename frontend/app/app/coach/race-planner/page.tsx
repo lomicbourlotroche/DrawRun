@@ -40,8 +40,8 @@ export default function RacePlannerPage() {
         params: {
           temp: params.temp,
           humidity: params.humidity,
-          goalTime: params.goalTime ? parseInt(params.goalTime) : undefined,
-        },
+          goalTime: params.goalTime ? parseInt(params.goalTime) : undefined
+        }
       });
       setStrategy(response as Record<string, unknown>);
       setStep(3);
@@ -66,28 +66,17 @@ export default function RacePlannerPage() {
 
   const downloadCsv = () => {
     if (!strategy) return;
-    const headers = [
-      'KM',
-      'Distance (m)',
-      'Elevation Gain (m)',
-      'Elevation Loss (m)',
-      'Grade (%)',
-      'Target Pace',
-      'Target Pace (sec)',
-      'Cumulative Time (sec)',
-    ];
-    const rows = ((strategy.strategy as Record<string, unknown>).segments as Array<Record<string, unknown>>).map(
-      (s: Record<string, unknown>) => [
-        s.km,
-        s.distance,
-        s.elevGain,
-        s.elevLoss,
-        s.grade,
-        s.targetPace,
-        s.targetPaceSec,
-        s.cumulativeTime,
-      ],
-    );
+    const headers = ['KM', 'Distance (m)', 'Elevation Gain (m)', 'Elevation Loss (m)', 'Grade (%)', 'Target Pace', 'Target Pace (sec)', 'Cumulative Time (sec)'];
+    const rows = ((strategy.strategy as Record<string, unknown>).segments as Array<Record<string, unknown>>).map((s: Record<string, unknown>) => [
+      s.km,
+      s.distance,
+      s.elevGain,
+      s.elevLoss,
+      s.grade,
+      s.targetPace,
+      s.targetPaceSec,
+      s.cumulativeTime
+    ]);
     const csvContent = [headers.join(','), ...(rows as unknown[][]).map((r: unknown[]) => r.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -107,11 +96,17 @@ export default function RacePlannerPage() {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-secondary bg-clip-text text-transparent">
             Planificateur de Course 2.0
           </h1>
-          <p className="text-muted-foreground mt-1">Optimisez votre allure en fonction du relief et de la météo.</p>
+          <p className="text-muted-foreground mt-1">
+            Optimisez votre allure en fonction du relief et de la météo.
+          </p>
         </div>
 
         {step > 1 && (
-          <Button variant="outline" onClick={() => setStep(step - 1)} className="w-fit">
+          <Button
+            variant="outline"
+            onClick={() => setStep(step - 1)}
+            className="w-fit"
+          >
             <ChevronLeft className="w-4 h-4 mr-2" />
             Retour
           </Button>
@@ -129,13 +124,17 @@ export default function RacePlannerPage() {
             >
               {s}
             </div>
-            {s < 3 && <div className={`w-12 h-1 rounded-full ${step > s ? 'bg-primary' : 'bg-muted'}`} />}
+            {s < 3 && (
+              <div className={`w-12 h-1 rounded-full ${step > s ? 'bg-primary' : 'bg-muted'}`} />
+            )}
           </React.Fragment>
         ))}
       </div>
 
       {/* Step 1: Upload */}
-      {step === 1 && <UploadStep onFileSelected={handleFileUpload} />}
+      {step === 1 && (
+        <UploadStep onFileSelected={handleFileUpload} />
+      )}
 
       {/* Step 2: Params */}
       {step === 2 && (
@@ -151,7 +150,11 @@ export default function RacePlannerPage() {
 
       {/* Step 3: Results */}
       {step === 3 && strategy && (
-        <StrategyResults strategy={strategy} formatTime={formatTime} downloadCsv={downloadCsv} />
+        <StrategyResults
+          strategy={strategy}
+          formatTime={formatTime}
+          downloadCsv={downloadCsv}
+        />
       )}
     </div>
   );

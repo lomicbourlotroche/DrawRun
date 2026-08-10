@@ -64,10 +64,16 @@ interface HeroMetricProps {
 function HeroMetric({ label, value, unit, icon, accent, intensity, delay }: HeroMetricProps) {
   return (
     <div className={cn('animate-slide-up opacity-0 fill-mode-forwards', delay)}>
-      <Card variant="glass" accent="primary" className="relative overflow-hidden group hover:border-primary/30">
+      <Card
+        variant="glass"
+        accent="primary"
+        className="relative overflow-hidden group hover:border-primary/30"
+      >
         <div className="flex items-start justify-between mb-2">
           <span className="text-[10px] font-semibold text-muted uppercase tracking-widest">{label}</span>
-          <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', accent)}>{icon}</div>
+          <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', accent)}>
+            {icon}
+          </div>
         </div>
         <div className="flex items-baseline gap-1">
           <span className="text-2xl font-bold text-foreground tabular-nums tracking-tight">{value}</span>
@@ -158,9 +164,7 @@ export function ModernDashboard() {
     return (
       <div className="space-y-5 p-1 animate-fade-in">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[1, 2, 3, 4].map((i) => (
-            <SkeletonBlock key={i} className="h-28" />
-          ))}
+          {[1, 2, 3, 4].map((i) => <SkeletonBlock key={i} className="h-28" />)}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <SkeletonBlock className="lg:col-span-2 h-80" />
@@ -222,15 +226,7 @@ export function ModernDashboard() {
           label="TSB — Forme"
           value={pmc ? String(pmc.tsb) : '\u2014'}
           icon={<BarChart3 className="w-4 h-4 text-white" />}
-          accent={
-            pmc && pmc.tsb > 5
-              ? 'bg-success'
-              : pmc && pmc.tsb < -15
-                ? 'bg-danger'
-                : pmc && pmc.tsb < -5
-                  ? 'bg-warning'
-                  : 'bg-primary'
-          }
+          accent={pmc && pmc.tsb > 5 ? 'bg-success' : pmc && pmc.tsb < -15 ? 'bg-danger' : pmc && pmc.tsb < -5 ? 'bg-warning' : 'bg-primary'}
           intensity={pmc ? Math.min(Math.abs(pmc.tsb) * 4, 100) : 0}
           delay="delay-[200ms]"
         />
@@ -265,12 +261,7 @@ export function ModernDashboard() {
                   {[
                     { label: 'CTL', value: pmc.ctl, color: 'text-primary', bar: 'bg-primary' },
                     { label: 'ATL', value: pmc.atl, color: 'text-danger', bar: 'bg-danger' },
-                    {
-                      label: 'TSB',
-                      value: pmc.tsb,
-                      color: getTsbStatus(pmc.tsb).color,
-                      bar: pmc.tsb >= 0 ? 'bg-success' : 'bg-warning',
-                    },
+                    { label: 'TSB', value: pmc.tsb, color: getTsbStatus(pmc.tsb).color, bar: pmc.tsb >= 0 ? 'bg-success' : 'bg-warning' },
                   ].map((m) => (
                     <div key={m.label} className="flex items-center gap-2 text-xs">
                       <div className={cn('w-2 h-2 rounded-full', m.bar)} />
@@ -312,17 +303,8 @@ export function ModernDashboard() {
               <Card variant="glass" accent="warning" hover className="relative overflow-hidden">
                 <CardContent className="p-0">
                   <InjuryRiskCard
-                    acwr={
-                      pmcData[pmcData.length - 1].acwr ||
-                      pmcData[pmcData.length - 1].atl / (pmcData[pmcData.length - 1].ctl || 1)
-                    }
-                    trend={
-                      pmcData.length > 7
-                        ? pmcData[pmcData.length - 1].acwr! > pmcData[pmcData.length - 8].acwr!
-                          ? 'up'
-                          : 'down'
-                        : 'stable'
-                    }
+                    acwr={pmcData[pmcData.length - 1].acwr || (pmcData[pmcData.length - 1].atl / (pmcData[pmcData.length - 1].ctl || 1))}
+                    trend={pmcData.length > 7 ? (pmcData[pmcData.length - 1].acwr! > pmcData[pmcData.length - 8].acwr! ? 'up' : 'down') : 'stable'}
                   />
                 </CardContent>
               </Card>
@@ -341,19 +323,13 @@ export function ModernDashboard() {
                   {[
                     { label: 'CTL', value: pmc.ctl, color: 'bg-primary', max: 150 },
                     { label: 'ATL', value: pmc.atl, color: 'bg-danger', max: 150 },
-                    {
-                      label: 'TSB',
-                      value: Math.abs(pmc.tsb),
-                      color: pmc.tsb >= 0 ? 'bg-success' : 'bg-warning',
-                      max: 50,
-                    },
+                    { label: 'TSB', value: Math.abs(pmc.tsb), color: pmc.tsb >= 0 ? 'bg-success' : 'bg-warning', max: 50 },
                   ].map((m) => (
                     <div key={m.label}>
                       <div className="flex justify-between text-xs mb-1">
                         <span className="text-muted-foreground font-medium">{m.label}</span>
                         <span className="font-semibold text-foreground tabular-nums">
-                          {m.label === 'TSB' && pmc.tsb < 0 ? '-' : ''}
-                          {m.value}
+                          {m.label === 'TSB' && pmc.tsb < 0 ? '-' : ''}{m.value}
                         </span>
                       </div>
                       <div className="h-1.5 bg-surface rounded-full overflow-hidden">
@@ -401,9 +377,7 @@ export function ModernDashboard() {
                   <Activity className="w-6 h-6 text-primary/60" />
                 </div>
                 <p className="text-sm font-medium text-foreground">Aucune activit\u00e9 r\u00e9cente</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Synchronisez vos services pour voir vos activit\u00e9s
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">Synchronisez vos services pour voir vos activit\u00e9s</p>
               </div>
             )}
           </CardContent>

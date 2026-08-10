@@ -39,7 +39,7 @@ test.describe('Authentication Flow', () => {
 
   test('should login successfully with valid credentials', async ({ page }) => {
     // Mock successful login response
-    await page.route('**/api/auth/login', async (route) => {
+    await page.route('**/api/auth/login', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -49,9 +49,9 @@ test.describe('Authentication Flow', () => {
           user: {
             id: 1,
             email: 'test@example.com',
-            name: 'Test User',
-          },
-        }),
+            name: 'Test User'
+          }
+        })
       });
     });
 
@@ -67,17 +67,14 @@ test.describe('Authentication Flow', () => {
   test('should logout successfully', async ({ page }) => {
     // Mock authenticated state
     await page.addInitScript(() => {
-      window.sessionStorage.setItem(
-        'auth-storage',
-        JSON.stringify({
-          state: {
-            isAuthenticated: true,
-            user: { id: 1, email: 'test@example.com', name: 'Test User' },
-            token: 'mock-jwt-token',
-          },
-          version: 0,
-        }),
-      );
+      window.sessionStorage.setItem('auth-storage', JSON.stringify({
+        state: {
+          isAuthenticated: true,
+          user: { id: 1, email: 'test@example.com', name: 'Test User' },
+          token: 'mock-jwt-token'
+        },
+        version: 0
+      }));
     });
 
     await page.goto('/app');
@@ -110,14 +107,14 @@ test.describe('Authentication Flow', () => {
     await page.fill('[data-testid="confirm-password-input"]', 'password123');
 
     // Mock successful registration
-    await page.route('**/api/auth/register', async (route) => {
+    await page.route('**/api/auth/register', async route => {
       await route.fulfill({
         status: 201,
         contentType: 'application/json',
         body: JSON.stringify({
           success: true,
-          message: 'User registered successfully',
-        }),
+          message: 'User registered successfully'
+        })
       });
     });
 

@@ -24,7 +24,14 @@ export function getTheme(id: string): ThemeDefinition {
 export function getThemeCSSVars(themeId: string, mode: 'light' | 'dark'): string {
   const theme = getTheme(themeId);
   const semanticData = mode === 'light' ? theme.semantic.light : theme.semantic.dark;
-  const vars = flattenSemanticTokens(themeId, mode, theme.colors, semanticData, theme.shadows, theme.radius);
+  const vars = flattenSemanticTokens(
+    themeId,
+    mode,
+    theme.colors,
+    semanticData,
+    theme.shadows,
+    theme.radius,
+  );
   return cssVarsToString(vars);
 }
 

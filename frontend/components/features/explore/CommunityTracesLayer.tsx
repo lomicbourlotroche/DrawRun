@@ -41,7 +41,11 @@ const TRACE_WEIGHT = 2;
  *
  * @param props - CommunityTracesLayerProps containing map, visibility, and activity type filter
  */
-export default function CommunityTracesLayer({ map, visible, activityType }: CommunityTracesLayerProps) {
+export default function CommunityTracesLayer({
+  map,
+  visible,
+  activityType,
+}: CommunityTracesLayerProps) {
   const tracesRef = useRef<DrawRunPolyline[]>([]);
   const loadedRef = useRef(false);
 

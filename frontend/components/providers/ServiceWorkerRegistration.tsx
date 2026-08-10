@@ -34,28 +34,29 @@ export function ServiceWorkerRegistration() {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               // Nouvelle version disponible
               setWaitingWorker(newWorker);
-              toast.success('Nouvelle version disponible', {
-                description: 'Rechargez la page pour utiliser la dernière version.',
-                duration: 0,
-                action: {
-                  label: 'Recharger',
-                  onClick: () => {
-                    newWorker.postMessage({ type: 'SKIP_WAITING' });
-                    window.location.reload();
+              toast.success(
+                'Nouvelle version disponible',
+                {
+                  description: 'Rechargez la page pour utiliser la dernière version.',
+                  duration: 0,
+                  action: {
+                    label: 'Recharger',
+                    onClick: () => {
+                      newWorker.postMessage({ type: 'SKIP_WAITING' });
+                      window.location.reload();
+                    },
                   },
-                },
-              });
+                }
+              );
             }
           });
         });
 
         // Vérifier les mises à jour périodiquement (toutes les heures)
-        setInterval(
-          () => {
-            registration?.update();
-          },
-          60 * 60 * 1000,
-        );
+        setInterval(() => {
+          registration?.update();
+        }, 60 * 60 * 1000);
+
       } catch (error) {
         console.error('[SW] Service Worker registration failed:', error);
       }

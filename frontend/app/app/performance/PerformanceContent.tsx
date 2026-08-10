@@ -10,19 +10,7 @@ import { EliteAnalyticsSection } from './EliteAnalyticsSection';
 import { IntensityDistributionSection } from './IntensityDistributionSection';
 import { HRVRecoverySection } from './HRVRecoverySection';
 import { cn } from '@/lib/utils';
-import {
-  Dumbbell,
-  Bike,
-  Waves,
-  Activity,
-  TrendingUp,
-  Gauge,
-  Zap,
-  BarChart3,
-  Brain,
-  Heart,
-  Clock,
-} from '@/components/ui/icons';
+import { Dumbbell, Bike, Waves, Activity, TrendingUp, Gauge, Zap, BarChart3, Brain, Heart, Clock } from '@/components/ui/icons';
 import type { PmcDataPoint, Activity as ActivityType, Zones } from '@/types';
 
 interface PolarizationData {
@@ -53,7 +41,7 @@ interface StatsData {
 
 function computeStats(activities: ActivityType[]): StatsData {
   const totalKm = activities.reduce((s, a) => s + (a.distance ?? 0) / 1000, 0);
-  const totalHours = activities.reduce((s, a) => s + (a.moving_time ?? 0) / 3600, 0);
+  const totalHours = activities.reduce((s, a) => s + ((a.moving_time ?? 0) / 3600), 0);
   const avgKm = activities.length > 0 ? totalKm / activities.length : 0;
   const byType = activities.reduce<Record<string, number>>((acc, a) => {
     const t = (a.type as string) ?? 'Other';
@@ -105,20 +93,11 @@ export default function PerformanceContent() {
           .map((a: ActivityType) => {
             const avgHR = a.average_heartrate ?? 0;
             const hrPct = avgHR / fcm;
-            let low = 0,
-              moderate = 0,
-              high = 0;
-            if (hrPct < 0.7) {
-              low = 100;
-            } else if (hrPct < 0.8) {
-              low = 40;
-              moderate = 60;
-            } else if (hrPct < 0.88) {
-              moderate = 30;
-              high = 70;
-            } else {
-              high = 100;
-            }
+            let low = 0, moderate = 0, high = 0;
+            if (hrPct < 0.70) { low = 100; }
+            else if (hrPct < 0.80) { low = 40; moderate = 60; }
+            else if (hrPct < 0.88) { moderate = 30; high = 70; }
+            else { high = 100; }
             return { zonePercent: { 1: low / 2, 2: low / 2, 3: moderate, 4: high / 2, 5: high / 2 } };
           });
 
@@ -146,7 +125,7 @@ export default function PerformanceContent() {
           const variance = hrs.reduce((s: number, v: number) => s + (v - mean) ** 2, 0) / hrs.length;
           const stdDev = Math.sqrt(variance);
           const estimatedRmssd = Math.round(stdDev * 3 + 20);
-          const baseline = restingHR ? Math.round((60 / restingHR) * 30 + 20) : null;
+          const baseline = restingHR ? Math.round(60 / restingHR * 30 + 20) : null;
 
           const hrvData = await api.getAlgoHRV({
             rmssd: estimatedRmssd,
@@ -155,16 +134,14 @@ export default function PerformanceContent() {
           });
           setHrv(hrvData);
         } else {
-          setHrvError("Pas assez d'activit\u00e9s r\u00e9centes pour estimer le HRV");
+          setHrvError('Pas assez d\'activit\u00e9s r\u00e9centes pour estimer le HRV');
         }
       } catch {
         setHrvError('Donn\u00e9es HRV non disponibles');
       }
-    } catch {
-      /* silent */
-    } finally {
-      setIsLoading(false);
-    }
+
+    } catch { /* silent */ }
+    finally { setIsLoading(false); }
   };
 
   const handleRecalculate = async () => {
@@ -241,7 +218,7 @@ export default function PerformanceContent() {
                     'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
                     activeTab === tab.id
                       ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted hover:text-foreground',
+                      : 'text-muted hover:text-foreground'
                   )}
                 >
                   {tab.icon}
@@ -254,16 +231,11 @@ export default function PerformanceContent() {
           {activeTab === 'metrics' && (
             <div className="space-y-6">
               <div className={cn('animate-slide-up opacity-0 fill-mode-forwards delay-300')}>
-                <PerformanceMetrics
-                  sport={sport}
-                  metrics={{
-                    vma: profile?.vma ?? undefined,
-                    vdot: profile?.vdot ?? undefined,
-                    vo2max: profile?.fcm
-                      ? Math.round((profile.fcm - (profile.restingHR || 60)) * 0.15 + 30)
-                      : undefined,
-                  }}
-                />
+                <PerformanceMetrics sport={sport} metrics={{
+                  vma: profile?.vma ?? undefined,
+                  vdot: profile?.vdot ?? undefined,
+                  vo2max: profile?.fcm ? Math.round((profile.fcm - (profile.restingHR || 60)) * 0.15 + 30) : undefined,
+                }} />
               </div>
 
               <div className={cn('animate-slide-up opacity-0 fill-mode-forwards delay-400')}>
@@ -279,32 +251,14 @@ export default function PerformanceContent() {
                       {[
                         { value: profile?.fcm, label: 'FCM', accent: 'danger' as const, badge: null },
                         { value: profile?.vdot, label: 'VDOT', accent: 'primary' as const, badge: null },
-                        {
-                          value: profile?.vma ? `${profile.vma.toFixed(1)}` : null,
-                          label: 'VMA km/h',
-                          accent: 'success' as const,
-                          badge: null,
-                        },
-                        {
-                          value: profile?.fcm
-                            ? Math.round((profile.fcm - (profile.restingHR || 60)) * 0.15 + 30)
-                            : null,
-                          label: 'VO\u2082 max',
-                          accent: 'warning' as const,
-                          badge: 'Estim\u00e9',
-                        },
+                        { value: profile?.vma ? `${profile.vma.toFixed(1)}` : null, label: 'VMA km/h', accent: 'success' as const, badge: null },
+                        { value: profile?.fcm ? Math.round((profile.fcm - (profile.restingHR || 60)) * 0.15 + 30) : null, label: 'VO\u2082 max', accent: 'warning' as const, badge: 'Estim\u00e9' },
                       ].map(({ value, label, accent, badge }) => (
                         <Card key={label} variant="glass-subtle" accent={accent} className="text-center">
-                          <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">
-                            {value ?? '--'}
-                          </p>
+                          <p className="text-3xl font-bold text-foreground tracking-tight tabular-nums">{value ?? '--'}</p>
                           <p className="text-xs text-muted mt-1 font-medium">
                             {label}
-                            {badge && (
-                              <Badge variant="outline" className="text-[10px] ml-1">
-                                {badge}
-                              </Badge>
-                            )}
+                            {badge && <Badge variant="outline" className="text-[10px] ml-1">{badge}</Badge>}
                           </p>
                         </Card>
                       ))}
@@ -317,16 +271,12 @@ export default function PerformanceContent() {
 
           {activeTab === 'zones' && (
             <div className={cn('animate-slide-up opacity-0 fill-mode-forwards delay-300')}>
-              <PerformanceZones
-                zones={
-                  {
-                    ...zones,
-                    fcm: profile?.fcm || 0,
-                    vma: profile?.vma || 0,
-                    vdot: profile?.vdot || 0,
-                  } as unknown as Zones
-                }
-              />
+              <PerformanceZones zones={{
+                ...zones,
+                fcm: profile?.fcm || 0,
+                vma: profile?.vma || 0,
+                vdot: profile?.vdot || 0,
+              } as unknown as Zones} />
             </div>
           )}
 
@@ -340,30 +290,11 @@ export default function PerformanceContent() {
                 </Card>
               ) : (
                 <>
-                  <div
-                    className={cn(
-                      'grid grid-cols-2 md:grid-cols-4 gap-4 animate-slide-up opacity-0 fill-mode-forwards delay-300',
-                    )}
-                  >
+                  <div className={cn('grid grid-cols-2 md:grid-cols-4 gap-4 animate-slide-up opacity-0 fill-mode-forwards delay-300')}>
                     {[
-                      {
-                        icon: TrendingUp,
-                        value: computeStats(activities).totalKm.toFixed(1),
-                        label: 'km total',
-                        accent: 'primary' as const,
-                      },
-                      {
-                        icon: Clock,
-                        value: computeStats(activities).totalHours.toFixed(1),
-                        label: 'heures',
-                        accent: 'primary' as const,
-                      },
-                      {
-                        icon: TrendingUp,
-                        value: computeStats(activities).avgKm.toFixed(1),
-                        label: 'km/s\u00e9ance',
-                        accent: 'success' as const,
-                      },
+                      { icon: TrendingUp, value: computeStats(activities).totalKm.toFixed(1), label: 'km total', accent: 'primary' as const },
+                      { icon: Clock, value: computeStats(activities).totalHours.toFixed(1), label: 'heures', accent: 'primary' as const },
+                      { icon: TrendingUp, value: computeStats(activities).avgKm.toFixed(1), label: 'km/s\u00e9ance', accent: 'success' as const },
                       { icon: BarChart3, value: activities.length, label: 'activit\u00e9s', accent: 'peak' as const },
                     ].map(({ icon: Icon, value, label, accent }) => (
                       <Card key={label} variant="glass" accent={accent} className="text-center">
@@ -383,27 +314,20 @@ export default function PerformanceContent() {
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="p-5 space-y-4">
-                        {Object.entries(computeStats(activities).byType)
-                          .sort((a, b) => b[1] - a[1])
-                          .map(([type, count]) => {
-                            const pct = Math.round((count / activities.length) * 100);
-                            return (
-                              <div key={type} className="space-y-2">
-                                <div className="flex items-center justify-between text-sm">
-                                  <span className="font-medium text-foreground">{type}</span>
-                                  <span className="text-muted-foreground">
-                                    {count} s\u00e9ance{count > 1 ? 's' : ''} ({pct}%)
-                                  </span>
-                                </div>
-                                <div className="h-2.5 bg-surface rounded-full overflow-hidden">
-                                  <div
-                                    className="h-full bg-primary rounded-full transition-all duration-500"
-                                    style={{ width: `${pct}%` }}
-                                  />
-                                </div>
+                        {Object.entries(computeStats(activities).byType).sort((a, b) => b[1] - a[1]).map(([type, count]) => {
+                          const pct = Math.round((count / activities.length) * 100);
+                          return (
+                            <div key={type} className="space-y-2">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="font-medium text-foreground">{type}</span>
+                                <span className="text-muted-foreground">{count} s\u00e9ance{count > 1 ? 's' : ''} ({pct}%)</span>
                               </div>
-                            );
-                          })}
+                              <div className="h-2.5 bg-surface rounded-full overflow-hidden">
+                                <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                              </div>
+                            </div>
+                          );
+                        })}
                       </CardContent>
                     </Card>
                   </div>

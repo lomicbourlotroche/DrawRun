@@ -54,7 +54,9 @@ export function MiniChart({
 
   return (
     <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
-      {showArea && fillColor && <path d={areaPath} fill={fillColor} />}
+      {showArea && fillColor && (
+        <path d={areaPath} fill={fillColor} />
+      )}
       <path d={linePath} fill="none" stroke={color} strokeWidth={2} strokeLinejoin="round" />
     </svg>
   );
@@ -89,41 +91,26 @@ export function StreamChart({
     return { x, y, v };
   });
 
-  const linePath = `M${points.map((p) => `${p.x},${p.y}`).join(' L')}`;
+  const linePath = `M${points.map(p => `${p.x},${p.y}`).join(' L')}`;
   const areaPath = `${linePath} L${padding.left + chartW},${padding.top + chartH} L${padding.left},${padding.top + chartH} Z`;
 
   // Grid lines
-  const gridLines = showGrid
-    ? [0, 0.25, 0.5, 0.75, 1].map((pct) => {
-        const y = padding.top + chartH * (1 - pct);
-        const val = min + range * pct;
-        const fmt = formatValue ? formatValue(val) : Math.round(val).toString();
-        return (
-          <g key={pct}>
-            <line
-              x1={padding.left}
-              y1={y}
-              x2={padding.left + chartW}
-              y2={y}
-              stroke="var(--muted)"
-              strokeWidth={0.5}
-              strokeDasharray="4,4"
-            />
-            <text x={padding.left - 8} y={y + 4} fill="var(--muted)" fontSize={10} textAnchor="end">
-              {fmt}
-            </text>
-          </g>
-        );
-      })
-    : null;
+  const gridLines = showGrid ? [0, 0.25, 0.5, 0.75, 1].map(pct => {
+    const y = padding.top + chartH * (1 - pct);
+    const val = min + range * pct;
+    const fmt = formatValue ? formatValue(val) : Math.round(val).toString();
+    return (
+      <g key={pct}>
+        <line x1={padding.left} y1={y} x2={padding.left + chartW} y2={y} stroke="var(--muted)" strokeWidth={0.5} strokeDasharray="4,4" />
+        <text x={padding.left - 8} y={y + 4} fill="var(--muted)" fontSize={10} textAnchor="end">{fmt}</text>
+      </g>
+    );
+  }) : null;
 
   // Time labels (start, middle, end)
   const timeLabels = [
     { x: padding.left, label: '0:00' },
-    {
-      x: padding.left + chartW / 2,
-      label: `${Math.floor(data.length / 2 / 60)}:${String(Math.floor(data.length / 2) % 60).padStart(2, '0')}`,
-    },
+    { x: padding.left + chartW / 2, label: `${Math.floor(data.length / 2 / 60)}:${String(Math.floor(data.length / 2) % 60).padStart(2, '0')}` },
     { x: padding.left + chartW, label: `${Math.floor(data.length / 60)}:${String(data.length % 60).padStart(2, '0')}` },
   ];
 
@@ -133,17 +120,8 @@ export function StreamChart({
         {gridLines}
         {fillColor && <path d={areaPath} fill={fillColor} />}
         <path d={linePath} fill="none" stroke={color} strokeWidth={1.5} strokeLinejoin="round" />
-        {timeLabels.map((t) => (
-          <text
-            key={t.label}
-            x={t.x}
-            y={padding.top + chartH + 18}
-            fill="var(--muted)"
-            fontSize={10}
-            textAnchor="middle"
-          >
-            {t.label}
-          </text>
+        {timeLabels.map(t => (
+          <text key={t.label} x={t.x} y={padding.top + chartH + 18} fill="var(--muted)" fontSize={10} textAnchor="middle">{t.label}</text>
         ))}
       </svg>
       {unit && <p className="text-xs text-muted text-right mt-1">{unit}</p>}
@@ -181,15 +159,7 @@ export function BarChart({
           <g key={i}>
             <rect x={x} y={y} width={barWidth} height={barH} fill={color} rx={2} />
             {labels && labels[i] && (
-              <text
-                x={x + barWidth / 2}
-                y={padding.top + chartH + 14}
-                fill="var(--muted)"
-                fontSize={9}
-                textAnchor="middle"
-              >
-                {labels[i]}
-              </text>
+              <text x={x + barWidth / 2} y={padding.top + chartH + 14} fill="var(--muted)" fontSize={9} textAnchor="middle">{labels[i]}</text>
             )}
           </g>
         );

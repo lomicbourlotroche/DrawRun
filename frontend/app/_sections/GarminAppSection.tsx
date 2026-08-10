@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { Card, Button } from '@/components/ui';
-import { Watch, Activity, Target, Calendar, Download, ArrowRight, CheckCircle } from '@/components/ui/icons';
+import {
+  Watch,
+  Activity,
+  Target,
+  Calendar,
+  Download,
+  ArrowRight,
+  CheckCircle
+} from '@/components/ui/icons';
 
 const garminFeatures = [
   {
@@ -14,13 +22,13 @@ const garminFeatures = [
   {
     icon: Target,
     title: 'Zones Cibles',
-    description: "Vos 5 zones de fréquence cardiaque et d'allure toujours accessibles pendant l'effort.",
+    description: 'Vos 5 zones de fréquence cardiaque et d\'allure toujours accessibles pendant l\'effort.',
     color: 'peak',
   },
   {
     icon: Calendar,
     title: 'Séance du Jour',
-    description: "Découvrez chaque jour la séance recommandée basée sur votre charge d'entraînement.",
+    description: 'Découvrez chaque jour la séance recommandée basée sur votre charge d\'entraînement.',
     color: 'success',
   },
   {
@@ -31,7 +39,12 @@ const garminFeatures = [
   },
 ];
 
-const compatibleDevices = ['Forerunner 55/255/955/965', 'Fenix 6/7/8/Epix', 'Instinct 2/2S/2X', 'Vivoactive 4/5'];
+const compatibleDevices = [
+  'Forerunner 55/255/955/965',
+  'Fenix 6/7/8/Epix',
+  'Instinct 2/2S/2X',
+  'Vivoactive 4/5',
+];
 
 const iconColors: Record<string, string> = {
   primary: 'bg-primary/10 text-primary',
@@ -50,7 +63,7 @@ export default function GarminAppSection() {
           setIsVisible(true);
         }
       },
-      { threshold: 0.1 },
+      { threshold: 0.1 }
     );
 
     const section = document.getElementById('garmin');
@@ -65,9 +78,7 @@ export default function GarminAppSection() {
     <section id="garmin" className="py-20 lg:py-32 bg-gradient-to-b from-background to-background overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div
-          className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-        >
+        <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-peak/10 border border-peak/20 rounded-full text-sm font-semibold text-peak mb-6">
             <Watch className="w-4 h-4" />
             App Connect IQ
@@ -98,13 +109,11 @@ export default function GarminAppSection() {
                 style={{ transitionDelay: `${index * 100}ms` }}
               >
                 <div className="flex items-start gap-4">
-                  <div
-                    className={`
+                  <div className={`
                     w-14 h-14 rounded-2xl flex items-center justify-center shrink-0
                     ${iconColors[feature.color]}
                     group-hover:scale-110 transition-transform duration-300
-                  `}
-                  >
+                  `}>
                     <Icon className="w-7 h-7" />
                   </div>
                   <div>
@@ -118,9 +127,7 @@ export default function GarminAppSection() {
         </div>
 
         {/* Compatible Devices */}
-        <div
-          className={`mb-12 transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-        >
+        <div className={`mb-12 transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <h3 className="text-center text-lg font-semibold text-foreground mb-6">Compatible avec</h3>
           <div className="flex flex-wrap justify-center gap-3">
             {compatibleDevices.map((device, index) => (
@@ -136,14 +143,19 @@ export default function GarminAppSection() {
         </div>
 
         {/* CTAs */}
-        <div
-          className={`flex flex-col sm:flex-row items-center justify-center gap-4 transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-        >
-          <Button size="lg" glow rightIcon={<ArrowRight className="w-5 h-5" />}>
+        <div className={`flex flex-col sm:flex-row items-center justify-center gap-4 transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <Button
+            size="lg"
+            glow
+            rightIcon={<ArrowRight className="w-5 h-5" />}
+          >
             <Watch className="w-5 h-5" />
             Bientôt sur Connect IQ Store
           </Button>
-          <Button variant="secondary" size="lg">
+          <Button
+            variant="secondary"
+            size="lg"
+          >
             Documentation Technique
           </Button>
         </div>

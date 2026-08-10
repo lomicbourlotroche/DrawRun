@@ -6,24 +6,7 @@ import { useAuthStore, useActivitiesStore, useSyncStore } from '@/stores';
 import { api } from '@/lib/api';
 import { Card, CardContent, Button, Modal, Input, Select, Badge } from '@/components/ui';
 import { cn, formatDistance, formatDuration, formatDate, getSportColor } from '@/lib/utils';
-import {
-  RefreshCw,
-  Plus,
-  FileUp,
-  Play,
-  Clock,
-  TrendingUp,
-  Heart,
-  Mountain,
-  Bike,
-  Waves,
-  Footprints,
-  Dumbbell,
-  Route,
-  Loader2,
-  Activity as ActivityIcon,
-  Search,
-} from '@/components/ui/icons';
+import { RefreshCw, Plus, FileUp, Play, Clock, TrendingUp, Heart, Mountain, Bike, Waves, Footprints, Dumbbell, Route, Loader2, Activity as ActivityIcon, Search } from '@/components/ui/icons';
 import { MobileActivityRecorder } from '@/components/features/activities';
 import { useLanguage } from '@/components/providers/LanguageProvider';
 import { toast } from 'sonner';
@@ -114,7 +97,9 @@ export default function ActivitiesContent() {
       });
     }
     return [...items].sort(
-      (a, b) => new Date(b.date || b.start_date || 0).getTime() - new Date(a.date || a.start_date || 0).getTime(),
+      (a, b) =>
+        new Date(b.date || b.start_date || 0).getTime() -
+        new Date(a.date || a.start_date || 0).getTime()
     );
   }, [filteredActivities, filter]);
 
@@ -148,17 +133,10 @@ export default function ActivitiesContent() {
       });
       toast.success('Activit\u00e9 ajout\u00e9e');
       setShowAddModal(false);
-      setForm({
-        name: '',
-        type: 'run',
-        date: new Date().toISOString().split('T')[0],
-        distance: '',
-        duration: '',
-        avg_hr: '',
-      });
+      setForm({ name: '', type: 'run', date: new Date().toISOString().split('T')[0], distance: '', duration: '', avg_hr: '' });
       await loadActivities();
     } catch (e) {
-      toast.error("Erreur lors de l'ajout");
+      toast.error('Erreur lors de l\'ajout');
     } finally {
       setIsSubmitting(false);
     }
@@ -174,13 +152,11 @@ export default function ActivitiesContent() {
       setIsSubmitting(true);
       try {
         const result = await api.importGpx(file.name.replace('.gpx', ''), gpxData);
-        toast.success(
-          `Import\u00e9 : ${(result.distance / 1000).toFixed(1)}km en ${Math.round(result.duration / 60)}min`,
-        );
+        toast.success(`Import\u00e9 : ${(result.distance / 1000).toFixed(1)}km en ${Math.round(result.duration / 60)}min`);
         setShowAddModal(false);
         await loadActivities();
       } catch (err) {
-        toast.error("Erreur lors de l'import GPX");
+        toast.error('Erreur lors de l\'import GPX');
       } finally {
         setIsSubmitting(false);
       }
@@ -196,40 +172,25 @@ export default function ActivitiesContent() {
             <Route className="w-7 h-7 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">{t.activities.title}</h1>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">
+              {t.activities.title}
+            </h1>
             <p className="text-muted mt-1">
-              {filteredAndSorted.length} activit\u00e9{filteredAndSorted.length > 1 ? 's' : ''} enregistr\u00e9e
-              {filteredAndSorted.length > 1 ? 's' : ''}
+              {filteredAndSorted.length} activit\u00e9{filteredAndSorted.length > 1 ? 's' : ''} enregistr\u00e9e{filteredAndSorted.length > 1 ? 's' : ''}
             </p>
           </div>
           <div className="flex gap-2 shrink-0">
             {isAuthenticated && (
               <>
                 {isMobile && (
-                  <Button
-                    onClick={() => setShowRecordModal(true)}
-                    variant="primary"
-                    size="sm"
-                    leftIcon={<Play className="w-4 h-4" />}
-                  >
+                  <Button onClick={() => setShowRecordModal(true)} variant="primary" size="sm" leftIcon={<Play className="w-4 h-4" />}>
                     Enregistrer
                   </Button>
                 )}
-                <Button
-                  onClick={() => setShowAddModal(true)}
-                  variant="glass"
-                  size="sm"
-                  leftIcon={<Plus className="w-4 h-4" />}
-                >
+                <Button onClick={() => setShowAddModal(true)} variant="glass" size="sm" leftIcon={<Plus className="w-4 h-4" />}>
                   Ajouter
                 </Button>
-                <Button
-                  onClick={handleSync}
-                  isLoading={isSyncing}
-                  variant="glass"
-                  size="sm"
-                  leftIcon={<RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />}
-                >
+                <Button onClick={handleSync} isLoading={isSyncing} variant="glass" size="sm" leftIcon={<RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />}>
                   Sync
                 </Button>
               </>
@@ -247,15 +208,12 @@ export default function ActivitiesContent() {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => {
-                    setFilter(tab.id);
-                    setVisibleCount(PAGE_SIZE);
-                  }}
+                  onClick={() => { setFilter(tab.id); setVisibleCount(PAGE_SIZE); }}
                   className={cn(
                     'flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
                     isActive
                       ? 'bg-primary text-primary-foreground shadow-sm'
-                      : 'text-muted hover:text-foreground hover:bg-surface/50',
+                      : 'text-muted hover:text-foreground hover:bg-surface/50'
                   )}
                 >
                   {Icon && <Icon className="w-4 h-4" />}
@@ -270,10 +228,7 @@ export default function ActivitiesContent() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-slide-up delay-200">
           {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="h-36 bg-surface/50 backdrop-blur-sm border border-border rounded-xl animate-pulse"
-            />
+            <div key={i} className="h-36 bg-surface/50 backdrop-blur-sm border border-border rounded-xl animate-pulse" />
           ))}
         </div>
       ) : visibleActivities.length > 0 ? (
@@ -293,15 +248,7 @@ export default function ActivitiesContent() {
                   href={`/app/activities/${activity.id}`}
                   className={cn(
                     'group block animate-slide-up',
-                    idx === 0
-                      ? 'delay-100'
-                      : idx === 1
-                        ? 'delay-150'
-                        : idx === 2
-                          ? 'delay-200'
-                          : idx === 3
-                            ? 'delay-250'
-                            : '',
+                    idx === 0 ? 'delay-100' : idx === 1 ? 'delay-150' : idx === 2 ? 'delay-200' : idx === 3 ? 'delay-250' : ''
                   )}
                 >
                   <Card variant="glass" accent="primary" hover padding="md" className="relative overflow-hidden">
@@ -327,33 +274,25 @@ export default function ActivitiesContent() {
                           {distanceM > 0 && (
                             <div className="flex items-center gap-1.5 text-xs">
                               <TrendingUp className="w-3.5 h-3.5 text-primary" />
-                              <span className="font-semibold text-foreground tabular-nums">
-                                {formatDistance(distanceM)}
-                              </span>
+                              <span className="font-semibold text-foreground tabular-nums">{formatDistance(distanceM)}</span>
                             </div>
                           )}
                           {durationS > 0 && (
                             <div className="flex items-center gap-1.5 text-xs">
                               <Clock className="w-3.5 h-3.5 text-primary" />
-                              <span className="font-semibold text-foreground tabular-nums">
-                                {formatDuration(durationS)}
-                              </span>
+                              <span className="font-semibold text-foreground tabular-nums">{formatDuration(durationS)}</span>
                             </div>
                           )}
                           {avgHR > 0 && (
                             <div className="flex items-center gap-1.5 text-xs">
                               <Heart className="w-3.5 h-3.5 text-danger" />
-                              <span className="font-semibold text-foreground tabular-nums">
-                                {Math.round(avgHR)} bpm
-                              </span>
+                              <span className="font-semibold text-foreground tabular-nums">{Math.round(avgHR)} bpm</span>
                             </div>
                           )}
                           {elevation !== null && elevation !== undefined && elevation > 0 && (
                             <div className="flex items-center gap-1.5 text-xs">
                               <Mountain className="w-3.5 h-3.5 text-success" />
-                              <span className="font-semibold text-foreground tabular-nums">
-                                +{Math.round(elevation)}m
-                              </span>
+                              <span className="font-semibold text-foreground tabular-nums">+{Math.round(elevation)}m</span>
                             </div>
                           )}
                         </div>
@@ -391,12 +330,7 @@ export default function ActivitiesContent() {
               <Button onClick={() => setShowAddModal(true)} variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
                 Ajouter une activit\u00e9
               </Button>
-              <Button
-                onClick={handleSync}
-                isLoading={isSyncing}
-                variant="glass"
-                leftIcon={<RefreshCw className="w-4 h-4" />}
-              >
+              <Button onClick={handleSync} isLoading={isSyncing} variant="glass" leftIcon={<RefreshCw className="w-4 h-4" />}>
                 Synchroniser
               </Button>
             </div>
@@ -439,57 +373,19 @@ export default function ActivitiesContent() {
             </div>
           </div>
 
-          <Input
-            label="Nom"
-            placeholder="Ex: Course du matin"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-          />
-          <Select
-            label="Type"
-            options={[
-              { value: 'run', label: 'Course' },
-              { value: 'bike', label: 'V\u00e9lo' },
-              { value: 'swim', label: 'Natation' },
-            ]}
-            value={form.type}
-            onChange={(v) => setForm({ ...form, type: v })}
-          />
-          <Input
-            label="Date"
-            type="date"
-            value={form.date}
-            onChange={(e) => setForm({ ...form, date: e.target.value })}
-          />
-          <Input
-            label="Distance (m\u00e8tres)"
-            type="number"
-            placeholder="10000"
-            value={form.distance}
-            onChange={(e) => setForm({ ...form, distance: e.target.value })}
-          />
-          <Input
-            label="Dur\u00e9e (secondes)"
-            type="number"
-            placeholder="3600"
-            hint="ex: 3600 = 1h"
-            value={form.duration}
-            onChange={(e) => setForm({ ...form, duration: e.target.value })}
-          />
-          <Input
-            label="FC moyenne (optionnel)"
-            type="number"
-            placeholder="145"
-            value={form.avg_hr}
-            onChange={(e) => setForm({ ...form, avg_hr: e.target.value })}
-          />
+          <Input label="Nom" placeholder="Ex: Course du matin" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <Select label="Type" options={[
+            { value: 'run', label: 'Course' },
+            { value: 'bike', label: 'V\u00e9lo' },
+            { value: 'swim', label: 'Natation' },
+          ]} value={form.type} onChange={(v) => setForm({ ...form, type: v })} />
+          <Input label="Date" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+          <Input label="Distance (m\u00e8tres)" type="number" placeholder="10000" value={form.distance} onChange={(e) => setForm({ ...form, distance: e.target.value })} />
+          <Input label="Dur\u00e9e (secondes)" type="number" placeholder="3600" hint="ex: 3600 = 1h" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} />
+          <Input label="FC moyenne (optionnel)" type="number" placeholder="145" value={form.avg_hr} onChange={(e) => setForm({ ...form, avg_hr: e.target.value })} />
           <div className="flex gap-3 pt-2">
-            <Button variant="ghost" onClick={() => setShowAddModal(false)} className="flex-1">
-              Annuler
-            </Button>
-            <Button onClick={handleAddActivity} isLoading={isSubmitting} className="flex-1">
-              Ajouter
-            </Button>
+            <Button variant="ghost" onClick={() => setShowAddModal(false)} className="flex-1">Annuler</Button>
+            <Button onClick={handleAddActivity} isLoading={isSubmitting} className="flex-1">Ajouter</Button>
           </div>
         </div>
       </Modal>

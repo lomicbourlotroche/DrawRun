@@ -76,9 +76,7 @@ export function SegmentList({ segments, onSegmentClick, isLoading }: SegmentList
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold truncate group-hover:text-primary transition-colors duration-200">
-                    {segment.name}
-                  </h3>
+                  <h3 className="font-semibold truncate group-hover:text-primary transition-colors duration-200">{segment.name}</h3>
                   <Badge variant="secondary" size="sm" className="bg-primary/10 text-primary">
                     {segment.activity_type}
                   </Badge>
@@ -93,7 +91,11 @@ export function SegmentList({ segments, onSegmentClick, isLoading }: SegmentList
                     <TrendingUp className="w-3.5 h-3.5" />
                     {segment.elevation_gain}m D+
                   </span>
-                  {segment.avg_grade && <span className="flex items-center gap-1">{segment.avg_grade}% moy.</span>}
+                  {segment.avg_grade && (
+                    <span className="flex items-center gap-1">
+                      {segment.avg_grade}% moy.
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-4 mt-2">
@@ -120,7 +122,9 @@ export function SegmentList({ segments, onSegmentClick, isLoading }: SegmentList
                     <Users className="w-3.5 h-3.5" />
                     {segment.effort_count || segment.total_efforts || 0} efforts
                   </span>
-                  {segment.unique_athletes && <span>{segment.unique_athletes} athlètes</span>}
+                  {segment.unique_athletes && (
+                    <span>{segment.unique_athletes} athlètes</span>
+                  )}
                 </div>
               </div>
 
@@ -188,8 +192,8 @@ export function SegmentLeaderboard({ segmentId }: SegmentLeaderboardProps) {
                 effort.is_kom
                   ? 'bg-warning-50 border border-warning-200'
                   : effort.is_qom
-                    ? 'bg-secondary-50 border border-secondary-200'
-                    : 'bg-muted/50'
+                  ? 'bg-secondary-50 border border-secondary-200'
+                  : 'bg-muted/50'
               }`}
             >
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center font-bold text-sm">
@@ -204,8 +208,14 @@ export function SegmentLeaderboard({ segmentId }: SegmentLeaderboardProps) {
               </div>
 
               <div className="text-right">
-                <p className="font-mono font-bold">{formatDuration(effort.elapsed_time)}</p>
-                {effort.avg_watts && <p className="text-xs text-muted-foreground">{Math.round(effort.avg_watts)}W</p>}
+                <p className="font-mono font-bold">
+                  {formatDuration(effort.elapsed_time)}
+                </p>
+                {effort.avg_watts && (
+                  <p className="text-xs text-muted-foreground">
+                    {Math.round(effort.avg_watts)}W
+                  </p>
+                )}
               </div>
             </div>
           ))}

@@ -29,11 +29,7 @@ interface SessionFeedbackProps {
 }
 
 // Map les résultats de séance à des indicateurs visuels
-const getResultFromFeedback = (
-  difficulty: string,
-  onTime: boolean,
-  completed: boolean,
-): 'success' | 'failed' | 'partial' | 'skipped' => {
+const getResultFromFeedback = (difficulty: string, onTime: boolean, completed: boolean): 'success' | 'failed' | 'partial' | 'skipped' => {
   if (!completed) return 'skipped';
   if (difficulty === 'easy' && onTime) return 'success';
   if (difficulty === 'normal' && onTime) return 'success';
@@ -42,13 +38,7 @@ const getResultFromFeedback = (
   return 'partial';
 };
 
-export default function SessionFeedback({
-  session,
-  planId,
-  sessionNumber,
-  onComplete,
-  onResult,
-}: SessionFeedbackProps) {
+export default function SessionFeedback({ session, planId, sessionNumber, onComplete, onResult }: SessionFeedbackProps) {
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(session.actualResult?.difficulty || null);
   const [rpe, setRpe] = useState<number>(5);
   const [hasPain, setHasPain] = useState(false);
@@ -58,30 +48,9 @@ export default function SessionFeedback({
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const difficultyOptions = [
-    {
-      value: 'easy',
-      label: 'Facile',
-      icon: Smile,
-      color: 'text-success/80',
-      bg: 'bg-success/20',
-      result: 'success' as const,
-    },
-    {
-      value: 'normal',
-      label: 'Normal',
-      icon: Meh,
-      color: 'text-primary/80',
-      bg: 'bg-primary/20',
-      result: 'success' as const,
-    },
-    {
-      value: 'hard',
-      label: 'Difficile',
-      icon: Frown,
-      color: 'text-peak/80',
-      bg: 'bg-peak/20',
-      result: 'partial' as const,
-    },
+    { value: 'easy', label: 'Facile', icon: Smile, color: 'text-success/80', bg: 'bg-success/20', result: 'success' as const },
+    { value: 'normal', label: 'Normal', icon: Meh, color: 'text-primary/80', bg: 'bg-primary/20', result: 'success' as const },
+    { value: 'hard', label: 'Difficile', icon: Frown, color: 'text-peak/80', bg: 'bg-peak/20', result: 'partial' as const },
   ];
 
   // Calculer le résultat actuel
@@ -90,7 +59,7 @@ export default function SessionFeedback({
       return getResultFromFeedback(
         session.actualResult.difficulty || 'normal',
         session.actualResult.onTime || false,
-        session.actualResult.completed || false,
+        session.actualResult.completed || false
       );
     }
     return null;
@@ -135,7 +104,7 @@ export default function SessionFeedback({
       setIsSubmitted(true);
       setTimeout(() => onComplete(), 1500);
     } catch {
-      toast.error("Erreur lors de l'envoi du feedback");
+      toast.error('Erreur lors de l\'envoi du feedback');
     } finally {
       setIsLoading(false);
     }
@@ -165,9 +134,11 @@ export default function SessionFeedback({
       <CardContent className="space-y-6">
         {/* Difficulty selection avec indicateurs visuels */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-3">Difficulté ressentie</label>
+          <label className="block text-sm font-medium text-foreground mb-3">
+            Difficulté ressentie
+          </label>
           <div className="grid grid-cols-3 gap-3">
-            {difficultyOptions.map((option) => (
+            {difficultyOptions.map(option => (
               <button
                 key={option.value}
                 type="button"
@@ -182,7 +153,11 @@ export default function SessionFeedback({
                 <option.icon className={`w-8 h-8 ${option.color}`} />
                 <span className="text-sm mt-2 font-medium">{option.label}</span>
                 {selectedDifficulty === option.value && (
-                  <SessionResultIndicator result={option.result} size="sm" className="mt-2" />
+                  <SessionResultIndicator
+                    result={option.result}
+                    size="sm"
+                    className="mt-2"
+                  />
                 )}
               </button>
             ))}
@@ -191,7 +166,9 @@ export default function SessionFeedback({
 
         {/* RPE Scale avec barre de progression */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Effort perçu (RPE)</label>
+          <label className="block text-sm font-medium text-foreground mb-2">
+            Effort perçu (RPE)
+          </label>
           <div className="flex gap-2 items-center">
             <span className="text-xs text-muted">1</span>
             <input
@@ -217,7 +194,7 @@ export default function SessionFeedback({
 
         {/* Indicateur RPE visuel */}
         <div className="flex justify-center gap-1">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
             <span
               key={num}
               className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] transition-all ${
@@ -263,7 +240,9 @@ export default function SessionFeedback({
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">Notes (optionnel)</label>
+          <label className="block text-sm font-medium text-foreground mb-2">
+            Notes (optionnel)
+          </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -274,7 +253,12 @@ export default function SessionFeedback({
         </div>
 
         {/* Submit */}
-        <Button onClick={handleSubmit} isLoading={isLoading} disabled={isSubmitted} className="w-full">
+        <Button
+          onClick={handleSubmit}
+          isLoading={isLoading}
+          disabled={isSubmitted}
+          className="w-full"
+        >
           {isSubmitted ? 'Feedback enregistré ✓' : 'Valider'}
           {!isSubmitted && <ArrowRight className="w-4 h-4 ml-2" />}
         </Button>
@@ -286,7 +270,7 @@ export default function SessionFeedback({
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted w-24">Difficulté</span>
-                <span className="text-sm">{difficultyOptions.find((o) => o.value === selectedDifficulty)?.label}</span>
+                <span className="text-sm">{difficultyOptions.find(o => o.value === selectedDifficulty)?.label}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted w-24">RPE</span>

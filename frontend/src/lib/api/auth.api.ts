@@ -201,4 +201,5 @@ export const authApi = {
   disconnectSuunto(): Promise<{ success: boolean; message?: string }> {
     return client.request('/api/auth/disconnect/suunto', { method: 'POST' });
   },
+
 };

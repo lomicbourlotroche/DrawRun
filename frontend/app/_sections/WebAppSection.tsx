@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui';
-import { TrendingUp, Heart, Clock, ArrowRight, LineChart, Target, Zap } from '@/components/ui/icons';
+import {
+  TrendingUp,
+  Heart,
+  Clock,
+  ArrowRight,
+  LineChart,
+  Target,
+  Zap
+} from '@/components/ui/icons';
 
 export default function WebAppSection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -14,7 +22,7 @@ export default function WebAppSection() {
           setIsVisible(true);
         }
       },
-      { threshold: 0.2 },
+      { threshold: 0.2 }
     );
 
     const section = document.getElementById('webapp');
@@ -36,9 +44,7 @@ export default function WebAppSection() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left Content */}
-          <div
-            className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}
-          >
+          <div className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
             <span className="inline-flex items-center gap-2 px-4 py-2 bg-surface/10 border border-white/20 rounded-full text-sm font-semibold text-foreground mb-8">
               <Zap className="w-4 h-4" />
               Disponible maintenant
@@ -53,8 +59,8 @@ export default function WebAppSection() {
             </h2>
 
             <p className="text-lg text-foreground leading-relaxed mb-8 max-w-xl">
-              Analysez vos activités, suivez votre PMC, visualisez vos zones d&apos;entraînement, planifiez vos courses
-              et suivez la météo — tout depuis votre navigateur.
+              Analysez vos activités, suivez votre PMC, visualisez vos zones d&apos;entraînement,
+              planifiez vos courses et suivez la météo — tout depuis votre navigateur.
               <span className="text-foreground font-semibold"> Accessible partout, installable en un clic.</span>
             </p>
 
@@ -90,16 +96,17 @@ export default function WebAppSection() {
               >
                 Créer un compte
               </Button>
-              <Button variant="glass" size="lg">
+              <Button
+                variant="glass"
+                size="lg"
+              >
                 Se connecter
               </Button>
             </div>
           </div>
 
           {/* Right Content - Dashboard Preview */}
-          <div
-            className={`transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}
-          >
+          <div className={`transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
             <div className="relative">
               {/* Glass Card */}
               <div className="bg-surface/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl">

@@ -17,20 +17,14 @@ interface RouteSelectionSheetProps {
   formatDistance: (_meters: number) => string;
 }
 
-export function RouteSelectionSheet({
-  userRoutes,
-  loadingRoutes,
-  onSelect,
-  onClose,
-  formatDistance,
-}: RouteSelectionSheetProps) {
+export function RouteSelectionSheet({ userRoutes, loadingRoutes, onSelect, onClose, formatDistance }: RouteSelectionSheetProps) {
   return (
     <div className="space-y-2">
       {loadingRoutes && <p className="text-center text-muted">Chargement...</p>}
       {!loadingRoutes && userRoutes.length === 0 && (
         <p className="text-center text-muted py-8">Aucun parcours enregistré</p>
       )}
-      {userRoutes.map((route) => (
+      {userRoutes.map(route => (
         <button
           type="button"
           key={route.id}
@@ -43,12 +37,7 @@ export function RouteSelectionSheet({
           </p>
         </button>
       ))}
-      <button
-        onClick={onClose}
-        className="w-full min-w-[120px] h-12 rounded-lg bg-surface hover:bg-surface-hover text-foreground text-sm font-medium transition-colors"
-      >
-        Retour
-      </button>
+      <button onClick={onClose} className="w-full min-w-[120px] h-12 rounded-lg bg-surface hover:bg-surface-hover text-foreground text-sm font-medium transition-colors">Retour</button>
     </div>
   );
 }

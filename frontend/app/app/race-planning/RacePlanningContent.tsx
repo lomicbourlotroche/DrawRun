@@ -13,23 +13,7 @@ import { SavedPlansModal } from './SavedPlansModal';
 import { RaceChart } from './RaceChart';
 import { RaceSplitsTable } from './RaceSplitsTable';
 import { formatDuration } from './race-planning.utils';
-import {
-  Trophy,
-  Download,
-  Save,
-  Printer,
-  FolderOpen,
-  AlertTriangle,
-  Clock,
-  MapPin,
-  Upload,
-  Target,
-  Settings,
-  CheckCircle,
-  BarChart3,
-  Nutrition,
-  Users,
-} from '@/components/ui/icons';
+import { Trophy, Download, Save, Printer, FolderOpen, AlertTriangle, Clock, MapPin, Upload, Target, Settings, CheckCircle, BarChart3, Nutrition, Users } from '@/components/ui/icons';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { parseGpxProfile, countGpxPoints } from '@/lib/utils/gpx-utils';
@@ -82,7 +66,7 @@ export function RacePlanningContent() {
 
       if (mode === 'gpx') {
         if (!gpxRaw) {
-          toast.error("Veuillez d'abord importer un fichier GPX");
+          toast.error('Veuillez d\'abord importer un fichier GPX');
           setIsLoading(false);
           return;
         }
@@ -109,31 +93,28 @@ export function RacePlanningContent() {
     }
   };
 
-  const handleFileUpload = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      setGpxFileName(file.name);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const xml = event.target?.result as string;
-        const profile = parseGpxProfile(xml);
-        const count = countGpxPoints(xml);
+  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setGpxFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const xml = event.target?.result as string;
+      const profile = parseGpxProfile(xml);
+      const count = countGpxPoints(xml);
 
-        if (profile) {
-          setGpxRaw(xml);
-          setGpxPointCount(count);
-          setGpxDistKm(profile.totalDistanceKm);
-          setForm((f) => ({ ...f, distance: profile.totalDistanceKm }));
-          toast.success(`GPX charg\u0019 : ${count} points, ~${profile.totalDistanceKm} km`);
-        } else {
-          toast.error('Fichier GPX invalide ou trop court');
-        }
-      };
-      reader.readAsText(file);
-    },
-    [parseGpxProfile, countGpxPoints],
-  );
+      if (profile) {
+        setGpxRaw(xml);
+        setGpxPointCount(count);
+        setGpxDistKm(profile.totalDistanceKm);
+        setForm(f => ({ ...f, distance: profile.totalDistanceKm }));
+        toast.success(`GPX charg\u0019 : ${count} points, ~${profile.totalDistanceKm} km`);
+      } else {
+        toast.error('Fichier GPX invalide ou trop court');
+      }
+    };
+    reader.readAsText(file);
+  }, [parseGpxProfile, countGpxPoints]);
 
   const handlePrint = () => window.print();
 
@@ -163,7 +144,7 @@ export function RacePlanningContent() {
       });
       toast.success('Plan de course enregistr\u0019 !');
     } catch {
-      toast.error("Erreur lors de l'enregistrement");
+      toast.error('Erreur lors de l\'enregistrement');
     }
   };
 
@@ -206,7 +187,7 @@ export function RacePlanningContent() {
   const handleDeletePlan = async (id: number) => {
     try {
       await racePlanningApi.deleteRacePlan(id);
-      setSavedPlans((prev) => prev.filter((p) => p.id !== id));
+      setSavedPlans(prev => prev.filter(p => p.id !== id));
       toast.success('Plan supprim\u0019');
     } catch {
       toast.error('Erreur lors de la suppression');
@@ -217,6 +198,7 @@ export function RacePlanningContent() {
 
   return (
     <div className="space-y-6 animate-fade-in max-w-6xl mx-auto p-4 md:p-6 lg:p-8">
+
       {/* ===== HEADER ===== */}
       <div className="bg-gradient-to-r from-primary/5 to-surface rounded-2xl p-6 md:p-8 border border-primary/20">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
@@ -225,10 +207,12 @@ export function RacePlanningContent() {
               <Trophy className="w-8 h-8 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">Planification de Course</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+                Planification de Course
+              </h1>
               <p className="text-muted mt-2 max-w-2xl">
-                Cr\u0019eez des plans de course intelligents avec splits pr\u0019cis, strat\u0019gie de nutrition et
-                gestion de l'effort bas\u001ee sur vos donn\u0019es.
+                Cr\u0019eez des plans de course intelligents avec splits pr\u0019cis,
+                strat\u0019gie de nutrition et gestion de l'effort bas\u001ee sur vos donn\u0019es.
               </p>
             </div>
           </div>
@@ -237,10 +221,10 @@ export function RacePlanningContent() {
             <button
               onClick={() => setMode('simple')}
               className={cn(
-                'px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2',
+                "px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2",
                 mode === 'simple'
-                  ? 'bg-primary text-white shadow-lg shadow-primary/25'
-                  : 'bg-surface text-muted hover:bg-primary/10 hover:text-foreground',
+                  ? "bg-primary text-white shadow-lg shadow-primary/25"
+                  : "bg-surface text-muted hover:bg-primary/10 hover:text-foreground"
               )}
             >
               <MapPin className="w-4 h-4" />
@@ -249,10 +233,10 @@ export function RacePlanningContent() {
             <button
               onClick={() => setMode('gpx')}
               className={cn(
-                'px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2',
+                "px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2",
                 mode === 'gpx'
-                  ? 'bg-primary text-white shadow-lg shadow-primary/25'
-                  : 'bg-surface text-muted hover:bg-primary/10 hover:text-foreground',
+                  ? "bg-primary text-white shadow-lg shadow-primary/25"
+                  : "bg-surface text-muted hover:bg-primary/10 hover:text-foreground"
               )}
             >
               <Upload className="w-4 h-4" />
@@ -270,12 +254,10 @@ export function RacePlanningContent() {
               { num: '3', label: 'Calculer', icon: Clock },
             ].map((step, idx) => (
               <div key={idx} className="flex items-center gap-2">
-                <div
-                  className={cn(
-                    'w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300',
-                    idx < 0 ? 'bg-primary text-white' : 'bg-surface text-muted',
-                  )}
-                >
+                <div className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300",
+                  idx < 0 ? "bg-primary text-white" : "bg-surface text-muted"
+                )}>
                   <step.icon className="w-5 h-5" />
                 </div>
                 <span className="text-sm font-medium text-muted hidden sm:block">{step.label}</span>
@@ -400,6 +382,7 @@ export function RacePlanningContent() {
       {/* ===== RESULTS ===== */}
       {result && (
         <div className="space-y-6">
+
           {/* Success banner */}
           <div className="flex items-center gap-4 p-5 bg-gradient-to-r from-success/10 to-emerald/10 rounded-2xl border border-success/20 shadow-md">
             <div className="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center flex-shrink-0">
@@ -454,36 +437,16 @@ export function RacePlanningContent() {
                   R\u0019sum\u0019
                 </span>
                 <div className="flex flex-wrap gap-2 no-print">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={handleOpenPlans}
-                    leftIcon={<FolderOpen className="w-4 h-4" />}
-                  >
+                  <Button variant="secondary" size="sm" onClick={handleOpenPlans} leftIcon={<FolderOpen className="w-4 h-4" />}>
                     Mes plans
                   </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={handleSavePlan}
-                    leftIcon={<Save className="w-4 h-4" />}
-                  >
+                  <Button variant="secondary" size="sm" onClick={handleSavePlan} leftIcon={<Save className="w-4 h-4" />}>
                     Enregistrer
                   </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={handlePrint}
-                    leftIcon={<Printer className="w-4 h-4" />}
-                  >
+                  <Button variant="secondary" size="sm" onClick={handlePrint} leftIcon={<Printer className="w-4 h-4" />}>
                     Imprimer
                   </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={handleExportCsv}
-                    leftIcon={<Download className="w-4 h-4" />}
-                  >
+                  <Button variant="secondary" size="sm" onClick={handleExportCsv} leftIcon={<Download className="w-4 h-4" />}>
                     CSV
                   </Button>
                 </div>
@@ -505,25 +468,18 @@ export function RacePlanningContent() {
                     Temps estim\u0019
                   </p>
                   <p className="text-2xl font-bold text-foreground">{formatDuration(result.summary.totalTime)}</p>
-                  {result.summary.correctedTotalTime &&
-                    result.summary.correctedTotalTime !== result.summary.totalTime && (
-                      <p className="text-xs text-warning mt-1">
-                        Corrig\u0019: {formatDuration(result.summary.correctedTotalTime)}
-                      </p>
-                    )}
+                  {result.summary.correctedTotalTime && result.summary.correctedTotalTime !== result.summary.totalTime && (
+                    <p className="text-xs text-warning mt-1">Corrig\u0019: {formatDuration(result.summary.correctedTotalTime)}</p>
+                  )}
                 </div>
                 <div className="p-4 rounded-xl bg-surface border border-border">
                   <p className="text-xs text-muted mb-1 flex items-center gap-1">
                     <Target className="w-3.5 h-3.5" />
                     Allure cible
                   </p>
-                  <p className="text-2xl font-bold text-foreground">
-                    {racePlanningApi.formatPace(result.summary.targetPace)}
-                  </p>
+                  <p className="text-2xl font-bold text-foreground">{racePlanningApi.formatPace(result.summary.targetPace)}</p>
                   {result.summary.correctedPace && result.summary.correctedPace !== result.summary.targetPace && (
-                    <p className="text-xs text-warning mt-1">
-                      Corrig\u0019e: {racePlanningApi.formatPace(result.summary.correctedPace)}
-                    </p>
+                    <p className="text-xs text-warning mt-1">Corrig\u0019e: {racePlanningApi.formatPace(result.summary.correctedPace)}</p>
                   )}
                 </div>
                 <div className="p-4 rounded-xl bg-surface border border-border">
@@ -551,9 +507,7 @@ export function RacePlanningContent() {
                     </div>
                   )}
                   {result.summary.tsb !== null && result.summary.tsb !== undefined && (
-                    <div
-                      className={`p-4 rounded-xl border ${result.summary.tsb < -10 ? 'bg-danger/5 border-danger/20 text-danger' : 'bg-primary/5 border-primary/20 text-primary'}`}
-                    >
+                    <div className={`p-4 rounded-xl border ${result.summary.tsb < -10 ? 'bg-danger/5 border-danger/20 text-danger' : 'bg-primary/5 border-primary/20 text-primary'}`}>
                       <p className="text-xs text-muted mb-1">TSB (Forme)</p>
                       <p className="text-xl font-bold">{result.summary.tsb}</p>
                     </div>
@@ -572,10 +526,7 @@ export function RacePlanningContent() {
                     };
                     const colorKey = warning.severity || (warning.type === 'fatigue' ? 'moderate' : 'info');
                     return (
-                      <div
-                        key={idx}
-                        className={`p-4 rounded-xl flex items-start gap-3 border ${severityColors[colorKey]}`}
-                      >
+                      <div key={idx} className={`p-4 rounded-xl flex items-start gap-3 border ${severityColors[colorKey]}`}>
                         <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                         <p className="text-sm text-foreground">{warning.message}</p>
                       </div>
@@ -596,12 +547,8 @@ export function RacePlanningContent() {
               </CardHeader>
               <CardContent>
                 <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
-                  <p className="font-semibold text-foreground">
-                    {String((result.pacingStrategy as Record<string, unknown>).name ?? '')}
-                  </p>
-                  <p className="text-sm text-muted mt-1">
-                    {String((result.pacingStrategy as Record<string, unknown>).description ?? '')}
-                  </p>
+                  <p className="font-semibold text-foreground">{String((result.pacingStrategy as Record<string, unknown>).name ?? '')}</p>
+                  <p className="text-sm text-muted mt-1">{String((result.pacingStrategy as Record<string, unknown>).description ?? '')}</p>
                 </div>
               </CardContent>
             </Card>
@@ -623,9 +570,7 @@ export function RacePlanningContent() {
                   </div>
                   <div className="p-4 rounded-xl bg-warning/5 border border-warning/20 text-center">
                     <p className="text-xs text-muted">Volume</p>
-                    <p className="text-lg font-semibold text-foreground">
-                      -{result.taperRecommendation.volumeReduction}%
-                    </p>
+                    <p className="text-lg font-semibold text-foreground">-{result.taperRecommendation.volumeReduction}%</p>
                   </div>
                   <div className="p-4 rounded-xl bg-success/5 border border-success/20 text-center">
                     <p className="text-xs text-muted">Gain estim\u0019</p>
@@ -693,16 +638,12 @@ export function RacePlanningContent() {
                     <p className="text-muted pl-6">{result.nutritionStrategy.duringRace}</p>
                   ) : Array.isArray(result.nutritionStrategy.duringRace) ? (
                     <div className="space-y-2 pl-6">
-                      {result.nutritionStrategy.duringRace.map(
-                        (item: { timing: string; type: string; amount: string; description: string }, idx: number) => (
-                          <div key={idx} className="p-3 rounded-lg bg-surface border border-border">
-                            <p className="font-medium text-foreground">
-                              {item.timing} \u2014 {item.amount}
-                            </p>
-                            <p className="text-muted text-sm">{item.description}</p>
-                          </div>
-                        ),
-                      )}
+                      {result.nutritionStrategy.duringRace.map((item: { timing: string; type: string; amount: string; description: string }, idx: number) => (
+                        <div key={idx} className="p-3 rounded-lg bg-surface border border-border">
+                          <p className="font-medium text-foreground">{item.timing} \u2014 {item.amount}</p>
+                          <p className="text-muted text-sm">{item.description}</p>
+                        </div>
+                      ))}
                     </div>
                   ) : null}
                 </div>
@@ -718,17 +659,13 @@ export function RacePlanningContent() {
                       {result.nutritionStrategy.postRace?.within30min && (
                         <div className="p-3 rounded-lg bg-surface border border-border">
                           <p className="font-medium text-foreground">Dans les 30 min</p>
-                          <p className="text-muted text-sm">
-                            {result.nutritionStrategy.postRace.within30min.description}
-                          </p>
+                          <p className="text-muted text-sm">{result.nutritionStrategy.postRace.within30min.description}</p>
                         </div>
                       )}
                       {result.nutritionStrategy.postRace?.within2hours && (
                         <div className="p-3 rounded-lg bg-surface border border-border">
                           <p className="font-medium text-foreground">Dans les 2h</p>
-                          <p className="text-muted text-sm">
-                            {result.nutritionStrategy.postRace.within2hours.description}
-                          </p>
+                          <p className="text-muted text-sm">{result.nutritionStrategy.postRace.within2hours.description}</p>
                         </div>
                       )}
                     </div>

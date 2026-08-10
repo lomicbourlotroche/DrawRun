@@ -40,8 +40,10 @@ export default function PowerAnalysisPage() {
     setIsLoading(true);
     try {
       const data = await api.getActivities();
-      const allActivities = Array.isArray(data) ? data : data?.data || [];
-      const withPower = allActivities.filter((a: ActivityWithPower) => a.has_power_meter || a.average_watts);
+      const allActivities = Array.isArray(data) ? data : (data?.data || []);
+      const withPower = allActivities.filter(
+        (a: ActivityWithPower) => a.has_power_meter || a.average_watts
+      );
       setActivities(withPower);
     } catch {
       /* silencieux */
@@ -59,7 +61,7 @@ export default function PowerAnalysisPage() {
     try {
       const streams = await api.getActivityStreams(activityId);
       if (streams?.watts) {
-        const wattsArr = Array.isArray(streams.watts) ? streams.watts : streams.watts.data || [];
+        const wattsArr = Array.isArray(streams.watts) ? streams.watts : (streams.watts.data || []);
         if (wattsArr.length > 0) {
           setWattsData(wattsArr);
           setSelectedActivity(activityId);
@@ -73,7 +75,7 @@ export default function PowerAnalysisPage() {
     setShowActivityList(false);
   };
 
-  const selected = activities.find((a) => a.id === selectedActivity);
+  const selected = activities.find(a => a.id === selectedActivity);
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6 animate-fade-in">
@@ -129,8 +131,7 @@ export default function PowerAnalysisPage() {
                             <div className="text-left">
                               <p className="font-medium text-sm text-foreground">{selected.name}</p>
                               <p className="text-xs text-muted">
-                                {new Date(selected.start_date_local).toLocaleDateString('fr-FR')} {'\u2014'}{' '}
-                                {selected.average_watts}W moy.
+                                {new Date(selected.start_date_local).toLocaleDateString('fr-FR')} {'\u2014'} {selected.average_watts}W moy.
                               </p>
                             </div>
                           </div>
@@ -166,14 +167,11 @@ export default function PowerAnalysisPage() {
                               <div className="flex-1 min-w-0">
                                 <p className="font-medium text-sm text-foreground truncate">{activity.name}</p>
                                 <p className="text-xs text-muted">
-                                  {new Date(activity.start_date_local).toLocaleDateString('fr-FR')} {'\u2014'}{' '}
-                                  {activity.average_watts}W moy.
+                                  {new Date(activity.start_date_local).toLocaleDateString('fr-FR')} {'\u2014'} {activity.average_watts}W moy.
                                 </p>
                               </div>
                               {activity.average_watts && (
-                                <Badge variant="default" className="bg-primary/10 text-primary">
-                                  {activity.average_watts}W
-                                </Badge>
+                                <Badge variant="default" className="bg-primary/10 text-primary">{activity.average_watts}W</Badge>
                               )}
                             </button>
                           ))
@@ -198,13 +196,8 @@ export default function PowerAnalysisPage() {
                 <Card variant="glass" className="text-center">
                   <div className="py-6">
                     <Zap className="w-12 h-12 mx-auto mb-3 text-muted opacity-50" />
-                    <p className="font-medium text-foreground">
-                      S\u00e9lectionnez une activit\u00e9 pour voir l&apos;analyse
-                    </p>
-                    <p className="text-sm text-muted mt-2">
-                      Les activit\u00e9s avec capteur de puissance (Garmin, Wahoo, etc.) affichent ici les donn\u00e9es
-                      de puissance d\u00e9taill\u00e9es
-                    </p>
+                    <p className="font-medium text-foreground">S\u00e9lectionnez une activit\u00e9 pour voir l&apos;analyse</p>
+                    <p className="text-sm text-muted mt-2">Les activit\u00e9s avec capteur de puissance (Garmin, Wahoo, etc.) affichent ici les donn\u00e9es de puissance d\u00e9taill\u00e9es</p>
                   </div>
                 </Card>
               </div>

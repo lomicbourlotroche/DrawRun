@@ -41,7 +41,7 @@ export interface ShareEventParams {
 async function getActivityShareImage(
   activityId: number,
   size: ShareImageSize = 'medium',
-  preview: boolean = false,
+  preview: boolean = false
 ): Promise<string> {
   const endpoint = preview
     ? `/api/activities/${activityId}/share-image/preview`
@@ -59,7 +59,10 @@ async function getActivityShareImage(
  * @param size Image size
  * @returns Base64 data URL
  */
-async function getShareImageAsBase64(activityId: number, size: ShareImageSize = 'medium'): Promise<string> {
+async function getShareImageAsBase64(
+  activityId: number,
+  size: ShareImageSize = 'medium'
+): Promise<string> {
   const url = await getActivityShareImage(activityId, size, true);
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -95,7 +98,7 @@ async function getShareImageAsBase64(activityId: number, size: ShareImageSize = 
 async function downloadShareImage(
   activityId: number,
   size: ShareImageSize = 'medium',
-  filename?: string,
+  filename?: string
 ): Promise<void> {
   const url = await getActivityShareImage(activityId, size, false);
   const a = document.createElement('a');
@@ -122,7 +125,7 @@ async function shareActivity(
   activityData: {
     distance?: number;
     duration?: number;
-  },
+  }
 ): Promise<boolean> {
   const shareUrl = `${window.location.origin}/app/activities/${activityId}`;
 
@@ -219,7 +222,7 @@ async function openShareModal(
     distance?: number;
     duration?: number;
   },
-  size: ShareImageSize = 'medium',
+  size: ShareImageSize = 'medium'
 ): Promise<void> {
   const imageUrl = await getActivityShareImage(activityId, size, true);
   const shareUrl = `${window.location.origin}/app/activities/${activityId}`;
@@ -265,8 +268,7 @@ async function openShareModal(
 
   const copyBtn = document.createElement('button');
   copyBtn.textContent = 'Copier le lien';
-  copyBtn.style.cssText =
-    'padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;';
+  copyBtn.style.cssText = 'padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;';
   copyBtn.onclick = () => {
     navigator.clipboard.writeText(shareUrl).then(() => alert('Lien copie !'));
   };
@@ -274,8 +276,7 @@ async function openShareModal(
 
   const openBtn = document.createElement('button');
   openBtn.textContent = 'Ouvrir le lien';
-  openBtn.style.cssText =
-    'padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer;';
+  openBtn.style.cssText = 'padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer;';
   openBtn.onclick = () => window.open(shareUrl, '_blank');
   btnGroup.appendChild(openBtn);
 
@@ -283,8 +284,7 @@ async function openShareModal(
 
   const closeBtn = document.createElement('button');
   closeBtn.textContent = 'Fermer';
-  closeBtn.style.cssText =
-    'padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer;';
+  closeBtn.style.cssText = 'padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer;';
   closeBtn.onclick = closeModal;
   content.appendChild(closeBtn);
 

@@ -76,7 +76,9 @@ export function PmcChart({ data, isLoading }: PmcChartProps) {
               onClick={() => setShowAdvanced(!showAdvanced)}
               className={cn(
                 'px-3 py-1 rounded-full text-xs font-medium transition-colors',
-                showAdvanced ? 'bg-primary text-primary-foreground' : 'bg-surface text-muted hover:text-foreground',
+                showAdvanced
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-surface text-muted hover:text-foreground'
               )}
             >
               {showAdvanced ? 'Vue simple' : 'Vue avanc\u00e9e'}
@@ -103,11 +105,15 @@ export function PmcChart({ data, isLoading }: PmcChartProps) {
               <TrendingDown className="w-4 h-4 text-danger" />
             )}
             <span className="text-muted text-sm">TSB</span>
-            <span className={cn('font-semibold', latest.tsb >= 0 ? 'text-success' : 'text-danger')}>{latest.tsb}</span>
+            <span className={cn('font-semibold', latest.tsb >= 0 ? 'text-success' : 'text-danger')}>
+              {latest.tsb}
+            </span>
           </div>
           <div className={cn('flex items-center gap-2 rounded-lg px-2 py-1', acwrInfo.bg)}>
             <span className="text-muted text-sm">ACWR</span>
-            <span className={cn('font-semibold', acwrInfo.text)}>{(latest.acwr || 1).toFixed(2)}</span>
+            <span className={cn('font-semibold', acwrInfo.text)}>
+              {(latest.acwr || 1).toFixed(2)}
+            </span>
           </div>
         </div>
 
@@ -119,16 +125,10 @@ export function PmcChart({ data, isLoading }: PmcChartProps) {
             </div>
             <div>
               <span className="text-muted text-xs">Monotonie</span>
-              <p
-                className={cn(
-                  'font-semibold',
-                  (latest.monotony || 1) > 2
-                    ? 'text-danger'
-                    : (latest.monotony || 1) > 1.5
-                      ? 'text-peak'
-                      : 'text-foreground',
-                )}
-              >
+              <p className={cn(
+                'font-semibold',
+                (latest.monotony || 1) > 2 ? 'text-danger' : (latest.monotony || 1) > 1.5 ? 'text-peak' : 'text-foreground'
+              )}>
                 {(latest.monotony || 1).toFixed(2)}
               </p>
             </div>
@@ -161,8 +161,19 @@ export function PmcChart({ data, isLoading }: PmcChartProps) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--muted)" />
-              <XAxis dataKey="dateLabel" stroke="var(--muted)" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis stroke="var(--muted)" fontSize={12} tickLine={false} axisLine={false} />
+              <XAxis
+                dataKey="dateLabel"
+                stroke="var(--muted)"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                stroke="var(--muted)"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+              />
               <ReferenceLine y={0} stroke="var(--muted)" strokeDasharray="3 3" />
               <Tooltip
                 contentStyle={{
