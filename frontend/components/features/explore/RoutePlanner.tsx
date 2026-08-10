@@ -119,7 +119,7 @@ export default function RoutePlanner({
   return (
     <div className="fixed inset-x-0 bottom-0 z-[600] sm:left-auto sm:right-4 sm:w-[420px] sm:bottom-4 sm:rounded-2xl sm:max-h-[80vh]">
       <div className="bg-surface border-t sm:border border-border sm:shadow-2xl sm:rounded-2xl flex flex-col max-h-[70vh] sm:max-h-[75vh]">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-3">

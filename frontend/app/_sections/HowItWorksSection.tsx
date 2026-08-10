@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { Card, Button } from '@/components/ui';
-import { 
-  UserPlus, 
-  Link2, 
-  TrendingUp, 
+import {
+  UserPlus,
+  Link2,
+  TrendingUp,
   ArrowRight,
   Sparkles,
   Shield,
@@ -80,7 +80,7 @@ export default function HowItWorksSection() {
             </span>
           </h2>
           <p className="text-lg text-muted max-w-2xl mx-auto">
-            Commencez à utiliser DrawRun en 3 étapes simples. 
+            Commencez à utiliser DrawRun en 3 étapes simples.
             Pas de configuration complexe, juste vos données et votre motivation.
           </p>
         </div>
@@ -104,7 +104,7 @@ export default function HowItWorksSection() {
                         <Icon className="w-7 h-7" />
                       </div>
                     </div>
-                    
+
                     <h3 className="text-xl font-bold text-foreground mb-3">
                       {step.title}
                     </h3>
@@ -113,7 +113,7 @@ export default function HowItWorksSection() {
                     </p>
                   </div>
                 </Card>
-                
+
                 {/* Connector Arrow (hidden on mobile and last item) */}
                 {index < steps.length - 1 && (
                   <div className="hidden md:block absolute top-1/2 -right-6 lg:-right-8 transform -translate-y-1/2 z-0">
@@ -134,7 +134,7 @@ export default function HowItWorksSection() {
           >
             Commencer gratuitement
           </Button>
-          
+
           <div className="flex items-center justify-center gap-6 mt-6">
             <div className="flex items-center gap-2 text-sm text-muted">
               <Shield className="w-4 h-4" />

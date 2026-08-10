@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui';
-import { 
-  CloudSun, 
-  Thermometer, 
-  Droplets, 
-  Wind, 
+import {
+  CloudSun,
+  Thermometer,
+  Droplets,
+  Wind,
   AlertTriangle,
   Sun,
   CloudRain,
@@ -45,7 +45,7 @@ export default function WeatherSection() {
               <CloudSun className="w-4 h-4" />
               Météo intégrée
             </span>
-            
+
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6">
               Conditions météo
               <br />
@@ -53,7 +53,7 @@ export default function WeatherSection() {
                 de chaque activité
               </span>
             </h2>
-            
+
             <p className="text-lg text-foreground leading-relaxed mb-8 max-w-xl">
               Visualisez la température, l&apos;humidité, le vent et les conditions météo
               au moment de chaque sortie. L&apos;impact estimé sur votre allure vous aide

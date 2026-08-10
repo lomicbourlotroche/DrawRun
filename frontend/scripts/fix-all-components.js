@@ -34,7 +34,7 @@ const replacements = [
   [/bg-slate-200/g, 'bg-border'],
   [/bg-slate-100/g, 'bg-surface'],
   [/bg-slate-50/g, 'bg-background'],
-  
+
   // Couleurs slate de texte
   [/text-slate-950/g, 'text-foreground'],
   [/text-slate-900/g, 'text-foreground'],
@@ -47,7 +47,7 @@ const replacements = [
   [/text-slate-200/g, 'text-foreground'],
   [/text-slate-100/g, 'text-muted'],
   [/text-slate-50/g, 'text-background'],
-  
+
   // Bordures slate
   [/border-slate-950/g, 'border-surface'],
   [/border-slate-900/g, 'border-surface'],
@@ -59,7 +59,7 @@ const replacements = [
   [/border-slate-300/g, 'border'],
   [/border-slate-200/g, 'border'],
   [/border-slate-100/g, 'border-surface'],
-  
+
   // Autres couleurs de fond
   [/bg-black\/70/g, 'bg-foreground/70'],
   [/bg-black\/60/g, 'bg-foreground/60'],
@@ -80,7 +80,7 @@ const replacements = [
   [/bg-white\/20/g, 'bg-surface/20'],
   [/bg-white\/10/g, 'bg-surface/10'],
   [/bg-white/g, 'bg-surface'],
-  
+
   // Couleurs de texte
   [/text-white\/90/g, 'text-foreground/90'],
   [/text-white\/80/g, 'text-foreground/80'],
@@ -90,7 +90,7 @@ const replacements = [
   [/text-white\/40/g, 'text-muted'],
   [/text-white/g, 'text-foreground'],
   [/text-black/g, 'text-foreground'],
-  
+
   // Couleurs de bordure
   [/border-white\/30/g, 'border-surface'],
   [/border-white\/20/g, 'border-surface'],
@@ -100,7 +100,7 @@ const replacements = [
   [/border-black\/20/g, 'border-surface'],
   [/border-black\/10/g, 'border-surface'],
   [/border-black/g, 'border-surface'],
-  
+
   // Couleurs neutres
   [/bg-neutral-950/g, 'bg-background'],
   [/bg-neutral-900/g, 'bg-surface'],
@@ -113,7 +113,7 @@ const replacements = [
   [/bg-neutral-200/g, 'bg-surface'],
   [/bg-neutral-100/g, 'bg-background'],
   [/bg-neutral-50/g, 'bg-background'],
-  
+
   [/text-neutral-950/g, 'text-foreground'],
   [/text-neutral-900/g, 'text-foreground'],
   [/text-neutral-800/g, 'text-foreground'],
@@ -125,7 +125,7 @@ const replacements = [
   [/text-neutral-200/g, 'text-foreground'],
   [/text-neutral-100/g, 'text-muted'],
   [/text-neutral-50/g, 'text-background'],
-  
+
   [/border-neutral-950/g, 'border-surface'],
   [/border-neutral-900/g, 'border-surface'],
   [/border-neutral-800/g, 'border-surface'],
@@ -136,14 +136,14 @@ const replacements = [
   [/border-neutral-300/g, 'border-surface'],
   [/border-neutral-200/g, 'border-surface'],
   [/border-neutral-100/g, 'border-surface'],
-  
+
   // Couleurs d'accentuation
   [/text-orange-500/g, 'text-peak'],
   [/text-orange-400/g, 'text-peak'],
   [/bg-orange-500/g, 'bg-peak'],
   [/bg-orange-400/g, 'bg-peak'],
   [/border-orange-500/g, 'border-peak'],
-  
+
   // Couleurs de succès
   [/text-green-500/g, 'text-success'],
   [/text-green-400/g, 'text-success'],
@@ -152,7 +152,7 @@ const replacements = [
   [/border-green-500/g, 'border-success'],
   [/text-emerald-500/g, 'text-success'],
   [/bg-emerald-500/g, 'bg-success'],
-  
+
   // Couleurs de danger
   [/text-red-500/g, 'text-danger'],
   [/text-red-400/g, 'text-danger'],
@@ -162,7 +162,7 @@ const replacements = [
   [/text-rose-500/g, 'text-danger'],
   [/bg-rose-500/g, 'bg-danger'],
   [/border-rose-500/g, 'border-danger'],
-  
+
   // Couleurs bleues
   [/text-blue-500/g, 'text-primary'],
   [/text-blue-400/g, 'text-primary'],
@@ -171,24 +171,24 @@ const replacements = [
   [/border-blue-500/g, 'border-primary'],
   [/text-sky-500/g, 'text-primary'],
   [/bg-sky-500/g, 'bg-primary'],
-  
+
   // Couleurs violettes
   [/text-purple-500/g, 'text-secondary'],
   [/text-purple-400/g, 'text-secondary'],
   [/bg-purple-500/g, 'bg-secondary'],
   [/bg-purple-400/g, 'bg-secondary'],
   [/border-purple-500/g, 'border-secondary'],
-  
+
   // Couleurs de recovery
   [/text-cyan-500/g, 'text-recovery'],
   [/bg-cyan-500/g, 'bg-recovery'],
   [/border-cyan-500/g, 'border-recovery'],
-  
+
   // Couleurs info
   [/text-info-500/g, 'text-info'],
   [/bg-info-500/g, 'bg-info'],
   [/border-info-500/g, 'border-info'],
-  
+
   // Hex colors standard
   [/#000000/g, 'var(--background)'],
   [/#000/g, 'var(--background)'],
@@ -200,7 +200,7 @@ const replacements = [
   [/#00C853/g, 'var(--success)'],
   [/#FF5252/g, 'var(--danger)'],
   [/#00BCD4/g, 'var(--recovery)'],
-  
+
   // Autres hex colors
   [/#ef4444/g, 'var(--danger)'],
   [/#3b82f6/g, 'var(--primary)'],
@@ -219,15 +219,15 @@ const replacements = [
 // Fonction pour appliquer les remplacements à un fichier
 function fixFile(filePath) {
   const fullPath = path.join(__dirname, filePath);
-  
+
   if (!fs.existsSync(fullPath)) {
     console.log(`⚠️  Fichier introuvable: ${fullPath}`);
     return false;
   }
-  
+
   let content = fs.readFileSync(fullPath, 'utf8');
   let modified = false;
-  
+
   for (const [regex, replacement] of replacements) {
     const newContent = content.replace(regex, replacement);
     if (newContent !== content) {
@@ -235,7 +235,7 @@ function fixFile(filePath) {
       modified = true;
     }
   }
-  
+
   // Nettoyer les className vides
   const cleanedContent = content
     .replace(/className=""/g, '')
@@ -243,19 +243,19 @@ function fixFile(filePath) {
       const cleaned = p1.replace(/\s+/g, ' ').trim();
       return cleaned ? `className="${cleaned}"` : '';
     });
-  
+
   if (cleanedContent !== content) {
     content = cleanedContent;
     modified = true;
   }
-  
+
   // Écrire le fichier seulement s'il a été modifié
   if (modified) {
     fs.writeFileSync(fullPath, content, 'utf8');
     console.log(`✅ Fichier corrigé: ${filePath}`);
     return true;
   }
-  
+
   console.log(`✅ Fichier déjà propre: ${filePath}`);
   return false;
 }

@@ -3,7 +3,7 @@
  * USE SOCIAL HOOK TESTS
  * ============================================================
  * Tests unitaires pour le hook useSocial.ts
- * 
+ *
  * @module tests/hooks/useSocial
  */
 
@@ -442,14 +442,14 @@ describe('useSocial hooks', () => {
 describe('Utility functions', () => {
   describe('formatPace', () => {
     it('should return "--" for invalid speed', () => {
-      
+
       expect(formatPace(0)).toBe('--');
       expect(formatPace(-1)).toBe('--');
       expect(formatPace(NaN)).toBe('--');
     });
 
     it('should format pace correctly', () => {
-      
+
       // 5 m/s = 3:20/km (1000/(5*60) = 3.333... min/km)
       expect(formatPace(5)).toBe('3:20');
       // 3.333 m/s = 5:00/km (1000/(3.333*60) = 5 min/km)
@@ -459,14 +459,14 @@ describe('Utility functions', () => {
 
   describe('getSportGradient', () => {
     it('should return gradient for known sports', () => {
-      
+
       expect(getSportGradient('Running')).toBe('from-orange-500 to-red-500');
       expect(getSportGradient('Cycling')).toBe('from-blue-500 to-cyan-500');
       expect(getSportGradient('Swimming')).toBe('from-cyan-500 to-blue-400');
     });
 
     it('should return default gradient for unknown sports', () => {
-      
+
       expect(getSportGradient('Unknown')).toBe('from-primary to-blue-500');
     });
   });

@@ -16,7 +16,7 @@ describe('polyline utilities', () => {
       // Simple polyline: San Francisco to San Francisco (single point)
       const encoded = '_p~F~ps|U';
       const decoded = decodePolyline(encoded);
-      
+
       expect(decoded).toBeInstanceOf(Array);
       expect(decoded.length).toBeGreaterThan(0);
       expect(decoded[0]).toHaveLength(2);
@@ -26,7 +26,7 @@ describe('polyline utilities', () => {
       // Polyline with multiple points
       const encoded = '_p~F~ps|U_ulLnnqC_mqNvxq`@';
       const decoded = decodePolyline(encoded);
-      
+
       expect(decoded.length).toBeGreaterThan(1);
       decoded.forEach(point => {
         expect(point).toHaveLength(2);
@@ -44,7 +44,7 @@ describe('polyline utilities', () => {
       // Polyline that includes negative coordinates
       const encoded = '~tqF~ps|U';
       const decoded = decodePolyline(encoded);
-      
+
       expect(decoded.length).toBeGreaterThan(0);
       // Check that we have valid coordinates
       decoded.forEach(point => {
@@ -58,7 +58,7 @@ describe('polyline utilities', () => {
     it('should encode a single coordinate', () => {
       const coordinates = [[37.7749, -122.4194]];
       const encoded = encodePolyline(coordinates);
-      
+
       expect(typeof encoded).toBe('string');
       expect(encoded.length).toBeGreaterThan(0);
     });
@@ -70,7 +70,7 @@ describe('polyline utilities', () => {
         [37.7751, -122.4196],
       ];
       const encoded = encodePolyline(coordinates);
-      
+
       expect(typeof encoded).toBe('string');
       expect(encoded.length).toBeGreaterThan(0);
     });
@@ -86,13 +86,13 @@ describe('polyline utilities', () => {
         [37.7750, -122.4195],
         [37.7751, -122.4196],
       ];
-      
+
       const encoded = encodePolyline(original);
       const decoded = decodePolyline(encoded);
-      
+
       // Due to precision in encoding/decoding, coordinates might not be exact
       expect(decoded.length).toBe(original.length);
-      
+
       // Check that coordinates are close (within 0.0001)
       for (let i = 0; i < original.length; i++) {
         expect(Math.abs(decoded[i][0] - original[i][0])).toBeLessThan(0.0001);
@@ -106,9 +106,9 @@ describe('polyline utilities', () => {
       // Distance between Paris and a point 1km north
       const paris = [48.8566, 2.3522];
       const northOfParis = [48.8655, 2.3522]; // Approximately 1km north
-      
+
       const distance = calculateDistance(paris, northOfParis);
-      
+
       expect(typeof distance).toBe('number');
       expect(distance).toBeGreaterThan(0);
       // Should be approximately 1000 meters (1km)
@@ -118,7 +118,7 @@ describe('polyline utilities', () => {
     it('should return 0 for same point', () => {
       const point = [48.8566, 2.3522];
       const distance = calculateDistance(point, point);
-      
+
       expect(distance).toBe(0);
     });
 
@@ -126,9 +126,9 @@ describe('polyline utilities', () => {
       // Two points on the equator, 1 degree apart in longitude
       const point1 = [0, 0];
       const point2 = [0, 1];
-      
+
       const distance = calculateDistance(point1, point2);
-      
+
       // At equator, 1 degree longitude ≈ 111km
       expect(distance).toBeCloseTo(111000, -3);
     });
@@ -151,9 +151,9 @@ describe('polyline utilities', () => {
         [48.8566, 2.3522],
         [48.8655, 2.3522],
       ];
-      
+
       const distance = calculatePolylineDistance(coordinates);
-      
+
       expect(distance).toBeGreaterThan(0);
       expect(distance).toBeCloseTo(1000, -2);
     });
@@ -165,9 +165,9 @@ describe('polyline utilities', () => {
         [48.8655, 2.3522], // ~1km north
         [48.8655, 2.3611], // ~1km east
       ];
-      
+
       const distance = calculatePolylineDistance(coordinates);
-      
+
       // Should be approximately 2km (1km north + 1km east)
       expect(distance).toBeGreaterThan(1500);
       expect(distance).toBeLessThan(2500);

@@ -8,10 +8,10 @@ import type { LatLng } from '@/types/leaflet';
 
 /**
  * Decodes an encoded polyline string into an array of latitude/longitude coordinates.
- * 
+ *
  * @param encoded - The encoded polyline string (Google's Encoded Polyline Algorithm Format)
  * @returns An array of [latitude, longitude] tuples
- * 
+ *
  * @example
  * ```typescript
  * const polyline = "_p~F~ps|U_ulLnnqC_mqNvxq`@";
@@ -62,10 +62,10 @@ export function decodePolyline(encoded: string): LatLng[] {
 
 /**
  * Encodes an array of latitude/longitude coordinates into a polyline string.
- * 
+ *
  * @param coordinates - Array of [latitude, longitude] tuples
  * @returns The encoded polyline string
- * 
+ *
  * @example
  * ```typescript
  * const coordinates = [[38.5, -120.2], [38.52, -120.3]];
@@ -131,7 +131,7 @@ function encodeSignedNumber(num: number): string {
 
 /**
  * Calculates the distance between two coordinates in meters (Haversine formula).
- * 
+ *
  * @param coord1 - First coordinate [lat, lng]
  * @param coord2 - Second coordinate [lat, lng]
  * @returns Distance in meters
@@ -139,7 +139,7 @@ function encodeSignedNumber(num: number): string {
 export function calculateDistance(coord1: LatLng, coord2: LatLng): number {
   const [lat1, lng1] = coord1;
   const [lat2, lng2] = coord2;
-  
+
   const R = 6371000; // Earth radius in meters
   const phi1 = lat1 * Math.PI / 180;
   const phi2 = lat2 * Math.PI / 180;
@@ -156,13 +156,13 @@ export function calculateDistance(coord1: LatLng, coord2: LatLng): number {
 
 /**
  * Calculates the total distance of a polyline in meters.
- * 
+ *
  * @param coordinates - Array of [latitude, longitude] tuples
  * @returns Total distance in meters
  */
 export function calculatePolylineDistance(coordinates: LatLng[]): number {
   if (coordinates.length < 2) return 0;
-  
+
   let totalDistance = 0;
   for (let i = 1; i < coordinates.length; i++) {
     totalDistance += calculateDistance(coordinates[i - 1], coordinates[i]);

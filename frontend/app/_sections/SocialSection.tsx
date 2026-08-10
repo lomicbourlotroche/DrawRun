@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui';
-import { 
-  Users, 
-  UserPlus, 
-  Trophy, 
+import {
+  Users,
+  UserPlus,
+  Trophy,
   Check
 } from '@/components/ui/icons';
 
@@ -77,7 +77,7 @@ export default function SocialSection() {
             </span>
           </h2>
           <p className="text-lg text-muted max-w-2xl mx-auto">
-            Rejoignez une communauté de coureurs passionnés. Partagez vos progrès, 
+            Rejoignez une communauté de coureurs passionnés. Partagez vos progrès,
             comparez vos performances et motivez-vous mutuellement.
           </p>
         </div>
@@ -102,15 +102,15 @@ export default function SocialSection() {
                   `}>
                     <Icon className="w-7 h-7" />
                   </div>
-                  
+
                   <h3 className="text-xl font-bold text-foreground mb-3">
                     {feature.title}
                   </h3>
-                  
+
                   <p className="text-muted leading-relaxed mb-6 flex-1">
                     {feature.description}
                   </p>
-                  
+
                   <ul className="space-y-2">
                     {feature.features.map((item, i) => (
                       <li key={i} className="flex items-center gap-2 text-sm text-muted">
@@ -161,7 +161,7 @@ export default function SocialSection() {
                 </div>
               </div>
             </div>
-            
+
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-10">
               <div className="absolute top-0 right-0 w-64 h-64 bg-surface rounded-full blur-3xl" />

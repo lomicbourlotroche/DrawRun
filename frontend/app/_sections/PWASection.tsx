@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui';
-import { 
-  Smartphone, 
-  Bell, 
-  Share2, 
-  WifiOff, 
+import {
+  Smartphone,
+  Bell,
+  Share2,
+  WifiOff,
   Monitor,
   Zap
 } from '@/components/ui/icons';

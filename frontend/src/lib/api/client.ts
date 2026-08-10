@@ -2,10 +2,10 @@
  * ============================================================
  * CLIENT API - Base HTTP Client pour DrawRun
  * ============================================================
- * 
+ *
  * Ce fichier contient le client HTTP de base avec gestion
  * automatique des tokens JWT, refresh token et retry sur 401.
- * 
+ *
  * @module lib/api/client
  */
 

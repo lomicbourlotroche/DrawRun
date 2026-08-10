@@ -2,7 +2,7 @@
  * ============================================================
  * PLAYWRIGHT CONFIGURATION - Tests E2E
  * ============================================================
- * 
+ *
  * Configuration pour les tests end-to-end avec Playwright
  * Couvre les flux critiques de l'application DrawRun
  */

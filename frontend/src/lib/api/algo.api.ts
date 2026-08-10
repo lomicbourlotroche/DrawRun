@@ -2,19 +2,19 @@
  * ============================================================
  * ALGO API - Endpoints algorithmes scientifiques
  * ============================================================
- * 
+ *
  * Ce fichier contient tous les endpoints d'algorithmes :
  * - Zones d'entraînement
  * - VDOT, PMC, TSS
  * - Recommandations
  * - Readiness
- * 
+ *
  * @module lib/api/algo.api
  */
 
 import { client } from './client';
-import type { 
-  Recommendation, 
+import type {
+  Recommendation,
   HRZone,
 } from '@/types';
 import type {

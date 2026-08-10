@@ -2,13 +2,13 @@
  * ============================================================
  * METRICS API - Endpoints métriques et performances
  * ============================================================
- * 
+ *
  * Ce fichier contient tous les endpoints de métriques :
  * - Recalcul des métriques
  * - Récupération des métriques
  * - Overtraining check
  * - TSS
- * 
+ *
  * @module lib/api/metrics.api
  */
 
@@ -20,11 +20,11 @@ export const metricsApi = {
   /**
    * Recalcule toutes les métriques
    */
-  recalculateMetrics(): Promise<{ 
-    success: boolean; 
-    calculated: number; 
-    vdot?: number; 
-    message?: string 
+  recalculateMetrics(): Promise<{
+    success: boolean;
+    calculated: number;
+    vdot?: number;
+    message?: string
   }> {
     return client.request('/api/metrics/recalculate', { method: 'POST' });
   },

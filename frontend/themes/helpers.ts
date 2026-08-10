@@ -112,7 +112,7 @@ export function flattenSemanticTokens(
     }
   }
 
-  // Shadows  
+  // Shadows
   vars['shadow-card'] = shadows.card;
   vars['shadow-card-hover'] = shadows.cardHover;
   vars['shadow-elevated'] = shadows.elevated;

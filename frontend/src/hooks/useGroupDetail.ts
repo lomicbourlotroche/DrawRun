@@ -3,7 +3,7 @@
  * USE GROUP DETAIL HOOK
  * ============================================================
  * Hook React pour gérer les détails d'un groupe.
- * 
+ *
  * @module hooks/useGroupDetail
  */
 

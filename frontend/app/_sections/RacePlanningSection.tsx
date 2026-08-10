@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { Card, Button } from '@/components/ui';
-import { 
-  Trophy, 
-  MapPin, 
-  Heart, 
-  Droplets, 
+import {
+  Trophy,
+  MapPin,
+  Heart,
+  Droplets,
   ArrowRight,
   TrendingUp
 } from '@/components/ui/icons';

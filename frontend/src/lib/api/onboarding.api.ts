@@ -2,11 +2,11 @@
  * ============================================================
  * ONBOARDING API - Endpoints onboarding et préférences
  * ============================================================
- * 
+ *
  * Ce fichier contient tous les endpoints d'onboarding :
  * - Status et étapes
  * - Préférences utilisateur
- * 
+ *
  * @module lib/api/onboarding.api
  */
 

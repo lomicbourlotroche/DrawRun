@@ -2,12 +2,12 @@
  * ============================================================
  * EXPLORE API - Endpoints exploration (Segments & Routes)
  * ============================================================
- * 
+ *
  * Ce fichier contient tous les endpoints d'exploration :
  * - Segments et efforts
  * - Routes publiques
  * - Heatmaps
- * 
+ *
  * @module lib/api/explore.api
  */
 
@@ -131,10 +131,10 @@ export const exploreApi = {
   // Segments
   // ============================================================================
 
-  createSegment(data: CreateSegmentParams): Promise<{ 
-    success: boolean; 
-    segment_id?: number; 
-    error?: string 
+  createSegment(data: CreateSegmentParams): Promise<{
+    success: boolean;
+    segment_id?: number;
+    error?: string
   }> {
     return client.request('/api/explore/segments', {
       method: 'POST',
@@ -185,11 +185,11 @@ export const exploreApi = {
     return client.request(`/api/explore/segments/${segmentId}/leaderboard`);
   },
 
-  createSegmentEffort(params: CreateSegmentEffortParams): Promise<{ 
-    success: boolean; 
-    effort_id?: number; 
-    is_pr?: boolean; 
-    error?: string 
+  createSegmentEffort(params: CreateSegmentEffortParams): Promise<{
+    success: boolean;
+    effort_id?: number;
+    is_pr?: boolean;
+    error?: string
   }> {
     return client.request(`/api/explore/segments/${params.segmentId}/efforts`, {
       method: 'POST',
@@ -216,9 +216,9 @@ export const exploreApi = {
     return client.request(`/api/explore/segments/${segmentId}/efforts/me`);
   },
 
-  deleteSegment(segmentId: number): Promise<{ 
-    success: boolean; 
-    error?: string 
+  deleteSegment(segmentId: number): Promise<{
+    success: boolean;
+    error?: string
   }> {
     return client.request(`/api/explore/segments/${segmentId}`, { method: 'DELETE' });
   },
@@ -227,10 +227,10 @@ export const exploreApi = {
   // Routes
   // ============================================================================
 
-  createRoute(data: CreateRouteParams): Promise<{ 
-    success: boolean; 
-    route_id?: number; 
-    error?: string 
+  createRoute(data: CreateRouteParams): Promise<{
+    success: boolean;
+    route_id?: number;
+    error?: string
   }> {
     return client.request('/api/explore/routes', {
       method: 'POST',
@@ -281,18 +281,18 @@ export const exploreApi = {
     return client.request('/api/explore/routes/favorites');
   },
 
-  deleteRoute(routeId: number): Promise<{ 
-    success: boolean; 
-    error?: string 
+  deleteRoute(routeId: number): Promise<{
+    success: boolean;
+    error?: string
   }> {
     return client.request(`/api/explore/routes/${routeId}`, { method: 'DELETE' });
   },
 
-  rateRoute(routeId: number, rating: number): Promise<{ 
-    success: boolean; 
+  rateRoute(routeId: number, rating: number): Promise<{
+    success: boolean;
     avg_rating?: number;
     rating_count?: number;
-    error?: string 
+    error?: string
   }> {
     return client.request(`/api/explore/routes/${routeId}/rate`, {
       method: 'POST',

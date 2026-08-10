@@ -133,13 +133,13 @@ export function GanttChart({ plan, onSessionClick }: GanttChartProps) {
               {/* Cellules pour chaque semaine */}
               {sessionsByWeek.map(({ week, session }) => {
                 const phase = getPhaseStyle(week.phase);
-                
+
                 if (!session) {
                   return (
                     <div
                       key={`${week.week}-${day}`}
                       className={`flex-1 p-1 border-r border-border last:border-r-0`}
-                      style={{ 
+                      style={{
                         minWidth: cellWidth,
                         backgroundColor: phase.bg,
                         borderLeft: `1px solid ${phase.border}`

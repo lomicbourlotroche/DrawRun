@@ -114,7 +114,7 @@ export function GpxImportSection({
         )}
         {recommendedPace !== null && recommendedPace !== undefined && (
           <p className="text-xs text-primary mt-1">
-            Prédiction VDOT : {recommendedPace}s/km 
+            Prédiction VDOT : {recommendedPace}s/km
             ({fmtPace(recommendedPace)}/km)
           </p>
         )}

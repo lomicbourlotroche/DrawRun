@@ -6,9 +6,9 @@ import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
 import type { DrawRunMap } from '@/types/leaflet';
-import { 
-  Search, X, Compass, MapPin, Layers, Plus, LocateFixed, 
-  Route, Heart, Navigation, List, Grid3x3, ArrowRight 
+import {
+  Search, X, Compass, MapPin, Layers, Plus, LocateFixed,
+  Route, Heart, Navigation, List, Grid3x3, ArrowRight
 } from '@/components/ui/icons';
 import { Card, Button } from '@/components/ui';
 import ExplorePanel from '@/components/features/explore/ExplorePanel';
@@ -138,7 +138,7 @@ export default function ExplorePage() {
     try {
       const useLat = lat ?? mapCenter.lat;
       const useLng = lng ?? mapCenter.lng;
-      
+
       if (useLat && useLng) {
         const res = await api.getNearbySegments(useLat, useLng, 10000);
         if (res.success) {
@@ -220,7 +220,7 @@ export default function ExplorePage() {
   // Geolocate user with fallback
   useEffect(() => {
     if (locatedRef.current) return;
-    
+
     const geolocateUser = () => {
       if (!navigator.geolocation) {
         setMapCenter(DEFAULT_CENTER);
@@ -323,7 +323,7 @@ export default function ExplorePage() {
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <button
               onClick={openRoutePlanner}

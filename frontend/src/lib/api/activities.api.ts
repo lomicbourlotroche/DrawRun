@@ -2,13 +2,13 @@
  * ============================================================
  * ACTIVITIES API - Endpoints activités sportives
  * ============================================================
- * 
+ *
  * Ce fichier contient tous les endpoints liés aux activités :
  * - CRUD activités
  * - Streams et splits
    * - Import GPX
  * - Analyses
- * 
+ *
  * @module lib/api/activities.api
  */
 

@@ -32,13 +32,13 @@ const TRACE_WEIGHT = 2;
 
 /**
  * CommunityTracesLayer component for displaying community traces on a Leaflet map.
- * 
+ *
  * Features:
  * - Fetches community traces from the API
  * - Displays traces as polylines on the map
  * - Supports visibility toggling
  * - Fully typed with no `any` types
- * 
+ *
  * @param props - CommunityTracesLayerProps containing map, visibility, and activity type filter
  */
 export default function CommunityTracesLayer({

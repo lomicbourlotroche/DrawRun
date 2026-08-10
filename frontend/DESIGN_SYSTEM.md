@@ -544,7 +544,7 @@ Système de couches pour gérer le superposition des éléments :
 
 ```css
 /* Zones cardiaques (horizontal) */
---gradient-hr-zones: linear-gradient(90deg, 
+--gradient-hr-zones: linear-gradient(90deg,
   #00C853 0%, #00C853 20%,   /* Zone 1 */
   #8BC34A 20%, #8BC34A 40%, /* Zone 2 */
   #FFAB00 40%, #FFAB00 60%, /* Zone 3 */
@@ -556,7 +556,7 @@ Système de couches pour gérer le superposition des éléments :
 --gradient-hr-zones-vertical: linear-gradient(to bottom, ...);
 
 /* Zones de puissance */
---gradient-power-zones: linear-gradient(90deg, 
+--gradient-power-zones: linear-gradient(90deg,
   #00BCD4 0%, #00BCD4 14.28%,   /* Zone 1 */
   #00C853 14.28%, #00C853 42.85%, /* Zone 2 */
   #8BC34A 42.85%, #8BC34A 57.14%, /* Zone 3 */
@@ -566,7 +566,7 @@ Système de couches pour gérer le superposition des éléments :
 );
 
 /* Niveaux de readiness */
---gradient-readiness: linear-gradient(90deg, 
+--gradient-readiness: linear-gradient(90deg,
   #FF5252 0%, #FF5252 20%,   /* Très faible */
   #FF6D00 20%, #FF6D00 40%,   /* Faible */
   #FFAB00 40%, #FFAB00 60%,   /* Moyen */
@@ -575,7 +575,7 @@ Système de couches pour gérer le superposition des éléments :
 );
 
 /* État de forme PMC */
---gradient-form-state: linear-gradient(135deg, 
+--gradient-form-state: linear-gradient(135deg,
   #FF5252 0%,      /* Overtrained */
   #FF6D00 25%,     /* Fatigued */
   #FFAB00 50%,     /* Normal */
@@ -655,11 +655,11 @@ import {
 // Utilisation avec des couleurs dynamiques
 const ZoneIndicator = ({ zone }: { zone: number }) => {
   const zoneColor = getHRZoneColor(zone);
-  
+
   return (
-    <div style={{ 
+    <div style={{
       backgroundColor: `color-mix(in srgb, ${zoneColor}, transparent 80%)`,
-      color: zoneColor 
+      color: zoneColor
     }}>
       Zone {zone}
     </div>
@@ -669,9 +669,9 @@ const ZoneIndicator = ({ zone }: { zone: number }) => {
 // Avec classes Tailwind
 const PMCStatus = ({ tsb }: { tsb: number }) => {
   const formColor = getPMCFormColor(tsb);
-  
+
   return (
-    <div className={`px-3 py-1 rounded-full text-xs font-medium`} 
+    <div className={`px-3 py-1 rounded-full text-xs font-medium`}
          style={{ backgroundColor: `color-mix(in srgb, ${formColor}, transparent 90%)` }}>
       {tsb > 20 ? 'Pic de forme' : tsb > 10 ? 'Bonne forme' : 'Normal'}
     </div>
@@ -744,7 +744,7 @@ node scripts/generate-design-tokens.js
    /* ❌ Mauvaise pratique */
    background-color: #0066FF;
    color: #FFFFFF;
-   
+
    /* ✅ Bonne pratique */
    background-color: var(--primary);
    color: var(--primary-foreground);
@@ -755,7 +755,7 @@ node scripts/generate-design-tokens.js
    // ❌ Mauvaise pratique
    if (zone === 1) color = '#00C853';
    if (zone === 2) color = '#8BC34A';
-   
+
    // ✅ Bonne pratique
    color = getHRZoneColor(zone);
    ```
@@ -764,7 +764,7 @@ node scripts/generate-design-tokens.js
    ```tsx
    // ❌ Mauvaise pratique
    <div style={{ backgroundColor: '#0066FF' }}>
-   
+
    // ✅ Bonne pratique
    <div className="bg-primary">
    // ou
@@ -775,7 +775,7 @@ node scripts/generate-design-tokens.js
    ```css
    /* ❌ Mauvaise pratique */
    background-color: rgba(0, 102, 255, 0.1);
-   
+
    /* ✅ Bonne pratique */
    background-color: color-mix(in srgb, var(--primary), transparent 90%);
    ```
@@ -802,7 +802,7 @@ node scripts/generate-design-tokens.js
    ```css
    /* ❌ À éviter */
    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-   
+
    /* ✅ Utiliser les gradients définis */
    background: var(--gradient-primary);
    ```
@@ -820,10 +820,10 @@ import { pmcStates, getPMCFormColor } from '@/lib/designTokens';
 
 const PMCCard = ({ fitness, fatigue, form }: { fitness: number; fatigue: number; form: number }) => {
   const formColor = getPMCFormColor(form);
-  const formState = form > 20 ? pmcStates.peak : 
-                   form > 10 ? pmcStates.fresh : 
-                   form > -10 ? pmcStates.normal : 
-                   form > -20 ? pmcStates.fatigued : 
+  const formState = form > 20 ? pmcStates.peak :
+                   form > 10 ? pmcStates.fresh :
+                   form > -10 ? pmcStates.normal :
+                   form > -20 ? pmcStates.fatigued :
                    pmcStates.overtrained;
 
   return (
@@ -832,7 +832,7 @@ const PMCCard = ({ fitness, fatigue, form }: { fitness: number; fatigue: number;
         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: formColor }} />
         <h3 className="text-lg font-bold">Performance Management Chart</h3>
       </div>
-      
+
       <div className="grid grid-cols-3 gap-4 mb-6">
         <MetricCard
           label="Fitness (CTL)"
@@ -853,7 +853,7 @@ const PMCCard = ({ fitness, fatigue, form }: { fitness: number; fatigue: number;
           trend={form > 0 ? 'up' : 'down'}
         />
       </div>
-      
+
       <div className="flex items-center gap-2 text-sm">
         <span>État :</span>
         <span className="font-semibold" style={{ color: formColor }}>
@@ -878,28 +878,28 @@ const HRZoneChart = ({ data }: { data: { time: number; hr: number; zone: number 
         {/* Gradient basé sur les zones HR */}
         <linearGradient id="hrGradient" x1="0" y1="0" x2="0" y2="1">
           {Array.from({ length: 5 }, (_, i) => (
-            <stop 
-              key={i} 
-              offset={`${i * 20}%`} 
-              stopColor={getHRZoneColor(i + 1)} 
-              stopOpacity={0.3} 
+            <stop
+              key={i}
+              offset={`${i * 20}%`}
+              stopColor={getHRZoneColor(i + 1)}
+              stopOpacity={0.3}
             />
           ))}
           <stop offset="100%" stopColor="transparent" stopOpacity={0} />
         </linearGradient>
       </defs>
-      
+
       <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
       <XAxis dataKey="time" stroke="var(--muted)" />
       <YAxis stroke="var(--muted)" />
-      <Tooltip 
-        contentStyle={{ 
+      <Tooltip
+        contentStyle={{
           backgroundColor: 'var(--surface)',
           border: '1px solid var(--border)',
           borderRadius: 'var(--radius-md)'
         }}
       />
-      
+
       <Area
         type="monotone"
         dataKey="hr"
@@ -920,13 +920,13 @@ import { powerZones, getPowerZoneColor } from '@/lib/designTokens';
 const PowerZoneBadge = ({ zone, value }: { zone: number; value: number }) => {
   const color = getPowerZoneColor(zone);
   const zoneInfo = powerZones[`zone${zone}` as keyof typeof powerZones];
-  
+
   return (
-    <div 
+    <div
       className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1"
-      style={{ 
+      style={{
         backgroundColor: `color-mix(in srgb, ${color}, transparent 85%)`,
-        color: zoneInfo.foreground 
+        color: zoneInfo.foreground
       }}
     >
       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
@@ -950,10 +950,10 @@ const ReadinessIndicator = ({ score }: { score: number }) => {
                score >= 50 ? readinessLevels.fair :
                score >= 30 ? readinessLevels.poor :
                readinessLevels.veryPoor;
-  
+
   return (
     <div className="flex items-center gap-3 p-4 bg-surface rounded-2xl">
-      <div className="w-12 h-12 rounded-xl flex items-center justify-center" 
+      <div className="w-12 h-12 rounded-xl flex items-center justify-center"
            style={{ backgroundColor: `color-mix(in srgb, ${color}, transparent 80%)` }}>
         <TrendingUp className="w-6 h-6" style={{ color }} />
       </div>

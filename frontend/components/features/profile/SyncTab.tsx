@@ -139,9 +139,9 @@ export function SyncTab() {
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
   const [showGarminModal, setShowGarminModal] = useState(false);
   const [showDecathlonModal, setShowDecathlonModal] = useState(false);
-  
+
   const { has_garmin, has_decathlon, has_suunto } = useAuthStore();
-  
+
   // Check both auth store flags and sync status
   const garminConnected = has_garmin || !!syncStatus?.garmin?.configured || !!syncStatus?.garmin_last_sync;
   const decathlonConnected = has_decathlon || !!syncStatus?.decathlon?.configured || !!syncStatus?.decathlon_last_sync;
@@ -177,11 +177,11 @@ export function SyncTab() {
         toast.success('Suunto déconnecté');
       }
       fetchStatus();
-    } catch { 
+    } catch {
       const serviceName = service === 'garmin' ? 'Garmin' : service === 'decathlon' ? 'Decathlon' : 'Suunto';
-      toast.error(`Erreur déconnexion ${serviceName}`); 
-    } finally { 
-      setDisconnecting(null); 
+      toast.error(`Erreur déconnexion ${serviceName}`);
+    } finally {
+      setDisconnecting(null);
     }
   };
 
@@ -217,33 +217,33 @@ export function SyncTab() {
           </div>
 
           <div className="space-y-3">
-            <ServiceCard 
-              service="garmin" 
-              isConnected={garminConnected} 
-              lastSync={syncStatus?.garmin_last_sync || null} 
-              onConnect={() => setShowGarminModal(true)} 
-              onDisconnect={() => handleDisconnect('garmin')} 
-              isDisconnecting={disconnecting === 'garmin'} 
+            <ServiceCard
+              service="garmin"
+              isConnected={garminConnected}
+              lastSync={syncStatus?.garmin_last_sync || null}
+              onConnect={() => setShowGarminModal(true)}
+              onDisconnect={() => handleDisconnect('garmin')}
+              isDisconnecting={disconnecting === 'garmin'}
             />
-            
-            <ServiceCard 
-              service="decathlon" 
-              isConnected={decathlonConnected} 
+
+            <ServiceCard
+              service="decathlon"
+              isConnected={decathlonConnected}
               lastSync={syncStatus?.decathlon_last_sync || null}
               onConnect={() => setShowDecathlonModal(true)}
               onDisconnect={() => handleDisconnect('decathlon')}
               isDisconnecting={disconnecting === 'decathlon'}
             />
 
-            <ServiceCard 
-              service="suunto" 
-              isConnected={suuntoConnected} 
+            <ServiceCard
+              service="suunto"
+              isConnected={suuntoConnected}
               lastSync={syncStatus?.suunto_last_sync || null}
               onConnect={() => {}}
               onDisconnect={() => handleDisconnect('suunto')}
               isDisconnecting={disconnecting === 'suunto'}
             >
-              <SuuntoConnect 
+              <SuuntoConnect
                 onSuccess={() => { fetchStatus(); }}
                 onError={(err) => toast.error(err)}
               />

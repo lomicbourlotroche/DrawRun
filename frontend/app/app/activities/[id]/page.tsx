@@ -106,7 +106,7 @@ export default function ActivityDetailPage() {
       </div>
     );
   }
-    
+
   if (!activity) {
     return (
       <div className="animate-fade-in max-w-5xl mx-auto text-center py-12">

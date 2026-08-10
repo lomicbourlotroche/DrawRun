@@ -116,8 +116,8 @@ export default function SegmentDetailPage() {
     <div className="container mx-auto p-4 max-w-4xl">
       {/* Header */}
       <div className="mb-6">
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           className="mb-4"
           onClick={() => window.history.back()}
           aria-label="Retour à la page précédente"
@@ -244,8 +244,8 @@ export default function SegmentDetailPage() {
           <CardContent>
             <div className="space-y-2">
               {myEfforts.map((effort) => (
-                <div 
-                  key={effort.id} 
+                <div
+                  key={effort.id}
                   className="flex items-center justify-between p-3 bg-muted rounded-lg"
                 >
                   <div>

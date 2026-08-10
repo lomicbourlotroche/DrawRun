@@ -99,7 +99,7 @@ export default function SessionFeedback({ session, planId, sessionNumber, onComp
       // Notifier le parent du résultat
       const result: 'success' | 'failed' | 'partial' = selectedDifficulty === 'hard' ? 'partial' : 'success';
       onResult?.(result);
-      
+
       toast.success('Feedback enregistré !');
       setIsSubmitted(true);
       setTimeout(() => onComplete(), 1500);
@@ -123,7 +123,7 @@ export default function SessionFeedback({ session, planId, sessionNumber, onComp
         <p className="text-sm text-muted">
           {session.title} - {session.duration}
         </p>
-        
+
         {/* Indicateur de résultat */}
         {displayResult && (
           <div className="mt-3">
@@ -153,9 +153,9 @@ export default function SessionFeedback({ session, planId, sessionNumber, onComp
                 <option.icon className={`w-8 h-8 ${option.color}`} />
                 <span className="text-sm mt-2 font-medium">{option.label}</span>
                 {selectedDifficulty === option.value && (
-                  <SessionResultIndicator 
-                    result={option.result} 
-                    size="sm" 
+                  <SessionResultIndicator
+                    result={option.result}
+                    size="sm"
                     className="mt-2"
                   />
                 )}
@@ -198,10 +198,10 @@ export default function SessionFeedback({ session, planId, sessionNumber, onComp
             <span
               key={num}
               className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] transition-all ${
-                num === rpe 
-                  ? 'bg-primary text-white font-bold' 
-                  : num < rpe 
-                    ? 'bg-primary/30 text-primary/80' 
+                num === rpe
+                  ? 'bg-primary text-white font-bold'
+                  : num < rpe
+                    ? 'bg-primary/30 text-primary/80'
                     : 'bg-muted/20 text-muted'
               }`}
             >
@@ -225,7 +225,7 @@ export default function SessionFeedback({ session, planId, sessionNumber, onComp
               J&apos;ai ressenti une douleur
             </label>
           </div>
-          
+
           {hasPain && (
             <input
               type="text"
@@ -262,7 +262,7 @@ export default function SessionFeedback({ session, planId, sessionNumber, onComp
           {isSubmitted ? 'Feedback enregistré ✓' : 'Valider'}
           {!isSubmitted && <ArrowRight className="w-4 h-4 ml-2" />}
         </Button>
-        
+
         {/* Résumé après soumission */}
         {isSubmitted && displayResult && (
           <div className="mt-4 p-4 rounded-lg bg-surface border border-border">

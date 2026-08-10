@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui';
-import { 
-  TrendingUp, 
-  Heart, 
-  Clock, 
-  ArrowRight, 
+import {
+  TrendingUp,
+  Heart,
+  Clock,
+  ArrowRight,
   LineChart,
   Target,
   Zap
@@ -49,7 +49,7 @@ export default function WebAppSection() {
               <Zap className="w-4 h-4" />
               Disponible maintenant
             </span>
-            
+
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight mb-6">
               Votre Performance,
               <br />
@@ -57,7 +57,7 @@ export default function WebAppSection() {
                 Accessible Partout
               </span>
             </h2>
-            
+
             <p className="text-lg text-foreground leading-relaxed mb-8 max-w-xl">
               Analysez vos activités, suivez votre PMC, visualisez vos zones d&apos;entraînement,
               planifiez vos courses et suivez la météo — tout depuis votre navigateur.
@@ -73,7 +73,7 @@ export default function WebAppSection() {
               ].map((item, index) => {
                 const Icon = item.icon;
                 return (
-                  <div 
+                  <div
                     key={index}
                     className="flex items-center gap-3 p-3 bg-surface/5 border border-white/10 rounded-xl"
                   >
@@ -88,16 +88,16 @@ export default function WebAppSection() {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 glow
                 rightIcon={<ArrowRight className="w-5 h-5" />}
                 className="bg-surface text-foreground hover:bg-surface"
               >
                 Créer un compte
               </Button>
-              <Button 
-                variant="glass" 
+              <Button
+                variant="glass"
                 size="lg"
               >
                 Se connecter
@@ -159,20 +159,20 @@ export default function WebAppSection() {
                         <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
                       </linearGradient>
                     </defs>
-                    <path 
-                      d="M0,60 Q30,55 60,50 T120,45 T180,35 T240,30 T300,25" 
-                      fill="none" 
-                      stroke="var(--primary)" 
+                    <path
+                      d="M0,60 Q30,55 60,50 T120,45 T180,35 T240,30 T300,25"
+                      fill="none"
+                      stroke="var(--primary)"
                       strokeWidth="2"
                     />
-                    <path 
-                      d="M0,60 Q30,55 60,50 T120,45 T180,35 T240,30 T300,25 L300,80 L0,80 Z" 
-                      fill="url(#fitnessGradient)" 
+                    <path
+                      d="M0,60 Q30,55 60,50 T120,45 T180,35 T240,30 T300,25 L300,80 L0,80 Z"
+                      fill="url(#fitnessGradient)"
                     />
-                    <path 
-                      d="M0,65 Q30,62 60,60 T120,58 T180,55 T240,52 T300,50" 
-                      fill="none" 
-                      stroke="var(--warning)" 
+                    <path
+                      d="M0,65 Q30,62 60,60 T120,58 T180,55 T240,52 T300,50"
+                      fill="none"
+                      stroke="var(--warning)"
                       strokeWidth="2"
                       strokeDasharray="4 4"
                     />
@@ -208,5 +208,3 @@ export default function WebAppSection() {
     </section>
   );
 }
-
-

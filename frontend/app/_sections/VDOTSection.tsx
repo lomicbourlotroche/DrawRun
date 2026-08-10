@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { VDOTDemoCalculator } from '@/components/features/performance';
-import { 
-  Activity, 
-  TrendingUp, 
-  Target, 
-  Zap, 
+import {
+  Activity,
+  TrendingUp,
+  Target,
+  Zap,
   Calculator
 } from '@/components/ui/icons';
 
@@ -64,7 +64,7 @@ export default function VDOTSection() {
               <Calculator className="w-4 h-4" />
               Jack Daniels VDOT V6.4
             </span>
-            
+
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight mb-6">
               LA SCIENCE
               <br />
@@ -73,7 +73,7 @@ export default function VDOTSection() {
                 VITESSE
               </span>
             </h2>
-            
+
             <p className="text-lg text-muted leading-relaxed mb-8 max-w-xl">
               Le VDOT n&apos;est pas qu&apos;un chiffre. C&apos;est l&apos;essence de votre efficacité running.
               DrawRun analyse chaque foulée pour affiner votre profil physiologique.
@@ -84,7 +84,7 @@ export default function VDOTSection() {
               {vdotFeatures.map((feature, index) => {
                 const Icon = feature.icon;
                 return (
-                  <div 
+                  <div
                     key={index}
                     className="flex items-start gap-4 p-4 bg-background border border-surface rounded-xl hover:bg-surface transition-colors"
                   >

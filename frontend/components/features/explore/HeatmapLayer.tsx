@@ -11,14 +11,14 @@ import L from 'leaflet';
 
 /**
  * HeatmapLayer component for displaying activity heatmaps on a Leaflet map.
- * 
+ *
  * Features:
  * - Fetches heatmap data from the API based on bounds and activity type
  * - Displays heatmap using leaflet-heat plugin
  * - Supports visibility toggling without re-fetching data
  * - Fully typed with no `any` types
  * - Accessible with ARIA attributes
- * 
+ *
  * @param props - HeatmapLayerProps containing map, bounds, activity type, and visibility
  */
 export default function HeatmapLayer({

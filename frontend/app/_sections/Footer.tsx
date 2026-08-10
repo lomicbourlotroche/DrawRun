@@ -35,7 +35,7 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-muted mb-6 max-w-sm">
-              L&apos;application de performance ultime intégrant le moteur Jack Daniels VDOT V6.4 
+              L&apos;application de performance ultime intégrant le moteur Jack Daniels VDOT V6.4
               et 15+ métriques avancées.
             </p>
             {/* Social Links */}

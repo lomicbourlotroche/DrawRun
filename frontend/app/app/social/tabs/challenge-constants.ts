@@ -3,7 +3,7 @@
  * CHALLENGE CONSTANTS
  * ============================================================
  * Constantes et types spécifiques aux défis (challenges).
- * 
+ *
  * @module challenge-constants
  */
 
@@ -144,10 +144,10 @@ export function getMilestones(c: { milestones?: string }): Array<{ pct: number; 
   ];
 
   }
-  try { 
-    return JSON.parse(c.milestones); 
-  } catch { 
-    return []; 
+  try {
+    return JSON.parse(c.milestones);
+  } catch {
+    return [];
   }
 }
 

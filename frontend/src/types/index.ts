@@ -2,10 +2,10 @@
  * ============================================================
  * TYPES TYPESCRIPT - Définitions de types pour DrawRun
  * ============================================================
- * 
+ *
  * Ce fichier contient toutes les définitions de types
  * TypeScript utilisées par l'application frontend.
- * 
+ *
  * === TYPES DÉFINIS ===
  * - User              : Utilisateur (id, email, name, fcm, vma, vdot...)
  * - Activity          : Activité sportive (id, name, distance, durée...)
@@ -15,7 +15,7 @@
  * - PmcDataPoint     : Point de données PMC (ctl, atl, tsb)
  * - Recommendation     : Recommandation d'entraînement
  * - AthleteStats    : Statistiques de l'athlète
- * 
+ *
  * @module types/index
  */
 

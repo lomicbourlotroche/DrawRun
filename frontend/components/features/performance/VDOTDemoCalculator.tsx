@@ -56,18 +56,18 @@ const calculateVDOT = (distanceKm: number, timeMinutes: number): number => {
 const calculatePredictions = (vdot: number): VDOTDemoResult['predictions'] => {
   // Facteurs de prédiction basés sur VDOT
   const vma = vdot * 0.27; // VMA en km/h
-  
+
   // Temps de course en minutes par km
   const km5Factor = 0.975 + (100 - vdot) * 0.0035;
   const km10Factor = 0.985 + (100 - vdot) * 0.0032;
   const halfFactor = 1.025 + (100 - vdot) * 0.0025;
   const marathonFactor = 1.10 + (100 - vdot) * 0.0018;
-  
+
   const pace5k = 100 / (vma / km5Factor); // Temps pour 5km en secondes
   const pace10k = 100 / (vma / km10Factor);
   const paceHalf = 100 / (vma / halfFactor);
   const paceMarathon = 100 / (vma / marathonFactor);
-  
+
   const formatTime = (totalSeconds: number): string => {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -77,7 +77,7 @@ const calculatePredictions = (vdot: number): VDOTDemoResult['predictions'] => {
     }
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
-  
+
   return {
     fiveK: formatTime(pace5k * 5),
     tenK: formatTime(pace10k * 10),
@@ -95,7 +95,7 @@ const calculateTrainingPaces = (vdot: number) => {
     const s = Math.round(secPerKm % 60);
     return isMax ? `${m}:${s.toString().padStart(2, '0')}` : `> ${m}:${s.toString().padStart(2, '0')}`;
   };
-  
+
   return {
     E: { min: speedToPace(vma * 0.65), max: speedToPace(vma * 0.79) },
     M: speedToPace(vma * 0.80),
@@ -135,10 +135,10 @@ export function VDOTDemoCalculator({ className = '' }: VDOTDemoCalculatorProps) 
 
   const handleCalculate = () => {
     if (timeMinutes <= 0) return;
-    
+
     const vdot = calculateVDOT(selectedRace.distance, timeMinutes);
     const level = getVDOTLevel(vdot);
-    
+
     setResult({
       vdot,
       vma: Math.round(vdot * 0.27 * 10) / 10,

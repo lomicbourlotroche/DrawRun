@@ -32,7 +32,7 @@ export function Tabs({ defaultValue, value, onValueChange, children, className }
   const [internalValue, setInternalValue] = useState(defaultValue || '');
   const isControlled = value !== undefined;
   const currentValue = isControlled ? value : internalValue;
-  
+
   const handleValueChange = (newValue: string) => {
     if (!isControlled) {
       setInternalValue(newValue);
@@ -94,9 +94,9 @@ interface TabsContentProps {
 
 export function TabsContent({ value, children, className }: TabsContentProps) {
   const { value: selectedValue } = useTabs();
-  
+
   if (selectedValue !== value) return null;
-  
+
   return <div className={cn('animate-fade-in', className)}>{children}</div>;
 }
 

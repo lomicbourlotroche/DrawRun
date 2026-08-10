@@ -2,7 +2,7 @@
  * ============================================================
  * AUTHENTICATION E2E TESTS
  * ============================================================
- * 
+ *
  * Tests end-to-end pour les flux d'authentification
  * - Login / Logout
  * - Registration
@@ -24,7 +24,7 @@ test.describe('Authentication Flow', () => {
 
   test('should show validation errors for empty form', async ({ page }) => {
     await page.click('button[type="submit"]');
-    
+
     await expect(page.locator('[data-testid="email-error"]')).toBeVisible();
     await expect(page.locator('[data-testid="password-error"]')).toBeVisible();
   });
@@ -33,7 +33,7 @@ test.describe('Authentication Flow', () => {
     await page.fill('[data-testid="email-input"]', 'invalid@example.com');
     await page.fill('[data-testid="password-input"]', 'wrongpassword');
     await page.click('button[type="submit"]');
-    
+
     await expect(page.locator('[data-testid="auth-error"]')).toContainText('Invalid credentials');
   });
 
@@ -58,7 +58,7 @@ test.describe('Authentication Flow', () => {
     await page.fill('[data-testid="email-input"]', 'test@example.com');
     await page.fill('[data-testid="password-input"]', 'password123');
     await page.click('button[type="submit"]');
-    
+
     // Should redirect to dashboard
     await expect(page).toHaveURL('/app');
     await expect(page.locator('[data-testid="dashboard"]')).toBeVisible();
@@ -80,7 +80,7 @@ test.describe('Authentication Flow', () => {
     await page.goto('/app');
     await page.click('[data-testid="user-menu"]');
     await page.click('[data-testid="logout-button"]');
-    
+
     // Should redirect to login
     await expect(page).toHaveURL('/');
     await expect(page.locator('[data-testid="login-form"]')).toBeVisible();
@@ -88,7 +88,7 @@ test.describe('Authentication Flow', () => {
 
   test('should protect authenticated routes', async ({ page }) => {
     await page.goto('/app');
-    
+
     // Should redirect to login
     await expect(page).toHaveURL('/');
     await expect(page.locator('[data-testid="login-form"]')).toBeVisible();
@@ -96,16 +96,16 @@ test.describe('Authentication Flow', () => {
 
   test('should handle registration flow', async ({ page }) => {
     await page.click('[data-testid="register-link"]');
-    
+
     await expect(page).toHaveURL('/login?mode=register');
     await expect(page.locator('[data-testid="registration-form"]')).toBeVisible();
-    
+
     // Fill registration form
     await page.fill('[data-testid="name-input"]', 'New User');
     await page.fill('[data-testid="email-input"]', 'newuser@example.com');
     await page.fill('[data-testid="password-input"]', 'password123');
     await page.fill('[data-testid="confirm-password-input"]', 'password123');
-    
+
     // Mock successful registration
     await page.route('**/api/auth/register', async route => {
       await route.fulfill({
@@ -117,18 +117,18 @@ test.describe('Authentication Flow', () => {
         })
       });
     });
-    
+
     await page.click('button[type="submit"]');
-    
+
     await expect(page.locator('[data-testid="success-message"]')).toContainText('registered successfully');
   });
 
   test('should validate password strength', async ({ page }) => {
     await page.click('[data-testid="register-link"]');
-    
+
     await page.fill('[data-testid="password-input"]', '123');
     await expect(page.locator('[data-testid="password-strength"]')).toContainText('Weak');
-    
+
     await page.fill('[data-testid="password-input"]', 'StrongP@ssw0rd!');
     await expect(page.locator('[data-testid="password-strength"]')).toContainText('Strong');
   });
@@ -138,7 +138,7 @@ test.describe('Responsive Design', () => {
   test('should work on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/');
-    
+
     await expect(page.locator('[data-testid="mobile-menu"]')).toBeVisible();
     await expect(page.locator('form[data-testid="login-form"]')).toBeVisible();
   });
@@ -146,7 +146,7 @@ test.describe('Responsive Design', () => {
   test('should work on tablet', async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto('/');
-    
+
     await expect(page.locator('[data-testid="login-form"]')).toBeVisible();
   });
 });

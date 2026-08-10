@@ -4,7 +4,7 @@
  * ============================================================
  * Hook React pour gérer les fonctionnalités sociales.
  * Centralise la logique pour les amis, groupes, défis, feed, et classement.
- * 
+ *
  * @module hooks/useSocial
  */
 
@@ -499,7 +499,7 @@ export function getMilestones(challenge: {
     { pct: 75, label: '3/4', icon: '🌳' },
     { pct: 100, label: 'Terminé', icon: '🎉' },
   ];
-  
+
   if (challenge.milestones) {
     try {
       return JSON.parse(challenge.milestones);
@@ -507,7 +507,7 @@ export function getMilestones(challenge: {
       return defaultMilestones;
     }
   }
-  
+
   if (challenge.challenge_mode === 'streak') {
     return [
       { pct: 25, label: '7j', icon: '🔥' },
@@ -516,7 +516,7 @@ export function getMilestones(challenge: {
       { pct: 100, label: '30j', icon: '🏆' },
     ];
   }
-  
+
   return defaultMilestones;
 }
 

@@ -203,7 +203,7 @@ export default function ExplorePanel({
                         </span>
                       </div>
                     </div>
-                    
+
                     {/* Filters */}
                     <div className="space-y-2 pb-2">
                       <FilterChipGroup

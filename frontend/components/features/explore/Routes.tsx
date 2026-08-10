@@ -110,7 +110,7 @@ export function RouteList({ routes, onRouteClick, isLoading, showFavoriteButton 
                     {route.activity_type}
                   </Badge>
                   {route.difficulty && (
-                    <Badge 
+                    <Badge
                       className={`text-xs ${difficultyColors[route.difficulty] || 'bg-muted/20'}`}
                       size="sm"
                     >

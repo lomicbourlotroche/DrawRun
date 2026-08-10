@@ -2,7 +2,7 @@
  * ============================================================
  * PERFORMANCE UTILITIES
  * ============================================================
- * 
+ *
  * Utilitaires d'optimisation des performances pour DrawRun
  * - Lazy loading des composants
  * - Virtualisation des listes
@@ -32,7 +32,7 @@ export function LazyWrapper({ children, fallback }: LazyWrapperProps): React.Rea
   const defaultFallback = React.createElement('div', {
     className: 'animate-pulse bg-gray-200 h-32 rounded'
   });
-  
+
   return React.createElement(
     Suspense,
     { fallback: fallback || defaultFallback },
@@ -106,7 +106,7 @@ export function getOptimizedImageUrl(src: string, width: number, quality = 80): 
     const url = new URL(src);
     url.searchParams.set('w', width.toString());
     url.searchParams.set('q', quality.toString());
-    
+
     return url.toString();
   } catch {
     // Si l'URL est invalide, retourner l'URL originale
@@ -177,7 +177,7 @@ class PerformanceCache {
    */
   get<T>(key: string): T | null {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       return null;
     }
@@ -253,7 +253,7 @@ export function debounce<T extends (..._args: never[]) => unknown>(
   delay: number
 ): (..._args: Parameters<T>) => void {
   let timeoutId: ReturnType<typeof setTimeout>;
-  
+
   return (..._args: Parameters<T>) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func(..._args), delay);
@@ -271,7 +271,7 @@ export function throttle<T extends (..._args: never[]) => unknown>(
   delay: number
 ): (..._args: Parameters<T>) => void {
   let lastCall = 0;
-  
+
   return (..._args: Parameters<T>) => {
     const now = Date.now();
     if (now - lastCall >= delay) {
@@ -395,7 +395,7 @@ class PerformanceMonitor {
    */
   getStats(name?: string) {
     const metrics = this.getMetrics(name);
-    
+
     if (metrics.length === 0) {
       return null;
     }
@@ -471,7 +471,7 @@ export function isSlowConnection(): boolean {
 
   const nav = navigator as NavigatorWithConnection;
   const connection = nav.connection;
-  return connection?.effectiveType === 'slow-2g' || 
+  return connection?.effectiveType === 'slow-2g' ||
          connection?.effectiveType === '2g' ||
          connection?.saveData === true;
 }

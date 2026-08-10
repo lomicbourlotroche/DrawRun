@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { Card, Button } from '@/components/ui';
-import { 
-  Users, 
-  Activity, 
-  TrendingUp, 
+import {
+  Users,
+  Activity,
+  TrendingUp,
   Calendar,
   ArrowRight,
   Smartphone,
@@ -77,7 +77,7 @@ export default function IOSAppSection() {
               <Smartphone className="w-4 h-4" />
               iOS App - NOUVEAU
             </span>
-            
+
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6">
               DrawRun
               <br />
@@ -85,7 +85,7 @@ export default function IOSAppSection() {
                 Sur Votre iPhone
               </span>
             </h2>
-            
+
             <p className="text-lg text-foreground leading-relaxed mb-8 max-w-xl">
               L&apos;application iOS DrawRun est maintenant disponible ! Profitez de toutes les fonctionnalités
               directement sur votre iPhone : suivi GPS, analyses scientifiques, coaching adaptatif et

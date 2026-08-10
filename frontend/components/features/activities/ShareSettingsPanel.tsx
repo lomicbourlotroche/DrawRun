@@ -54,11 +54,11 @@ const ALLOWED_FIELDS = [
   { id: 'calories', label: 'Calories', icon: '🔥' },
 ];
 
-export function ShareSettingsPanel({ 
-  activityId, 
-  onSave, 
+export function ShareSettingsPanel({
+  activityId,
+  onSave,
   activityData,
-  showPreview = true 
+  showPreview = true
 }: ShareSettingsPanelProps) {
   const [settings, setSettings] = useState<ShareSettings>({
     share_to_friends: true,
@@ -83,7 +83,7 @@ export function ShareSettingsPanel({
       try {
         setIsLoading(true);
         setError(null);
-        
+
         // Charger les parametres de partage
         const settingsData = await activitiesApi.getActivityShareSettings(activityId);
         const normalizedSettings = {
@@ -119,7 +119,7 @@ export function ShareSettingsPanel({
   // Fonction pour charger la previsualisation
   const loadPreview = useCallback(async () => {
     if (!showPreview) return;
-    
+
     try {
       setIsLoadingPreview(true);
       const imageUrl = await shareApi.getActivityShareImage(activityId, previewSize, true);
@@ -136,7 +136,7 @@ export function ShareSettingsPanel({
     if (showPreview && activityId) {
       loadPreview();
     }
-    
+
     return () => {
       if (previewImage) {
         URL.revokeObjectURL(previewImage);
@@ -240,7 +240,7 @@ export function ShareSettingsPanel({
 
   const handleShareSocial = async () => {
     if (!activityData) return;
-    
+
     try {
       const success = await shareApi.shareActivity(
         activityId,
@@ -250,7 +250,7 @@ export function ShareSettingsPanel({
           duration: activityData.moving_time || activityData.elapsed_time,
         }
       );
-      
+
       if (!success) {
         // Native share not available or cancelled, fall back to modal
         await shareApi.openShareModal(
@@ -270,7 +270,7 @@ export function ShareSettingsPanel({
 
   const handleOpenPreviewModal = async () => {
     if (!activityData) return;
-    
+
     try {
       await shareApi.openShareModal(
         activityId,
@@ -344,7 +344,7 @@ export function ShareSettingsPanel({
       {showPreview && (
         <div className="mb-6">
           <h4 className="font-medium mb-3">Previsualisation de l'image de partage</h4>
-          
+
           {/* Selecteur de taille */}
           <div className="mb-3 flex gap-2">
             {IMAGE_SIZES.map((s) => (
@@ -367,8 +367,8 @@ export function ShareSettingsPanel({
               </div>
             ) : previewImage ? (
               <div className="relative">
-                <img 
-                  src={previewImage} 
+                <img
+                  src={previewImage}
                   alt="Previsualisation du partage"
                   className="w-full max-w-md mx-auto rounded-md"
                 />

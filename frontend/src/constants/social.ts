@@ -3,7 +3,7 @@
  * SOCIAL CONSTANTS
  * ============================================================
  * Centralisation des constantes utilisées dans les fonctionnalités sociales.
- * 
+ *
  * @module constants/social
  */
 

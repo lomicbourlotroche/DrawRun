@@ -33,13 +33,13 @@ export function DrawButton({
   const handleToggleDraw = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (isLoading) return;
 
     setIsLoading(true);
     try {
       const response = await api.toggleActivityDraw(activityId, ownerId);
-      
+
       if (response.success) {
         setHasDrawn(response.has_drawn);
         setDrawCount(response.draw_count);
@@ -82,12 +82,12 @@ export function DrawButton({
       {isLoading ? (
         <Loader2 className={cn('animate-spin', iconSizes[size])} />
       ) : (
-        <Trophy 
+        <Trophy
           className={cn(
             iconSizes[size],
             'transition-transform duration-200',
             hasDrawn && 'fill-current'
-          )} 
+          )}
         />
       )}
       {showCount && (

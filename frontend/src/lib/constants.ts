@@ -78,10 +78,3 @@ export const ZONE_NAMES = {
   6: 'Anaérobie',
   7: 'Neuromusculaire',
 } as const;
-
-
-
-
-
-
-

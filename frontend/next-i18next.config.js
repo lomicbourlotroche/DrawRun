@@ -2,7 +2,7 @@
  * ============================================================
  * NEXT-I18NEXT CONFIGURATION
  * ============================================================
- * 
+ *
  * Configuration pour l'internationalisation de DrawRun
  * Support: Français (par défaut), Anglais
  */

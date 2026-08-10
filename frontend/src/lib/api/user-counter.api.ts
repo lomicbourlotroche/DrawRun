@@ -121,13 +121,13 @@ export const getUserCountAndSubscribe = async (
 ): Promise<{ count: number; unsubscribe: () => void }> => {
   // Récupérer le compteur initial
   const initialCount = await getUserCount();
-  
+
   // S'abonner aux mises à jour
   const unsubscribe = subscribeToUserCount(callback);
-  
+
   // Appeler le callback avec le compteur initial
   callback(initialCount.count);
-  
+
   return {
     count: initialCount.count,
     unsubscribe,

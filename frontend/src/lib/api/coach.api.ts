@@ -2,12 +2,12 @@
  * ============================================================
  * COACH API - Endpoints coaching et plans d'entraînement
  * ============================================================
- * 
+ *
  * Ce fichier contient tous les endpoints liés au coaching :
  * - Génération et gestion de plans
  * - Feedback et sessions
  * - Tests VMA/VDOT
- * 
+ *
  * @module lib/api/coach.api
  */
 

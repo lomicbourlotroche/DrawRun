@@ -94,8 +94,8 @@ export const BiomechanicsCard: React.FC<BiomechanicsCardProps> = ({ metrics }) =
             <div className="space-y-2">
               {metrics.advice.map((adv, i) => (
                 <div key={i} className={`p-3 rounded-xl border-l-4 ${
-                  adv.priority === 'high' ? 'bg-danger/5 border-danger' : 
-                  adv.priority === 'moderate' ? 'bg-warning/5 border-warning' : 
+                  adv.priority === 'high' ? 'bg-danger/5 border-danger' :
+                  adv.priority === 'moderate' ? 'bg-warning/5 border-warning' :
                   'bg-primary/5 border-primary'
                 }`}>
                   <p className="text-sm font-bold">{adv.message}</p>

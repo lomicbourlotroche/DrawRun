@@ -88,14 +88,14 @@ const iconMap: Record<string, IconType> = {
 
 /**
  * GamificationWidget component for displaying user achievements, badges, and progress.
- * 
+ *
  * Features:
  * - Level and XP progress display
  * - Statistics (total km, hours, sessions)
  * - Current and longest streaks
  * - Earned badges display
  * - Achievements progress tracking
- * 
+ *
  * @param planId - The ID of the training plan to display gamification data for
  */
 export default function GamificationWidget({ planId }: GamificationWidgetProps) {

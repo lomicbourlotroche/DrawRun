@@ -32,7 +32,7 @@ export const useUserCounter = (pollInterval: number = 30000): UseUserCounterResu
     try {
       setIsLoading(true);
       setError(null);
-      
+
       // Récupérer le compteur depuis le backend
       const response = await api.getUserCount();
       setCount(response.count || 0);

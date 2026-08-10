@@ -174,7 +174,7 @@ export default function RouteDetailPage() {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto -mt-8 relative z-10 px-4 sm:px-6 pb-12">
-        
+
         {/* Hero card */}
         <Card className="rounded-3xl shadow-2xl shadow-black/5 border-0 overflow-hidden mb-6">
           <CardContent className="p-6 sm:p-8">

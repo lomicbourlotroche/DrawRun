@@ -72,19 +72,19 @@ export function PlanGanttChart({ plan, onSessionClick }: PlanGanttChartProps) {
   // Générer la grille des jours
   const dayGrid = useMemo(() => {
     const grid: { week: number; day: number; date?: Date; session?: TrainingSession }[][] = [];
-    
+
     weeks.forEach((week, weekIndex) => {
       const weekStart = weekStartDates[weekIndex];
       const weekRow: { week: number; day: number; date?: Date; session?: TrainingSession }[] = [];
-      
+
       // Créer 7 jours pour chaque semaine
       for (let day = 0; day < 7; day++) {
         const date = new Date(weekStart);
         date.setDate(date.getDate() + day);
-        
+
         // Trouver la session pour ce jour
         const session = week.sessions.find(s => s.day === day + 1);
-        
+
         weekRow.push({
           week: week.week,
           day: day + 1,
@@ -92,10 +92,10 @@ export function PlanGanttChart({ plan, onSessionClick }: PlanGanttChartProps) {
           session,
         });
       }
-      
+
       grid.push(weekRow);
     });
-    
+
     return grid;
   }, [weeks, weekStartDates]);
 
@@ -175,11 +175,11 @@ export function PlanGanttChart({ plan, onSessionClick }: PlanGanttChartProps) {
                 const session = cell.session;
                 const phase = weeks[weekIndex]?.phase;
                 const phaseColor = getPhaseColor(phase || 'Foundation');
-                
+
                 if (session) {
                   const color = getSessionColor(session);
                   const isCompleted = session.completed;
-                  
+
                   return (
                     <button
                       key={session.id}
@@ -207,7 +207,7 @@ export function PlanGanttChart({ plan, onSessionClick }: PlanGanttChartProps) {
                     </button>
                   );
                 }
-                
+
                 return (
                   <div
                     key={cell.day}

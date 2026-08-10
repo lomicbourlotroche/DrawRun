@@ -316,7 +316,7 @@ describe('racePlanningApi', () => {
     it('should export splits to CSV with headers', () => {
       const csv = racePlanningApi.exportToCsv(mockSplits);
       const lines = csv.split('\n');
-      
+
       expect(lines[0]).toBe('KM,Distance (km),Temps (sec),Temps cumulé (sec),Allure (sec/km),Zone FC,FC (bpm),Nutrition');
       expect(lines.length).toBe(3); // header + 2 splits
     });
@@ -324,7 +324,7 @@ describe('racePlanningApi', () => {
     it('should format split data correctly', () => {
       const csv = racePlanningApi.exportToCsv(mockSplits);
       const lines = csv.split('\n');
-      
+
       // Check first data line
       expect(lines[1]).toContain('1'); // km
       expect(lines[1]).toContain('1'); // distance (appears again)

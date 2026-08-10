@@ -3,12 +3,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Select } from '@/components/ui';
 import { Activity } from '@/types';
-import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ResponsiveContainer
 } from 'recharts';
-import { 
-  TrendingUp, Calendar, Activity as ActivityIcon 
+import {
+  TrendingUp, Calendar, Activity as ActivityIcon
 } from '@/components/ui/icons';
 
 interface ProgressionData {
@@ -37,7 +37,7 @@ export function ProgressionChart({ activities, sport }: ProgressionChartProps) {
   const filteredActivities = useMemo(() => {
     const now = new Date();
     const cutoffDate = new Date();
-    
+
     switch (timeRange) {
       case '3months':
         cutoffDate.setMonth(now.getMonth() - 3);
@@ -52,7 +52,7 @@ export function ProgressionChart({ activities, sport }: ProgressionChartProps) {
         cutoffDate.setFullYear(2000); // Very old date
         break;
     }
-    
+
     return (activities ?? [])
       .filter(activity => activity.type === sport)
       .filter(activity => new Date(activity.date) >= cutoffDate)
@@ -63,15 +63,15 @@ export function ProgressionChart({ activities, sport }: ProgressionChartProps) {
   useEffect(() => {
     const processData = () => {
       setIsLoading(true);
-      
+
       const weeklyData = new Map<string, ProgressionData>();
-      
+
       filteredActivities.forEach(activity => {
         const date = new Date(activity.date);
         const weekStart = new Date(date);
         weekStart.setDate(date.getDate() - date.getDay());
         const weekKey = weekStart.toISOString().split('T')[0];
-        
+
         if (!weeklyData.has(weekKey)) {
           weeklyData.set(weekKey, {
             date: weekKey,
@@ -82,22 +82,22 @@ export function ProgressionChart({ activities, sport }: ProgressionChartProps) {
             week: `Sem ${Math.ceil((date.getTime() - new Date(date.getFullYear(), 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000))}`
           });
         }
-        
+
         const weekData = weeklyData.get(weekKey)!;
         weekData.distance += activity.distance / 1000; // Convert to km
         weekData.duration += (activity.moving_time || 0) / 3600; // Convert to hours
         weekData.elevation += activity.total_elevation_gain || 0;
       });
-      
+
       // Calculate pace (min/km) for each week
       weeklyData.forEach(weekData => {
         if (weekData.distance > 0) {
           weekData.pace = (weekData.duration * 60) / weekData.distance; // min/km
         }
       });
-      
+
       setProgressionData(Array.from(weeklyData.values()));
-      
+
       // Process comparison data (previous year)
       if (showComparison) {
         const now = new Date();
@@ -107,7 +107,7 @@ export function ProgressionChart({ activities, sport }: ProgressionChartProps) {
             const activityDate = new Date(activity.date);
             const comparisonDate = new Date(activityDate);
             comparisonDate.setFullYear(activityDate.getFullYear() - 1);
-            
+
             const cutoffDate = new Date();
             switch (timeRange) {
               case '3months':
@@ -123,19 +123,19 @@ export function ProgressionChart({ activities, sport }: ProgressionChartProps) {
                 cutoffDate.setFullYear(2000);
                 break;
             }
-            
+
             return comparisonDate >= cutoffDate;
           })
           .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        
+
         const comparisonWeeklyData = new Map<string, ProgressionData>();
-        
+
         comparisonActivities.forEach(activity => {
           const date = new Date(activity.date);
           const weekStart = new Date(date);
           weekStart.setDate(date.getDate() - date.getDay());
           const weekKey = weekStart.toISOString().split('T')[0];
-          
+
           if (!comparisonWeeklyData.has(weekKey)) {
             comparisonWeeklyData.set(weekKey, {
               date: weekKey,
@@ -146,27 +146,27 @@ export function ProgressionChart({ activities, sport }: ProgressionChartProps) {
               week: `Sem ${Math.ceil((date.getTime() - new Date(date.getFullYear(), 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000))}`
             });
           }
-          
+
           const weekData = comparisonWeeklyData.get(weekKey)!;
           weekData.distance += activity.distance / 1000;
           weekData.duration += (activity.moving_time || 0) / 3600;
           weekData.elevation += activity.total_elevation_gain || 0;
         });
-        
+
         comparisonWeeklyData.forEach(weekData => {
           if (weekData.distance > 0) {
             weekData.pace = (weekData.duration * 60) / weekData.distance;
           }
         });
-        
+
         setComparisonData(Array.from(comparisonWeeklyData.values()));
       } else {
         setComparisonData([]);
       }
-      
+
       setIsLoading(false);
     };
-    
+
     processData();
   }, [filteredActivities, showComparison, activities, sport, timeRange]);
 
@@ -185,17 +185,17 @@ export function ProgressionChart({ activities, sport }: ProgressionChartProps) {
   // Calculate trend
   const trend = useMemo(() => {
     if (chartData.length < 2) return { value: 0, direction: 'neutral' as const };
-    
+
     const recent = chartData.slice(-4);
     const older = chartData.slice(-8, -4);
-    
+
     if (older.length === 0) return { value: 0, direction: 'neutral' as const };
-    
+
     const recentAvg = recent.reduce((sum, item) => sum + item[metric], 0) / recent.length;
     const olderAvg = older.reduce((sum, item) => sum + item[metric], 0) / older.length;
-    
+
     const change = ((recentAvg - olderAvg) / olderAvg) * 100;
-    
+
     return {
       value: Math.abs(change),
       direction: change > 5 ? 'up' : change < -5 ? 'down' : 'neutral' as const
@@ -263,8 +263,8 @@ export function ProgressionChart({ activities, sport }: ProgressionChartProps) {
               {trend.direction === 'up' && <TrendingUp className="w-4 h-4 text-success" />}
               {trend.direction === 'down' && <TrendingUp className="w-4 h-4 text-danger rotate-180" />}
               <span className={`text-sm font-medium ${
-                trend.direction === 'up' ? 'text-success' : 
-                trend.direction === 'down' ? 'text-danger' : 
+                trend.direction === 'up' ? 'text-success' :
+                trend.direction === 'down' ? 'text-danger' :
                 'text-muted'
               }`}>
                 {trend.direction === 'up' ? '+' : trend.direction === 'down' ? '-' : ''}
@@ -282,39 +282,39 @@ export function ProgressionChart({ activities, sport }: ProgressionChartProps) {
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                <XAxis 
-                  dataKey="date" 
+                <XAxis
+                  dataKey="date"
                   tick={{ fontSize: 12 }}
                   interval="preserveStartEnd"
                 />
-                <YAxis 
+                <YAxis
                   tick={{ fontSize: 12 }}
                   label={{ value: currentConfig.label, angle: -90, position: 'insideLeft' }}
                 />
-                <Tooltip 
-                  contentStyle={{ 
+                <Tooltip
+                  contentStyle={{
                     backgroundColor: 'var(--surface))',
                     border: '1px solid var(--border))',
                     borderRadius: '8px'
                   }}
                   formatter={(value: number, name: string) => [
-                    `${value} ${currentConfig.unit}`, 
+                    `${value} ${currentConfig.unit}`,
                     name === 'current' ? 'Cette année' : 'Année dernière'
                   ]}
                 />
                 <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey={metric} 
+                <Line
+                  type="monotone"
+                  dataKey={metric}
                   name="current"
                   stroke={currentConfig.color}
                   strokeWidth={2}
                   dot={{ r: 3 }}
                 />
                 {showComparison && comparisonData.length > 0 && (
-                  <Line 
-                    type="monotone" 
-                    dataKey={metric} 
+                  <Line
+                    type="monotone"
+                    dataKey={metric}
                     name="previous"
                     data={comparisonData.map(item => ({
                       ...item,

@@ -15,18 +15,18 @@ export interface MetricCardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const MetricCard = forwardRef<HTMLDivElement, MetricCardProps>(
-  ({ 
-    className, 
-    label, 
-    value, 
-    unit, 
-    icon, 
-    trend, 
+  ({
+    className,
+    label,
+    value,
+    unit,
+    icon,
+    trend,
     trendValue,
     color = 'neutral',
     size = 'md',
     variant = 'default',
-    ...props 
+    ...props
   }, ref) => {
     const colorStyles = {
       primary: {

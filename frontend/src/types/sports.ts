@@ -2,15 +2,15 @@
  * ============================================================
  * TYPES SPORTS - Définitions centralisées des sports
  * ============================================================
- * 
+ *
  * Tous les sports поддерживаемые par l'application.
  * Chaque sport a ses propres métriques et algorithmes.
- * 
+ *
  * @module types/sports
  */
 
-export type SportType = 
-  | 'run' 
+export type SportType =
+  | 'run'
   | 'trail_run'
   | 'race_walk'
   | 'walk'
@@ -148,7 +148,7 @@ export const SPORTS: Record<SportType, SportCategory> = {
     hasElevation: true,
     unit: 'km',
   },
-  
+
   // Vélo
   bike: {
     id: 'bike',
@@ -215,7 +215,7 @@ export const SPORTS: Record<SportType, SportCategory> = {
     hasElevation: false,
     unit: 'km',
   },
-  
+
   // Natation
   swim: {
     id: 'swim',
@@ -243,7 +243,7 @@ export const SPORTS: Record<SportType, SportCategory> = {
     hasElevation: false,
     unit: 'm',
   },
-  
+
   // Triathlon
   triathlon: {
     id: 'triathlon',
@@ -284,7 +284,7 @@ export const SPORTS: Record<SportType, SportCategory> = {
     hasElevation: false,
     unit: 'km',
   },
-  
+
   // Force
   weight_training: {
     id: 'weight_training',
@@ -390,7 +390,7 @@ export const SPORTS: Record<SportType, SportCategory> = {
     hasElevation: false,
     unit: 'min',
   },
-  
+
   // Eau
   rowing: {
     id: 'rowing',
@@ -444,7 +444,7 @@ export const SPORTS: Record<SportType, SportCategory> = {
     hasElevation: false,
     unit: 'km',
   },
-  
+
   // Hiver
   ski_alpine: {
     id: 'ski_alpine',
@@ -511,7 +511,7 @@ export const SPORTS: Record<SportType, SportCategory> = {
     hasElevation: false,
     unit: 'km',
   },
-  
+
   // Raquette
   tennis: {
     id: 'tennis',
@@ -552,7 +552,7 @@ export const SPORTS: Record<SportType, SportCategory> = {
     hasElevation: false,
     unit: 'min',
   },
-  
+
   // Équipe
   basketball: {
     id: 'basketball',
@@ -645,7 +645,7 @@ export const SPORTS: Record<SportType, SportCategory> = {
     hasElevation: true,
     unit: 'trous',
   },
-  
+
   // Montagne
   climbing: {
     id: 'climbing',
@@ -686,7 +686,7 @@ export const SPORTS: Record<SportType, SportCategory> = {
     hasElevation: true,
     unit: 'km',
   },
-  
+
   // Other
   land_sailing: {
     id: 'land_sailing',

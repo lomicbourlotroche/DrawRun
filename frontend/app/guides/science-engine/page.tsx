@@ -185,7 +185,7 @@ export default function ScienceEngineGuide() {
             </div>
             <div className="p-6 space-y-6">
               <p className="text-muted leading-relaxed">{metric.description}</p>
-              
+
               <div className="p-4 bg-background rounded-xl border border-surface">
                 <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Formule</p>
                 <code className="text-sm font-mono text-primary">{metric.formula}</code>

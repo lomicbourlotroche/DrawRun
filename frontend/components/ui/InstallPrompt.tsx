@@ -30,7 +30,7 @@ export function InstallPrompt() {
 
     // Vérifier si l'app est déjà en mode standalone
     const checkStandalone = () => {
-      const standalone = window.matchMedia('(display-mode: standalone)').matches 
+      const standalone = window.matchMedia('(display-mode: standalone)').matches
         || (window.navigator as { standalone?: boolean }).standalone === true;
       setIsStandalone(standalone);
     };

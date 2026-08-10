@@ -97,9 +97,9 @@ export function parseGpx(gpxXml: string): GpxPoint[] | null {
 
     const latStr = extractXmlAttribute(attrs, 'lat');
     const lonStr = extractXmlAttribute(attrs, 'lon');
-    
+
     if (!latStr || !lonStr) continue;
-    
+
     const lat = parseFloat(latStr);
     const lon = parseFloat(lonStr);
     const ele = extractElevation(content);
@@ -136,7 +136,7 @@ export function parseGpx(gpxXml: string): GpxPoint[] | null {
  */
 export function parseGpxProfile(gpxXml: string): GpxProfile | null {
   const points = parseGpx(gpxXml);
-  
+
   if (!points || points.length < 2) {
     return null;
   }
@@ -152,13 +152,13 @@ export function parseGpxProfile(gpxXml: string): GpxProfile | null {
     const prev = points[i - 1];
     const curr = points[i];
     const diff = curr.ele - prev.ele;
-    
+
     if (diff > 0) {
       elevationGain += diff;
     } else if (diff < 0) {
       elevationLoss += Math.abs(diff);
     }
-    
+
     if (curr.ele < minElevation) minElevation = curr.ele;
     if (curr.ele > maxElevation) maxElevation = curr.ele;
     totalElevation += curr.ele;

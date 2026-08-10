@@ -1,6 +1,6 @@
 /**
  * DashboardContent - Contenu du dashboard séparé pour lazy loading
- * 
+ *
  * Ce fichier contient la logique métier du dashboard pour permettre
  * le lazy loading et améliorer le temps de chargement initial.
  */
@@ -42,7 +42,7 @@ export default function DashboardContent() {
 
   const loadDashboardData = useCallback(async () => {
     setLoading(true);
-    
+
     try {
       // Vérifier si l'onboarding est nécessaire
       try {
@@ -142,13 +142,13 @@ export default function DashboardContent() {
           <div className="w-20 h-20 bg-primary/10 border border-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
             <Activity className="w-10 h-10 text-primary" />
           </div>
-          
+
           <h2 className="text-xl font-bold text-foreground mb-2 tracking-tight">Aucune activité</h2>
           <p className="text-muted mb-8 max-w-md mx-auto leading-relaxed">
-            Connectez Strava ou Garmin pour importer vos activités et voir vos statistiques. 
+            Connectez Strava ou Garmin pour importer vos activités et voir vos statistiques.
             Vos données seront automatiquement synchronisées.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="/app/profile">
               <PrimaryButton variant="primary" icon={Heart} size="lg">
@@ -193,6 +193,3 @@ export default function DashboardContent() {
     </div>
   );
 }
-
-
-

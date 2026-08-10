@@ -40,17 +40,17 @@ export function PowerAnalysis({ activityId: _activityId, wattsData, duration }: 
     const avgPower = wattsData.reduce((a, b) => a + b, 0) / wattsData.length;
     const maxPower = Math.max(...wattsData);
     const minPower = Math.min(...wattsData);
-    
+
     // Normalized Power (simplified calculation)
     const fourthPower = wattsData.map(w => Math.pow(w, 4));
     const avgFourthPower = fourthPower.reduce((a, b) => a + b, 0) / fourthPower.length;
     const normalizedPower = Math.pow(avgFourthPower, 0.25);
-    
+
     // Intensity Factor
     const intensityFactor = ftp ? normalizedPower / ftp : null;
-    
+
     // TSS (Training Stress Score)
-    const tss = ftp && duration 
+    const tss = ftp && duration
       ? ((duration / 3600) * normalizedPower * (normalizedPower / ftp)) / (ftp * 0.01)
       : null;
 
@@ -125,7 +125,7 @@ export function PowerAnalysis({ activityId: _activityId, wattsData, duration }: 
               onChange={(e) => setManualFtp(e.target.value)}
               className="w-48"
             />
-            <Button 
+            <Button
               onClick={() => setFtp(parseInt(manualFtp) || null)}
               variant={ftp ? 'outline' : 'default'}
             >
@@ -204,8 +204,8 @@ export function PowerAnalysis({ activityId: _activityId, wattsData, duration }: 
               <div className="space-y-3">
                 {zoneDistribution.map((zone) => (
                   <div key={zone.name} className="flex items-center gap-4">
-                    <div 
-                      className="w-4 h-4 rounded flex-shrink-0" 
+                    <div
+                      className="w-4 h-4 rounded flex-shrink-0"
                       style={{ backgroundColor: zone.color }}
                     />
                     <div className="flex-1 min-w-0">
@@ -219,11 +219,11 @@ export function PowerAnalysis({ activityId: _activityId, wattsData, duration }: 
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="w-32 h-2 bg-border rounded-full overflow-hidden">
-                        <div 
+                        <div
                           className="h-full rounded-full"
-                          style={{ 
-                            backgroundColor: zone.color, 
-                            width: `${Math.max(zone.percentage, 5)}%` 
+                          style={{
+                            backgroundColor: zone.color,
+                            width: `${Math.max(zone.percentage, 5)}%`
                           }}
                         />
                       </div>
@@ -247,7 +247,7 @@ export function PowerAnalysis({ activityId: _activityId, wattsData, duration }: 
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {POWER_ZONES.map((zone) => (
-              <div 
+              <div
                 key={zone.name}
                 className="p-3 rounded-lg border border-border"
                 style={{ borderLeftColor: zone.color, borderLeftWidth: '4px' }}
@@ -291,9 +291,9 @@ export function FTPCalculator() {
   const calculateFTP = () => {
     const power = parseFloat(testPower);
     const duration = parseInt(testDuration);
-    
+
     if (!power || !duration) return;
-    
+
     let ftp: number;
     if (duration === 20) {
       ftp = power * 0.95; // Standard 20-min test
@@ -304,7 +304,7 @@ export function FTPCalculator() {
       const factor = 0.95 + (0.05 * (60 - duration) / 40);
       ftp = power * factor;
     }
-    
+
     setCalculatedFTP(Math.round(ftp));
   };
 

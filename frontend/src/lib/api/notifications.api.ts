@@ -2,9 +2,9 @@
  * ============================================================
  * NOTIFICATIONS API - Push Notifications Web Push
  * ============================================================
- * 
+ *
  * Gestion des notifications push via Web Push API / VAPID
- * 
+ *
  * @module lib/api/notifications.api
  */
 

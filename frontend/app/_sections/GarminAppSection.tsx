@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { Card, Button } from '@/components/ui';
-import { 
-  Watch, 
-  Activity, 
-  Target, 
-  Calendar, 
+import {
+  Watch,
+  Activity,
+  Target,
+  Calendar,
   Download,
   ArrowRight,
   CheckCircle

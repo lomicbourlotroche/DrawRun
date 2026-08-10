@@ -36,7 +36,7 @@ function getDirectionIcon(type: string, modifier: string): string {
     'continue': '↑',
     'end': '🏁',
   };
-  
+
   const key = modifier ? `${type}-${modifier}` : type;
   return turnIcons[key] || turnIcons[type] || '↑';
 }
@@ -114,7 +114,7 @@ export default function DirectionsPanel({
             {directions.map((dir, idx) => {
               const isFirst = idx === 0;
               const isLast = idx === directions.length - 1;
-              
+
               return (
                 <div key={dir.index || idx} className="relative flex items-start gap-4 p-4 pl-0">
                   {/* Timeline dot + icon */}

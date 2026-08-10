@@ -26,10 +26,10 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav 
+    <nav
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        scrolled 
-          ? 'bg-surface/95 backdrop-blur-xl border-b border-surface shadow-sm py-3' 
+        scrolled
+          ? 'bg-surface/95 backdrop-blur-xl border-b border-surface shadow-sm py-3'
           : 'bg-transparent py-3'
       }`}
     >
@@ -42,7 +42,7 @@ export default function Navbar() {
               DRAW<span className="text-primary">RUN</span>
             </span>
           </a>
-          
+
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link, index) => (
@@ -55,7 +55,7 @@ export default function Navbar() {
               </a>
             ))}
           </div>
-          
+
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
             <LanguageToggle variant={scrolled ? 'scrolled' : 'default'} />
@@ -73,9 +73,9 @@ export default function Navbar() {
               S&apos;inscrire
             </a>
           </div>
-          
+
           {/* Mobile Menu Button */}
-          <button 
+          <button
             className="md:hidden p-2 rounded-lg transition-colors text-muted hover:bg-surface"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Menu"
@@ -83,7 +83,7 @@ export default function Navbar() {
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
-        
+
         {/* Mobile Menu */}
         <div className={`md:hidden overflow-hidden transition-all duration-300 ${
           mobileMenuOpen ? 'max-h-[500px] mt-4' : 'max-h-0'

@@ -51,7 +51,7 @@ describe('API Integration Tests', () => {
       vi.mocked(api.getActivities).mockResolvedValueOnce(mockResponse);
 
       const result = await api.getActivities();
-      
+
       expect(result).toEqual(mockResponse);
       expect(api.getActivities).toHaveBeenCalledTimes(1);
     });

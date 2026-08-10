@@ -2,13 +2,13 @@
  * ============================================================
  * SOCIAL API - Endpoints sociaux
  * ============================================================
- * 
+ *
  * Ce fichier contient tous les endpoints sociaux :
  * - Amis et groupes
  * - Likes et Draws
  * - Feed et commentaires
  * - Chat et challenges
- * 
+ *
  * @module lib/api/social.api
  */
 
@@ -326,11 +326,11 @@ export const socialApi = {
   // Chat & Messaging
   // ============================================================================
 
-  createConversation(params: CreateConversationParams): Promise<{ 
-    success: boolean; 
-    conversation?: unknown; 
-    existing?: boolean; 
-    error?: string 
+  createConversation(params: CreateConversationParams): Promise<{
+    success: boolean;
+    conversation?: unknown;
+    existing?: boolean;
+    error?: string
   }> {
     return client.request('/api/social/conversations', {
       method: 'POST',
@@ -352,10 +352,10 @@ export const socialApi = {
   sendMessage(params: SendMessageParams): Promise<{ success: boolean; message?: unknown; error?: string }> {
     return client.request(`/api/social/conversations/${params.conversationId}/messages`, {
       method: 'POST',
-      body: JSON.stringify({ 
-        content: params.content, 
-        message_type: params.messageType, 
-        attachment_url: params.attachmentUrl 
+      body: JSON.stringify({
+        content: params.content,
+        message_type: params.messageType,
+        attachment_url: params.attachmentUrl
       }),
     });
   },
@@ -369,10 +369,10 @@ export const socialApi = {
   // Challenges
   // ============================================================================
 
-  createChallenge(params: CreateChallengeParams): Promise<{ 
-    success: boolean; 
-    challenge?: unknown; 
-    error?: string 
+  createChallenge(params: CreateChallengeParams): Promise<{
+    success: boolean;
+    challenge?: unknown;
+    error?: string
   }> {
     return client.request('/api/social/challenges', {
       method: 'POST',
@@ -405,11 +405,11 @@ export const socialApi = {
     });
   },
 
-  updateChallengeProgress(params: UpdateChallengeProgressParams): Promise<{ 
-    success: boolean; 
-    status?: string; 
-    progress?: number; 
-    error?: string 
+  updateChallengeProgress(params: UpdateChallengeProgressParams): Promise<{
+    success: boolean;
+    status?: string;
+    progress?: number;
+    error?: string
   }> {
     return client.request(`/api/social/challenges/${params.challengeId}/progress`, {
       method: 'PUT',
@@ -427,20 +427,20 @@ export const socialApi = {
     return client.request(`/api/social/challenges/public?${params.toString()}`);
   },
 
-  getChallengeDetails(challengeId: number): Promise<{ 
-    success: boolean; 
-    challenge?: unknown; 
-    participants?: unknown[]; 
-    user_participation?: unknown; 
-    error?: string 
+  getChallengeDetails(challengeId: number): Promise<{
+    success: boolean;
+    challenge?: unknown;
+    participants?: unknown[];
+    user_participation?: unknown;
+    error?: string
   }> {
     return client.request(`/api/social/challenges/${challengeId}`);
   },
 
-  createChallengeTeam(challengeId: number, name: string): Promise<{ 
-    success: boolean; 
-    team?: unknown; 
-    error?: string 
+  createChallengeTeam(challengeId: number, name: string): Promise<{
+    success: boolean;
+    team?: unknown;
+    error?: string
   }> {
     return client.request(`/api/social/challenges/${challengeId}/teams`, {
       method: 'POST',
@@ -480,10 +480,10 @@ export const socialApi = {
   // Badges & XP
   // ============================================================================
 
-  createBadge(params: CreateBadgeParams): Promise<{ 
-    success: boolean; 
-    badge?: unknown; 
-    error?: string 
+  createBadge(params: CreateBadgeParams): Promise<{
+    success: boolean;
+    badge?: unknown;
+    error?: string
   }> {
     return client.request('/api/social/badges', {
       method: 'POST',

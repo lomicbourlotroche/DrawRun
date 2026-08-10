@@ -53,7 +53,7 @@ export default function GarminPage() {
 
             <section className="doc-section">
               <h2>Installation</h2>
-              
+
               <div className="install-step">
                 <div className="step-number">1</div>
                 <div className="step-content">

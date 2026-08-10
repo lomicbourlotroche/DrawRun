@@ -3,7 +3,7 @@
  * USE GROUP DETAIL HOOK TESTS
  * ============================================================
  * Tests unitaires pour le hook useGroupDetail.ts
- * 
+ *
  * @module tests/hooks/useGroupDetail
  */
 

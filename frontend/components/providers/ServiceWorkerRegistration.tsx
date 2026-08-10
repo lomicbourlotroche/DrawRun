@@ -22,7 +22,7 @@ export function ServiceWorkerRegistration() {
     const registerSW = async () => {
       try {
         registration = await navigator.serviceWorker.register('/sw.js');
-        
+
         console.log('[SW] Service Worker registered:', registration.scope);
 
         // Écouter les mises à jour

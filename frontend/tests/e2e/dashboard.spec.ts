@@ -2,7 +2,7 @@
  * ============================================================
  * DASHBOARD E2E TESTS
  * ============================================================
- * 
+ *
  * Tests end-to-end pour le dashboard et les fonctionnalités principales
  * - Affichage des métriques
  * - Navigation
@@ -63,7 +63,7 @@ test.describe('Dashboard Functionality', () => {
 
   test('should display dashboard with metrics', async ({ page }) => {
     await page.goto('/app');
-    
+
     await expect(page.locator('[data-testid="dashboard"]')).toBeVisible();
     await expect(page.locator('[data-testid="readiness-card"]')).toContainText('75');
     await expect(page.locator('[data-testid="fitness-card"]')).toContainText('85');
@@ -73,12 +73,12 @@ test.describe('Dashboard Functionality', () => {
 
   test('should display PMC chart', async ({ page }) => {
     await page.goto('/app');
-    
+
     await expect(page.locator('[data-testid="pmc-chart"]')).toBeVisible();
-    
+
     // Wait for chart to render
     await page.waitForSelector('[data-testid="pmc-chart"] canvas');
-    
+
     // Check if chart elements are present
     const chart = page.locator('[data-testid="pmc-chart"]');
     await expect(chart).toBeVisible();
@@ -86,7 +86,7 @@ test.describe('Dashboard Functionality', () => {
 
   test('should display recent activities', async ({ page }) => {
     await page.goto('/app');
-    
+
     await expect(page.locator('[data-testid="recent-activities"]')).toBeVisible();
     await expect(page.locator('[data-testid="activity-1"]')).toContainText('Morning Run');
     await expect(page.locator('[data-testid="activity-2"]')).toContainText('Evening Ride');
@@ -94,19 +94,19 @@ test.describe('Dashboard Functionality', () => {
 
   test('should navigate between sections', async ({ page }) => {
     await page.goto('/app');
-    
+
     // Test navigation to activities
     await page.click('[data-testid="nav-activities"]');
     await expect(page).toHaveURL('/app/activities');
-    
+
     // Test navigation to performance
     await page.click('[data-testid="nav-performance"]');
     await expect(page).toHaveURL('/app/performance');
-    
+
     // Test navigation to coach
     await page.click('[data-testid="nav-coach"]');
     await expect(page).toHaveURL('/app/coach');
-    
+
     // Test navigation back to dashboard
     await page.click('[data-testid="nav-dashboard"]');
     await expect(page).toHaveURL('/app');
@@ -115,14 +115,14 @@ test.describe('Dashboard Functionality', () => {
   test('should handle mobile navigation', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/app');
-    
+
     // Mobile menu should be visible
     await expect(page.locator('[data-testid="mobile-menu-button"]')).toBeVisible();
-    
+
     // Open mobile menu
     await page.click('[data-testid="mobile-menu-button"]');
     await expect(page.locator('[data-testid="mobile-menu"]')).toBeVisible();
-    
+
     // Navigate via mobile menu
     await page.click('[data-testid="mobile-nav-activities"]');
     await expect(page).toHaveURL('/app/activities');
@@ -140,10 +140,10 @@ test.describe('Dashboard Functionality', () => {
     });
 
     await page.goto('/app');
-    
+
     // Should show loading state
     await expect(page.locator('[data-testid="metrics-loading"]')).toBeVisible();
-    
+
     // Should show content after loading
     await expect(page.locator('[data-testid="readiness-card"]')).toBeVisible({ timeout: 3000 });
   });
@@ -159,7 +159,7 @@ test.describe('Dashboard Functionality', () => {
     });
 
     await page.goto('/app');
-    
+
     // Should show error state
     await expect(page.locator('[data-testid="error-message"]')).toBeVisible();
     await expect(page.locator('[data-testid="retry-button"]')).toBeVisible();
@@ -167,7 +167,7 @@ test.describe('Dashboard Functionality', () => {
 
   test('should refresh data on manual refresh', async ({ page }) => {
     await page.goto('/app');
-    
+
     // Mock API call counter
     let apiCallCount = 0;
     await page.route('**/api/dashboard/metrics', async route => {
@@ -181,28 +181,28 @@ test.describe('Dashboard Functionality', () => {
 
     // Initial load
     await expect(page.locator('[data-testid="readiness-card"]')).toContainText('75');
-    
+
     // Manual refresh
     await page.click('[data-testid="refresh-button"]');
-    
+
     // Should show updated data
     await expect(page.locator('[data-testid="readiness-card"]')).toContainText('76');
   });
 
   test('should display quick stats', async ({ page }) => {
     await page.goto('/app');
-    
+
     await expect(page.locator('[data-testid="weekly-load"]')).toContainText('450');
     await expect(page.locator('[data-testid="monthly-load"]')).toContainText('1,800');
   });
 
   test('should handle keyboard navigation', async ({ page }) => {
     await page.goto('/app');
-    
+
     // Tab navigation
     await page.keyboard.press('Tab');
     await expect(page.locator(':focus')).toBeVisible();
-    
+
     // Enter key on focused elements
     await page.keyboard.press('Enter');
     // Should trigger action on focused element

@@ -46,7 +46,7 @@ export const UserCounter = ({
             setCount(newCount);
           }
         );
-        
+
         unsubscribe = unsubscribeFn;
       } catch (err) {
         console.error('Erreur lors de la récupération du compteur:', err);

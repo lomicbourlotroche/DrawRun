@@ -54,17 +54,17 @@ const getSessionTypeColor = (type: string) => {
 // Mapper le result a un indicateur visuel
 const getResultIndicator = (session: TrainingSession) => {
   if (!session.completed) return null;
-  
+
   if (session.result) {
     return <SessionResultIndicator result={session.result} size="sm" />;
   }
-  
+
   if (session.feedback) {
     if (session.feedback.difficulty === 'easy') return <SessionResultIndicator result="success" size="sm" />;
     if (session.feedback.difficulty === 'normal') return <SessionResultIndicator result="success" size="sm" />;
     if (session.feedback.difficulty === 'hard') return <SessionResultIndicator result="partial" size="sm" />;
   }
-  
+
   return <SessionResultIndicator result="success" size="sm" />;
 };
 
@@ -150,7 +150,7 @@ export function TrainingPlanCard({ plan, onDelete: _onDelete, onSessionComplete 
               {plan.weeks[expandedWeek - 1]?.sessions.map((session) => {
                 const typeColor = getSessionTypeColor(session.type);
                 const resultIndicator = getResultIndicator(session);
-                
+
                 return (
                   <button
                     key={session.id}
@@ -164,7 +164,7 @@ export function TrainingPlanCard({ plan, onDelete: _onDelete, onSessionComplete 
                       <p className="font-medium text-foreground">{session.title}</p>
                       <p className="text-sm text-muted">{session.type}</p>
                     </div>
-                    
+
                     {/* Indicateur de resultat */}
                     {session.completed && (
                       <div className="flex items-center gap-2">
@@ -176,13 +176,13 @@ export function TrainingPlanCard({ plan, onDelete: _onDelete, onSessionComplete 
                         )}
                       </div>
                     )}
-                    
+
                     {!session.completed ? (
                       <Badge variant="default" size="sm">A faire</Badge>
                     ) : (
                       <Badge variant="success" size="sm">Completee</Badge>
                     )}
-                    
+
                     <ChevronRight className="w-4 h-4 text-muted group-hover:translate-x-0.5 transition-transform" />
                   </button>
                 );
@@ -269,14 +269,14 @@ export function TrainingPlanCard({ plan, onDelete: _onDelete, onSessionComplete 
                     </div>
                   )}
                 </div>
-                
+
                 {!selectedSession.feedback && (
                   <div className="mt-4 p-4 rounded-lg bg-surface border border-border">
                     <p className="text-sm text-muted mb-3">
                       Donnez votre feedback pour cette seance
                     </p>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={() => handleGiveFeedback(selectedSession)}
                       leftIcon={<MessageSquare className="w-4 h-4" />}
@@ -291,8 +291,8 @@ export function TrainingPlanCard({ plan, onDelete: _onDelete, onSessionComplete 
             <div className="flex gap-2 pt-4 border-t border-border">
               {selectedSession.completed ? (
                 <>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="flex-1"
                     onClick={() => handleGiveFeedback(selectedSession)}
                     leftIcon={<MessageSquare className="w-4 h-4" />}
