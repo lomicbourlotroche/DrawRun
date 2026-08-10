@@ -16,34 +16,34 @@ interface TrainingPlanCardProps {
 
 // Couleurs des phases bases sur les tokens metiers
 const phases = {
-  'Foundation': { color: 'var(--hr-zone-1)', label: 'Phase I - Fondation', bg: 'var(--hr-zone-1/20)' },
-  'Development': { color: 'var(--hr-zone-2)', label: 'Phase II - Developpement', bg: 'var(--hr-zone-2/20)' },
-  'Intensity': { color: 'var(--hr-zone-3)', label: 'Phase III - Intensite', bg: 'var(--hr-zone-3/20)' },
-  'Peak': { color: 'var(--hr-zone-4)', label: 'Phase IV - Affutage', bg: 'var(--hr-zone-4/20)' },
-  'Recovery': { color: 'var(--mutable)', label: 'Semaine de recuperation', bg: 'var(--mutable/20)' },
+  Foundation: { color: 'var(--hr-zone-1)', label: 'Phase I - Fondation', bg: 'var(--hr-zone-1/20)' },
+  Development: { color: 'var(--hr-zone-2)', label: 'Phase II - Developpement', bg: 'var(--hr-zone-2/20)' },
+  Intensity: { color: 'var(--hr-zone-3)', label: 'Phase III - Intensite', bg: 'var(--hr-zone-3/20)' },
+  Peak: { color: 'var(--hr-zone-4)', label: 'Phase IV - Affutage', bg: 'var(--hr-zone-4/20)' },
+  Recovery: { color: 'var(--mutable)', label: 'Semaine de recuperation', bg: 'var(--mutable/20)' },
 };
 
 // Couleurs des types de seance bases sur les tokens metiers
 const sessionTypeColors: Record<string, { bg: string; text: string }> = {
-  'Endurance': { bg: 'var(--hr-zone-1/80)', text: 'var(--hr-zone-1)' },
-  'Interval': { bg: 'var(--hr-zone-4/80)', text: 'var(--hr-zone-4)' },
-  'Tempo': { bg: 'var(--hr-zone-3/80)', text: 'var(--hr-zone-3)' },
-  'Recovery': { bg: 'var(--mutable/80)', text: 'var(--mutable)' },
+  Endurance: { bg: 'var(--hr-zone-1/80)', text: 'var(--hr-zone-1)' },
+  Interval: { bg: 'var(--hr-zone-4/80)', text: 'var(--hr-zone-4)' },
+  Tempo: { bg: 'var(--hr-zone-3/80)', text: 'var(--hr-zone-3)' },
+  Recovery: { bg: 'var(--mutable/80)', text: 'var(--mutable)' },
   'Long Run': { bg: 'var(--hr-zone-2/80)', text: 'var(--hr-zone-2)' },
-  'Hill': { bg: 'var(--peak/80)', text: 'var(--peak)' },
-  'Speed': { bg: 'var(--hr-zone-4/80)', text: 'var(--hr-zone-4)' },
-  'Fartlek': { bg: 'var(--hr-zone-3/80)', text: 'var(--hr-zone-3)' },
-  'Progression': { bg: 'var(--hr-zone-3/80)', text: 'var(--hr-zone-3)' },
-  'Race': { bg: 'var(--danger)', text: 'var(--danger-foreground)' },
-  'Test': { bg: 'var(--peak)', text: 'var(--peak-foreground)' },
+  Hill: { bg: 'var(--peak/80)', text: 'var(--peak)' },
+  Speed: { bg: 'var(--hr-zone-4/80)', text: 'var(--hr-zone-4)' },
+  Fartlek: { bg: 'var(--hr-zone-3/80)', text: 'var(--hr-zone-3)' },
+  Progression: { bg: 'var(--hr-zone-3/80)', text: 'var(--hr-zone-3)' },
+  Race: { bg: 'var(--danger)', text: 'var(--danger-foreground)' },
+  Test: { bg: 'var(--peak)', text: 'var(--peak-foreground)' },
 };
 
 // Mapper les types francais
 const SESSION_TYPE_MAP: Record<string, string> = {
-  'Seuil': 'Tempo',
-  'Fractionne': 'Interval',
-  'Regeneration': 'Recovery',
-  'Course': 'Race',
+  Seuil: 'Tempo',
+  Fractionne: 'Interval',
+  Regeneration: 'Recovery',
+  Course: 'Race',
 };
 
 const getSessionTypeColor = (type: string) => {
@@ -54,17 +54,17 @@ const getSessionTypeColor = (type: string) => {
 // Mapper le result a un indicateur visuel
 const getResultIndicator = (session: TrainingSession) => {
   if (!session.completed) return null;
-  
+
   if (session.result) {
     return <SessionResultIndicator result={session.result} size="sm" />;
   }
-  
+
   if (session.feedback) {
     if (session.feedback.difficulty === 'easy') return <SessionResultIndicator result="success" size="sm" />;
     if (session.feedback.difficulty === 'normal') return <SessionResultIndicator result="success" size="sm" />;
     if (session.feedback.difficulty === 'hard') return <SessionResultIndicator result="partial" size="sm" />;
   }
-  
+
   return <SessionResultIndicator result="success" size="sm" />;
 };
 
@@ -126,9 +126,9 @@ export function TrainingPlanCard({ plan, onDelete: _onDelete, onSessionComplete 
                 onClick={() => setExpandedWeek(week.week)}
                 className={cn(
                   'flex-1 py-3 text-sm font-medium transition-colors',
-                    expandedWeek === week.week
+                  expandedWeek === week.week
                     ? 'bg-surface text-foreground'
-                    : 'text-muted hover:text-foreground hover:bg-surface/50'
+                    : 'text-muted hover:text-foreground hover:bg-surface/50',
                 )}
               >
                 S{week.week}
@@ -150,21 +150,26 @@ export function TrainingPlanCard({ plan, onDelete: _onDelete, onSessionComplete 
               {plan.weeks[expandedWeek - 1]?.sessions.map((session) => {
                 const typeColor = getSessionTypeColor(session.type);
                 const resultIndicator = getResultIndicator(session);
-                
+
                 return (
                   <button
                     key={session.id}
                     onClick={() => handleSessionClick(session)}
                     className="w-full flex items-center gap-3 p-3 rounded-lg bg-background hover:bg-background/80 transition-colors text-left group"
                   >
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: typeColor.bg }}>
-                      <span className="font-medium" style={{ color: typeColor.text }}>{session.day}</span>
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: typeColor.bg }}
+                    >
+                      <span className="font-medium" style={{ color: typeColor.text }}>
+                        {session.day}
+                      </span>
                     </div>
                     <div className="flex-1">
                       <p className="font-medium text-foreground">{session.title}</p>
                       <p className="text-sm text-muted">{session.type}</p>
                     </div>
-                    
+
                     {/* Indicateur de resultat */}
                     {session.completed && (
                       <div className="flex items-center gap-2">
@@ -176,13 +181,17 @@ export function TrainingPlanCard({ plan, onDelete: _onDelete, onSessionComplete 
                         )}
                       </div>
                     )}
-                    
+
                     {!session.completed ? (
-                      <Badge variant="default" size="sm">A faire</Badge>
+                      <Badge variant="default" size="sm">
+                        A faire
+                      </Badge>
                     ) : (
-                      <Badge variant="success" size="sm">Completee</Badge>
+                      <Badge variant="success" size="sm">
+                        Completee
+                      </Badge>
                     )}
-                    
+
                     <ChevronRight className="w-4 h-4 text-muted group-hover:translate-x-0.5 transition-transform" />
                   </button>
                 );
@@ -192,10 +201,22 @@ export function TrainingPlanCard({ plan, onDelete: _onDelete, onSessionComplete 
         </CardContent>
 
         <CardFooter className="flex justify-between">
-          <Button variant="ghost" size="sm" leftIcon={<ChevronLeft className="w-4 h-4" />} disabled={expandedWeek <= 1} onClick={() => setExpandedWeek(expandedWeek - 1)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            leftIcon={<ChevronLeft className="w-4 h-4" />}
+            disabled={expandedWeek <= 1}
+            onClick={() => setExpandedWeek(expandedWeek - 1)}
+          >
             Semaine precedente
           </Button>
-          <Button variant="ghost" size="sm" rightIcon={<ChevronRight className="w-4 h-4" />} disabled={expandedWeek >= plan.durationWeeks} onClick={() => setExpandedWeek(expandedWeek + 1)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            rightIcon={<ChevronRight className="w-4 h-4" />}
+            disabled={expandedWeek >= plan.durationWeeks}
+            onClick={() => setExpandedWeek(expandedWeek + 1)}
+          >
             Semaine suivante
           </Button>
         </CardFooter>
@@ -262,21 +283,17 @@ export function TrainingPlanCard({ plan, onDelete: _onDelete, onSessionComplete 
                         </Badge>
                       </div>
                       {selectedSession.feedback.hasPain && (
-                        <div className="text-sm text-danger">
-                          ⚠️ Douleur: {selectedSession.feedback.painLocation}
-                        </div>
+                        <div className="text-sm text-danger">⚠️ Douleur: {selectedSession.feedback.painLocation}</div>
                       )}
                     </div>
                   )}
                 </div>
-                
+
                 {!selectedSession.feedback && (
                   <div className="mt-4 p-4 rounded-lg bg-surface border border-border">
-                    <p className="text-sm text-muted mb-3">
-                      Donnez votre feedback pour cette seance
-                    </p>
-                    <Button 
-                      variant="outline" 
+                    <p className="text-sm text-muted mb-3">Donnez votre feedback pour cette seance</p>
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={() => handleGiveFeedback(selectedSession)}
                       leftIcon={<MessageSquare className="w-4 h-4" />}
@@ -291,8 +308,8 @@ export function TrainingPlanCard({ plan, onDelete: _onDelete, onSessionComplete 
             <div className="flex gap-2 pt-4 border-t border-border">
               {selectedSession.completed ? (
                 <>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="flex-1"
                     onClick={() => handleGiveFeedback(selectedSession)}
                     leftIcon={<MessageSquare className="w-4 h-4" />}

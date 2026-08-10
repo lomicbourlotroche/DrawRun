@@ -35,7 +35,7 @@ export function ReadinessCard({ readiness, isLoading }: ReadinessCardProps) {
 
       fetchPmcData();
     } catch (error) {
-      toast.error('Erreur lors de l\'enregistrement');
+      toast.error("Erreur lors de l'enregistrement");
     } finally {
       setIsSubmitting(false);
     }
@@ -115,10 +115,7 @@ export function ReadinessCard({ readiness, isLoading }: ReadinessCardProps) {
 
           <div className="flex-1 grid grid-cols-2 gap-3">
             {factors.map((factor) => (
-              <div
-                key={factor.label}
-                className="flex items-center gap-2 p-2 rounded-lg bg-surface"
-              >
+              <div key={factor.label} className="flex items-center gap-2 p-2 rounded-lg bg-surface">
                 <factor.icon className="w-4 h-4" style={{ color: factor.color }} />
                 <div>
                   <p className="text-xs text-muted">{factor.label}</p>
@@ -129,11 +126,7 @@ export function ReadinessCard({ readiness, isLoading }: ReadinessCardProps) {
           </div>
         </div>
 
-        <Modal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          title="Enregistrer vos constantes"
-        >
+        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Enregistrer vos constantes">
           <form onSubmit={handleLogData} className="space-y-4 pt-4">
             <p className="text-sm text-muted mb-2">
               Entrez vos mesures du matin pour affiner votre score de readiness.
@@ -159,12 +152,7 @@ export function ReadinessCard({ readiness, isLoading }: ReadinessCardProps) {
               <Button variant="ghost" type="button" onClick={() => setIsModalOpen(false)}>
                 Annuler
               </Button>
-              <Button
-                variant="primary"
-                type="submit"
-                isLoading={isSubmitting}
-                disabled={!hrvValue && !sleepValue}
-              >
+              <Button variant="primary" type="submit" isLoading={isSubmitting} disabled={!hrvValue && !sleepValue}>
                 Enregistrer
               </Button>
             </div>

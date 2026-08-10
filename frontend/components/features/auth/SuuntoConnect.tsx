@@ -19,7 +19,9 @@ function SuuntoIcon({ className = 'w-6 h-6' }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-12h2v6h-2zm0 8h2v2h-2z" />
-      <text x="12" y="16" fontSize="8" textAnchor="middle" fill="currentColor">S</text>
+      <text x="12" y="16" fontSize="8" textAnchor="middle" fill="currentColor">
+        S
+      </text>
     </svg>
   );
 }
@@ -44,7 +46,7 @@ export function SuuntoConnect({ onSuccess, onError }: SuuntoConnectProps) {
 
   const handleConnect = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    
+
     if (!email || !password) {
       toast.error('Veuillez entrer votre email et mot de passe Suunto');
       return;
@@ -53,15 +55,15 @@ export function SuuntoConnect({ onSuccess, onError }: SuuntoConnectProps) {
     try {
       setIsLoading(true);
       setErrorMessage(null);
-      
+
       await api.connectSuunto(email, password);
-      
+
       setStatus('connected');
       setShowModal(false);
       setEmail('');
       setPassword('');
       setShowPassword(false);
-      
+
       toast.success('Suunto connecté !');
       onSuccess?.();
     } catch (err) {
@@ -80,7 +82,7 @@ export function SuuntoConnect({ onSuccess, onError }: SuuntoConnectProps) {
       setErrorMessage(null);
 
       await api.disconnectSuunto();
-      
+
       setStatus('idle');
       toast.success('Suunto déconnecté');
       onSuccess?.();
@@ -139,59 +141,48 @@ export function SuuntoConnect({ onSuccess, onError }: SuuntoConnectProps) {
     <div className="flex flex-col items-center gap-3">
       {renderButton()}
 
-      {status === 'connected' && (
-        <p className="text-xs text-success text-center">✓ Compte Suunto connecté</p>
-      )}
+      {status === 'connected' && <p className="text-xs text-success text-center">✓ Compte Suunto connecté</p>}
 
-      {errorMessage && status !== 'connected' && (
-        <p className="text-xs text-danger text-center">{errorMessage}</p>
-      )}
+      {errorMessage && status !== 'connected' && <p className="text-xs text-danger text-center">{errorMessage}</p>}
 
       <p className="text-xs text-muted text-center max-w-xs">
         Connectez votre compte Suunto pour synchroniser vos activités
       </p>
 
       {/* Credential Modal */}
-      <Modal 
-        isOpen={showModal} 
-        onClose={() => setShowModal(false)} 
-        title="Connecter Suunto"
-        size="sm"
-      >
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Connecter Suunto" size="sm">
         <form onSubmit={handleConnect} className="space-y-4">
-          <p className="text-sm text-muted">
-            Entrez vos identifiants Suunto App pour synchroniser vos activités.
-          </p>
-          
-          <Input 
-            label="Email" 
-            type="email" 
-            placeholder="votre@email.com" 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)} 
+          <p className="text-sm text-muted">Entrez vos identifiants Suunto App pour synchroniser vos activités.</p>
+
+          <Input
+            label="Email"
+            type="email"
+            placeholder="votre@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             leftIcon={<Mail className="w-4 h-4" />}
             autoComplete="username"
           />
-          
+
           <div className="relative">
-            <Input 
-              label="Mot de passe" 
-              type={showPassword ? 'text' : 'password'} 
-              placeholder="••••••••" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
+            <Input
+              label="Mot de passe"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               leftIcon={<Lock className="w-4 h-4" />}
               autoComplete="current-password"
             />
-            <button 
-              type="button" 
-              className="absolute right-3 top-9 text-muted hover:text-foreground" 
+            <button
+              type="button"
+              className="absolute right-3 top-9 text-muted hover:text-foreground"
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
-          
+
           <div className="flex gap-3 pt-2">
             <Button variant="secondary" onClick={() => setShowModal(false)} className="flex-1">
               Annuler

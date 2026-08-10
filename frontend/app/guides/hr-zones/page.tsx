@@ -34,8 +34,8 @@ export default function HRZonesGuide() {
             </span>
           </h2>
           <p className="text-lg text-muted max-w-2xl mx-auto">
-            Les zones de fréquence cardiaque de DrawRun ne sont pas génériques. Elles sont calculées
-            à partir de votre FCM réelle (ou estimée), votre FC de repos, et votre VDOT.
+            Les zones de fréquence cardiaque de DrawRun ne sont pas génériques. Elles sont calculées à partir de votre
+            FCM réelle (ou estimée), votre FC de repos, et votre VDOT.
           </p>
         </div>
 
@@ -46,13 +46,15 @@ export default function HRZonesGuide() {
             Calcul de la FC Max (FCM)
           </h3>
           <p className="text-muted mb-4 leading-relaxed">
-            DrawRun utilise la formule de <strong>Tanaka et al. (2001)</strong>, la plus précise pour la population générale :
+            DrawRun utilise la formule de <strong>Tanaka et al. (2001)</strong>, la plus précise pour la population
+            générale :
           </p>
           <div className="p-4 bg-danger/10 rounded-xl border border-danger/20">
             <code className="text-sm font-mono text-danger/80">FCM = 208 - (0.7 × âge)</code>
           </div>
           <p className="text-sm text-muted mt-3">
-            Cette formule est plus précise que la formule historique « 220 - âge » qui sous-estime la FCM chez les jeunes et la surestime chez les seniors.
+            Cette formule est plus précise que la formule historique « 220 - âge » qui sous-estime la FCM chez les
+            jeunes et la surestime chez les seniors.
           </p>
         </div>
 
@@ -63,7 +65,8 @@ export default function HRZonesGuide() {
             Méthode Karvonen (réserve de FC)
           </h3>
           <p className="text-muted mb-4 leading-relaxed">
-            DrawRun utilise la <strong>méthode Karvonen</strong> qui tient compte de la FC de repos pour des zones plus précises :
+            DrawRun utilise la <strong>méthode Karvonen</strong> qui tient compte de la FC de repos pour des zones plus
+            précises :
           </p>
           <div className="p-4 bg-danger/10 rounded-xl border border-danger/20 mb-6">
             <code className="text-sm font-mono text-danger/80">FC cible = FCrepos + (FCM - FCrepos) × %intensité</code>
@@ -71,16 +74,48 @@ export default function HRZonesGuide() {
 
           <div className="space-y-3">
             {[
-              { zone: 1, name: 'Récupération', range: '50-60%', color: 'var(--muted)', desc: 'Récupération active, marche rapide' },
-              { zone: 2, name: 'Endurance fondamentale', range: '60-70%', color: 'var(--success)', desc: 'Sorties longues, base aérobie' },
-              { zone: 3, name: 'Tempo', range: '70-80%', color: 'var(--primary)', desc: 'Allure semi-marathon, endurance active' },
-              { zone: 4, name: 'Seuil lactique', range: '80-90%', color: 'var(--peak)', desc: 'Allure 10K, seuil anaérobie' },
-              { zone: 5, name: 'VO2max', range: '90-100%', color: 'var(--danger)', desc: 'Intervalles courts, allure 5K' },
+              {
+                zone: 1,
+                name: 'Récupération',
+                range: '50-60%',
+                color: 'var(--muted)',
+                desc: 'Récupération active, marche rapide',
+              },
+              {
+                zone: 2,
+                name: 'Endurance fondamentale',
+                range: '60-70%',
+                color: 'var(--success)',
+                desc: 'Sorties longues, base aérobie',
+              },
+              {
+                zone: 3,
+                name: 'Tempo',
+                range: '70-80%',
+                color: 'var(--primary)',
+                desc: 'Allure semi-marathon, endurance active',
+              },
+              {
+                zone: 4,
+                name: 'Seuil lactique',
+                range: '80-90%',
+                color: 'var(--peak)',
+                desc: 'Allure 10K, seuil anaérobie',
+              },
+              {
+                zone: 5,
+                name: 'VO2max',
+                range: '90-100%',
+                color: 'var(--danger)',
+                desc: 'Intervalles courts, allure 5K',
+              },
             ].map((z) => (
               <div key={z.zone} className="flex items-center gap-4 p-3 bg-background rounded-xl">
                 <span className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: z.color }} />
                 <div className="flex-1">
-                  <p className="font-semibold text-sm">Zone {z.zone} — {z.name}</p>
+                  <p className="font-semibold text-sm">
+                    Zone {z.zone} — {z.name}
+                  </p>
                   <p className="text-xs text-muted">{z.desc}</p>
                 </div>
                 <code className="text-sm font-mono text-muted">{z.range}</code>
@@ -96,7 +131,8 @@ export default function HRZonesGuide() {
             Zones d&apos;allure Jack Daniels (VDOT)
           </h3>
           <p className="text-muted mb-4 leading-relaxed">
-            En complément des zones FC, DrawRun calcule les <strong>5 allures d&apos;entraînement</strong> basées sur votre VDOT :
+            En complément des zones FC, DrawRun calcule les <strong>5 allures d&apos;entraînement</strong> basées sur
+            votre VDOT :
           </p>
           <div className="space-y-3">
             {[
@@ -127,8 +163,9 @@ export default function HRZonesGuide() {
             Dérive cardiaque
           </h3>
           <p className="text-muted leading-relaxed">
-            Pendant un effort prolongé, la FC augmente progressivement même si l&apos;allure reste constante. C&apos;est la <strong>dérive cardiaque</strong> (cardiac drift).
-            DrawRun la prend en compte dans ses analyses : une dérive &gt; 10% indique une déshydratation ou une fatigue importante.
+            Pendant un effort prolongé, la FC augmente progressivement même si l&apos;allure reste constante. C&apos;est
+            la <strong>dérive cardiaque</strong> (cardiac drift). DrawRun la prend en compte dans ses analyses : une
+            dérive &gt; 10% indique une déshydratation ou une fatigue importante.
           </p>
         </div>
 

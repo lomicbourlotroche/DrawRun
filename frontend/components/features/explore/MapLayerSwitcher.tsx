@@ -15,7 +15,11 @@ const LAYERS = [
 
 export default function MapLayerSwitcher({ activeLayer, onLayerChange }: MapLayerSwitcherProps) {
   return (
-    <div className="flex flex-col gap-1 bg-surface/90 backdrop-blur-sm rounded-lg shadow-md p-1" role="group" aria-label="Sélection des calques de carte">
+    <div
+      className="flex flex-col gap-1 bg-surface/90 backdrop-blur-sm rounded-lg shadow-md p-1"
+      role="group"
+      aria-label="Sélection des calques de carte"
+    >
       {LAYERS.map((layer) => {
         const Icon = layer.icon;
         const isActive = activeLayer === layer.id;

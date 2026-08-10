@@ -10,7 +10,8 @@ export const metadata: Metadata = {
     default: 'DrawRun — Coaching sportif intelligent & analyse de performance',
     template: '%s | DrawRun',
   },
-  description: 'Optimisez vos entraînements avec le moteur Jack Daniels VDOT, un coaching adaptatif personnalisé, la météo en temps réel et des stratégies de course scientifiques. Course à pied, vélo, natation — suivez vos progrès avec 15+ métriques avancées.',
+  description:
+    'Optimisez vos entraînements avec le moteur Jack Daniels VDOT, un coaching adaptatif personnalisé, la météo en temps réel et des stratégies de course scientifiques. Course à pied, vélo, natation — suivez vos progrès avec 15+ métriques avancées.',
   keywords: [
     'coaching sportif',
     'entraînement course à pied',
@@ -43,7 +44,8 @@ export const metadata: Metadata = {
     url: APP_URL,
     siteName: 'DrawRun',
     title: 'DrawRun — Coaching sportif intelligent & analyse de performance',
-    description: 'Optimisez vos entraînements avec le moteur Jack Daniels VDOT, un coaching adaptatif personnalisé, la météo en temps réel et des stratégies de course scientifiques.',
+    description:
+      'Optimisez vos entraînements avec le moteur Jack Daniels VDOT, un coaching adaptatif personnalisé, la météo en temps réel et des stratégies de course scientifiques.',
     images: [
       {
         url: '/logo-icon.svg',
@@ -57,7 +59,8 @@ export const metadata: Metadata = {
     card: 'summary',
     site: '@drawrun',
     title: 'DrawRun — Coaching sportif intelligent & analyse de performance',
-    description: 'Optimisez vos entraînements avec le moteur Jack Daniels VDOT, un coaching adaptatif personnalisé et des stratégies de course scientifiques.',
+    description:
+      'Optimisez vos entraînements avec le moteur Jack Daniels VDOT, un coaching adaptatif personnalisé et des stratégies de course scientifiques.',
     images: ['/logo-icon.svg'],
   },
   robots: {
@@ -73,12 +76,8 @@ export const metadata: Metadata = {
   },
   manifest: '/manifest.json',
   icons: {
-    icon: [
-      { url: '/logo-icon.svg', sizes: 'any', type: 'image/svg+xml' },
-    ],
-    apple: [
-      { url: '/logo-icon.svg', sizes: 'any', type: 'image/svg+xml' },
-    ],
+    icon: [{ url: '/logo-icon.svg', sizes: 'any', type: 'image/svg+xml' }],
+    apple: [{ url: '/logo-icon.svg', sizes: 'any', type: 'image/svg+xml' }],
     shortcut: '/logo-icon.svg',
   },
   appleWebApp: {
@@ -97,11 +96,7 @@ export const viewport: Viewport = {
   userScalable: true,
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" suppressHydrationWarning>
       <head>
@@ -110,14 +105,14 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/logo-icon.svg" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <script dangerouslySetInnerHTML={{
-          __html: `(function(){try{var c=JSON.parse(localStorage.getItem('drawrun-theme-config')||'{}');var t=c.theme||'trail';var m=c.mode||'dark';document.documentElement.setAttribute('data-theme',t);if(m==='dark')document.documentElement.classList.add('dark')}catch(e){}})()`
-        }} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var c=JSON.parse(localStorage.getItem('drawrun-theme-config')||'{}');var t=c.theme||'trail';var m=c.mode||'dark';document.documentElement.setAttribute('data-theme',t);if(m==='dark')document.documentElement.classList.add('dark')}catch(e){}})()`,
+          }}
+        />
       </head>
       <body suppressHydrationWarning>
-        <Providers>
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
         <ServiceWorkerRegistration />
       </body>
     </html>

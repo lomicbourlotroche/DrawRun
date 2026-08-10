@@ -231,7 +231,7 @@ describe('parseGpx', () => {
     const distStr = String(result[1].dist);
     expect(distStr).not.toContain('.');
     // Actually check by verifying it's a multiple of 0.1
-    expect(result[1].dist * 10 % 1).toBe(0);
+    expect((result[1].dist * 10) % 1).toBe(0);
   });
 });
 

@@ -48,12 +48,13 @@ export default function FieldRenderer({
       return (
         <div className="space-y-1.5">
           <label className="flex items-center text-sm font-medium text-foreground">
-            {field.label}{autoFilledBadge}
+            {field.label}
+            {autoFilledBadge}
           </label>
           <input
             type="text"
             value={(formData[field.name] as string) || ''}
-            onChange={e => onUpdateField(field.name, e.target.value)}
+            onChange={(e) => onUpdateField(field.name, e.target.value)}
             placeholder={field.placeholder}
             className={inputClass}
           />
@@ -65,13 +66,14 @@ export default function FieldRenderer({
       return (
         <div className="space-y-1.5">
           <label className="flex items-center text-sm font-medium text-foreground">
-            {field.label}{autoFilledBadge}
+            {field.label}
+            {autoFilledBadge}
           </label>
           <input
             type="number"
             step={field.type === 'distance' ? '0.1' : '1'}
             value={(formData[field.name] as string | number) || ''}
-            onChange={e => onUpdateField(field.name, e.target.value)}
+            onChange={(e) => onUpdateField(field.name, e.target.value)}
             placeholder={field.placeholder}
             className={inputClass}
           />
@@ -82,16 +84,19 @@ export default function FieldRenderer({
       return (
         <div className="space-y-1.5">
           <label className="flex items-center text-sm font-medium text-foreground">
-            {field.label}{autoFilledBadge}
+            {field.label}
+            {autoFilledBadge}
           </label>
           <select
             value={(formData[field.name] as string) || ''}
-            onChange={e => onUpdateField(field.name, e.target.value)}
+            onChange={(e) => onUpdateField(field.name, e.target.value)}
             className={inputClass}
           >
             <option value="">Sélectionner...</option>
-            {field.options?.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            {field.options?.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
             ))}
           </select>
         </div>
@@ -102,10 +107,11 @@ export default function FieldRenderer({
       return (
         <div className="space-y-1.5">
           <label className="flex items-center text-sm font-medium text-foreground">
-            {field.label}{autoFilledBadge}
+            {field.label}
+            {autoFilledBadge}
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {field.options?.map(opt => {
+            {field.options?.map((opt) => {
               const active = selected.includes(opt.value);
               return (
                 <button
@@ -134,11 +140,12 @@ export default function FieldRenderer({
             type="checkbox"
             id={field.name}
             checked={(formData[field.name] as boolean) || false}
-            onChange={e => onUpdateField(field.name, e.target.checked)}
+            onChange={(e) => onUpdateField(field.name, e.target.checked)}
             className="w-4 h-4 rounded border-border bg-background accent-primary"
           />
           <label htmlFor={field.name} className="flex items-center text-sm text-foreground cursor-pointer">
-            {field.label}{autoFilledBadge}
+            {field.label}
+            {autoFilledBadge}
           </label>
         </div>
       );

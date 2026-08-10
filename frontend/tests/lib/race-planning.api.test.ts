@@ -34,9 +34,29 @@ describe('racePlanningApi', () => {
   describe('calculateRacePlan', () => {
     it('should call POST /api/race-planning/calculate with params', async () => {
       const mockResponse = {
-        splits: [{ km: 1, distance: 1000, splitTime: 270, cumulativeTime: 270, pace: 270, hrZone: 3, hrRange: '140-150', elevationGain: 0, elevationLoss: 0, nutrition: [] }],
+        splits: [
+          {
+            km: 1,
+            distance: 1000,
+            splitTime: 270,
+            cumulativeTime: 270,
+            pace: 270,
+            hrZone: 3,
+            hrRange: '140-150',
+            elevationGain: 0,
+            elevationLoss: 0,
+            nutrition: [],
+          },
+        ],
         racePrediction: null,
-        nutritionStrategy: { totalCalories: 0, totalCarbs: 0, totalLiquids: 0, perHour: { calories: 0, carbs: 0, liquids: 0 }, schedule: [], duringRace: [] },
+        nutritionStrategy: {
+          totalCalories: 0,
+          totalCarbs: 0,
+          totalLiquids: 0,
+          perHour: { calories: 0, carbs: 0, liquids: 0 },
+          schedule: [],
+          duringRace: [],
+        },
         warnings: [],
         summary: { distance: 10, targetPace: 270, totalTime: 2700, fcm: 180 },
       };
@@ -52,7 +72,8 @@ describe('racePlanningApi', () => {
 
     it('should handle GPX data', async () => {
       mockFetchSuccess({ splits: [], summary: { distance: 5.5 } });
-      const gpxData = '<?xml version="1.0"?><gpx><trk><trkseg><trkpt lat="48" lon="2"><ele>100</ele></trkpt></trkseg></trk></gpx>';
+      const gpxData =
+        '<?xml version="1.0"?><gpx><trk><trkseg><trkpt lat="48" lon="2"><ele>100</ele></trkpt></trkseg></trk></gpx>';
       const result = await racePlanningApi.calculateRacePlan({ distance: 5.5, gpxData });
       expect(result.summary.distance).toBe(5.5);
     });
@@ -88,9 +109,7 @@ describe('racePlanningApi', () => {
 
     it('should throw error on failed request', async () => {
       mockFetchError();
-      await expect(
-        racePlanningApi.calculateRacePlan({ distance: 10 })
-      ).rejects.toThrow();
+      await expect(racePlanningApi.calculateRacePlan({ distance: 10 })).rejects.toThrow();
     });
   });
 
@@ -149,8 +168,34 @@ describe('racePlanningApi', () => {
   describe('listRacePlans', () => {
     it('should call GET /api/race-planning/list', async () => {
       const mockPlans = [
-        { id: 1, userId: '1', name: 'Plan 1', distance: 10, targetPace: 270, totalTime: 2700, elevationProfile: 'flat', fatigue: 0, splits: JSON.stringify([]), nutritionStrategy: null, createdAt: '2026-01-01', updatedAt: '2026-01-01' },
-        { id: 2, userId: '1', name: 'Plan 2', distance: 21.1, targetPace: 330, totalTime: 4200, elevationProfile: 'rolling', fatigue: 3, splits: JSON.stringify([]), nutritionStrategy: null, createdAt: '2026-01-02', updatedAt: '2026-01-02' },
+        {
+          id: 1,
+          userId: '1',
+          name: 'Plan 1',
+          distance: 10,
+          targetPace: 270,
+          totalTime: 2700,
+          elevationProfile: 'flat',
+          fatigue: 0,
+          splits: JSON.stringify([]),
+          nutritionStrategy: null,
+          createdAt: '2026-01-01',
+          updatedAt: '2026-01-01',
+        },
+        {
+          id: 2,
+          userId: '1',
+          name: 'Plan 2',
+          distance: 21.1,
+          targetPace: 330,
+          totalTime: 4200,
+          elevationProfile: 'rolling',
+          fatigue: 3,
+          splits: JSON.stringify([]),
+          nutritionStrategy: null,
+          createdAt: '2026-01-02',
+          updatedAt: '2026-01-02',
+        },
       ];
       mockFetchSuccess(mockPlans);
       const result = await racePlanningApi.listRacePlans();
@@ -183,9 +228,7 @@ describe('racePlanningApi', () => {
 
     it('should handle delete error', async () => {
       mockFetchError(404, { error: 'Not found' });
-      await expect(
-        racePlanningApi.deleteRacePlan(999)
-      ).rejects.toThrow();
+      await expect(racePlanningApi.deleteRacePlan(999)).rejects.toThrow();
     });
   });
 
@@ -198,7 +241,13 @@ describe('racePlanningApi', () => {
           description: 'Optimal pacing for hilly course',
           splits: [],
           pacingAdvice: 'Start conservative on uphills',
-          nutritionRecommendations: { totalCalories: 0, totalCarbs: 0, totalLiquids: 0, perHour: { calories: 0, carbs: 0, liquids: 0 }, schedule: [] },
+          nutritionRecommendations: {
+            totalCalories: 0,
+            totalCarbs: 0,
+            totalLiquids: 0,
+            perHour: { calories: 0, carbs: 0, liquids: 0 },
+            schedule: [],
+          },
           elevationAnalysis: { totalGain: 100, totalLoss: 50, difficultyScore: 5 },
           weatherImpact: { temperatureEffect: 0, humidityEffect: 0, adjustedPace: 270 },
         },
@@ -221,7 +270,8 @@ describe('racePlanningApi', () => {
 
     it('should accept GPX data instead of points', async () => {
       mockFetchSuccess({ success: true, strategy: { splits: [] } });
-      const gpxData = '<?xml version="1.0"?><gpx><trk><trkseg><trkpt lat="48" lon="2"><ele>100</ele></trkpt></trkseg></trk></gpx>';
+      const gpxData =
+        '<?xml version="1.0"?><gpx><trk><trkseg><trkpt lat="48" lon="2"><ele>100</ele></trkpt></trkseg></trk></gpx>';
       await racePlanningApi.calculateRaceStrategy({ gpxData, params: { temp: 20 } });
       const call = (globalThis.fetch as vi.Mock).mock.calls[0];
       const body = JSON.parse(call[1]?.body as string);
@@ -316,15 +366,17 @@ describe('racePlanningApi', () => {
     it('should export splits to CSV with headers', () => {
       const csv = racePlanningApi.exportToCsv(mockSplits);
       const lines = csv.split('\n');
-      
-      expect(lines[0]).toBe('KM,Distance (km),Temps (sec),Temps cumulé (sec),Allure (sec/km),Zone FC,FC (bpm),Nutrition');
+
+      expect(lines[0]).toBe(
+        'KM,Distance (km),Temps (sec),Temps cumulé (sec),Allure (sec/km),Zone FC,FC (bpm),Nutrition',
+      );
       expect(lines.length).toBe(3); // header + 2 splits
     });
 
     it('should format split data correctly', () => {
       const csv = racePlanningApi.exportToCsv(mockSplits);
       const lines = csv.split('\n');
-      
+
       // Check first data line
       expect(lines[1]).toContain('1'); // km
       expect(lines[1]).toContain('1'); // distance (appears again)
@@ -434,7 +486,18 @@ describe('racePlanningApi', () => {
 
     it('should use default filename when not provided', () => {
       const mockSplits: RaceSplit[] = [
-        { km: 1, distance: 1000, splitTime: 270, cumulativeTime: 270, pace: 270, hrZone: 3, hrRange: '140-150', elevationGain: 0, elevationLoss: 0, nutrition: [] },
+        {
+          km: 1,
+          distance: 1000,
+          splitTime: 270,
+          cumulativeTime: 270,
+          pace: 270,
+          hrZone: 3,
+          hrRange: '140-150',
+          elevationGain: 0,
+          elevationLoss: 0,
+          nutrition: [],
+        },
       ];
 
       const mockCreateObjectURL = vi.fn().mockReturnValue('blob:test');
@@ -453,7 +516,18 @@ describe('racePlanningApi', () => {
 
     it('should use custom filename when provided', () => {
       const mockSplits: RaceSplit[] = [
-        { km: 1, distance: 1000, splitTime: 270, cumulativeTime: 270, pace: 270, hrZone: 3, hrRange: '140-150', elevationGain: 0, elevationLoss: 0, nutrition: [] },
+        {
+          km: 1,
+          distance: 1000,
+          splitTime: 270,
+          cumulativeTime: 270,
+          pace: 270,
+          hrZone: 3,
+          hrRange: '140-150',
+          elevationGain: 0,
+          elevationLoss: 0,
+          nutrition: [],
+        },
       ];
 
       const mockCreateObjectURL = vi.fn().mockReturnValue('blob:test');

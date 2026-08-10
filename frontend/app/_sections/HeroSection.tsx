@@ -12,8 +12,14 @@ export default function HeroSection() {
       {/* Layer 2: Animated gradient orbs */}
       <div className="absolute inset-0">
         <div className="absolute -top-40 -left-40 w-[500px] h-[500px] bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-3xl animate-gradient-shift" />
-        <div className="absolute top-1/2 -right-40 w-[600px] h-[600px] bg-gradient-to-bl from-peak/15 to-transparent rounded-full blur-3xl animate-breathe" style={{ animationDelay: '1.5s' }} />
-        <div className="absolute -bottom-40 left-1/3 w-[400px] h-[400px] bg-gradient-to-tr from-primary/10 to-transparent rounded-full blur-3xl animate-gradient-shift" style={{ animationDelay: '3s' }} />
+        <div
+          className="absolute top-1/2 -right-40 w-[600px] h-[600px] bg-gradient-to-bl from-peak/15 to-transparent rounded-full blur-3xl animate-breathe"
+          style={{ animationDelay: '1.5s' }}
+        />
+        <div
+          className="absolute -bottom-40 left-1/3 w-[400px] h-[400px] bg-gradient-to-tr from-primary/10 to-transparent rounded-full blur-3xl animate-gradient-shift"
+          style={{ animationDelay: '3s' }}
+        />
       </div>
 
       {/* Layer 3: Subtle grid pattern */}
@@ -43,10 +49,7 @@ export default function HeroSection() {
         <h1 className="animate-slide-up delay-100 text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-foreground leading-tight mb-6">
           Repoussez vos limites
           <br />
-          avec{' '}
-          <span className="bg-gradient-to-r from-primary to-peak bg-clip-text text-transparent">
-            DrawRun
-          </span>
+          avec <span className="bg-gradient-to-r from-primary to-peak bg-clip-text text-transparent">DrawRun</span>
         </h1>
 
         {/* Subtitle */}
@@ -79,9 +82,7 @@ export default function HeroSection() {
             { value: '99%', label: 'Précision' },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-foreground tabular-nums">
-                {stat.value}
-              </div>
+              <div className="text-2xl md:text-3xl font-bold text-foreground tabular-nums">{stat.value}</div>
               <div className="text-sm text-muted mt-1">{stat.label}</div>
             </div>
           ))}

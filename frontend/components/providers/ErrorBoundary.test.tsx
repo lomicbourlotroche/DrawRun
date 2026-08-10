@@ -28,7 +28,7 @@ describe('ErrorBoundary', () => {
       render(
         <ErrorBoundary>
           <NormalComponent />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
       expect(screen.getByText('Normal content')).toBeTruthy();
     });
@@ -37,7 +37,7 @@ describe('ErrorBoundary', () => {
       render(
         <ErrorBoundary>
           <ThrowingComponent message="test error" />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
       expect(screen.getByText('Une erreur est survenue')).toBeTruthy();
       expect(screen.getByRole('button', { name: 'Réessayer' })).toBeTruthy();
@@ -47,7 +47,7 @@ describe('ErrorBoundary', () => {
       render(
         <ErrorBoundary fallback={<div>Custom fallback</div>}>
           <ThrowingComponent message="test error" />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
       expect(screen.getByText('Custom fallback')).toBeTruthy();
     });
@@ -57,7 +57,7 @@ describe('ErrorBoundary', () => {
       render(
         <ErrorBoundary onError={onError}>
           <ThrowingComponent message="specific error" />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
       expect(onError).toHaveBeenCalledTimes(1);
       expect(onError.mock.calls[0][0]).toBeInstanceOf(Error);
@@ -75,7 +75,7 @@ describe('ErrorBoundary', () => {
       const { rerender } = render(
         <ErrorBoundary>
           <ConditionalThrow />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       expect(screen.getByRole('button', { name: 'Réessayer' })).toBeTruthy();
@@ -87,7 +87,7 @@ describe('ErrorBoundary', () => {
       rerender(
         <ErrorBoundary>
           <ConditionalThrow />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       expect(screen.getByText('Recovered')).toBeTruthy();
@@ -99,7 +99,7 @@ describe('ErrorBoundary', () => {
       render(
         <ErrorBoundary>
           <ThrowingComponent message="dev error message" />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
       expect(screen.getByText('dev error message')).toBeTruthy();
     });
@@ -110,28 +110,24 @@ describe('ErrorBoundary', () => {
     // Validates: Requirement 8.4
     it('Property 10: onError callback called with the thrown error for any error message', () => {
       fc.assert(
-        fc.property(
-          fc.string(),
-          (message) => {
-            const onError = vi.fn();
+        fc.property(fc.string(), (message) => {
+          const onError = vi.fn();
 
-            const { unmount } = render(
-              <ErrorBoundary onError={onError}>
-                <ThrowingComponent message={message} />
-              </ErrorBoundary>
-            );
+          const { unmount } = render(
+            <ErrorBoundary onError={onError}>
+              <ThrowingComponent message={message} />
+            </ErrorBoundary>,
+          );
 
-            const called = onError.mock.calls.length === 1;
-            const errorMatches =
-              onError.mock.calls[0]?.[0] instanceof Error &&
-              onError.mock.calls[0][0].message === message;
+          const called = onError.mock.calls.length === 1;
+          const errorMatches =
+            onError.mock.calls[0]?.[0] instanceof Error && onError.mock.calls[0][0].message === message;
 
-            unmount();
+          unmount();
 
-            return called && errorMatches;
-          }
-        ),
-        { numRuns: 50 }
+          return called && errorMatches;
+        }),
+        { numRuns: 50 },
       );
     });
   });

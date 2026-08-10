@@ -15,10 +15,7 @@ interface LocationSearchProps {
   placeholder?: string;
 }
 
-export default function LocationSearch({
-  onSelectLocation,
-  placeholder = 'Rechercher un lieu…',
-}: LocationSearchProps) {
+export default function LocationSearch({ onSelectLocation, placeholder = 'Rechercher un lieu…' }: LocationSearchProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -35,7 +32,7 @@ export default function LocationSearch({
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&countrycodes=fr`,
-        { headers: { 'Accept-Language': 'fr' } }
+        { headers: { 'Accept-Language': 'fr' } },
       );
       const data: SearchResult[] = await res.json();
       setResults(data);

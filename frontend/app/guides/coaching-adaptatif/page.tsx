@@ -1,7 +1,18 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Calendar, Brain, TrendingUp, Target, Heart, Award, BarChart3, CheckCircle, AlertTriangle } from '@/components/ui/icons';
+import {
+  ArrowLeft,
+  Calendar,
+  Brain,
+  TrendingUp,
+  Target,
+  Heart,
+  Award,
+  BarChart3,
+  CheckCircle,
+  AlertTriangle,
+} from '@/components/ui/icons';
 
 export default function CoachingAdaptatifGuide() {
   const router = useRouter();
@@ -34,8 +45,8 @@ export default function CoachingAdaptatifGuide() {
             </span>
           </h2>
           <p className="text-lg text-muted max-w-2xl mx-auto">
-            Contrairement aux plans statiques, le coaching adaptatif de DrawRun ajuste chaque semaine
-            en fonction de votre fatigue, de vos performances réelles et de votre récupération.
+            Contrairement aux plans statiques, le coaching adaptatif de DrawRun ajuste chaque semaine en fonction de
+            votre fatigue, de vos performances réelles et de votre récupération.
           </p>
         </div>
 
@@ -52,25 +63,29 @@ export default function CoachingAdaptatifGuide() {
                 step: '1',
                 title: 'Évaluation initiale',
                 icon: Target,
-                content: 'Au démarrage, vous renseignez votre objectif (5K, 10K, Semi, Marathon), votre niveau actuel, votre VMA/VDOT si connu, vos jours d\'entraînement disponibles et votre expérience. Le moteur génère un plan de base basé sur les principes de périodisation.',
+                content:
+                  "Au démarrage, vous renseignez votre objectif (5K, 10K, Semi, Marathon), votre niveau actuel, votre VMA/VDOT si connu, vos jours d'entraînement disponibles et votre expérience. Le moteur génère un plan de base basé sur les principes de périodisation.",
               },
               {
                 step: '2',
                 title: 'Feedback après chaque séance',
                 icon: Heart,
-                content: 'Après chaque entraînement, vous pouvez soumettre un feedback : difficulté perçue (RPE), douleur, notes. Le système compare la performance réelle (allure, FC, TSS) avec ce qui était prévu.',
+                content:
+                  'Après chaque entraînement, vous pouvez soumettre un feedback : difficulté perçue (RPE), douleur, notes. Le système compare la performance réelle (allure, FC, TSS) avec ce qui était prévu.',
               },
               {
                 step: '3',
                 title: 'Ajustement automatique',
                 icon: TrendingUp,
-                content: 'Chaque semaine, l\'algorithme analyse : votre charge aiguë (ATL), votre charge chronique (CTL), votre balance (TSB), votre ACWR, et vos feedbacks. Si vous êtes fatigué, la semaine suivante est allégée. Si vous progressez bien, l\'intensité augmente progressivement.',
+                content:
+                  "Chaque semaine, l'algorithme analyse : votre charge aiguë (ATL), votre charge chronique (CTL), votre balance (TSB), votre ACWR, et vos feedbacks. Si vous êtes fatigué, la semaine suivante est allégée. Si vous progressez bien, l'intensité augmente progressivement.",
               },
               {
                 step: '4',
                 title: 'Tests de performance',
                 icon: Award,
-                content: 'Des tests VMA/VDOT sont planifiés régulièrement (toutes les 4-6 semaines). Les résultats recalibrent votre VDOT et donc toutes les allures d\'entraînement. Votre plan évolue avec votre niveau réel.',
+                content:
+                  "Des tests VMA/VDOT sont planifiés régulièrement (toutes les 4-6 semaines). Les résultats recalibrent votre VDOT et donc toutes les allures d'entraînement. Votre plan évolue avec votre niveau réel.",
               },
             ].map((item, i) => (
               <div key={i} className="flex gap-4">
@@ -125,8 +140,8 @@ export default function CoachingAdaptatifGuide() {
 
           <div className="mt-6 p-4 bg-background rounded-xl">
             <p className="text-sm text-muted">
-              <strong>Phases typiques :</strong> Base (endurance) → Développement (seuil) → Spécifique (allure course) → Tapering (fraîcheur) → Compétition.
-              Chaque phase dure 3-6 semaines selon l&apos;objectif et le niveau.
+              <strong>Phases typiques :</strong> Base (endurance) → Développement (seuil) → Spécifique (allure course) →
+              Tapering (fraîcheur) → Compétition. Chaque phase dure 3-6 semaines selon l&apos;objectif et le niveau.
             </p>
           </div>
         </div>
@@ -136,13 +151,17 @@ export default function CoachingAdaptatifGuide() {
           <h3 className="text-2xl font-bold mb-4">Références scientifiques</h3>
           <ul className="space-y-3 text-sm text-muted">
             <li className="p-3 bg-background rounded-lg">
-              <strong>McNamara, B.P. & Stearne, J. (2010).</strong> — The effects of a training program on running performance. <em>Journal of Strength and Conditioning Research</em>.
+              <strong>McNamara, B.P. & Stearne, J. (2010).</strong> — The effects of a training program on running
+              performance. <em>Journal of Strength and Conditioning Research</em>.
             </li>
             <li className="p-3 bg-background rounded-lg">
-              <strong>Seiler, S. (2010).</strong> — What is best practice for training intensity and duration distribution in endurance athletes? <em>International Journal of Sports Physiology and Performance</em>, 5(3), 276-291.
+              <strong>Seiler, S. (2010).</strong> — What is best practice for training intensity and duration
+              distribution in endurance athletes? <em>International Journal of Sports Physiology and Performance</em>,
+              5(3), 276-291.
             </li>
             <li className="p-3 bg-background rounded-lg">
-              <strong>Bourdon, P.C. et al. (2017).</strong> — Monitoring athlete training loads: consensus statement. <em>International Journal of Sports Physiology and Performance</em>, 12(S2), S2-161.
+              <strong>Bourdon, P.C. et al. (2017).</strong> — Monitoring athlete training loads: consensus statement.{' '}
+              <em>International Journal of Sports Physiology and Performance</em>, 12(S2), S2-161.
             </li>
           </ul>
         </div>
@@ -151,7 +170,9 @@ export default function CoachingAdaptatifGuide() {
         <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-3xl p-8 text-white text-center">
           <Calendar className="w-12 h-12 mx-auto mb-4" />
           <h3 className="text-2xl font-bold mb-3">Commencez votre plan adaptatif</h3>
-          <p className="text-white/80 mb-6">Répondez à quelques questions et recevez un plan personnalisé en quelques secondes.</p>
+          <p className="text-white/80 mb-6">
+            Répondez à quelques questions et recevez un plan personnalisé en quelques secondes.
+          </p>
           <button
             onClick={() => router.push('/login?mode=register')}
             className="px-8 py-3 bg-surface text-success font-semibold rounded-xl hover:bg-surface transition-colors"

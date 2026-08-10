@@ -57,7 +57,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
         vma: status.steps.vma.completed,
         plan: status.steps.plan.completed,
         first_activity: status.steps.first_activity.completed,
-        sync: status.steps.sync.completed
+        sync: status.steps.sync.completed,
       });
 
       if (status.completed) {
@@ -107,9 +107,18 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
       required: true,
       fields: [
         { name: 'name', type: 'text', label: 'Votre prénom', placeholder: 'Prénom', required: true },
-        { name: 'sex', type: 'select', label: 'Sexe', options: [{ value: 'M', label: 'Homme' }, { value: 'F', label: 'Femme' }], required: true },
-        { name: 'weeklyKm', type: 'number', label: 'Km par semaine actuels', placeholder: '20', required: true }
-      ]
+        {
+          name: 'sex',
+          type: 'select',
+          label: 'Sexe',
+          options: [
+            { value: 'M', label: 'Homme' },
+            { value: 'F', label: 'Femme' },
+          ],
+          required: true,
+        },
+        { name: 'weeklyKm', type: 'number', label: 'Km par semaine actuels', placeholder: '20', required: true },
+      ],
     },
     {
       id: 2,
@@ -120,8 +129,8 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
       required: true,
       fields: [
         { name: 'fcm', type: 'number', label: 'FC Max (bpm)', placeholder: '185', required: true },
-        { name: 'restingHR', type: 'number', label: 'FC Repos (bpm)', placeholder: '60', required: false }
-      ]
+        { name: 'restingHR', type: 'number', label: 'FC Repos (bpm)', placeholder: '60', required: false },
+      ],
     },
     {
       id: 3,
@@ -132,8 +141,8 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
       required: false,
       fields: [
         { name: 'vma', type: 'number', label: 'VMA (km/h) - Optionnel', placeholder: '15' },
-        { name: 'vdot', type: 'number', label: 'VDOT - Optionnel', placeholder: '45' }
-      ]
+        { name: 'vdot', type: 'number', label: 'VDOT - Optionnel', placeholder: '45' },
+      ],
     },
     {
       id: 4,
@@ -153,11 +162,11 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
             { value: '10k', label: '10 km' },
             { value: 'half', label: 'Semi-marathon' },
             { value: 'marathon', label: 'Marathon' },
-            { value: 'improvement', label: 'Améliorer mes performances' }
-          ]
-        }
-      ]
-    }
+            { value: 'improvement', label: 'Améliorer mes performances' },
+          ],
+        },
+      ],
+    },
   ];
 
   /**
@@ -185,10 +194,10 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
     setIsLoading(true);
     try {
       await api.completeOnboardingStep(steps[currentStep].id.toString());
-      setStepStatus(prev => ({ ...prev, [stepKeyMap[currentStep + 1]]: true }));
+      setStepStatus((prev) => ({ ...prev, [stepKeyMap[currentStep + 1]]: true }));
       handleNext();
     } catch {
-      toast.error('Erreur lors du saut de l\'étape');
+      toast.error("Erreur lors du saut de l'étape");
     } finally {
       setIsLoading(false);
     }
@@ -208,7 +217,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
         if (value !== undefined && value !== '') {
           payload[fieldName] = value;
         } else {
-          const fieldDef = steps[currentStep].fields.find(fd => fd.name === fieldName);
+          const fieldDef = steps[currentStep].fields.find((fd) => fd.name === fieldName);
           if (fieldDef?.required) {
             toast.error(`Veuillez remplir le champ "${fieldDef.label}"`);
             setIsLoading(false);
@@ -222,7 +231,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
       }
 
       await api.completeOnboardingStep(steps[currentStep].id.toString());
-      setStepStatus(prev => ({ ...prev, [stepKeyMap[currentStep + 1]]: true }));
+      setStepStatus((prev) => ({ ...prev, [stepKeyMap[currentStep + 1]]: true }));
       toast.success('Étape complétée !');
 
       if (currentStep === steps.length - 1) {
@@ -238,7 +247,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
   };
 
   const handleFieldChange = (name: string, value: string): void => {
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const step = steps[currentStep];
@@ -264,12 +273,7 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
   return (
     <Card className="max-w-lg mx-auto" role="form" aria-label="Formulaire d'onboarding">
       <CardHeader>
-        <StepIndicator
-          title={step.title}
-          icon={Icon}
-          currentStep={currentStep}
-          totalSteps={steps.length}
-        />
+        <StepIndicator title={step.title} icon={Icon} currentStep={currentStep} totalSteps={steps.length} />
       </CardHeader>
       <CardContent>
         <p className="text-muted mb-6">{step.description}</p>
@@ -278,7 +282,10 @@ export default function OnboardingWizard({ onComplete }: { onComplete: () => voi
           fields={step.fields}
           formData={formData}
           onChange={handleFieldChange}
-          onSubmit={(e) => { e.preventDefault(); handleSaveStep(); }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSaveStep();
+          }}
         />
 
         {step.completed && (

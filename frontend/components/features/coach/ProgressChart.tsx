@@ -58,7 +58,7 @@ export default function ProgressChart({ planId }: ProgressChartProps) {
 
   if (!progress) return null;
 
-  const maxVolume = Math.max(...progress.weeklyVolume.map(w => w.volume), 1);
+  const maxVolume = Math.max(...progress.weeklyVolume.map((w) => w.volume), 1);
 
   return (
     <Card>
@@ -91,7 +91,9 @@ export default function ProgressChart({ planId }: ProgressChartProps) {
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted">Volume hebdomadaire</span>
-            <span className="text-foreground">{progress.weeklyVolume[progress.weeklyVolume.length - 1]?.volume || 0} km</span>
+            <span className="text-foreground">
+              {progress.weeklyVolume[progress.weeklyVolume.length - 1]?.volume || 0} km
+            </span>
           </div>
           <div className="h-24 flex items-end gap-1">
             {progress.weeklyVolume.map((week, i) => (
@@ -105,7 +107,9 @@ export default function ProgressChart({ planId }: ProgressChartProps) {
           </div>
           <div className="flex text-xs text-muted">
             {progress.weeklyVolume.map((week, i) => (
-              <div key={i} className="flex-1 text-center">S{week.week}</div>
+              <div key={i} className="flex-1 text-center">
+                S{week.week}
+              </div>
             ))}
           </div>
         </div>
@@ -155,10 +159,7 @@ export default function ProgressChart({ planId }: ProgressChartProps) {
                   <span className="text-foreground">{Math.round(phase.progress)}%</span>
                 </div>
                 <div className="h-2 bg-background rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary transition-all"
-                    style={{ width: `${phase.progress}%` }}
-                  />
+                  <div className="h-full bg-primary transition-all" style={{ width: `${phase.progress}%` }} />
                 </div>
               </div>
             ))}

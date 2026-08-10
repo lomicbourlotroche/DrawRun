@@ -1,14 +1,7 @@
 'use client';
 
 import React from 'react';
-import {
-  Map as MapIcon,
-  Thermometer,
-  Droplets,
-  Timer,
-  ChevronRight,
-  Info,
-} from '@/components/ui/icons';
+import { Map as MapIcon, Thermometer, Droplets, Timer, ChevronRight, Info } from '@/components/ui/icons';
 import { Button, Card, Input } from '@/components/ui';
 
 interface ConfigStepProps {
@@ -103,8 +96,8 @@ export default function ConfigStep({ params, setParams, onCalculate, isLoading, 
           <div className="flex items-start gap-3">
             <Info className="w-4 h-4 text-muted-foreground mt-1 shrink-0" />
             <p className="text-xs text-muted-foreground">
-              L&apos;algorithme analyse le relief mètre par mètre pour ajuster l&apos;effort cible.
-              Une correction de &quot;cardiac drift&quot; est appliqu&eacute;e pour les efforts longs ({'>'}90min).
+              L&apos;algorithme analyse le relief mètre par mètre pour ajuster l&apos;effort cible. Une correction de
+              &quot;cardiac drift&quot; est appliqu&eacute;e pour les efforts longs ({'>'}90min).
             </p>
           </div>
         </div>

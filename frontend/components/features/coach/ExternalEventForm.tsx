@@ -12,10 +12,20 @@ interface ExternalEventFormProps {
 }
 
 const eventTypes = [
-  { value: 'competition', label: 'Compétition', icon: Trophy, color: 'bg-warning/20 text-warning/80 border-warning/30' },
+  {
+    value: 'competition',
+    label: 'Compétition',
+    icon: Trophy,
+    color: 'bg-warning/20 text-warning/80 border-warning/30',
+  },
   { value: 'vacation', label: 'Vacances', icon: Plane, color: 'bg-primary/20 text-primary/80 border-primary/30' },
   { value: 'illness', label: 'Maladie', icon: AlertCircle, color: 'bg-danger/20 text-danger/80 border-danger/30' },
-  { value: 'work_trip', label: 'Voyage travail', icon: Briefcase, color: 'bg-secondary/20 text-secondary border-secondary/30' },
+  {
+    value: 'work_trip',
+    label: 'Voyage travail',
+    icon: Briefcase,
+    color: 'bg-secondary/20 text-secondary border-secondary/30',
+  },
   { value: 'other', label: 'Autre', icon: Calendar, color: 'bg-muted/20 text-muted border-muted/30' },
 ];
 
@@ -50,7 +60,7 @@ export default function ExternalEventForm({ planId, onEventAdded }: ExternalEven
       toast.success(result.message);
       onEventAdded?.();
     } catch {
-      toast.error('Erreur lors de l\'ajout');
+      toast.error("Erreur lors de l'ajout");
     } finally {
       setIsLoading(false);
     }
@@ -58,17 +68,16 @@ export default function ExternalEventForm({ planId, onEventAdded }: ExternalEven
 
   return (
     <>
-      <Button
-        variant="secondary"
-        onClick={() => setIsOpen(true)}
-        leftIcon={<Plus className="w-4 h-4" />}
-      >
+      <Button variant="secondary" onClick={() => setIsOpen(true)} leftIcon={<Plus className="w-4 h-4" />}>
         Ajouter événement
       </Button>
 
       <Modal
         isOpen={isOpen}
-        onClose={() => { setIsOpen(false); setAffectedSessions([]); }}
+        onClose={() => {
+          setIsOpen(false);
+          setAffectedSessions([]);
+        }}
         title="Ajouter un événement"
         size="lg"
       >
@@ -78,7 +87,7 @@ export default function ExternalEventForm({ planId, onEventAdded }: ExternalEven
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-foreground">Type d&apos;événement</label>
                 <div className="flex flex-wrap gap-2">
-                  {eventTypes.map(type => {
+                  {eventTypes.map((type) => {
                     const Icon = type.icon;
                     return (
                       <button
@@ -86,9 +95,7 @@ export default function ExternalEventForm({ planId, onEventAdded }: ExternalEven
                         type="button"
                         onClick={() => setEventType(type.value)}
                         className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
-                          eventType === type.value
-                            ? type.color
-                            : 'border-border hover:border-primary/50 text-muted'
+                          eventType === type.value ? type.color : 'border-border hover:border-primary/50 text-muted'
                         }`}
                       >
                         <Icon className="w-4 h-4" />

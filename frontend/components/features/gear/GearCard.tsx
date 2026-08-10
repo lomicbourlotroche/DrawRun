@@ -46,7 +46,10 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) =>
   };
 
   return (
-    <Card role="article" className={`p-5 relative overflow-hidden transition-all duration-300 hover:shadow-xl ${!gear.is_active ? 'opacity-60 grayscale' : ''}`}>
+    <Card
+      role="article"
+      className={`p-5 relative overflow-hidden transition-all duration-300 hover:shadow-xl ${!gear.is_active ? 'opacity-60 grayscale' : ''}`}
+    >
       <div className="flex justify-between items-start mb-4">
         <div className="flex gap-4">
           <div className={`p-3 rounded-xl ${isNearLimit ? 'bg-warning/5 text-warning' : 'bg-primary/5 text-primary'}`}>
@@ -54,7 +57,9 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) =>
           </div>
           <div>
             <h3 className="font-bold text-foreground">{gear.name}</h3>
-            <p className="text-sm text-muted">{gear.brand} {gear.model}</p>
+            <p className="text-sm text-muted">
+              {gear.brand} {gear.model}
+            </p>
           </div>
         </div>
         <div className="flex gap-1">
@@ -77,12 +82,8 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) =>
 
       <div className="space-y-4">
         <div className="flex justify-between items-end">
-          <div className="text-sm font-medium text-foreground">
-            {gear.current_distance.toFixed(1)} km
-          </div>
-          <div className="text-xs text-muted">
-            Limite: {gear.max_distance} km
-          </div>
+          <div className="text-sm font-medium text-foreground">{gear.current_distance.toFixed(1)} km</div>
+          <div className="text-xs text-muted">Limite: {gear.max_distance} km</div>
         </div>
 
         <div className="h-2 bg-background rounded-full overflow-hidden">
@@ -94,7 +95,9 @@ export const GearCard: React.FC<GearCardProps> = ({ gear, onEdit, onDelete }) =>
         </div>
 
         {isNearLimit && (
-          <div className={`flex items-center gap-2 text-xs font-medium ${isOverLimit ? 'text-danger' : 'text-warning'}`}>
+          <div
+            className={`flex items-center gap-2 text-xs font-medium ${isOverLimit ? 'text-danger' : 'text-warning'}`}
+          >
             <AlertCircle className="w-4 h-4" />
             {isOverLimit ? 'Matériel à remplacer impérativement !' : 'Pensez à renouveler bientôt.'}
           </div>

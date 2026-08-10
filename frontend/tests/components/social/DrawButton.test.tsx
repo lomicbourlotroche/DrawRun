@@ -16,27 +16,13 @@ describe('DrawButton', () => {
   });
 
   it('renders with initial draw count', () => {
-    render(
-      <DrawButton
-        activityId={1}
-        ownerId={2}
-        initialDrawCount={5}
-        initialHasDrawn={false}
-      />
-    );
+    render(<DrawButton activityId={1} ownerId={2} initialDrawCount={5} initialHasDrawn={false} />);
 
     expect(screen.getByText('5')).toBeInTheDocument();
   });
 
   it('shows "Draw" text when count is 0', () => {
-    render(
-      <DrawButton
-        activityId={1}
-        ownerId={2}
-        initialDrawCount={0}
-        initialHasDrawn={false}
-      />
-    );
+    render(<DrawButton activityId={1} ownerId={2} initialDrawCount={0} initialHasDrawn={false} />);
 
     expect(screen.getByText('Draw')).toBeInTheDocument();
   });
@@ -49,14 +35,7 @@ describe('DrawButton', () => {
       message: 'Draw given',
     });
 
-    render(
-      <DrawButton
-        activityId={1}
-        ownerId={2}
-        initialDrawCount={5}
-        initialHasDrawn={false}
-      />
-    );
+    render(<DrawButton activityId={1} ownerId={2} initialDrawCount={5} initialHasDrawn={false} />);
 
     const button = screen.getByRole('button');
     fireEvent.click(button);
@@ -67,18 +46,9 @@ describe('DrawButton', () => {
   });
 
   it('displays loading state while submitting', async () => {
-    vi.mocked(api.toggleActivityDraw).mockImplementation(
-      () => new Promise((resolve) => setTimeout(resolve, 100))
-    );
+    vi.mocked(api.toggleActivityDraw).mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 100)));
 
-    render(
-      <DrawButton
-        activityId={1}
-        ownerId={2}
-        initialDrawCount={5}
-        initialHasDrawn={false}
-      />
-    );
+    render(<DrawButton activityId={1} ownerId={2} initialDrawCount={5} initialHasDrawn={false} />);
 
     const button = screen.getByRole('button');
     fireEvent.click(button);
@@ -101,7 +71,7 @@ describe('DrawButton', () => {
         initialDrawCount={5}
         initialHasDrawn={false}
         onDrawChange={onDrawChange}
-      />
+      />,
     );
 
     const button = screen.getByRole('button');

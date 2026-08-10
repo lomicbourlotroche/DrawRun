@@ -173,7 +173,7 @@ describe('Sync Store — Garmin-only', () => {
       vi.mocked(api.sync).mockReturnValue(
         new Promise<SyncResult>((resolve) => {
           resolvePromise = resolve;
-        })
+        }),
       );
 
       const syncPromise = useSyncStore.getState().sync();

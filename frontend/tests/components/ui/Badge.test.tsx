@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/Badge';
 describe('Badge component', () => {
   it('renders with default props', () => {
     render(<Badge>Test Badge</Badge>);
-    
+
     const badge = screen.getByText('Test Badge');
     expect(badge).toBeInTheDocument();
     expect(badge).toHaveClass('inline-flex');
@@ -19,13 +19,13 @@ describe('Badge component', () => {
 
   it('renders with children', () => {
     render(<Badge>Children Content</Badge>);
-    
+
     expect(screen.getByText('Children Content')).toBeInTheDocument();
   });
 
   it('applies default variant styles', () => {
     render(<Badge variant="default">Default</Badge>);
-    
+
     const badge = screen.getByText('Default');
     expect(badge).toHaveClass('bg-surface');
     expect(badge).toHaveClass('border');
@@ -34,7 +34,7 @@ describe('Badge component', () => {
 
   it('applies primary variant styles', () => {
     render(<Badge variant="primary">Primary</Badge>);
-    
+
     const badge = screen.getByText('Primary');
     expect(badge).toHaveClass('bg-primary/20');
     expect(badge).toHaveClass('text-primary');
@@ -43,7 +43,7 @@ describe('Badge component', () => {
 
   it('applies secondary variant styles', () => {
     render(<Badge variant="secondary">Secondary</Badge>);
-    
+
     const badge = screen.getByText('Secondary');
     expect(badge).toHaveClass('bg-background');
     expect(badge).toHaveClass('text-muted');
@@ -52,7 +52,7 @@ describe('Badge component', () => {
 
   it('applies success variant styles', () => {
     render(<Badge variant="success">Success</Badge>);
-    
+
     const badge = screen.getByText('Success');
     expect(badge).toHaveClass('bg-success/20');
     expect(badge).toHaveClass('text-success');
@@ -61,7 +61,7 @@ describe('Badge component', () => {
 
   it('applies warning variant styles', () => {
     render(<Badge variant="warning">Warning</Badge>);
-    
+
     const badge = screen.getByText('Warning');
     expect(badge).toHaveClass('bg-warning/20');
     expect(badge).toHaveClass('text-warning');
@@ -70,7 +70,7 @@ describe('Badge component', () => {
 
   it('applies danger variant styles', () => {
     render(<Badge variant="danger">Danger</Badge>);
-    
+
     const badge = screen.getByText('Danger');
     expect(badge).toHaveClass('bg-danger/20');
     expect(badge).toHaveClass('text-danger');
@@ -79,7 +79,7 @@ describe('Badge component', () => {
 
   it('applies outline variant styles', () => {
     render(<Badge variant="outline">Outline</Badge>);
-    
+
     const badge = screen.getByText('Outline');
     expect(badge).toHaveClass('bg-transparent');
     expect(badge).toHaveClass('border-primary');
@@ -88,7 +88,7 @@ describe('Badge component', () => {
 
   it('applies small size styles', () => {
     render(<Badge size="sm">Small</Badge>);
-    
+
     const badge = screen.getByText('Small');
     expect(badge).toHaveClass('px-2');
     expect(badge).toHaveClass('py-0.5');
@@ -97,7 +97,7 @@ describe('Badge component', () => {
 
   it('applies medium size styles', () => {
     render(<Badge size="md">Medium</Badge>);
-    
+
     const badge = screen.getByText('Medium');
     expect(badge).toHaveClass('px-2.5');
     expect(badge).toHaveClass('py-1');
@@ -106,14 +106,18 @@ describe('Badge component', () => {
 
   it('applies custom className', () => {
     render(<Badge className="custom-class">Custom</Badge>);
-    
+
     const badge = screen.getByText('Custom');
     expect(badge).toHaveClass('custom-class');
   });
 
   it('applies zone color when variant is zone and zone is provided', () => {
-    render(<Badge variant="zone" zone={1}>Zone 1</Badge>);
-    
+    render(
+      <Badge variant="zone" zone={1}>
+        Zone 1
+      </Badge>,
+    );
+
     const badge = screen.getByText('Zone 1');
     // Zone 1 should have a background color
     expect(badge.style.backgroundColor).toBeDefined();
@@ -124,16 +128,16 @@ describe('Badge component', () => {
     render(
       <Badge variant="primary">
         <span>🏆</span> With Icon
-      </Badge>
+      </Badge>,
     );
-    
+
     const badge = screen.getByText('With Icon');
     expect(badge).toContainHTML('🏆');
   });
 
   it('has correct accessibility attributes', () => {
     render(<Badge>Accessible Badge</Badge>);
-    
+
     const badge = screen.getByText('Accessible Badge');
     expect(badge).toHaveAttribute('role', 'status');
   });

@@ -32,11 +32,15 @@ vi.mock('@/components/features/activities/BiomechanicsCard', () => ({
 // Mock UI Card components
 vi.mock('@/components/ui', () => ({
   Card: ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <div className={className} data-testid="card">{children}</div>
+    <div className={className} data-testid="card">
+      {children}
+    </div>
   ),
   CardHeader: ({ children }: { children: React.ReactNode }) => <div data-testid="card-header">{children}</div>,
   CardTitle: ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <div className={className} data-testid="card-title">{children}</div>
+    <div className={className} data-testid="card-title">
+      {children}
+    </div>
   ),
   CardContent: ({ children }: { children: React.ReactNode }) => <div data-testid="card-content">{children}</div>,
   CardFooter: ({ children }: { children: React.ReactNode }) => <div data-testid="card-footer">{children}</div>,
@@ -45,8 +49,14 @@ vi.mock('@/components/ui', () => ({
 // ─── Mock Data ──────────────────────────────────────────────
 
 const baseHRZones = {
-  current: 3, name: 'Zone 3 - Tempo', percent: 78, avgHrPercent: 78,
-  maxHrPercent: 92, hrReserve: 65, fcm: 185, restingHR: 55,
+  current: 3,
+  name: 'Zone 3 - Tempo',
+  percent: 78,
+  avgHrPercent: 78,
+  maxHrPercent: 92,
+  hrReserve: 65,
+  fcm: 185,
+  restingHR: 55,
 };
 
 const hrDistribution = { zone1Percent: 5, zone2Percent: 35, zone3Percent: 40, zone4Percent: 15, zone5Percent: 5 };
@@ -67,8 +77,11 @@ const runAnalysisFull = {
   sportLabel: 'Course à pied',
   icon: '🏃',
   analysisType: 'detailed' as const,
-  tss: 85.5, trimp: 120.3, intensityFactor: 0.78,
-  duration: 5400, durationFormatted: '1h30min',
+  tss: 85.5,
+  trimp: 120.3,
+  intensityFactor: 0.78,
+  duration: 5400,
+  durationFormatted: '1h30min',
   calories: 650,
   hrZones: baseHRZones,
   hrDistribution,
@@ -87,14 +100,20 @@ const runAnalysisFull = {
   },
   performanceLevel: { level: 'Bon', color: 'green', description: 'Niveau intermédiaire avancé' },
   racePredictions: {
-    '5k': 1320, '10k': 2760,
+    '5k': 1320,
+    '10k': 2760,
     half: { time: '1:35' },
     marathon: { time: '3:20' },
   },
   estimatedGrade: 2.5,
   nutrition: mockNutrition,
-  avgHrPercent: 78, profileFcm: 185, estimatedVdot: 42.5,
-  paceFormatted: '5:00/km', intensity_factor: 0.78, efficiency_factor: 0.85, gapFormatted: '4:50/km',
+  avgHrPercent: 78,
+  profileFcm: 185,
+  estimatedVdot: 42.5,
+  paceFormatted: '5:00/km',
+  intensity_factor: 0.78,
+  efficiency_factor: 0.85,
+  gapFormatted: '4:50/km',
 };
 
 const rideAnalysisFull = {
@@ -102,8 +121,11 @@ const rideAnalysisFull = {
   sportLabel: 'Cyclisme',
   icon: '🚴',
   analysisType: 'detailed' as const,
-  tss: 120, trimp: 95, intensityFactor: 0.85,
-  duration: 7200, durationFormatted: '2h00min',
+  tss: 120,
+  trimp: 95,
+  intensityFactor: 0.85,
+  duration: 7200,
+  durationFormatted: '2h00min',
   calories: 1200,
   hrZones: baseHRZones,
   hrDistribution,
@@ -145,8 +167,10 @@ const rideAnalysisFull = {
   tssPerHour: 60,
   estimatedGrade: 3.0,
   nutrition: mockNutrition,
-  avgHrPercent: 78, profileFcm: 185,
-  intensity_factor: 0.85, paceFormatted: '5:00/km',
+  avgHrPercent: 78,
+  profileFcm: 185,
+  intensity_factor: 0.85,
+  paceFormatted: '5:00/km',
 };
 
 const swimAnalysisFull = {
@@ -154,20 +178,29 @@ const swimAnalysisFull = {
   sportLabel: 'Natation',
   icon: '🏊',
   analysisType: 'detailed' as const,
-  tss: 65, trimp: 80, intensityFactor: 0.72,
-  duration: 3600, durationFormatted: '1h00min',
+  tss: 65,
+  trimp: 80,
+  intensityFactor: 0.72,
+  duration: 3600,
+  durationFormatted: '1h00min',
   calories: 400,
   hrZones: baseHRZones,
   hrDistribution,
   pacePer100m: { seconds: 90, formatted: '1:30/100m' },
-  swolf: 42, strokeRate: 35, dps: 1.85,
+  swolf: 42,
+  strokeRate: 35,
+  dps: 1.85,
   estimatedCSS: {
-    speedMs: 1.1, pacePer100m: '1:30/100m', speedKmh: 3.96,
+    speedMs: 1.1,
+    pacePer100m: '1:30/100m',
+    speedKmh: 3.96,
   },
-  efficiency_factor: null, intensity_factor: 0.72,
+  efficiency_factor: null,
+  intensity_factor: 0.72,
   estimatedGrade: 0,
   nutrition: null,
-  avgHrPercent: 78, profileFcm: 185,
+  avgHrPercent: 78,
+  profileFcm: 185,
 };
 
 const simpleAnalysisFull = {
@@ -175,15 +208,19 @@ const simpleAnalysisFull = {
   sportLabel: 'HIIT',
   icon: '💪',
   analysisType: 'simple' as const,
-  tss: 90, trimp: 110, intensityFactor: 0.92,
-  duration: 2400, durationFormatted: '40min',
+  tss: 90,
+  trimp: 110,
+  intensityFactor: 0.92,
+  duration: 2400,
+  durationFormatted: '40min',
   calories: 380,
   hrZones: baseHRZones,
   pace: null,
   intensity_factor: 0.92,
   estimatedGrade: 0,
   nutrition: mockNutrition,
-  avgHrPercent: 78, profileFcm: 185,
+  avgHrPercent: 78,
+  profileFcm: 185,
 };
 
 const trailAnalysisFull = {
@@ -194,8 +231,13 @@ const trailAnalysisFull = {
   vam: 850,
   technicalScore: 'advanced' as const,
   elevationGain: 1200,
-  avgHrPercent: 82, profileFcm: 185, estimatedVdot: 42.5,
-  paceFormatted: '5:00/km', intensity_factor: 0.82, efficiency_factor: 0.85, gapFormatted: '4:50/km',
+  avgHrPercent: 82,
+  profileFcm: 185,
+  estimatedVdot: 42.5,
+  paceFormatted: '5:00/km',
+  intensity_factor: 0.82,
+  efficiency_factor: 0.85,
+  gapFormatted: '4:50/km',
 };
 
 // ─── RunAnalysisCards Tests ─────────────────────────────────
@@ -257,8 +299,11 @@ describe('RunAnalysisCards', () => {
     const withBio = {
       ...runAnalysisFull,
       biomechanics: {
-        cadence: 168, strideLength: 1.25, groundContactTime: 240,
-        verticalOscillation: 8.5, legStiffness: 8.2,
+        cadence: 168,
+        strideLength: 1.25,
+        groundContactTime: 240,
+        verticalOscillation: 8.5,
+        legStiffness: 8.2,
         advice: [
           { priority: 'high' as const, message: 'Augmentez la cadence', metric: 'cadence', current: 160, target: 170 },
         ],
@@ -274,7 +319,17 @@ describe('RunAnalysisCards', () => {
   });
 
   it('handles minimal data without crashing', () => {
-    const min: any = { ...runAnalysisFull, vdot: null, racePredictions: null, trainingPaces: null, nutrition: null, hrDistribution: null, gap: null, efficiencyFactor: null, runningEconomy: null };
+    const min: any = {
+      ...runAnalysisFull,
+      vdot: null,
+      racePredictions: null,
+      trainingPaces: null,
+      nutrition: null,
+      hrDistribution: null,
+      gap: null,
+      efficiencyFactor: null,
+      runningEconomy: null,
+    };
     const { container } = render(<RunAnalysisCards analysis={min} />);
     expect(container).toBeDefined();
   });
@@ -485,7 +540,15 @@ describe('SimpleAnalysisCards', () => {
   });
 
   it('handles minimal simple data', () => {
-    const min: any = { ...simpleAnalysisFull, tss: null, trimp: null, intensityFactor: null, hrZones: null, nutrition: null, pace: null };
+    const min: any = {
+      ...simpleAnalysisFull,
+      tss: null,
+      trimp: null,
+      intensityFactor: null,
+      hrZones: null,
+      nutrition: null,
+      pace: null,
+    };
     const { container } = render(<SimpleAnalysisCards analysis={min} />);
     expect(container).toBeDefined();
   });

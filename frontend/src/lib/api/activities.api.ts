@@ -2,26 +2,56 @@
  * ============================================================
  * ACTIVITIES API - Endpoints activités sportives
  * ============================================================
- * 
+ *
  * Ce fichier contient tous les endpoints liés aux activités :
  * - CRUD activités
  * - Streams et splits
-   * - Import GPX
+ * - Import GPX
  * - Analyses
- * 
+ *
  * @module lib/api/activities.api
  */
 
 import { client } from './client';
-import type { Activity, ActivityDetail, ActivityStreams, SplitData, SplitSummary, ActivityAnalysisResponse } from '@/types';
+import type {
+  Activity,
+  ActivityDetail,
+  ActivityStreams,
+  SplitData,
+  SplitSummary,
+  ActivityAnalysisResponse,
+} from '@/types';
 import type { AddManualActivityParams } from './types';
 
 export const activitiesApi = {
   /**
    * Liste toutes les activités
    */
-  async   getActivities(page = 1, perPage = 20): Promise<{ data: Activity[]; pagination: { page: number; per_page: number; total: number; total_pages: number; has_next: boolean; has_prev: boolean } }> {
-    return client.request<{ data: Activity[]; pagination: { page: number; per_page: number; total: number; total_pages: number; has_next: boolean; has_prev: boolean } }>(`/api/activities?page=${page}&per_page=${perPage}`);
+  async getActivities(
+    page = 1,
+    perPage = 20,
+  ): Promise<{
+    data: Activity[];
+    pagination: {
+      page: number;
+      per_page: number;
+      total: number;
+      total_pages: number;
+      has_next: boolean;
+      has_prev: boolean;
+    };
+  }> {
+    return client.request<{
+      data: Activity[];
+      pagination: {
+        page: number;
+        per_page: number;
+        total: number;
+        total_pages: number;
+        has_next: boolean;
+        has_prev: boolean;
+      };
+    }>(`/api/activities?page=${page}&per_page=${perPage}`);
   },
 
   /**
@@ -98,12 +128,16 @@ export const activitiesApi = {
   /**
    * Importe un fichier GPX
    */
-  importGpx(name: string, gpxData: string, type = 'run'): Promise<{
+  importGpx(
+    name: string,
+    gpxData: string,
+    type = 'run',
+  ): Promise<{
     success: boolean;
     id: number;
     distance: number;
     duration: number;
-    trackpoints: number
+    trackpoints: number;
   }> {
     return client.request('/api/activities/import/gpx', {
       method: 'POST',
@@ -131,7 +165,7 @@ export const activitiesApi = {
       share_to_friends?: boolean;
       share_to_groups?: number[] | null;
       shared_data_fields?: string[];
-    }
+    },
   ): Promise<{ success: boolean; message: string }> {
     return client.request(`/api/activities/${id}/share-settings`, {
       method: 'PUT',

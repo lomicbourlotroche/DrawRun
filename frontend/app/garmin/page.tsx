@@ -12,15 +12,19 @@ export default function GarminPage() {
           <div className="garmin-doc-header">
             <div className="garmin-badge">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 6v6l4 2"/>
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 6v6l4 2" />
               </svg>
               Connect IQ App
             </div>
-            <h1>DrawRun Training<br/><span className="gradient-text">Pour Garmin</span></h1>
+            <h1>
+              DrawRun Training
+              <br />
+              <span className="gradient-text">Pour Garmin</span>
+            </h1>
             <p className="subtitle">
-              Accédez à votre plan d&apos;entraînement DrawRun directement sur votre montre Garmin.
-              Consultez vos séances, zones et PMC sans sortir votre téléphone.
+              Accédez à votre plan d&apos;entraînement DrawRun directement sur votre montre Garmin. Consultez vos
+              séances, zones et PMC sans sortir votre téléphone.
             </p>
           </div>
 
@@ -53,7 +57,7 @@ export default function GarminPage() {
 
             <section className="doc-section">
               <h2>Installation</h2>
-              
+
               <div className="install-step">
                 <div className="step-number">1</div>
                 <div className="step-content">
@@ -71,7 +75,12 @@ export default function GarminPage() {
                 <div className="step-content">
                   <h3>Installer le SDK Connect IQ</h3>
                   <ol>
-                    <li>Télécharger le SDK Manager depuis <a href="https://developer.garmin.com/connect-iq/sdk/" target="_blank" rel="noopener">developer.garmin.com</a></li>
+                    <li>
+                      Télécharger le SDK Manager depuis{' '}
+                      <a href="https://developer.garmin.com/connect-iq/sdk/" target="_blank" rel="noopener">
+                        developer.garmin.com
+                      </a>
+                    </li>
                     <li>Installer le SDK et sélectionner les appareils cibles</li>
                     <li>Installer l&apos;extension VS Code &quot;Monkey C&quot;</li>
                   </ol>
@@ -82,9 +91,13 @@ export default function GarminPage() {
                 <div className="step-number">3</div>
                 <div className="step-content">
                   <h3>Compiler l&apos;App</h3>
-                  <pre><code>{`cd garmin-app
-monkeyc -o DrawRunTraining.prg -d forerunner955`}</code></pre>
-                  <p className="note">Remplacez <code>forerunner955</code> par votre modèle de montre.</p>
+                  <pre>
+                    <code>{`cd garmin-app
+monkeyc -o DrawRunTraining.prg -d forerunner955`}</code>
+                  </pre>
+                  <p className="note">
+                    Remplacez <code>forerunner955</code> par votre modèle de montre.
+                  </p>
                 </div>
               </div>
 
@@ -94,7 +107,9 @@ monkeyc -o DrawRunTraining.prg -d forerunner955`}</code></pre>
                   <h3>Installer sur la Montre</h3>
                   <ul>
                     <li>Connecter la montre en USB</li>
-                    <li>Transférer le fichier <code>.iq</code> ou <code>.prg</code></li>
+                    <li>
+                      Transférer le fichier <code>.iq</code> ou <code>.prg</code>
+                    </li>
                     <li>Ou utiliser Garmin Connect Mobile pour installer</li>
                   </ul>
                 </div>
@@ -160,9 +175,12 @@ monkeyc -o DrawRunTraining.prg -d forerunner955`}</code></pre>
 
             <section className="doc-section">
               <h2>Code Source</h2>
-              <p>Le code source de l&apos;app Garmin est disponible dans le dossier <code>garmin-app/</code> du projet.</p>
+              <p>
+                Le code source de l&apos;app Garmin est disponible dans le dossier <code>garmin-app/</code> du projet.
+              </p>
               <div className="code-structure">
-                <pre><code>{`garmin-app/
+                <pre>
+                  <code>{`garmin-app/
 ├── manifest.xml           # Manifeste de l'app
 ├── resources/
 │   └── app.xml           # Métadonnées
@@ -172,7 +190,8 @@ monkeyc -o DrawRunTraining.prg -d forerunner955`}</code></pre>
 │   ├── MainView.mc        # Vue principale
 │   ├── SyncView.mc        # Synchronisation
 │   └── WorkoutManager.mc   # Stockage local
-└── README.md`}</code></pre>
+└── README.md`}</code>
+                </pre>
               </div>
             </section>
 

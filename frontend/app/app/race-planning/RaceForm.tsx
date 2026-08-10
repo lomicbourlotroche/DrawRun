@@ -6,16 +6,16 @@ import { Button, Input } from '@/components/ui';
 import type { RacePlanningRequest } from '@/types';
 
 const ELEVATION_PROFILES = [
-  { id: 'flat',        label: 'Plat',       description: 'Route plate sans dénivelé',       icon: MapPin },
-  { id: 'rolling',     label: 'Vallonné',   description: 'Montées et descentes modérées',   icon: MapPin },
-  { id: 'mountainous', label: 'Montagneux', description: 'Dénivelé important',              icon: MapPin },
+  { id: 'flat', label: 'Plat', description: 'Route plate sans dénivelé', icon: MapPin },
+  { id: 'rolling', label: 'Vallonné', description: 'Montées et descentes modérées', icon: MapPin },
+  { id: 'mountainous', label: 'Montagneux', description: 'Dénivelé important', icon: MapPin },
 ] as const;
 
 const DISTANCE_PRESETS = [
-  { label: '5K',      km: 5 },
-  { label: '10K',     km: 10 },
-  { label: 'Semi',    km: 21.0975 },
-  { label: 'Marathon',km: 42.195 },
+  { label: '5K', km: 5 },
+  { label: '10K', km: 10 },
+  { label: 'Semi', km: 21.0975 },
+  { label: 'Marathon', km: 42.195 },
 ];
 
 interface RaceFormProps {
@@ -62,9 +62,9 @@ export function RaceForm({ form, setForm }: RaceFormProps) {
                   : 'border-border hover:border-primary/50'
               }`}
             >
-              <MapPin className={`w-4 h-4 mb-1 ${
-                form.elevationProfile === profile.id ? 'text-primary' : 'text-muted'
-              }`} />
+              <MapPin
+                className={`w-4 h-4 mb-1 ${form.elevationProfile === profile.id ? 'text-primary' : 'text-muted'}`}
+              />
               <p className="text-sm font-medium">{profile.label}</p>
               <p className="text-xs text-muted">{profile.description}</p>
             </button>
@@ -73,9 +73,7 @@ export function RaceForm({ form, setForm }: RaceFormProps) {
       </div>
 
       <div>
-        <label className="text-sm font-medium mb-2 block">
-          Niveau de fatigue (0-10)
-        </label>
+        <label className="text-sm font-medium mb-2 block">Niveau de fatigue (0-10)</label>
         <input
           type="range"
           min="0"

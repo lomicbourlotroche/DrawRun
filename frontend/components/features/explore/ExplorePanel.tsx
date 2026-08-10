@@ -76,7 +76,8 @@ const DIFFICULTIES = [
 ];
 
 // Focus styles base classes
-const focusClasses = 'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface';
+const focusClasses =
+  'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-surface';
 
 // Button base classes with focus
 const buttonBaseClasses = `flex items-center justify-center gap-2 px-3 min-h-[44px] rounded-lg transition-colors hover:bg-surface ${focusClasses}`;
@@ -99,7 +100,6 @@ export default function ExplorePanel({
   activeTab,
   onTabChange,
 }: ExplorePanelProps) {
-
   return (
     <>
       {/* Toggle button - Always visible, accessible */}
@@ -111,11 +111,7 @@ export default function ExplorePanel({
         aria-controls="explore-panel-content"
         type="button"
       >
-        {isOpen ? (
-          <X className="w-4 h-4" aria-hidden="true" />
-        ) : (
-          <Compass className="w-4 h-4" aria-hidden="true" />
-        )}
+        {isOpen ? <X className="w-4 h-4" aria-hidden="true" /> : <Compass className="w-4 h-4" aria-hidden="true" />}
         <span className="hidden sm:inline">{isOpen ? 'Fermer' : 'Explorer'}</span>
       </button>
 
@@ -129,10 +125,7 @@ export default function ExplorePanel({
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border bg-gradient-to-r from-primary/5 to-transparent">
-          <h2
-            id="explore-panel-title"
-            className="text-lg font-bold flex items-center gap-2"
-          >
+          <h2 id="explore-panel-title" className="text-lg font-bold flex items-center gap-2">
             <Compass className="w-5 h-5 text-primary" aria-hidden="true" />
             Explorer
           </h2>
@@ -182,11 +175,7 @@ export default function ExplorePanel({
                         </span>
                       </div>
                     </div>
-                    <SegmentList
-                      segments={segments}
-                      isLoading={segmentsLoading}
-                      onSegmentClick={onSegmentClick}
-                    />
+                    <SegmentList segments={segments} isLoading={segmentsLoading} onSegmentClick={onSegmentClick} />
                   </div>
                 </TabsContent>
               </div>
@@ -203,7 +192,7 @@ export default function ExplorePanel({
                         </span>
                       </div>
                     </div>
-                    
+
                     {/* Filters */}
                     <div className="space-y-2 pb-2">
                       <FilterChipGroup
@@ -223,11 +212,7 @@ export default function ExplorePanel({
                         aria-label="Filtrer par difficulté"
                       />
                     </div>
-                    <RouteList
-                      routes={routes}
-                      isLoading={routesLoading}
-                      onRouteClick={onRouteClick}
-                    />
+                    <RouteList routes={routes} isLoading={routesLoading} onRouteClick={onRouteClick} />
                   </div>
                 </TabsContent>
               </div>

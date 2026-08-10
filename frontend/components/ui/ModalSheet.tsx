@@ -21,14 +21,23 @@ const MAX_WIDTHS = {
   xl: 'max-w-xl',
 };
 
-export function ModalSheet({ open, onClose, children, className, maxWidth = 'lg', withBorder = false, withFlex = false, dense = false }: ModalSheetProps) {
+export function ModalSheet({
+  open,
+  onClose,
+  children,
+  className,
+  maxWidth = 'lg',
+  withBorder = false,
+  withFlex = false,
+  dense = false,
+}: ModalSheetProps) {
   if (!open) return null;
 
   return (
     <div
       className={cn(
         'fixed inset-0 bg-foreground/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center',
-        dense ? 'p-4' : 'p-2 sm:p-4'
+        dense ? 'p-4' : 'p-2 sm:p-4',
       )}
       onClick={onClose}
     >
@@ -38,7 +47,7 @@ export function ModalSheet({ open, onClose, children, className, maxWidth = 'lg'
           MAX_WIDTHS[maxWidth],
           withBorder && 'border border-border',
           withFlex && 'max-h-[85vh] flex flex-col',
-          className
+          className,
         )}
         onClick={(e) => e.stopPropagation()}
       >

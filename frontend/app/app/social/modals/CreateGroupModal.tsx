@@ -42,9 +42,7 @@ export default function CreateGroupModal({ onClose, onCreated }: CreateGroupModa
             <h3 id="create-group-title" className="text-lg sm:text-xl font-bold">
               Créer un groupe
             </h3>
-            <p className="text-xs sm:text-sm text-muted mt-0.5">
-              Invitez vos amis à s&apos;entraîner ensemble
-            </p>
+            <p className="text-xs sm:text-sm text-muted mt-0.5">Invitez vos amis à s&apos;entraîner ensemble</p>
           </div>
           <button
             onClick={onClose}
@@ -63,9 +61,7 @@ export default function CreateGroupModal({ onClose, onCreated }: CreateGroupModa
             aria-required="true"
           />
           <div>
-            <label className="text-xs font-medium text-muted uppercase tracking-wide mb-1 block">
-              Description
-            </label>
+            <label className="text-xs font-medium text-muted uppercase tracking-wide mb-1 block">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -83,9 +79,7 @@ export default function CreateGroupModal({ onClose, onCreated }: CreateGroupModa
             <button
               onClick={() => setIsPrivate(!isPrivate)}
               aria-label={isPrivate ? 'Passer en groupe public' : 'Passer en groupe privé'}
-              className={`w-11 h-6 rounded-full transition-all relative ${
-                isPrivate ? 'bg-primary' : 'bg-border'
-              }`}
+              className={`w-11 h-6 rounded-full transition-all relative ${isPrivate ? 'bg-primary' : 'bg-border'}`}
             >
               <div
                 className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${
@@ -96,12 +90,7 @@ export default function CreateGroupModal({ onClose, onCreated }: CreateGroupModa
           </div>
         </div>
         <div className="px-5 py-4 border-t border-border flex gap-3">
-          <Button
-            variant="secondary"
-            onClick={onClose}
-            className="flex-1 rounded-xl"
-            aria-label="Annuler la création"
-          >
+          <Button variant="secondary" onClick={onClose} className="flex-1 rounded-xl" aria-label="Annuler la création">
             Annuler
           </Button>
           <Button

@@ -2,7 +2,7 @@
  * ============================================================
  * PERFORMANCE UTILITIES
  * ============================================================
- * 
+ *
  * Utilitaires d'optimisation des performances pour DrawRun
  * - Lazy loading des composants
  * - Virtualisation des listes
@@ -30,14 +30,10 @@ interface LazyWrapperProps {
 
 export function LazyWrapper({ children, fallback }: LazyWrapperProps): React.ReactElement {
   const defaultFallback = React.createElement('div', {
-    className: 'animate-pulse bg-gray-200 h-32 rounded'
+    className: 'animate-pulse bg-gray-200 h-32 rounded',
   });
-  
-  return React.createElement(
-    Suspense,
-    { fallback: fallback || defaultFallback },
-    children
-  );
+
+  return React.createElement(Suspense, { fallback: fallback || defaultFallback }, children);
 }
 
 // ============================================================================
@@ -51,11 +47,7 @@ export function LazyWrapper({ children, fallback }: LazyWrapperProps): React.Rea
  * @param containerHeight - Hauteur du conteneur
  * @returns {Object} Éléments visibles et fonctions de scroll
  */
-export function useVirtualization<T>(
-  items: T[],
-  itemHeight: number,
-  containerHeight: number
-) {
+export function useVirtualization<T>(items: T[], itemHeight: number, containerHeight: number) {
   const [scrollTop, setScrollTop] = React.useState(0);
 
   const visibleCount = Math.ceil(containerHeight / itemHeight);
@@ -106,7 +98,7 @@ export function getOptimizedImageUrl(src: string, width: number, quality = 80): 
     const url = new URL(src);
     url.searchParams.set('w', width.toString());
     url.searchParams.set('q', quality.toString());
-    
+
     return url.toString();
   } catch {
     // Si l'URL est invalide, retourner l'URL originale
@@ -119,7 +111,7 @@ export function getOptimizedImageUrl(src: string, width: number, quality = 80): 
  * @param urls - Liste des URLs à précharger
  */
 export function preloadImages(urls: string[]): Promise<void[]> {
-  const promises = urls.map(url => {
+  const promises = urls.map((url) => {
     return new Promise<void>((resolve, reject) => {
       const img = new Image();
       img.onload = () => resolve();
@@ -177,7 +169,7 @@ class PerformanceCache {
    */
   get<T>(key: string): T | null {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       return null;
     }
@@ -250,10 +242,10 @@ export const performanceCache = new PerformanceCache();
  */
 export function debounce<T extends (..._args: never[]) => unknown>(
   func: T,
-  delay: number
+  delay: number,
 ): (..._args: Parameters<T>) => void {
   let timeoutId: ReturnType<typeof setTimeout>;
-  
+
   return (..._args: Parameters<T>) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func(..._args), delay);
@@ -268,10 +260,10 @@ export function debounce<T extends (..._args: never[]) => unknown>(
  */
 export function throttle<T extends (..._args: never[]) => unknown>(
   func: T,
-  delay: number
+  delay: number,
 ): (..._args: Parameters<T>) => void {
   let lastCall = 0;
-  
+
   return (..._args: Parameters<T>) => {
     const now = Date.now();
     if (now - lastCall >= delay) {
@@ -306,7 +298,10 @@ class PerformanceMonitor {
       for (const entry of list.getEntries()) {
         if (entry.entryType === 'navigation') {
           const navEntry = entry as PerformanceNavigationTiming;
-          this.recordMetric('domContentLoaded', navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart);
+          this.recordMetric(
+            'domContentLoaded',
+            navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart,
+          );
           this.recordMetric('loadComplete', navEntry.loadEventEnd - navEntry.loadEventStart);
           this.recordMetric('firstPaint', navEntry.responseEnd - navEntry.requestStart);
         }
@@ -375,7 +370,7 @@ class PerformanceMonitor {
    */
   getMetrics(name?: string): PerformanceMetric[] {
     if (name) {
-      return this.metrics.filter(metric => metric.name === name);
+      return this.metrics.filter((metric) => metric.name === name);
     }
     return [...this.metrics];
   }
@@ -384,7 +379,7 @@ class PerformanceMonitor {
    * Arrête le monitoring
    */
   stop(): void {
-    this.observers.forEach(observer => observer.disconnect());
+    this.observers.forEach((observer) => observer.disconnect());
     this.observers = [];
   }
 
@@ -395,12 +390,12 @@ class PerformanceMonitor {
    */
   getStats(name?: string) {
     const metrics = this.getMetrics(name);
-    
+
     if (metrics.length === 0) {
       return null;
     }
 
-    const values = metrics.map(m => m.value);
+    const values = metrics.map((m) => m.value);
     const sum = values.reduce((a, b) => a + b, 0);
     const avg = sum / values.length;
     const min = Math.min(...values);
@@ -408,9 +403,10 @@ class PerformanceMonitor {
 
     // Calculer la médiane
     const sorted = [...values].sort((a, b) => a - b);
-    const median = sorted.length % 2 === 0
-      ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
-      : sorted[Math.floor(sorted.length / 2)];
+    const median =
+      sorted.length % 2 === 0
+        ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+        : sorted[Math.floor(sorted.length / 2)];
 
     return {
       count: metrics.length,
@@ -437,9 +433,7 @@ export const performanceMonitor = new PerformanceMonitor();
  */
 export function isMobile(): boolean {
   if (typeof window === 'undefined') return false;
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent
-  );
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
 /**
@@ -471,9 +465,7 @@ export function isSlowConnection(): boolean {
 
   const nav = navigator as NavigatorWithConnection;
   const connection = nav.connection;
-  return connection?.effectiveType === 'slow-2g' || 
-         connection?.effectiveType === '2g' ||
-         connection?.saveData === true;
+  return connection?.effectiveType === 'slow-2g' || connection?.effectiveType === '2g' || connection?.saveData === true;
 }
 
 /**

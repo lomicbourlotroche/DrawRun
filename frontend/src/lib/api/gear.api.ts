@@ -53,6 +53,6 @@ export const gearApi = {
   /**
    * Link gear to an activity
    */
-  linkToActivity: (activityId: number, gearId: number | null) => 
+  linkToActivity: (activityId: number, gearId: number | null) =>
     client.put<{ message: string }>(`/activities/${activityId}`, { gear_id: gearId }),
 };

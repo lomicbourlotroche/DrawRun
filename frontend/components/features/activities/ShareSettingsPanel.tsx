@@ -54,12 +54,7 @@ const ALLOWED_FIELDS = [
   { id: 'calories', label: 'Calories', icon: '🔥' },
 ];
 
-export function ShareSettingsPanel({ 
-  activityId, 
-  onSave, 
-  activityData,
-  showPreview = true 
-}: ShareSettingsPanelProps) {
+export function ShareSettingsPanel({ activityId, onSave, activityData, showPreview = true }: ShareSettingsPanelProps) {
   const [settings, setSettings] = useState<ShareSettings>({
     share_to_friends: true,
     share_to_groups: null,
@@ -83,7 +78,7 @@ export function ShareSettingsPanel({
       try {
         setIsLoading(true);
         setError(null);
-        
+
         // Charger les parametres de partage
         const settingsData = await activitiesApi.getActivityShareSettings(activityId);
         const normalizedSettings = {
@@ -119,7 +114,7 @@ export function ShareSettingsPanel({
   // Fonction pour charger la previsualisation
   const loadPreview = useCallback(async () => {
     if (!showPreview) return;
-    
+
     try {
       setIsLoadingPreview(true);
       const imageUrl = await shareApi.getActivityShareImage(activityId, previewSize, true);
@@ -136,7 +131,7 @@ export function ShareSettingsPanel({
     if (showPreview && activityId) {
       loadPreview();
     }
-    
+
     return () => {
       if (previewImage) {
         URL.revokeObjectURL(previewImage);
@@ -155,28 +150,28 @@ export function ShareSettingsPanel({
   }, [settings, originalSettings]);
 
   const handleToggleFriends = () => {
-    setSettings(prev => ({ ...prev, share_to_friends: !prev.share_to_friends }));
+    setSettings((prev) => ({ ...prev, share_to_friends: !prev.share_to_friends }));
   };
 
   const handleToggleField = (fieldId: string) => {
-    setSettings(prev => {
+    setSettings((prev) => {
       const currentFields = prev.shared_data_fields;
       const newFields = currentFields.includes(fieldId)
-        ? currentFields.filter(f => f !== fieldId)
+        ? currentFields.filter((f) => f !== fieldId)
         : [...currentFields, fieldId];
       return { ...prev, shared_data_fields: newFields };
     });
   };
 
   const handleGroupChange = (groupId: number, checked: boolean) => {
-    setSettings(prev => {
+    setSettings((prev) => {
       let newGroups = prev.share_to_groups;
       if (checked) {
         if (newGroups === null) newGroups = [groupId];
         else if (!newGroups.includes(groupId)) newGroups = [...newGroups, groupId];
       } else {
         if (newGroups) {
-          newGroups = newGroups.filter(id => id !== groupId);
+          newGroups = newGroups.filter((id) => id !== groupId);
           if (newGroups.length === 0) newGroups = null;
         }
       }
@@ -185,7 +180,7 @@ export function ShareSettingsPanel({
   };
 
   const handleShareToAllGroups = (shareToAll: boolean) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
       share_to_groups: shareToAll ? [] : null,
     }));
@@ -231,7 +226,9 @@ export function ShareSettingsPanel({
       if (btn) {
         const originalText = btn.textContent;
         btn.textContent = 'Copie !';
-        setTimeout(() => { btn.textContent = originalText; }, 2000);
+        setTimeout(() => {
+          btn.textContent = originalText;
+        }, 2000);
       }
     } catch (err) {
       setError('Impossible de copier le lien');
@@ -240,17 +237,13 @@ export function ShareSettingsPanel({
 
   const handleShareSocial = async () => {
     if (!activityData) return;
-    
+
     try {
-      const success = await shareApi.shareActivity(
-        activityId,
-        activityData.name || 'Mon activite',
-        {
-          distance: activityData.distance,
-          duration: activityData.moving_time || activityData.elapsed_time,
-        }
-      );
-      
+      const success = await shareApi.shareActivity(activityId, activityData.name || 'Mon activite', {
+        distance: activityData.distance,
+        duration: activityData.moving_time || activityData.elapsed_time,
+      });
+
       if (!success) {
         // Native share not available or cancelled, fall back to modal
         await shareApi.openShareModal(
@@ -260,7 +253,7 @@ export function ShareSettingsPanel({
             distance: activityData.distance,
             duration: activityData.moving_time || activityData.elapsed_time,
           },
-          previewSize
+          previewSize,
         );
       }
     } catch (err) {
@@ -270,7 +263,7 @@ export function ShareSettingsPanel({
 
   const handleOpenPreviewModal = async () => {
     if (!activityData) return;
-    
+
     try {
       await shareApi.openShareModal(
         activityId,
@@ -279,7 +272,7 @@ export function ShareSettingsPanel({
           distance: activityData.distance,
           duration: activityData.moving_time || activityData.elapsed_time,
         },
-        previewSize
+        previewSize,
       );
     } catch (err) {
       setError('Impossible ouvrir previsualisation');
@@ -298,9 +291,7 @@ export function ShareSettingsPanel({
               <div key={i} className="h-12 bg-background rounded"></div>
             ))}
           </div>
-          {showPreview && (
-            <div className="h-48 bg-background rounded"></div>
-          )}
+          {showPreview && <div className="h-48 bg-background rounded"></div>}
         </div>
       </Card>
     );
@@ -314,9 +305,7 @@ export function ShareSettingsPanel({
       <h3 className="text-lg font-semibold mb-4">Parametres de partage</h3>
 
       {error && (
-        <div className="mb-4 p-3 bg-danger/5 border border-danger/20 rounded-md text-danger text-sm">
-          {error}
-        </div>
+        <div className="mb-4 p-3 bg-danger/5 border border-danger/20 rounded-md text-danger text-sm">{error}</div>
       )}
 
       {/* Statistiques de partage */}
@@ -344,7 +333,7 @@ export function ShareSettingsPanel({
       {showPreview && (
         <div className="mb-6">
           <h4 className="font-medium mb-3">Previsualisation de l'image de partage</h4>
-          
+
           {/* Selecteur de taille */}
           <div className="mb-3 flex gap-2">
             {IMAGE_SIZES.map((s) => (
@@ -367,23 +356,16 @@ export function ShareSettingsPanel({
               </div>
             ) : previewImage ? (
               <div className="relative">
-                <img 
-                  src={previewImage} 
+                <img
+                  src={previewImage}
                   alt="Previsualisation du partage"
                   className="w-full max-w-md mx-auto rounded-md"
                 />
                 <div className="flex gap-2 mt-3 justify-center">
-                  <Button
-                    size="sm"
-                    onClick={() => handleDownloadImage(previewSize)}
-                  >
+                  <Button size="sm" onClick={() => handleDownloadImage(previewSize)}>
                     Telecharger
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleOpenPreviewModal}
-                  >
+                  <Button size="sm" variant="outline" onClick={handleOpenPreviewModal}>
                     Partager
                   </Button>
                 </div>
@@ -404,26 +386,13 @@ export function ShareSettingsPanel({
       <div className="mb-6 p-4 bg-surface rounded-lg border border-border">
         <h4 className="font-medium mb-3">Actions rapides</h4>
         <div className="flex gap-2 flex-wrap">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleShareLink}
-            id="copy-link-btn"
-          >
+          <Button size="sm" variant="outline" onClick={handleShareLink} id="copy-link-btn">
             Copy Link
           </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleShareSocial}
-          >
+          <Button size="sm" variant="outline" onClick={handleShareSocial}>
             Share
           </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => handleDownloadImage(previewSize)}
-          >
+          <Button size="sm" variant="outline" onClick={() => handleDownloadImage(previewSize)}>
             Download Image
           </Button>
         </div>
@@ -440,9 +409,7 @@ export function ShareSettingsPanel({
           />
           <div>
             <span className="font-medium">Partager avec mes amis</span>
-            <p className="text-sm text-muted">
-              Visible dans le fil actualite de vos amis
-            </p>
+            <p className="text-sm text-muted">Visible dans le fil actualite de vos amis</p>
           </div>
         </label>
       </div>
@@ -457,7 +424,7 @@ export function ShareSettingsPanel({
               type="radio"
               name="groupShare"
               checked={settings.share_to_groups === null}
-              onChange={() => setSettings(prev => ({ ...prev, share_to_groups: null }))}
+              onChange={() => setSettings((prev) => ({ ...prev, share_to_groups: null }))}
               className="w-4 h-4"
             />
             <span className="text-sm">Ne pas partager avec les groupes</span>
@@ -479,7 +446,7 @@ export function ShareSettingsPanel({
               type="radio"
               name="groupShare"
               checked={shareToSpecificGroups}
-              onChange={() => setSettings(prev => ({ ...prev, share_to_groups: [] }))}
+              onChange={() => setSettings((prev) => ({ ...prev, share_to_groups: [] }))}
               className="w-4 h-4"
             />
             <span className="text-sm">Selectionner des groupes specifiques</span>
@@ -512,12 +479,10 @@ export function ShareSettingsPanel({
       {/* Champs partages */}
       <div className="mb-6">
         <h4 className="font-medium mb-3">Donnees visibles par les autres</h4>
-        <p className="text-sm text-muted mb-3">
-          Selectionnez les informations que vos amis pourront voir
-        </p>
+        <p className="text-sm text-muted mb-3">Selectionnez les informations que vos amis pourront voir</p>
 
         <div className="grid grid-cols-2 gap-2">
-          {ALLOWED_FIELDS.map(field => (
+          {ALLOWED_FIELDS.map((field) => (
             <label
               key={field.id}
               className={`flex items-center gap-2 p-2 rounded-md border cursor-pointer transition-colors ${
@@ -541,11 +506,7 @@ export function ShareSettingsPanel({
 
       {/* Bouton sauvegarder */}
       <div className="flex justify-end">
-        <Button
-          onClick={handleSave}
-          disabled={!hasChanges || isSaving}
-          variant={hasChanges ? 'primary' : 'secondary'}
-        >
+        <Button onClick={handleSave} disabled={!hasChanges || isSaving} variant={hasChanges ? 'primary' : 'secondary'}>
           {isSaving ? 'Sauvegarde...' : hasChanges ? 'Sauvegarder' : 'A jour'}
         </Button>
       </div>

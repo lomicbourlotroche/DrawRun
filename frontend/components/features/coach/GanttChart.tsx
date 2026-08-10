@@ -22,27 +22,27 @@ const PHASE_COLORS: Record<string, { bg: string; text: string; border: string }>
 
 // Types de séance et leurs couleurs basées sur les tokens métiers
 const SESSION_TYPE_COLORS: Record<string, { bg: string; text: string }> = {
-  'Endurance': { bg: 'var(--hr-zone-1/80)', text: 'var(--hr-zone-1)' },
-  'Interval': { bg: 'var(--hr-zone-4/80)', text: 'var(--hr-zone-4)' },
-  'Tempo': { bg: 'var(--hr-zone-3/80)', text: 'var(--hr-zone-3)' },
-  'Recovery': { bg: 'var(--mutable/80)', text: 'var(--mutable)' },
+  Endurance: { bg: 'var(--hr-zone-1/80)', text: 'var(--hr-zone-1)' },
+  Interval: { bg: 'var(--hr-zone-4/80)', text: 'var(--hr-zone-4)' },
+  Tempo: { bg: 'var(--hr-zone-3/80)', text: 'var(--hr-zone-3)' },
+  Recovery: { bg: 'var(--mutable/80)', text: 'var(--mutable)' },
   'Long Run': { bg: 'var(--hr-zone-2/80)', text: 'var(--hr-zone-2)' },
-  'Hill': { bg: 'var(--peak/80)', text: 'var(--peak)' },
-  'Speed': { bg: 'var(--hr-zone-4/80)', text: 'var(--hr-zone-4)' },
-  'Fartlek': { bg: 'var(--hr-zone-3/80)', text: 'var(--hr-zone-3)' },
-  'Progression': { bg: 'var(--hr-zone-3/80)', text: 'var(--hr-zone-3)' },
-  'Race': { bg: 'var(--danger)', text: 'var(--danger-foreground)' },
-  'Test': { bg: 'var(--peak)', text: 'var(--peak-foreground)' },
-  'Warmup': { bg: 'var(--hr-zone-1/60)', text: 'var(--hr-zone-1)' },
-  'Cooldown': { bg: 'var(--mutable/60)', text: 'var(--mutable)' },
+  Hill: { bg: 'var(--peak/80)', text: 'var(--peak)' },
+  Speed: { bg: 'var(--hr-zone-4/80)', text: 'var(--hr-zone-4)' },
+  Fartlek: { bg: 'var(--hr-zone-3/80)', text: 'var(--hr-zone-3)' },
+  Progression: { bg: 'var(--hr-zone-3/80)', text: 'var(--hr-zone-3)' },
+  Race: { bg: 'var(--danger)', text: 'var(--danger-foreground)' },
+  Test: { bg: 'var(--peak)', text: 'var(--peak-foreground)' },
+  Warmup: { bg: 'var(--hr-zone-1/60)', text: 'var(--hr-zone-1)' },
+  Cooldown: { bg: 'var(--mutable/60)', text: 'var(--mutable)' },
 };
 
 // Mapper les types français aux types anglais pour la compatibilité
 const SESSION_TYPE_MAP: Record<string, string> = {
-  'Seuil': 'Tempo',
-  'Fractionne': 'Interval',
-  'Regeneration': 'Recovery',
-  'Course': 'Race',
+  Seuil: 'Tempo',
+  Fractionne: 'Interval',
+  Regeneration: 'Recovery',
+  Course: 'Race',
 };
 
 export function GanttChart({ plan, onSessionClick }: GanttChartProps) {
@@ -78,7 +78,7 @@ export function GanttChart({ plan, onSessionClick }: GanttChartProps) {
         <div className="px-6 py-4 border-b border-border">
           <div className="flex flex-wrap gap-3">
             {Object.entries(PHASE_COLORS).map(([phase, colors]) => {
-              const hasPhase = plan.weeks.some(w => w.phase === phase);
+              const hasPhase = plan.weeks.some((w) => w.phase === phase);
               if (!hasPhase) return null;
               return (
                 <div key={phase} className="flex items-center gap-2">
@@ -96,9 +96,7 @@ export function GanttChart({ plan, onSessionClick }: GanttChartProps) {
 
         {/* En-tête avec les semaines */}
         <div className="flex border-b border-border">
-          <div className="w-20 p-3 text-xs font-medium text-muted border-r border-border">
-            Jour
-          </div>
+          <div className="w-20 p-3 text-xs font-medium text-muted border-r border-border">Jour</div>
           {plan.weeks.map((week) => (
             <div
               key={week.week}
@@ -133,16 +131,16 @@ export function GanttChart({ plan, onSessionClick }: GanttChartProps) {
               {/* Cellules pour chaque semaine */}
               {sessionsByWeek.map(({ week, session }) => {
                 const phase = getPhaseStyle(week.phase);
-                
+
                 if (!session) {
                   return (
                     <div
                       key={`${week.week}-${day}`}
                       className={`flex-1 p-1 border-r border-border last:border-r-0`}
-                      style={{ 
+                      style={{
                         minWidth: cellWidth,
                         backgroundColor: phase.bg,
-                        borderLeft: `1px solid ${phase.border}`
+                        borderLeft: `1px solid ${phase.border}`,
                       }}
                     />
                   );
@@ -169,9 +167,7 @@ export function GanttChart({ plan, onSessionClick }: GanttChartProps) {
                     >
                       <div className="font-medium">{session.title}</div>
                       <div className="text-muted-foreground text-xs">{session.type}</div>
-                      {session.completed && (
-                        <div className="text-success text-xs">Completee</div>
-                      )}
+                      {session.completed && <div className="text-success text-xs">Completee</div>}
                     </div>
 
                     {/* Barre de séance */}
@@ -227,10 +223,12 @@ export function GanttChart({ plan, onSessionClick }: GanttChartProps) {
           <div className="text-xs text-muted mb-2">Types de séance</div>
           <div className="flex flex-wrap gap-3">
             {Object.entries(SESSION_TYPE_COLORS).map(([type, style]) => {
-              const hasType = plan.weeks.some(w => w.sessions.some(s => {
-                const mappedType = SESSION_TYPE_MAP[s.type] || s.type;
-                return mappedType === type;
-              }));
+              const hasType = plan.weeks.some((w) =>
+                w.sessions.some((s) => {
+                  const mappedType = SESSION_TYPE_MAP[s.type] || s.type;
+                  return mappedType === type;
+                }),
+              );
               if (!hasType) return null;
               return (
                 <div key={type} className="flex items-center gap-2">

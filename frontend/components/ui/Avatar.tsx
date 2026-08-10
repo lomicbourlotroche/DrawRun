@@ -1,4 +1,3 @@
-
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -34,11 +33,7 @@ export function Avatar({ src, name, size = 'md', className }: AvatarProps) {
         width={64}
         height={64}
         unoptimized
-        className={cn(
-          'rounded-full object-cover bg-surface',
-          sizes[size],
-          className
-        )}
+        className={cn('rounded-full object-cover bg-surface', sizes[size], className)}
       />
     );
   }
@@ -48,7 +43,7 @@ export function Avatar({ src, name, size = 'md', className }: AvatarProps) {
       className={cn(
         'rounded-full bg-primary/20 text-primary font-medium flex items-center justify-center',
         sizes[size],
-        className
+        className,
       )}
       role="img"
       aria-label={name || 'Avatar'}
@@ -82,12 +77,7 @@ export function StatCard({ label, value, unit, trend, icon, color, className }: 
             {unit && <span className="text-sm text-muted">{unit}</span>}
           </div>
           {trend && (
-            <p
-              className={cn(
-                'text-xs mt-1',
-                trend.direction === 'up' ? 'text-success' : 'text-danger'
-              )}
-            >
+            <p className={cn('text-xs mt-1', trend.direction === 'up' ? 'text-success' : 'text-danger')}>
               {trend.direction === 'up' ? '↑' : '↓'} {Math.abs(trend.value)}%
             </p>
           )}

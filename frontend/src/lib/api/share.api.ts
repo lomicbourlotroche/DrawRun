@@ -2,10 +2,10 @@
  * ============================================================
  * SHARE API
  * ============================================================
- * 
+ *
  * Generation et telechargement d'images de partage d'activites
  * Support multi-tailles: small (512x512), medium (1080x1080), large (2048x2048)
- * 
+ *
  * @module lib/api/share.api
  */
 
@@ -41,14 +41,14 @@ export interface ShareEventParams {
 async function getActivityShareImage(
   activityId: number,
   size: ShareImageSize = 'medium',
-  preview: boolean = false
+  preview: boolean = false,
 ): Promise<string> {
   const endpoint = preview
     ? `/api/activities/${activityId}/share-image/preview`
     : `/api/activities/${activityId}/share-image`;
-  
+
   const params = new URLSearchParams({ size, download: String(!preview) });
-  
+
   const blob = await client.fetchBlob(`${endpoint}?${params.toString()}`);
   return URL.createObjectURL(blob);
 }
@@ -59,10 +59,7 @@ async function getActivityShareImage(
  * @param size Image size
  * @returns Base64 data URL
  */
-async function getShareImageAsBase64(
-  activityId: number,
-  size: ShareImageSize = 'medium'
-): Promise<string> {
+async function getShareImageAsBase64(activityId: number, size: ShareImageSize = 'medium'): Promise<string> {
   const url = await getActivityShareImage(activityId, size, true);
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -98,7 +95,7 @@ async function getShareImageAsBase64(
 async function downloadShareImage(
   activityId: number,
   size: ShareImageSize = 'medium',
-  filename?: string
+  filename?: string,
 ): Promise<void> {
   const url = await getActivityShareImage(activityId, size, false);
   const a = document.createElement('a');
@@ -107,7 +104,7 @@ async function downloadShareImage(
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  
+
   // Clean up object URL
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
@@ -125,10 +122,10 @@ async function shareActivity(
   activityData: {
     distance?: number;
     duration?: number;
-  }
+  },
 ): Promise<boolean> {
   const shareUrl = `${window.location.origin}/app/activities/${activityId}`;
-  
+
   const formatDuration = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
@@ -137,11 +134,11 @@ async function shareActivity(
     }
     return `${mins}m`;
   };
-  
+
   const shareText = activityData.distance
     ? `Regarde mon activite sur DrawRun ! ${(activityData.distance / 1000).toFixed(2)}km en ${formatDuration(activityData.duration || 0)}`
     : `Regarde mon activite "${activityTitle}" sur DrawRun !`;
-  
+
   // Log the share event
   try {
     await logShareEvent(activityId, {
@@ -151,7 +148,7 @@ async function shareActivity(
   } catch {
     // Silently fail - analytics should not block sharing
   }
-  
+
   if (navigator.share) {
     try {
       await navigator.share({
@@ -165,7 +162,7 @@ async function shareActivity(
       return false;
     }
   }
-  
+
   return false;
 }
 
@@ -176,7 +173,7 @@ async function shareActivity(
 async function copyActivityLink(activityId: number): Promise<void> {
   const shareUrl = `${window.location.origin}/app/activities/${activityId}`;
   await navigator.clipboard.writeText(shareUrl);
-  
+
   // Log the share event
   try {
     await logShareEvent(activityId, {
@@ -222,11 +219,11 @@ async function openShareModal(
     distance?: number;
     duration?: number;
   },
-  size: ShareImageSize = 'medium'
+  size: ShareImageSize = 'medium',
 ): Promise<void> {
   const imageUrl = await getActivityShareImage(activityId, size, true);
   const shareUrl = `${window.location.origin}/app/activities/${activityId}`;
-  
+
   // Create modal element dynamically with safe DOM APIs (not innerHTML)
   const closeModal = () => {
     modal.remove();
@@ -245,52 +242,55 @@ async function openShareModal(
     z-index: 9999;
     padding: 20px;
   `;
-  
+
   const content = document.createElement('div');
   content.style.cssText = `
     background: white; padding: 20px; border-radius: 12px;
     max-width: 90%; max-height: 90vh; overflow-y: auto;
   `;
-  
+
   const title = document.createElement('h2');
   title.style.cssText = 'margin: 0 0 20px 0; font-size: 1.5rem;';
   title.textContent = 'Partager cette activite';
   content.appendChild(title);
-  
+
   const img = document.createElement('img');
   img.src = imageUrl;
   img.alt = 'Apercu du partage';
   img.style.cssText = 'width: 100%; max-width: 400px; margin: 0 auto 20px; display: block; border-radius: 8px;';
   content.appendChild(img);
-  
+
   const btnGroup = document.createElement('div');
   btnGroup.style.cssText = 'display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;';
-  
+
   const copyBtn = document.createElement('button');
   copyBtn.textContent = 'Copier le lien';
-  copyBtn.style.cssText = 'padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;';
+  copyBtn.style.cssText =
+    'padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;';
   copyBtn.onclick = () => {
     navigator.clipboard.writeText(shareUrl).then(() => alert('Lien copie !'));
   };
   btnGroup.appendChild(copyBtn);
-  
+
   const openBtn = document.createElement('button');
   openBtn.textContent = 'Ouvrir le lien';
-  openBtn.style.cssText = 'padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer;';
+  openBtn.style.cssText =
+    'padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer;';
   openBtn.onclick = () => window.open(shareUrl, '_blank');
   btnGroup.appendChild(openBtn);
-  
+
   content.appendChild(btnGroup);
-  
+
   const closeBtn = document.createElement('button');
   closeBtn.textContent = 'Fermer';
-  closeBtn.style.cssText = 'padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer;';
+  closeBtn.style.cssText =
+    'padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer;';
   closeBtn.onclick = closeModal;
   content.appendChild(closeBtn);
-  
+
   modal.appendChild(content);
   document.body.appendChild(modal);
-  
+
   // Close on backdrop click
   modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();

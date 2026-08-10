@@ -50,7 +50,9 @@ describe('RouteDetailPopup', () => {
   });
 
   it('shows medium badge for medium routes', () => {
-    render(<RouteDetailPopup route={{ ...mockRoute, difficulty: 'medium' }} onClose={vi.fn()} onViewDetails={vi.fn()} />);
+    render(
+      <RouteDetailPopup route={{ ...mockRoute, difficulty: 'medium' }} onClose={vi.fn()} onViewDetails={vi.fn()} />,
+    );
     expect(screen.getByText('Modéré')).toBeInTheDocument();
   });
 

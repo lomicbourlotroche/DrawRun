@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { Heart, Waves, Gauge } from '@/components/ui/icons';
@@ -14,7 +14,12 @@ export function SwimAnalysisCards({ analysis }: { analysis: SwimAnalysis }) {
       {/* HR Analysis */}
       {analysis.hrZones && (
         <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Heart className="w-4 h-4 text-danger/80" />Analyse Cardiaque</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Heart className="w-4 h-4 text-danger/80" />
+              Analyse Cardiaque
+            </CardTitle>
+          </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               <div className="text-center p-3 rounded-lg bg-background border border-border">
@@ -40,7 +45,12 @@ export function SwimAnalysisCards({ analysis }: { analysis: SwimAnalysis }) {
 
       {/* Swim Metrics */}
       <Card>
-        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Waves className="w-4 h-4 text-primary/80" />Métriques Natation</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Waves className="w-4 h-4 text-primary/80" />
+            Métriques Natation
+          </CardTitle>
+        </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {analysis.pacePer100m && (
@@ -51,7 +61,9 @@ export function SwimAnalysisCards({ analysis }: { analysis: SwimAnalysis }) {
             )}
             {analysis.swolf !== null && analysis.swolf !== undefined && (
               <div className="text-center p-3 rounded-lg bg-background border border-border">
-                <p className={`text-lg font-bold ${analysis.swolf <= 45 ? 'text-success/80' : analysis.swolf <= 55 ? 'text-peak/80' : 'text-danger/80'}`}>
+                <p
+                  className={`text-lg font-bold ${analysis.swolf <= 45 ? 'text-success/80' : analysis.swolf <= 55 ? 'text-peak/80' : 'text-danger/80'}`}
+                >
                   {analysis.swolf}
                 </p>
                 <p className="text-xs text-muted">SWOLF</p>
@@ -92,14 +104,31 @@ export function SwimAnalysisCards({ analysis }: { analysis: SwimAnalysis }) {
       {/* Zone Distribution */}
       {analysis.hrDistribution && (
         <Card>
-          <CardHeader><CardTitle className="text-base">Répartition zones cardiaques</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base">Répartition zones cardiaques</CardTitle>
+          </CardHeader>
           <CardContent>
             <div className="grid grid-cols-5 gap-2">
-              <div className="text-center p-2 rounded-lg bg-muted/10"><p className="text-sm font-bold text-muted">{analysis.hrDistribution.zone1Percent}%</p><p className="text-xs text-muted">Z1</p></div>
-              <div className="text-center p-2 rounded-lg bg-success/10"><p className="text-sm font-bold text-success/80">{analysis.hrDistribution.zone2Percent}%</p><p className="text-xs text-muted">Z2</p></div>
-              <div className="text-center p-2 rounded-lg bg-primary/10"><p className="text-sm font-bold text-primary/80">{analysis.hrDistribution.zone3Percent}%</p><p className="text-xs text-muted">Z3</p></div>
-              <div className="text-center p-2 rounded-lg bg-peak/10"><p className="text-sm font-bold text-peak/80">{analysis.hrDistribution.zone4Percent}%</p><p className="text-xs text-muted">Z4</p></div>
-              <div className="text-center p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-danger/80">{analysis.hrDistribution.zone5Percent}%</p><p className="text-xs text-muted">Z5</p></div>
+              <div className="text-center p-2 rounded-lg bg-muted/10">
+                <p className="text-sm font-bold text-muted">{analysis.hrDistribution.zone1Percent}%</p>
+                <p className="text-xs text-muted">Z1</p>
+              </div>
+              <div className="text-center p-2 rounded-lg bg-success/10">
+                <p className="text-sm font-bold text-success/80">{analysis.hrDistribution.zone2Percent}%</p>
+                <p className="text-xs text-muted">Z2</p>
+              </div>
+              <div className="text-center p-2 rounded-lg bg-primary/10">
+                <p className="text-sm font-bold text-primary/80">{analysis.hrDistribution.zone3Percent}%</p>
+                <p className="text-xs text-muted">Z3</p>
+              </div>
+              <div className="text-center p-2 rounded-lg bg-peak/10">
+                <p className="text-sm font-bold text-peak/80">{analysis.hrDistribution.zone4Percent}%</p>
+                <p className="text-xs text-muted">Z4</p>
+              </div>
+              <div className="text-center p-2 rounded-lg bg-danger/10">
+                <p className="text-sm font-bold text-danger/80">{analysis.hrDistribution.zone5Percent}%</p>
+                <p className="text-xs text-muted">Z5</p>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -108,7 +137,12 @@ export function SwimAnalysisCards({ analysis }: { analysis: SwimAnalysis }) {
       {/* TSS Summary */}
       {analysis.tss && (
         <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Gauge className="w-4 h-4 text-primary" />Charge d&apos;entraînement</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Gauge className="w-4 h-4 text-primary" />
+              Charge d&apos;entraînement
+            </CardTitle>
+          </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-3">
               {analysis.tss && (

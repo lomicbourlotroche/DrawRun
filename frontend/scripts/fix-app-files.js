@@ -45,15 +45,15 @@ const replacements = [
 // Fonction pour appliquer les remplacements à un fichier
 function fixFile(filePath) {
   const fullPath = path.join(__dirname, filePath);
-  
+
   if (!fs.existsSync(fullPath)) {
     console.log(`⚠️  Fichier introuvable: ${fullPath}`);
     return false;
   }
-  
+
   let content = fs.readFileSync(fullPath, 'utf8');
   let modified = false;
-  
+
   for (const [regex, replacement] of replacements) {
     const newContent = content.replace(regex, replacement);
     if (newContent !== content) {
@@ -61,27 +61,25 @@ function fixFile(filePath) {
       modified = true;
     }
   }
-  
+
   // Nettoyer les className vides
-  const cleanedContent = content
-    .replace(/className=""/g, '')
-    .replace(/className="([^"]*)"/g, (match, p1) => {
-      const cleaned = p1.replace(/\s+/g, ' ').trim();
-      return cleaned ? `className="${cleaned}"` : '';
-    });
-  
+  const cleanedContent = content.replace(/className=""/g, '').replace(/className="([^"]*)"/g, (match, p1) => {
+    const cleaned = p1.replace(/\s+/g, ' ').trim();
+    return cleaned ? `className="${cleaned}"` : '';
+  });
+
   if (cleanedContent !== content) {
     content = cleanedContent;
     modified = true;
   }
-  
+
   // Écrire le fichier seulement s'il a été modifié
   if (modified) {
     fs.writeFileSync(fullPath, content, 'utf8');
     console.log(`✅ Fichier corrigé: ${filePath}`);
     return true;
   }
-  
+
   console.log(`✅ Fichier déjà propre: ${filePath}`);
   return false;
 }

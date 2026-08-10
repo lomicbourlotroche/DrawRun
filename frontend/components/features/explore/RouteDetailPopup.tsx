@@ -51,20 +51,24 @@ const ACTIVITY_ICONS: Record<string, string> = {
   Hike: '🥾',
 };
 
-export default function RouteDetailPopup({
-  route,
-  onClose,
-  onViewDetails,
-  onUseRoute,
-}: RouteDetailPopupProps) {
+export default function RouteDetailPopup({ route, onClose, onViewDetails, onUseRoute }: RouteDetailPopupProps) {
   const diff = DIFFICULTY_LABELS[route.difficulty || 'medium'];
 
   return (
-    <div className="absolute top-20 left-4 right-4 sm:left-4 sm:w-72 sm:right-auto z-[600] bg-surface/95 backdrop-blur-md rounded-xl shadow-xl border border-border overflow-hidden" role="dialog" aria-labelledby="route-detail-title" aria-modal="false">
+    <div
+      className="absolute top-20 left-4 right-4 sm:left-4 sm:w-72 sm:right-auto z-[600] bg-surface/95 backdrop-blur-md rounded-xl shadow-xl border border-border overflow-hidden"
+      role="dialog"
+      aria-labelledby="route-detail-title"
+      aria-modal="false"
+    >
       <div className="flex items-center justify-between p-3 border-b border-border">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-lg" aria-hidden="true">{ACTIVITY_ICONS[route.activity_type] || '📍'}</span>
-          <h3 id="route-detail-title" className="font-semibold text-sm truncate">{route.name}</h3>
+          <span className="text-lg" aria-hidden="true">
+            {ACTIVITY_ICONS[route.activity_type] || '📍'}
+          </span>
+          <h3 id="route-detail-title" className="font-semibold text-sm truncate">
+            {route.name}
+          </h3>
         </div>
         <button
           onClick={onClose}
@@ -94,29 +98,29 @@ export default function RouteDetailPopup({
             <TrendingUp className="w-3.5 h-3.5" />
             <span className="font-semibold text-foreground">
               {route.avg_rating ? (
-                <>{route.avg_rating.toFixed(1)} <Star className="w-3 h-3 inline text-warning" /></>
-              ) : '—'}
+                <>
+                  {route.avg_rating.toFixed(1)} <Star className="w-3 h-3 inline text-warning" />
+                </>
+              ) : (
+                '—'
+              )}
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <Badge className={diff.color}>{diff.label}</Badge>
-          <Badge variant="secondary">{ACTIVITY_ICONS[route.activity_type]?.trim() || ''} {route.activity_type}</Badge>
+          <Badge variant="secondary">
+            {ACTIVITY_ICONS[route.activity_type]?.trim() || ''} {route.activity_type}
+          </Badge>
           {route.usage_count > 0 && (
-            <span className="text-xs text-muted-foreground ml-auto">
-              {route.usage_count}× utilisé
-            </span>
+            <span className="text-xs text-muted-foreground ml-auto">{route.usage_count}× utilisé</span>
           )}
         </div>
 
-        {route.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2">{route.description}</p>
-        )}
+        {route.description && <p className="text-xs text-muted-foreground line-clamp-2">{route.description}</p>}
 
-        {route.creator_name && (
-          <p className="text-xs text-muted-foreground">par {route.creator_name}</p>
-        )}
+        {route.creator_name && <p className="text-xs text-muted-foreground">par {route.creator_name}</p>}
 
         <div className="flex gap-2 pt-1">
           <Button onClick={onViewDetails} variant="outline" size="sm" className="flex-1 text-xs">

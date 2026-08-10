@@ -2,13 +2,13 @@
  * ============================================================
  * AUTH API - Endpoints d'authentification
  * ============================================================
- * 
+ *
  * Ce fichier contient tous les endpoints liés à l'authentification :
  * - Login / Register / Logout
  * - 2FA (Two-Factor Authentication)
  * - Password reset / forgot
  * - Account management
- * 
+ *
  * @module lib/api/auth.api
  */
 
@@ -201,5 +201,4 @@ export const authApi = {
   disconnectSuunto(): Promise<{ success: boolean; message?: string }> {
     return client.request('/api/auth/disconnect/suunto', { method: 'POST' });
   },
-
 };

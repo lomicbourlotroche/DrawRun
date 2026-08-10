@@ -1,11 +1,7 @@
 'use client';
 
 import React from 'react';
-import {
-  TrendingUp,
-  Download,
-  Zap,
-} from '@/components/ui/icons';
+import { TrendingUp, Download, Zap } from '@/components/ui/icons';
 import { Button, Card } from '@/components/ui';
 import { GlassCard } from '@/components/ui';
 import { TaperingChart } from '@/components/features/coach/TaperingChart';
@@ -24,19 +20,27 @@ export default function StrategyResults({ strategy, formatTime, downloadCsv }: S
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <GlassCard className="p-4 flex flex-col items-center text-center">
           <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Distance Totale</span>
-          <span className="text-2xl font-bold mt-1">{((strategy.summary as Record<string, unknown>).totalDistance as number / 1000).toFixed(2)} km</span>
+          <span className="text-2xl font-bold mt-1">
+            {(((strategy.summary as Record<string, unknown>).totalDistance as number) / 1000).toFixed(2)} km
+          </span>
         </GlassCard>
         <GlassCard className="p-4 flex flex-col items-center text-center border-l-primary/20">
           <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Temps Estimé</span>
-          <span className="text-2xl font-bold mt-1 text-primary">{formatTime((strategy.summary as Record<string, unknown>).totalTimeSec as number)}</span>
+          <span className="text-2xl font-bold mt-1 text-primary">
+            {formatTime((strategy.summary as Record<string, unknown>).totalTimeSec as number)}
+          </span>
         </GlassCard>
         <GlassCard className="p-4 flex flex-col items-center text-center">
           <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Dénivelé +</span>
-          <span className="text-2xl font-bold mt-1">+{(strategy.summary as Record<string, unknown>).totalElevationGain as number}m</span>
+          <span className="text-2xl font-bold mt-1">
+            +{(strategy.summary as Record<string, unknown>).totalElevationGain as number}m
+          </span>
         </GlassCard>
         <GlassCard className="p-4 flex flex-col items-center text-center">
           <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Allure Moyenne</span>
-          <span className="text-2xl font-bold mt-1">{(strategy.summary as Record<string, unknown>).averagePace as string} /km</span>
+          <span className="text-2xl font-bold mt-1">
+            {(strategy.summary as Record<string, unknown>).averagePace as string} /km
+          </span>
         </GlassCard>
       </div>
 
@@ -48,14 +52,14 @@ export default function StrategyResults({ strategy, formatTime, downloadCsv }: S
         </h3>
         <StrategyChart
           segments={(strategy.segments as Array<Record<string, unknown>>) || []}
-          segmentsWithGrade={((strategy.strategy as Record<string, unknown>).segments as Array<{ grade: number }> | undefined) || []}
+          segmentsWithGrade={
+            ((strategy.strategy as Record<string, unknown>).segments as Array<{ grade: number }> | undefined) || []
+          }
         />
       </Card>
 
       {/* Tapering Analysis */}
-      {Boolean(strategy.taper) && (
-        <TaperingChart data={strategy.taper as any} />
-      )}
+      {Boolean(strategy.taper) && <TaperingChart data={strategy.taper as any} />}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Split Table */}
@@ -72,18 +76,30 @@ export default function StrategyResults({ strategy, formatTime, downloadCsv }: S
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {((strategy.strategy as Record<string, unknown>).segments as Array<{ km: number; targetPace: string; cumulativeTime: number; grade: number }>).map((s: { km: number; targetPace: string; cumulativeTime: number; grade: number }) => (
+                {(
+                  (strategy.strategy as Record<string, unknown>).segments as Array<{
+                    km: number;
+                    targetPace: string;
+                    cumulativeTime: number;
+                    grade: number;
+                  }>
+                ).map((s: { km: number; targetPace: string; cumulativeTime: number; grade: number }) => (
                   <tr key={s.km} className="hover:bg-muted/30 transition-colors">
                     <td className="py-3 font-bold">{s.km}</td>
                     <td className="py-3 font-mono text-primary font-bold">{s.targetPace}</td>
                     <td className="py-3 text-muted-foreground font-mono">{formatTime(s.cumulativeTime)}</td>
                     <td className="py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        s.grade > 2 ? 'bg-danger/10 text-danger' :
-                        s.grade < -2 ? 'bg-success/10 text-success' :
-                        'bg-muted/20 text-muted-foreground'
-                      }`}>
-                        {s.grade > 0 ? '+' : ''}{s.grade}%
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          s.grade > 2
+                            ? 'bg-danger/10 text-danger'
+                            : s.grade < -2
+                              ? 'bg-success/10 text-success'
+                              : 'bg-muted/20 text-muted-foreground'
+                        }`}
+                      >
+                        {s.grade > 0 ? '+' : ''}
+                        {s.grade}%
                       </span>
                     </td>
                   </tr>
@@ -104,25 +120,51 @@ export default function StrategyResults({ strategy, formatTime, downloadCsv }: S
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-white/10 rounded-2xl">
                   <p className="text-white/70 text-xs font-medium uppercase">Glucides</p>
-                  <p className="text-2xl font-bold">{((strategy.nutrition as Record<string, unknown>).carbs as Record<string, unknown>).totalG as number}g</p>
-                  <p className="text-xs mt-1 text-white/80">{((strategy.nutrition as Record<string, unknown>).carbs as Record<string, unknown>).perHourG as number}g / heure</p>
+                  <p className="text-2xl font-bold">
+                    {
+                      ((strategy.nutrition as Record<string, unknown>).carbs as Record<string, unknown>)
+                        .totalG as number
+                    }
+                    g
+                  </p>
+                  <p className="text-xs mt-1 text-white/80">
+                    {
+                      ((strategy.nutrition as Record<string, unknown>).carbs as Record<string, unknown>)
+                        .perHourG as number
+                    }
+                    g / heure
+                  </p>
                 </div>
                 <div className="p-4 bg-white/10 rounded-2xl">
                   <p className="text-white/70 text-xs font-medium uppercase">Hydratation</p>
-                  <p className="text-2xl font-bold">{((strategy.nutrition as Record<string, unknown>).hydration as Record<string, unknown>).totalMl as number}ml</p>
-                  <p className="text-xs mt-1 text-white/80">{((strategy.nutrition as Record<string, unknown>).hydration as Record<string, unknown>).perHourMl as number}ml / heure</p>
+                  <p className="text-2xl font-bold">
+                    {
+                      ((strategy.nutrition as Record<string, unknown>).hydration as Record<string, unknown>)
+                        .totalMl as number
+                    }
+                    ml
+                  </p>
+                  <p className="text-xs mt-1 text-white/80">
+                    {
+                      ((strategy.nutrition as Record<string, unknown>).hydration as Record<string, unknown>)
+                        .perHourMl as number
+                    }
+                    ml / heure
+                  </p>
                 </div>
               </div>
 
               <div className="space-y-3">
                 <h4 className="text-sm font-bold border-b border-white/20 pb-2">Recommandations clés</h4>
                 <ul className="space-y-2">
-                  {((strategy.nutrition as Record<string, unknown>).recommendations as string[]).map((rec: string, i: number) => (
-                    <li key={i} className="text-xs flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-secondary mt-1 shrink-0" />
-                      {rec}
-                    </li>
-                  ))}
+                  {((strategy.nutrition as Record<string, unknown>).recommendations as string[]).map(
+                    (rec: string, i: number) => (
+                      <li key={i} className="text-xs flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-secondary mt-1 shrink-0" />
+                        {rec}
+                      </li>
+                    ),
+                  )}
                 </ul>
               </div>
             </div>

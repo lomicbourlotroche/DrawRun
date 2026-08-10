@@ -10,10 +10,7 @@ import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
 import type { Direction } from '@/lib/api';
 
-const RouteMap = dynamic(
-  () => import('@/components/features/explore/RouteMap'),
-  { ssr: false }
-);
+const RouteMap = dynamic(() => import('@/components/features/explore/RouteMap'), { ssr: false });
 
 interface RouteDetail {
   id: number;
@@ -44,11 +41,25 @@ const difficultyConfig: Record<string, { label: string; color: string; bg: strin
 
 function getDirectionIcon(type: string, modifier: string): string {
   const icons: Record<string, string> = {
-    'turn-left': '←', 'turn-right': '→', 'turn-slight-left': '↖', 'turn-slight-right': '↗',
-    'turn-sharp-left': '↰', 'turn-sharp-right': '↱', 'straight': '↑', 'uturn': '↩',
-    'fork-left': '↙', 'fork-right': '↘', 'ramp-left': '↙', 'ramp-right': '↘',
-    'roundabout': '⟳', 'roundabout-turn': '⟳', 'arrive': '📍', 'depart': '🏁',
-    'merge': '⇉', 'continue': '↑', 'end': '🏁',
+    'turn-left': '←',
+    'turn-right': '→',
+    'turn-slight-left': '↖',
+    'turn-slight-right': '↗',
+    'turn-sharp-left': '↰',
+    'turn-sharp-right': '↱',
+    straight: '↑',
+    uturn: '↩',
+    'fork-left': '↙',
+    'fork-right': '↘',
+    'ramp-left': '↙',
+    'ramp-right': '↘',
+    roundabout: '⟳',
+    'roundabout-turn': '⟳',
+    arrive: '📍',
+    depart: '🏁',
+    merge: '⇉',
+    continue: '↑',
+    end: '🏁',
   };
   const key = modifier ? `${type}-${modifier}` : type;
   return icons[key] || icons[type] || '↑';
@@ -174,7 +185,6 @@ export default function RouteDetailPage() {
 
       {/* Content */}
       <div className="max-w-4xl mx-auto -mt-8 relative z-10 px-4 sm:px-6 pb-12">
-        
         {/* Hero card */}
         <Card className="rounded-3xl shadow-2xl shadow-black/5 border-0 overflow-hidden mb-6">
           <CardContent className="p-6 sm:p-8">
@@ -185,7 +195,9 @@ export default function RouteDetailPage() {
                     {route.name}
                   </h1>
                   {difficulty && (
-                    <span className={`px-3 py-1 text-xs font-bold rounded-full border ${difficulty.bg} ${difficulty.color}`}>
+                    <span
+                      className={`px-3 py-1 text-xs font-bold rounded-full border ${difficulty.bg} ${difficulty.color}`}
+                    >
                       {difficulty.label}
                     </span>
                   )}
@@ -194,7 +206,9 @@ export default function RouteDetailPage() {
                   <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{route.description}</p>
                 )}
                 <div className="flex flex-wrap items-center gap-3">
-                  <Badge variant="secondary" className="text-xs font-semibold">{route.activity_type}</Badge>
+                  <Badge variant="secondary" className="text-xs font-semibold">
+                    {route.activity_type}
+                  </Badge>
                   <span className="text-xs text-muted-foreground">
                     Par <strong className="text-foreground">{route.creator_name || 'Anonyme'}</strong>
                   </span>
@@ -212,10 +226,15 @@ export default function RouteDetailPage() {
                   <Heart className={`w-4 h-4 mr-1.5 ${isFavorited ? 'fill-current' : ''}`} />
                   {isFavorited ? 'Favori' : 'Favori'}
                 </Button>
-                <Button variant="outline" size="sm" className="rounded-xl" onClick={() => {
-                  navigator.clipboard.writeText(`${window.location.origin}/app/explore/routes/${routeId}`);
-                  toast.success('Lien copié');
-                }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/app/explore/routes/${routeId}`);
+                    toast.success('Lien copié');
+                  }}
+                >
                   <Share2 className="w-4 h-4 mr-1.5" />
                   Partager
                 </Button>
@@ -229,7 +248,12 @@ export default function RouteDetailPage() {
           {[
             { icon: Navigation, label: 'Distance', value: `${(route.distance / 1000).toFixed(2)}`, unit: 'km' },
             { icon: TrendingUp, label: 'Dénivelé +', value: `${route.elevation_gain || 0}`, unit: 'm' },
-            { icon: Clock, label: 'Durée estimée', value: route.estimated_duration ? formatDuration(route.estimated_duration) : 'N/A', unit: '' },
+            {
+              icon: Clock,
+              label: 'Durée estimée',
+              value: route.estimated_duration ? formatDuration(route.estimated_duration) : 'N/A',
+              unit: '',
+            },
             { icon: MapPin, label: 'Utilisations', value: `${route.usage_count}`, unit: 'fois' },
           ].map((stat, i) => {
             const Icon = stat.icon;
@@ -238,7 +262,9 @@ export default function RouteDetailPage() {
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Icon className="w-4 h-4 text-primary" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{stat.label}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      {stat.label}
+                    </span>
                   </div>
                   <div className="text-xl sm:text-2xl font-black text-foreground">
                     {stat.value}
@@ -267,7 +293,10 @@ export default function RouteDetailPage() {
         {route.tags && route.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-6">
             {route.tags.map((tag) => (
-              <span key={tag} className="px-3 py-1.5 text-xs font-semibold bg-muted/50 border border-border rounded-full text-muted-foreground">
+              <span
+                key={tag}
+                className="px-3 py-1.5 text-xs font-semibold bg-muted/50 border border-border rounded-full text-muted-foreground"
+              >
                 #{tag}
               </span>
             ))}
@@ -284,18 +313,21 @@ export default function RouteDetailPage() {
             </div>
             <div className="divide-y divide-border/50">
               {directions.map((dir, idx) => (
-                <div key={dir.index || idx} className="flex items-start gap-4 px-5 py-3.5 hover:bg-muted/20 transition-colors">
-                  <div className={`
+                <div
+                  key={dir.index || idx}
+                  className="flex items-start gap-4 px-5 py-3.5 hover:bg-muted/20 transition-colors"
+                >
+                  <div
+                    className={`
                     flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-base
                     ${idx === 0 ? 'bg-primary/10 text-primary' : idx === directions.length - 1 ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}
-                  `}>
+                  `}
+                  >
                     {getDirectionIcon(dir.type, dir.modifier)}
                   </div>
                   <div className="flex-1 min-w-0 pt-1">
                     <p className="text-sm font-semibold text-foreground leading-tight">{dir.instruction}</p>
-                    {dir.street && (
-                      <p className="text-xs text-muted-foreground mt-0.5">{dir.street}</p>
-                    )}
+                    {dir.street && <p className="text-xs text-muted-foreground mt-0.5">{dir.street}</p>}
                   </div>
                   <span className="text-xs font-bold text-primary whitespace-nowrap flex-shrink-0 pt-1.5">
                     {dir.distance_formatted}
@@ -308,7 +340,11 @@ export default function RouteDetailPage() {
 
         {/* Action */}
         <div className="flex gap-3">
-          <Button size="lg" className="flex-1 rounded-2xl text-base font-bold gap-2 shadow-xl shadow-primary/25" onClick={handleUseRoute}>
+          <Button
+            size="lg"
+            className="flex-1 rounded-2xl text-base font-bold gap-2 shadow-xl shadow-primary/25"
+            onClick={handleUseRoute}
+          >
             <Navigation className="w-5 h-5" />
             Utiliser ce parcours
           </Button>

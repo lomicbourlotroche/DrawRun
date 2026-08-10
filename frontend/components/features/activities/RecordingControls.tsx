@@ -1,9 +1,21 @@
 'use client';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Play, Pause, Square, MapPin, Target, X, Save,
-  Heart, BluetoothConnected, Flag, Lock, Camera, Zap,
-  Eye, EyeOff,
+  Play,
+  Pause,
+  Square,
+  MapPin,
+  Target,
+  X,
+  Save,
+  Heart,
+  BluetoothConnected,
+  Flag,
+  Lock,
+  Camera,
+  Zap,
+  Eye,
+  EyeOff,
 } from '@/components/ui/icons';
 
 type RecordingState = 'idle' | 'recording' | 'paused' | 'finished' | 'review';
@@ -34,11 +46,28 @@ interface RecordingControlsProps {
 }
 
 export function RecordingControls({
-  state, permissionStatus, isScanning, hrConnected, intervalConfig,
-  gpsHighAccuracy, autoPauseEnabled,
-  onStart, onPause, onResume, onStop, onMarkLap, onTakePhoto,
-  onConnectHR, onDisconnectHR, onLockScreen, onStartInterval,
-  onCancel, onReview, onShowRoutePicker, onShowSegmentPicker, onToggleAutoPause,
+  state,
+  permissionStatus,
+  isScanning,
+  hrConnected,
+  intervalConfig,
+  gpsHighAccuracy,
+  autoPauseEnabled,
+  onStart,
+  onPause,
+  onResume,
+  onStop,
+  onMarkLap,
+  onTakePhoto,
+  onConnectHR,
+  onDisconnectHR,
+  onLockScreen,
+  onStartInterval,
+  onCancel,
+  onReview,
+  onShowRoutePicker,
+  onShowSegmentPicker,
+  onToggleAutoPause,
 }: RecordingControlsProps) {
   return (
     <div className="px-4 pb-6 pt-3 bg-background border-t border-surface">
@@ -189,17 +218,13 @@ export function RecordingControls({
           <button
             onClick={onToggleAutoPause}
             className={`text-xs flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-colors ${
-              autoPauseEnabled
-                ? 'text-foreground bg-surface'
-                : 'text-muted'
+              autoPauseEnabled ? 'text-foreground bg-surface' : 'text-muted'
             }`}
           >
             {autoPauseEnabled ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
             Auto-pause
           </button>
-          <span className="text-[10px] text-muted">
-            {gpsHighAccuracy ? 'GPS haute précision' : 'GPS économie'}
-          </span>
+          <span className="text-[10px] text-muted">{gpsHighAccuracy ? 'GPS haute précision' : 'GPS économie'}</span>
         </div>
       )}
     </div>

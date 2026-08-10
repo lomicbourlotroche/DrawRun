@@ -26,7 +26,9 @@ export default function HeatmapOverlay({ map, heatmapData, showHeatmap }: Heatma
     }
 
     if (showHeatmap && heatmapData.length > 0) {
-      const wL = window.L as unknown as { heatLayer: (_points: [number, number, number][], _options?: Record<string, unknown>) => L.Layer };
+      const wL = window.L as unknown as {
+        heatLayer: (_points: [number, number, number][], _options?: Record<string, unknown>) => L.Layer;
+      };
       if (wL.heatLayer) {
         const points = heatmapData.map((d) => [d.lat, d.lng, d.intensity] as LatLngWithIntensity);
         const heat = wL.heatLayer(points, {

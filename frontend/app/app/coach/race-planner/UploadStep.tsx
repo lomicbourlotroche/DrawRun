@@ -23,14 +23,11 @@ export default function UploadStep({ onFileSelected }: UploadStepProps) {
   };
 
   return (
-    <Card className="max-w-2xl mx-auto p-12 border-dashed border-2 hover:border-primary/50 transition-colors cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileUpload}
-        accept=".gpx"
-        className="hidden"
-      />
+    <Card
+      className="max-w-2xl mx-auto p-12 border-dashed border-2 hover:border-primary/50 transition-colors cursor-pointer group"
+      onClick={() => fileInputRef.current?.click()}
+    >
+      <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".gpx" className="hidden" />
       <div className="flex flex-col items-center text-center space-y-4">
         <div className="p-6 bg-primary/10 rounded-full group-hover:scale-110 transition-transform">
           <Upload className="w-12 h-12 text-primary" />

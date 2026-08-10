@@ -32,14 +32,10 @@ export function createGPSFilter(alpha = 0.4, speedAlpha = 0.3) {
 
     const filteredLat = prevLat! + alpha * (latitude - prevLat!);
     const filteredLng = prevLng! + alpha * (longitude - prevLng!);
-    const filteredAlt = altitude !== null && prevAlt !== null
-      ? prevAlt + alpha * (altitude - prevAlt)
-      : altitude;
+    const filteredAlt = altitude !== null && prevAlt !== null ? prevAlt + alpha * (altitude - prevAlt) : altitude;
 
     const rawSpeed = speed ?? 0;
-    smoothedSpeed = speedAlpha > 0
-      ? smoothedSpeed + speedAlpha * (rawSpeed - smoothedSpeed)
-      : rawSpeed;
+    smoothedSpeed = speedAlpha > 0 ? smoothedSpeed + speedAlpha * (rawSpeed - smoothedSpeed) : rawSpeed;
 
     prevLat = filteredLat;
     prevLng = filteredLng;
@@ -59,19 +55,16 @@ export function createGPSFilter(alpha = 0.4, speedAlpha = 0.3) {
   };
 }
 
-export function isSpuriousJump(
-  p1: RawGPSPoint, p2: RawGPSPoint, maxSpeed = 45
-): boolean {
+export function isSpuriousJump(p1: RawGPSPoint, p2: RawGPSPoint, maxSpeed = 45): boolean {
   if (!p1 || !p2) return false;
   const R = 6371e3;
-  const dLat = (p2.latitude - p1.latitude) * Math.PI / 180;
-  const dLng = (p2.longitude - p1.longitude) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(p1.latitude * Math.PI / 180) *
-    Math.cos(p2.latitude * Math.PI / 180) *
-    Math.sin(dLng / 2) ** 2;
+  const dLat = ((p2.latitude - p1.latitude) * Math.PI) / 180;
+  const dLng = ((p2.longitude - p1.longitude) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((p1.latitude * Math.PI) / 180) * Math.cos((p2.latitude * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
   const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const dt = (p2.timestamp - p1.timestamp) / 1000;
   if (dt <= 0) return true;
-  return (dist / dt) > maxSpeed;
+  return dist / dt > maxSpeed;
 }

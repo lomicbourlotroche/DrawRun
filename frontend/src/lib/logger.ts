@@ -46,11 +46,7 @@ class Logger {
         error: 'color: var(--danger); font-weight: bold',
       };
 
-      console.log(
-        `%c[${entry.level.toUpperCase()}] ${entry.message}`,
-        styles[level],
-        context ? context : ''
-      );
+      console.log(`%c[${entry.level.toUpperCase()}] ${entry.message}`, styles[level], context ? context : '');
     }
 
     // TODO: In production, send to logging service (Sentry, LogRocket, etc.)
@@ -77,7 +73,3 @@ class Logger {
 }
 
 export const logger = Logger.getInstance();
-
-
-
-

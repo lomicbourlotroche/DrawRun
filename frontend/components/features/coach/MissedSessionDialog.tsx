@@ -23,12 +23,7 @@ const reasons = [
   { value: 'other', label: 'Autre', icon: HelpCircle, color: 'text-muted' },
 ];
 
-export default function MissedSessionDialog({
-  planId,
-  sessionId,
-  sessionName,
-  onComplete,
-}: MissedSessionDialogProps) {
+export default function MissedSessionDialog({ planId, sessionId, sessionName, onComplete }: MissedSessionDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [reason, setReason] = useState('');
   const [notes, setNotes] = useState('');
@@ -73,7 +68,12 @@ export default function MissedSessionDialog({
 
       <Modal
         isOpen={isOpen}
-        onClose={() => { setIsOpen(false); setRecommendation(null); setReason(''); setNotes(''); }}
+        onClose={() => {
+          setIsOpen(false);
+          setRecommendation(null);
+          setReason('');
+          setNotes('');
+        }}
         title="Signaler une séance manquée"
         size="md"
       >
@@ -99,9 +99,7 @@ export default function MissedSessionDialog({
                         type="button"
                         onClick={() => setReason(r.value)}
                         className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all ${
-                          reason === r.value
-                            ? 'border-primary bg-primary/10'
-                            : 'border-border hover:border-primary/50'
+                          reason === r.value ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
                         }`}
                       >
                         <Icon className={`w-4 h-4 ${r.color}`} />
@@ -125,7 +123,8 @@ export default function MissedSessionDialog({
               {reason === 'injury' && (
                 <div className="p-3 rounded-lg bg-danger/10 border border-danger/20">
                   <p className="text-sm text-danger/80">
-                    Prenez le temps de guérir complètement. Le plan sera automatiquement ajusté et une phase de reprise progressive vous sera proposée.
+                    Prenez le temps de guérir complètement. Le plan sera automatiquement ajusté et une phase de reprise
+                    progressive vous sera proposée.
                   </p>
                 </div>
               )}

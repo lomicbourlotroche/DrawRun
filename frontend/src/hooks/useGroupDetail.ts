@@ -3,7 +3,7 @@
  * USE GROUP DETAIL HOOK
  * ============================================================
  * Hook React pour gérer les détails d'un groupe.
- * 
+ *
  * @module hooks/useGroupDetail
  */
 
@@ -50,7 +50,9 @@ interface UseGroupDetailReturn {
   handlePromote: (_userId: number, _role: string) => Promise<void>;
   handleLeave: () => Promise<void>;
   copyInvite: () => void;
-  handleCreateChallenge: (_form: Omit<CreateChallengeParams, 'groupId'> & { is_public?: boolean; end_date?: string }) => Promise<void>;
+  handleCreateChallenge: (
+    _form: Omit<CreateChallengeParams, 'groupId'> & { is_public?: boolean; end_date?: string },
+  ) => Promise<void>;
   handleJoinChallenge: (_challengeId: number) => Promise<void>;
   setEditForm: (_form: { name: string; description: string; isPrivate: boolean }) => void;
   setShowWizard: (_show: boolean) => void;
@@ -126,26 +128,32 @@ export function useGroupDetail(): UseGroupDetailReturn {
     }
   }, [groupId, router]);
 
-  const handleKick = useCallback(async (userId: number) => {
-    if (!confirm('Exclure ce membre ?')) return;
-    try {
-      await api.kickMember(groupId, userId);
-      toast.success('Membre exclu');
-      loadGroup();
-    } catch {
-      toast.error(SOCIAL_ERRORS.LEAVE_GROUP);
-    }
-  }, [groupId, loadGroup]);
+  const handleKick = useCallback(
+    async (userId: number) => {
+      if (!confirm('Exclure ce membre ?')) return;
+      try {
+        await api.kickMember(groupId, userId);
+        toast.success('Membre exclu');
+        loadGroup();
+      } catch {
+        toast.error(SOCIAL_ERRORS.LEAVE_GROUP);
+      }
+    },
+    [groupId, loadGroup],
+  );
 
-  const handlePromote = useCallback(async (userId: number, role: string) => {
-    try {
-      await api.promoteMember(groupId, userId, role);
-      toast.success('Rôle modifié');
-      loadGroup();
-    } catch {
-      toast.error(SOCIAL_ERRORS.FETCH_GROUPS);
-    }
-  }, [groupId, loadGroup]);
+  const handlePromote = useCallback(
+    async (userId: number, role: string) => {
+      try {
+        await api.promoteMember(groupId, userId, role);
+        toast.success('Rôle modifié');
+        loadGroup();
+      } catch {
+        toast.error(SOCIAL_ERRORS.FETCH_GROUPS);
+      }
+    },
+    [groupId, loadGroup],
+  );
 
   const handleLeave = useCallback(async () => {
     if (!confirm('Quitter ce groupe ?')) return;
@@ -188,18 +196,21 @@ export function useGroupDetail(): UseGroupDetailReturn {
       setShowWizard(false);
       loadGroup();
     },
-    [groupId, loadGroup]
+    [groupId, loadGroup],
   );
 
-  const handleJoinChallenge = useCallback(async (challengeId: number) => {
-    try {
-      await api.joinChallenge(challengeId);
-      toast.success('Défi rejoint !');
-      loadGroup();
-    } catch {
-      toast.error(SOCIAL_ERRORS.JOIN_CHALLENGE);
-    }
-  }, [loadGroup]);
+  const handleJoinChallenge = useCallback(
+    async (challengeId: number) => {
+      try {
+        await api.joinChallenge(challengeId);
+        toast.success('Défi rejoint !');
+        loadGroup();
+      } catch {
+        toast.error(SOCIAL_ERRORS.JOIN_CHALLENGE);
+      }
+    },
+    [loadGroup],
+  );
 
   return {
     group,

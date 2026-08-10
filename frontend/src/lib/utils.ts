@@ -10,7 +10,7 @@ export function formatDuration(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
-  
+
   if (hours > 0) {
     return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
@@ -87,7 +87,7 @@ export function calculateReadinessColor(score: number): string {
 
 export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout;
   return (...args: Parameters<T>) => {
@@ -134,9 +134,7 @@ export function decodePolyline(encoded: string): [number, number][] {
   return points;
 }
 
-export function encodePolyline(
-  points: ([number, number] | { lat: number; lng: number })[]
-): string {
+export function encodePolyline(points: ([number, number] | { lat: number; lng: number })[]): string {
   if (!points || points.length === 0) return '';
 
   let result = '';

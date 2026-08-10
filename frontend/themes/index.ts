@@ -24,14 +24,7 @@ export function getTheme(id: string): ThemeDefinition {
 export function getThemeCSSVars(themeId: string, mode: 'light' | 'dark'): string {
   const theme = getTheme(themeId);
   const semanticData = mode === 'light' ? theme.semantic.light : theme.semantic.dark;
-  const vars = flattenSemanticTokens(
-    themeId,
-    mode,
-    theme.colors,
-    semanticData,
-    theme.shadows,
-    theme.radius,
-  );
+  const vars = flattenSemanticTokens(themeId, mode, theme.colors, semanticData, theme.shadows, theme.radius);
   return cssVarsToString(vars);
 }
 
@@ -39,13 +32,13 @@ export function getThemeFonts(themeId: string): string[] {
   const theme = getTheme(themeId);
   const fonts: string[] = [];
   const fontFamily = theme.typography.fontFamily;
-  
+
   if (fontFamily.sans.includes('DM Sans')) fonts.push('DM Sans');
   if (fontFamily.sans.includes('Plus Jakarta Sans')) fonts.push('Plus Jakarta Sans');
   if (fontFamily.sans.includes('Inter')) fonts.push('Inter');
   if (fontFamily.display.includes('Playfair Display')) fonts.push('Playfair Display');
   if (fontFamily.display.includes('DM Serif Display')) fonts.push('DM Serif Display');
-  
+
   return [...new Set(fonts)];
 }
 
@@ -55,18 +48,18 @@ export function generateAllThemeCSS(): string {
     { class: '', mode: 'light' },
     { class: '.dark', mode: 'dark' },
   ];
-  
+
   for (const [themeId, theme] of Object.entries(themes)) {
     for (const { class: cls, mode } of modeLabels) {
       const selector = cls ? `[data-theme="${themeId}"]${cls}` : `[data-theme="${themeId}"]`;
       const semanticData = mode === 'light' ? theme.semantic.light : theme.semantic.dark;
       const vars = flattenSemanticTokens(themeId, mode, theme.colors, semanticData, theme.shadows, theme.radius);
-      
+
       // Add font family vars
       vars['font-sans'] = theme.typography.fontFamily.sans;
       vars['font-display'] = theme.typography.fontFamily.display;
       vars['font-mono'] = theme.typography.fontFamily.mono;
-      
+
       // Add opacity vars
       vars['opacity-disabled'] = '0.5';
       vars['opacity-muted'] = '0.7';
@@ -76,12 +69,12 @@ export function generateAllThemeCSS(): string {
       vars['opacity-strong'] = '0.4';
       vars['opacity-hover'] = '0.9';
       vars['opacity-active'] = '0.8';
-      
+
       const css = `${selector} {\n${cssVarsToString(vars, '  ')}}\n`;
       cssParts.push(css);
     }
   }
-  
+
   return cssParts.join('\n');
 }
 

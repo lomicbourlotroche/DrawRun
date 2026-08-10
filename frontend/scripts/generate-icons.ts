@@ -24,7 +24,11 @@ function resolveTargetFile(filePath: string): string {
 }
 
 function toPascalCase(kebab: string): string {
-  return kebab.replace(/\.js$/, '').split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+  return kebab
+    .replace(/\.js$/, '')
+    .split('-')
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+    .join('');
 }
 
 function extractIconData(filePath: string, wantedName?: string): { name: string; elements: IconNode[] } | null {
@@ -58,7 +62,13 @@ function extractIconData(filePath: string, wantedName?: string): { name: string;
   let endIdx = -1;
   for (let i = 0; i < arrStr.length; i++) {
     if (arrStr[i] === '[') depth++;
-    else if (arrStr[i] === ']') { depth--; if (depth === 0) { endIdx = i; break; } }
+    else if (arrStr[i] === ']') {
+      depth--;
+      if (depth === 0) {
+        endIdx = i;
+        break;
+      }
+    }
   }
   if (endIdx === -1) return null;
   arrStr = arrStr.substring(0, endIdx + 1);
@@ -85,13 +95,15 @@ function parseElements(arrStr: string): IconNode[] {
 }
 
 function toJSX(elements: IconNode[], indent: string): string {
-  return elements.map(el => {
-    const attrs = Object.entries(el.attrs)
-      .filter(([k]) => k !== 'key')
-      .map(([k, v]) => `${k}="${v}"`)
-      .join(' ');
-    return `${indent}<${el.tag} ${attrs} />`;
-  }).join('\n');
+  return elements
+    .map((el) => {
+      const attrs = Object.entries(el.attrs)
+        .filter(([k]) => k !== 'key')
+        .map(([k, v]) => `${k}="${v}"`)
+        .join(' ');
+      return `${indent}<${el.tag} ${attrs} />`;
+    })
+    .join('\n');
 }
 
 function generateComponent(name: string, elements: IconNode[]): string {
@@ -128,7 +140,7 @@ async function main() {
   const generated: string[] = [];
   const files = readFileSync(resolve(__dirname, '../scripts/icon-files.txt'), 'utf-8')
     .split('\n')
-    .map(l => l.trim())
+    .map((l) => l.trim())
     .filter(Boolean);
 
   for (const file of files) {

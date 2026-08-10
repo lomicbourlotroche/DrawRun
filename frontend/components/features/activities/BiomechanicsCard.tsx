@@ -74,14 +74,14 @@ export const BiomechanicsCard: React.FC<BiomechanicsCardProps> = ({ metrics }) =
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-           <div className="p-3 bg-muted/20 rounded-xl flex items-center justify-between">
-              <span className="text-sm text-muted">Longueur de foulée</span>
-              <span className="font-bold">{metrics.stepLength}m</span>
-           </div>
-           <div className="p-3 bg-muted/20 rounded-xl flex items-center justify-between">
-              <span className="text-sm text-muted">Cadence moyenne</span>
-              <span className="font-bold">{metrics.cadence} ppm</span>
-           </div>
+          <div className="p-3 bg-muted/20 rounded-xl flex items-center justify-between">
+            <span className="text-sm text-muted">Longueur de foulée</span>
+            <span className="font-bold">{metrics.stepLength}m</span>
+          </div>
+          <div className="p-3 bg-muted/20 rounded-xl flex items-center justify-between">
+            <span className="text-sm text-muted">Cadence moyenne</span>
+            <span className="font-bold">{metrics.cadence} ppm</span>
+          </div>
         </div>
 
         {/* Coach Advice */}
@@ -93,11 +93,16 @@ export const BiomechanicsCard: React.FC<BiomechanicsCardProps> = ({ metrics }) =
             </h4>
             <div className="space-y-2">
               {metrics.advice.map((adv, i) => (
-                <div key={i} className={`p-3 rounded-xl border-l-4 ${
-                  adv.priority === 'high' ? 'bg-danger/5 border-danger' : 
-                  adv.priority === 'moderate' ? 'bg-warning/5 border-warning' : 
-                  'bg-primary/5 border-primary'
-                }`}>
+                <div
+                  key={i}
+                  className={`p-3 rounded-xl border-l-4 ${
+                    adv.priority === 'high'
+                      ? 'bg-danger/5 border-danger'
+                      : adv.priority === 'moderate'
+                        ? 'bg-warning/5 border-warning'
+                        : 'bg-primary/5 border-primary'
+                  }`}
+                >
                   <p className="text-sm font-bold">{adv.message}</p>
                   <p className="text-xs text-muted mt-1">{adv.detail}</p>
                 </div>
@@ -108,7 +113,10 @@ export const BiomechanicsCard: React.FC<BiomechanicsCardProps> = ({ metrics }) =
 
         <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-xl text-[10px] text-primary/70">
           <Info className="w-3 h-3 shrink-0" />
-          <p>Ces métriques sont des estimations algorithmiques basées sur la vitesse et la cadence. Elles visent à identifier des tendances techniques majeures.</p>
+          <p>
+            Ces métriques sont des estimations algorithmiques basées sur la vitesse et la cadence. Elles visent à
+            identifier des tendances techniques majeures.
+          </p>
         </div>
       </CardContent>
     </Card>

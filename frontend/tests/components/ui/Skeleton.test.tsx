@@ -128,7 +128,7 @@ describe('ChartSkeleton component', () => {
   it('contains title skeleton', () => {
     const { container } = render(<ChartSkeleton />);
     const skeletons = container.querySelectorAll('[class*="animate-shimmer"]');
-    const titleSkeleton = Array.from(skeletons).find(s => s.classList.contains('w-1/4'));
+    const titleSkeleton = Array.from(skeletons).find((s) => s.classList.contains('w-1/4'));
     expect(titleSkeleton).toBeTruthy();
     expect(titleSkeleton).toHaveClass('h-4');
   });
@@ -136,7 +136,7 @@ describe('ChartSkeleton component', () => {
   it('contains chart area skeleton', () => {
     const { container } = render(<ChartSkeleton />);
     const skeletons = container.querySelectorAll('[class*="animate-shimmer"]');
-    const chartSkeleton = Array.from(skeletons).find(s => s.classList.contains('h-32'));
+    const chartSkeleton = Array.from(skeletons).find((s) => s.classList.contains('h-32'));
     expect(chartSkeleton).toBeTruthy();
     expect(chartSkeleton).toHaveClass('w-full');
     expect(chartSkeleton).toHaveClass('rounded-lg');
@@ -166,7 +166,7 @@ describe('DashboardSkeleton component', () => {
   it('contains quick stats grid', () => {
     const { container } = render(<DashboardSkeleton />);
     const grids = container.querySelectorAll('.grid');
-    const statsGrid = Array.from(grids).find(g => g.classList.contains('grid-cols-2'));
+    const statsGrid = Array.from(grids).find((g) => g.classList.contains('grid-cols-2'));
     expect(statsGrid).toBeTruthy();
     expect(statsGrid).toHaveClass('lg:grid-cols-4');
     expect(statsGrid).toHaveClass('gap-4');
@@ -175,7 +175,7 @@ describe('DashboardSkeleton component', () => {
   it('contains chart skeleton', () => {
     const { container } = render(<DashboardSkeleton />);
     const skeletons = container.querySelectorAll('[class*="animate-shimmer"]');
-    expect(Array.from(skeletons).some(s => s.classList.contains('h-32'))).toBe(true);
+    expect(Array.from(skeletons).some((s) => s.classList.contains('h-32'))).toBe(true);
   });
 
   it('contains recommendation section', () => {
@@ -230,7 +230,7 @@ describe('ProfileSkeleton component', () => {
   it('contains large avatar skeleton', () => {
     const { container } = render(<ProfileSkeleton />);
     const skeletons = container.querySelectorAll('[class*="animate-shimmer"]');
-    const avatar = Array.from(skeletons).find(s => s.classList.contains('h-24'));
+    const avatar = Array.from(skeletons).find((s) => s.classList.contains('h-24'));
     expect(avatar).toBeTruthy();
     expect(avatar).toHaveClass('w-24');
   });
@@ -250,7 +250,7 @@ describe('ProfileSkeleton component', () => {
   it('contains submit button skeleton', () => {
     const { container } = render(<ProfileSkeleton />);
     const skeletons = container.querySelectorAll('[class*="animate-shimmer"]');
-    const button = Array.from(skeletons).find(s => s.classList.contains('h-12') && s.classList.contains('w-32'));
+    const button = Array.from(skeletons).find((s) => s.classList.contains('h-12') && s.classList.contains('w-32'));
     expect(button).toBeTruthy();
   });
 });
@@ -266,7 +266,7 @@ describe('CoachSkeleton component', () => {
   it('contains title skeleton', () => {
     const { container } = render(<CoachSkeleton />);
     const skeletons = container.querySelectorAll('[class*="animate-shimmer"]');
-    const title = Array.from(skeletons).find(s => s.classList.contains('w-40'));
+    const title = Array.from(skeletons).find((s) => s.classList.contains('w-40'));
     expect(title).toBeTruthy();
     expect(title).toHaveClass('h-8');
   });
@@ -274,7 +274,7 @@ describe('CoachSkeleton component', () => {
   it('contains plans grid', () => {
     const { container } = render(<CoachSkeleton />);
     const grids = container.querySelectorAll('.grid');
-    const planGrid = Array.from(grids).find(g => g.classList.contains('grid-cols-1'));
+    const planGrid = Array.from(grids).find((g) => g.classList.contains('grid-cols-1'));
     expect(planGrid).toBeTruthy();
     expect(planGrid).toHaveClass('md:grid-cols-2');
     expect(planGrid).toHaveClass('lg:grid-cols-3');
@@ -307,7 +307,9 @@ describe('SocialSkeleton component', () => {
   it('contains multiple tab skeletons', () => {
     const { container } = render(<SocialSkeleton />);
     const skeletons = container.querySelectorAll('[class*="animate-shimmer"]');
-    const tabSkeletons = Array.from(skeletons).filter(s => s.classList.contains('h-10') && s.classList.contains('w-24'));
+    const tabSkeletons = Array.from(skeletons).filter(
+      (s) => s.classList.contains('h-10') && s.classList.contains('w-24'),
+    );
     expect(tabSkeletons.length).toBeGreaterThanOrEqual(4);
   });
 
@@ -336,7 +338,7 @@ describe('PerformanceSkeleton component', () => {
   it('contains title skeleton', () => {
     const { container } = render(<PerformanceSkeleton />);
     const skeletons = container.querySelectorAll('[class*="animate-shimmer"]');
-    const title = Array.from(skeletons).find(s => s.classList.contains('w-48'));
+    const title = Array.from(skeletons).find((s) => s.classList.contains('w-48'));
     expect(title).toBeTruthy();
     expect(title).toHaveClass('h-8');
   });
@@ -344,7 +346,7 @@ describe('PerformanceSkeleton component', () => {
   it('contains stats cards grid', () => {
     const { container } = render(<PerformanceSkeleton />);
     const grids = container.querySelectorAll('.grid');
-    const statsGrid = Array.from(grids).find(g => g.classList.contains('grid-cols-2'));
+    const statsGrid = Array.from(grids).find((g) => g.classList.contains('grid-cols-2'));
     expect(statsGrid).toBeTruthy();
     expect(statsGrid).toHaveClass('lg:grid-cols-4');
     expect(statsGrid).toHaveClass('gap-4');
@@ -353,14 +355,16 @@ describe('PerformanceSkeleton component', () => {
   it('contains 8 stat skeletons', () => {
     const { container } = render(<PerformanceSkeleton />);
     const skeletons = container.querySelectorAll('[class*="animate-shimmer"]');
-    const statSkeletons = Array.from(skeletons).filter(s => s.classList.contains('h-24'));
+    const statSkeletons = Array.from(skeletons).filter((s) => s.classList.contains('h-24'));
     expect(statSkeletons.length).toBe(8);
   });
 
   it('contains charts grid', () => {
     const { container } = render(<PerformanceSkeleton />);
     const grids = container.querySelectorAll('.grid');
-    const chartsGrid = Array.from(grids).find(g => g.classList.contains('lg:grid-cols-2') && g.classList.contains('gap-6'));
+    const chartsGrid = Array.from(grids).find(
+      (g) => g.classList.contains('lg:grid-cols-2') && g.classList.contains('gap-6'),
+    );
     expect(chartsGrid).toBeTruthy();
     expect(chartsGrid).toHaveClass('grid-cols-1');
   });
@@ -377,14 +381,16 @@ describe('PageSkeleton component', () => {
   it('renders title skeleton when title prop is true', () => {
     const { container } = render(<PageSkeleton title={true} />);
     const skeletons = container.querySelectorAll('[class*="animate-shimmer"]');
-    const title = Array.from(skeletons).find(s => s.classList.contains('h-8') && s.classList.contains('w-48'));
+    const title = Array.from(skeletons).find((s) => s.classList.contains('h-8') && s.classList.contains('w-48'));
     expect(title).toBeTruthy();
   });
 
   it('does not render title skeleton when title prop is false', () => {
     const { container } = render(<PageSkeleton title={false} />);
     const skeletons = container.querySelectorAll('[class*="animate-shimmer"]');
-    const titleSkeletons = Array.from(skeletons).filter(s => s.classList.contains('h-8') && s.classList.contains('w-48'));
+    const titleSkeletons = Array.from(skeletons).filter(
+      (s) => s.classList.contains('h-8') && s.classList.contains('w-48'),
+    );
     expect(titleSkeletons.length).toBe(0);
   });
 

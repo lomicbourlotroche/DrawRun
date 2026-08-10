@@ -22,11 +22,7 @@ export default function WizardNavigation({
 }: WizardNavigationProps) {
   return (
     <div className="flex justify-between mt-8 pt-4 border-t border-border">
-      <Button
-        variant="secondary"
-        onClick={onPrevious}
-        disabled={isFirstStep || isSubmitting}
-      >
+      <Button variant="secondary" onClick={onPrevious} disabled={isFirstStep || isSubmitting}>
         <ChevronLeft className="w-4 h-4 mr-1" />
         Précédent
       </Button>

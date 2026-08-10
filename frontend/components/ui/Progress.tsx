@@ -92,14 +92,7 @@ export function CircularProgress({
   return (
     <div className={cn('relative inline-flex items-center justify-center', className)}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke="var(--muted)"
-          strokeWidth={strokeWidth}
-        />
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--muted)" strokeWidth={strokeWidth} />
         <circle
           cx={size / 2}
           cy={size / 2}

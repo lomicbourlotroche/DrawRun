@@ -1,4 +1,3 @@
-
 import { cn } from '@/lib/utils';
 import { getZoneColor } from '@/lib/utils';
 
@@ -31,12 +30,7 @@ export function Badge({ children, variant = 'default', zone, size = 'sm', classN
 
   return (
     <span
-      className={cn(
-        'inline-flex items-center rounded-full font-medium',
-        variants[variant],
-        sizes[size],
-        className
-      )}
+      className={cn('inline-flex items-center rounded-full font-medium', variants[variant], sizes[size], className)}
       role="status"
       style={bgColor ? { backgroundColor: `${bgColor}20`, borderColor: `${bgColor}50`, color: bgColor } : undefined}
     >

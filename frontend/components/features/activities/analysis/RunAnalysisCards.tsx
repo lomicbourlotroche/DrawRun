@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { BiomechanicsCard } from '@/components/features/activities/BiomechanicsCard';
@@ -15,7 +15,12 @@ export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRu
       {/* HR Analysis */}
       {analysis.hrZones && (
         <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Heart className="w-4 h-4 text-danger/80" />Analyse Cardiaque</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Heart className="w-4 h-4 text-danger/80" />
+              Analyse Cardiaque
+            </CardTitle>
+          </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="text-center p-3 rounded-lg bg-background border border-border">
@@ -51,14 +56,31 @@ export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRu
       {/* HR Zone Distribution */}
       {analysis.hrDistribution && (
         <Card>
-          <CardHeader><CardTitle className="text-base">Répartition zones cardiaques</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base">Répartition zones cardiaques</CardTitle>
+          </CardHeader>
           <CardContent>
             <div className="grid grid-cols-5 gap-2">
-              <div className="text-center p-2 rounded-lg bg-muted/10"><p className="text-sm font-bold text-muted">{analysis.hrDistribution.zone1Percent}%</p><p className="text-xs text-muted">Z1</p></div>
-              <div className="text-center p-2 rounded-lg bg-success/10"><p className="text-sm font-bold text-success/80">{analysis.hrDistribution.zone2Percent}%</p><p className="text-xs text-muted">Z2</p></div>
-              <div className="text-center p-2 rounded-lg bg-primary/10"><p className="text-sm font-bold text-primary/80">{analysis.hrDistribution.zone3Percent}%</p><p className="text-xs text-muted">Z3</p></div>
-              <div className="text-center p-2 rounded-lg bg-peak/10"><p className="text-sm font-bold text-peak/80">{analysis.hrDistribution.zone4Percent}%</p><p className="text-xs text-muted">Z4</p></div>
-              <div className="text-center p-2 rounded-lg bg-danger/10"><p className="text-sm font-bold text-danger/80">{analysis.hrDistribution.zone5Percent}%</p><p className="text-xs text-muted">Z5</p></div>
+              <div className="text-center p-2 rounded-lg bg-muted/10">
+                <p className="text-sm font-bold text-muted">{analysis.hrDistribution.zone1Percent}%</p>
+                <p className="text-xs text-muted">Z1</p>
+              </div>
+              <div className="text-center p-2 rounded-lg bg-success/10">
+                <p className="text-sm font-bold text-success/80">{analysis.hrDistribution.zone2Percent}%</p>
+                <p className="text-xs text-muted">Z2</p>
+              </div>
+              <div className="text-center p-2 rounded-lg bg-primary/10">
+                <p className="text-sm font-bold text-primary/80">{analysis.hrDistribution.zone3Percent}%</p>
+                <p className="text-xs text-muted">Z3</p>
+              </div>
+              <div className="text-center p-2 rounded-lg bg-peak/10">
+                <p className="text-sm font-bold text-peak/80">{analysis.hrDistribution.zone4Percent}%</p>
+                <p className="text-xs text-muted">Z4</p>
+              </div>
+              <div className="text-center p-2 rounded-lg bg-danger/10">
+                <p className="text-sm font-bold text-danger/80">{analysis.hrDistribution.zone5Percent}%</p>
+                <p className="text-xs text-muted">Z5</p>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -66,7 +88,12 @@ export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRu
 
       {/* Pace & Elevation */}
       <Card>
-        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Gauge className="w-4 h-4 text-primary" />Allure & Dénivelé</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Gauge className="w-4 h-4 text-primary" />
+            Allure & Dénivelé
+          </CardTitle>
+        </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {analysis.pace && (
@@ -96,7 +123,9 @@ export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRu
           </div>
           {analysis.runningEconomy && (
             <div className="mt-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
-              <p className="text-sm text-primary/80"><span className="font-bold">{analysis.runningEconomy}</span> ml/kg/km — Économie de course</p>
+              <p className="text-sm text-primary/80">
+                <span className="font-bold">{analysis.runningEconomy}</span> ml/kg/km — Économie de course
+              </p>
             </div>
           )}
         </CardContent>
@@ -105,7 +134,12 @@ export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRu
       {/* VDOT & Performance */}
       {(analysis.vdot || analysis.performanceLevel) && (
         <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Zap className="w-4 h-4 text-primary" />Potentiel aérobie</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Zap className="w-4 h-4 text-primary" />
+              Potentiel aérobie
+            </CardTitle>
+          </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {analysis.vdot && (
@@ -127,8 +161,12 @@ export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRu
                 </div>
               )}
               {analysis.performanceLevel && (
-                <div className={`text-center p-3 rounded-lg bg-background border border-${analysis.performanceLevel.color}-500/30`}>
-                  <p className={`text-lg font-bold text-${analysis.performanceLevel.color}-400 uppercase`}>{analysis.performanceLevel.level}</p>
+                <div
+                  className={`text-center p-3 rounded-lg bg-background border border-${analysis.performanceLevel.color}-500/30`}
+                >
+                  <p className={`text-lg font-bold text-${analysis.performanceLevel.color}-400 uppercase`}>
+                    {analysis.performanceLevel.level}
+                  </p>
                   <p className="text-xs text-muted">Niveau</p>
                 </div>
               )}
@@ -142,7 +180,8 @@ export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRu
                   {analysis.racePredictions['5k'] && (
                     <div className="text-center p-2 rounded-lg bg-background">
                       <p className="text-sm font-bold text-foreground">
-                        {Math.floor(toNum(analysis.racePredictions['5k']) / 60)}:{String(Math.round(toNum(analysis.racePredictions['5k']) % 60)).padStart(2, '0')}
+                        {Math.floor(toNum(analysis.racePredictions['5k']) / 60)}:
+                        {String(Math.round(toNum(analysis.racePredictions['5k']) % 60)).padStart(2, '0')}
                       </p>
                       <p className="text-xs text-muted">5km</p>
                     </div>
@@ -150,7 +189,8 @@ export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRu
                   {analysis.racePredictions['10k'] && (
                     <div className="text-center p-2 rounded-lg bg-background">
                       <p className="text-sm font-bold text-foreground">
-                        {Math.floor(toNum(analysis.racePredictions['10k']) / 60)}:{String(Math.round(toNum(analysis.racePredictions['10k']) % 60)).padStart(2, '0')}
+                        {Math.floor(toNum(analysis.racePredictions['10k']) / 60)}:
+                        {String(Math.round(toNum(analysis.racePredictions['10k']) % 60)).padStart(2, '0')}
                       </p>
                       <p className="text-xs text-muted">10km</p>
                     </div>
@@ -177,13 +217,27 @@ export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRu
       {/* Training Paces */}
       {analysis.trainingPaces && (
         <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Timer className="w-4 h-4 text-primary" />Allures d&apos;entraînement</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Timer className="w-4 h-4 text-primary" />
+              Allures d&apos;entraînement
+            </CardTitle>
+          </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
               {Object.entries(analysis.trainingPaces).map(([key, val]) => {
-                const colors: Record<string, string> = { E: 'bg-success/10 border-success/30 text-success/80', M: 'bg-primary/10 border-primary/30 text-primary/80', T: 'bg-peak/10 border-peak/30 text-peak/80', I: 'bg-danger/10 border-danger/30 text-danger/80', R: 'bg-secondary-50 border-secondary-200 text-secondary-500' };
+                const colors: Record<string, string> = {
+                  E: 'bg-success/10 border-success/30 text-success/80',
+                  M: 'bg-primary/10 border-primary/30 text-primary/80',
+                  T: 'bg-peak/10 border-peak/30 text-peak/80',
+                  I: 'bg-danger/10 border-danger/30 text-danger/80',
+                  R: 'bg-secondary-50 border-secondary-200 text-secondary-500',
+                };
                 return (
-                  <div key={key} className={`text-center p-2 rounded-lg border ${colors[key] || 'bg-background border-border'}`}>
+                  <div
+                    key={key}
+                    className={`text-center p-2 rounded-lg border ${colors[key] || 'bg-background border-border'}`}
+                  >
                     <p className="text-xs uppercase font-bold">{key}</p>
                     <p className="text-sm font-bold">{'pace' in val ? val.pace : `${val.min} – ${val.max}`}</p>
                     <p className="text-xs text-muted">{val.description}</p>
@@ -196,9 +250,7 @@ export function RunAnalysisCards({ analysis }: { analysis: RunAnalysis | TrailRu
       )}
 
       {/* Biomechanics */}
-      {analysis.biomechanics && (
-        <BiomechanicsCard metrics={analysis.biomechanics} />
-      )}
+      {analysis.biomechanics && <BiomechanicsCard metrics={analysis.biomechanics} />}
 
       {/* Nutrition */}
       {analysis.nutrition && (

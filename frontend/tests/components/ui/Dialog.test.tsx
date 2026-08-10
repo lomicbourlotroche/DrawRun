@@ -11,9 +11,9 @@ describe('Dialog component', () => {
     render(
       <Dialog open={false} onOpenChange={() => {}}>
         <DialogContent>Test Content</DialogContent>
-      </Dialog>
+      </Dialog>,
     );
-    
+
     expect(screen.queryByText('Test Content')).not.toBeInTheDocument();
   });
 
@@ -21,26 +21,26 @@ describe('Dialog component', () => {
     render(
       <Dialog open={true} onOpenChange={() => {}}>
         <DialogContent>Test Content</DialogContent>
-      </Dialog>
+      </Dialog>,
     );
-    
+
     expect(screen.getByText('Test Content')).toBeInTheDocument();
   });
 
   it('calls onOpenChange when closing', () => {
     const onOpenChange = vi.fn();
-    
+
     render(
       <Dialog open={true} onOpenChange={onOpenChange}>
         <DialogContent>Test Content</DialogContent>
-      </Dialog>
+      </Dialog>,
     );
-    
+
     // The Dialog component uses Modal internally, which has a close button
     // We need to check if the Modal is rendered and if we can close it
     const closeButton = screen.getByRole('button');
     fireEvent.click(closeButton);
-    
+
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
@@ -48,9 +48,9 @@ describe('Dialog component', () => {
     render(
       <Dialog open={true} onOpenChange={() => {}}>
         <div>Child Content</div>
-      </Dialog>
+      </Dialog>,
     );
-    
+
     expect(screen.getByText('Child Content')).toBeInTheDocument();
   });
 });
@@ -58,14 +58,14 @@ describe('Dialog component', () => {
 describe('DialogContent component', () => {
   it('renders children with default className', () => {
     render(<DialogContent>Content</DialogContent>);
-    
+
     const content = screen.getByText('Content');
     expect(content).toBeInTheDocument();
   });
 
   it('applies custom className', () => {
     render(<DialogContent className="custom-class">Content</DialogContent>);
-    
+
     const content = screen.getByText('Content');
     expect(content).toHaveClass('custom-class');
   });
@@ -75,9 +75,9 @@ describe('DialogContent component', () => {
       <DialogContent>
         <span>First</span>
         <span>Second</span>
-      </DialogContent>
+      </DialogContent>,
     );
-    
+
     expect(screen.getByText('First')).toBeInTheDocument();
     expect(screen.getByText('Second')).toBeInTheDocument();
   });
@@ -86,7 +86,7 @@ describe('DialogContent component', () => {
 describe('DialogHeader component', () => {
   it('renders children', () => {
     render(<DialogHeader>Header Content</DialogHeader>);
-    
+
     expect(screen.getByText('Header Content')).toBeInTheDocument();
   });
 });
@@ -94,13 +94,13 @@ describe('DialogHeader component', () => {
 describe('DialogTitle component', () => {
   it('renders children', () => {
     render(<DialogTitle>Title Content</DialogTitle>);
-    
+
     expect(screen.getByText('Title Content')).toBeInTheDocument();
   });
 
   it('renders as heading', () => {
     render(<DialogTitle>Title</DialogTitle>);
-    
+
     const title = screen.getByText('Title');
     expect(title.tagName).toBe('H3');
   });
@@ -109,14 +109,14 @@ describe('DialogTitle component', () => {
 describe('Dialog accessibility', () => {
   it('DialogContent has correct role', () => {
     render(<DialogContent>Content</DialogContent>);
-    
+
     const content = screen.getByText('Content');
     expect(content).toBeInTheDocument();
   });
 
   it('DialogTitle has heading role', () => {
     render(<DialogTitle>Title</DialogTitle>);
-    
+
     const title = screen.getByRole('heading');
     expect(title).toBeInTheDocument();
     expect(title).toHaveTextContent('Title');

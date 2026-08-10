@@ -2,12 +2,12 @@
  * ============================================================
  * EXPLORE API - Endpoints exploration (Segments & Routes)
  * ============================================================
- * 
+ *
  * Ce fichier contient tous les endpoints d'exploration :
  * - Segments et efforts
  * - Routes publiques
  * - Heatmaps
- * 
+ *
  * @module lib/api/explore.api
  */
 
@@ -61,8 +61,8 @@ export interface Route {
   is_favorited?: boolean;
   is_public?: boolean;
   created_at?: string;
-  waypoints?: string;       // NEW
-  directions?: string;      // NEW (JSON string of Direction[])
+  waypoints?: string; // NEW
+  directions?: string; // NEW (JSON string of Direction[])
 }
 
 // Heatmap types
@@ -131,10 +131,10 @@ export const exploreApi = {
   // Segments
   // ============================================================================
 
-  createSegment(data: CreateSegmentParams): Promise<{ 
-    success: boolean; 
-    segment_id?: number; 
-    error?: string 
+  createSegment(data: CreateSegmentParams): Promise<{
+    success: boolean;
+    segment_id?: number;
+    error?: string;
   }> {
     return client.request('/api/explore/segments', {
       method: 'POST',
@@ -146,7 +146,7 @@ export const exploreApi = {
     lat: number,
     lng: number,
     radius?: number,
-    type?: string
+    type?: string,
   ): Promise<{
     success: boolean;
     segments: Segment[];
@@ -185,11 +185,11 @@ export const exploreApi = {
     return client.request(`/api/explore/segments/${segmentId}/leaderboard`);
   },
 
-  createSegmentEffort(params: CreateSegmentEffortParams): Promise<{ 
-    success: boolean; 
-    effort_id?: number; 
-    is_pr?: boolean; 
-    error?: string 
+  createSegmentEffort(params: CreateSegmentEffortParams): Promise<{
+    success: boolean;
+    effort_id?: number;
+    is_pr?: boolean;
+    error?: string;
   }> {
     return client.request(`/api/explore/segments/${params.segmentId}/efforts`, {
       method: 'POST',
@@ -216,9 +216,9 @@ export const exploreApi = {
     return client.request(`/api/explore/segments/${segmentId}/efforts/me`);
   },
 
-  deleteSegment(segmentId: number): Promise<{ 
-    success: boolean; 
-    error?: string 
+  deleteSegment(segmentId: number): Promise<{
+    success: boolean;
+    error?: string;
   }> {
     return client.request(`/api/explore/segments/${segmentId}`, { method: 'DELETE' });
   },
@@ -227,10 +227,10 @@ export const exploreApi = {
   // Routes
   // ============================================================================
 
-  createRoute(data: CreateRouteParams): Promise<{ 
-    success: boolean; 
-    route_id?: number; 
-    error?: string 
+  createRoute(data: CreateRouteParams): Promise<{
+    success: boolean;
+    route_id?: number;
+    error?: string;
   }> {
     return client.request('/api/explore/routes', {
       method: 'POST',
@@ -238,7 +238,10 @@ export const exploreApi = {
     });
   },
 
-  getPublicRoutes(type?: string, difficulty?: string): Promise<{
+  getPublicRoutes(
+    type?: string,
+    difficulty?: string,
+  ): Promise<{
     success: boolean;
     routes: Route[];
   }> {
@@ -281,18 +284,21 @@ export const exploreApi = {
     return client.request('/api/explore/routes/favorites');
   },
 
-  deleteRoute(routeId: number): Promise<{ 
-    success: boolean; 
-    error?: string 
+  deleteRoute(routeId: number): Promise<{
+    success: boolean;
+    error?: string;
   }> {
     return client.request(`/api/explore/routes/${routeId}`, { method: 'DELETE' });
   },
 
-  rateRoute(routeId: number, rating: number): Promise<{ 
-    success: boolean; 
+  rateRoute(
+    routeId: number,
+    rating: number,
+  ): Promise<{
+    success: boolean;
     avg_rating?: number;
     rating_count?: number;
-    error?: string 
+    error?: string;
   }> {
     return client.request(`/api/explore/routes/${routeId}/rate`, {
       method: 'POST',
@@ -324,7 +330,7 @@ export const exploreApi = {
     lat: number,
     lng: number,
     radius?: number,
-    type?: string
+    type?: string,
   ): Promise<{
     success: boolean;
     heatmap: HeatmapDataPoint[];
@@ -339,7 +345,7 @@ export const exploreApi = {
 
   getPopularLocations(
     type?: string,
-    limit?: number
+    limit?: number,
   ): Promise<{
     success: boolean;
     locations: Array<{ lat: number; lng: number; intensity: number; activity_type: string }>;
@@ -356,7 +362,7 @@ export const exploreApi = {
 
   getCommunityTraces(
     type?: string,
-    limit?: number
+    limit?: number,
   ): Promise<{
     success: boolean;
     traces: CommunityTrace[];
@@ -372,9 +378,7 @@ export const exploreApi = {
   // Elevation
   // ============================================================================
 
-  getElevationProfile(
-    locations: Array<{ lat: number; lng: number }>
-  ): Promise<{
+  getElevationProfile(locations: Array<{ lat: number; lng: number }>): Promise<{
     success: boolean;
     profile: ElevationPoint[];
     stats: ElevationStats;

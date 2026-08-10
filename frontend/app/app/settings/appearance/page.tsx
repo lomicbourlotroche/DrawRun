@@ -12,7 +12,15 @@ const themePreviewColors: Record<string, { primary: string; secondary: string }>
   kompak: { primary: '#E3543E', secondary: '#1D2B3E' },
 };
 
-function ThemeCard({ definition, active, onSelect }: { definition: ThemeDefinition; active: boolean; onSelect: () => void }) {
+function ThemeCard({
+  definition,
+  active,
+  onSelect,
+}: {
+  definition: ThemeDefinition;
+  active: boolean;
+  onSelect: () => void;
+}) {
   const colors = themePreviewColors[definition.id] || themePreviewColors.trail;
 
   return (
@@ -20,9 +28,7 @@ function ThemeCard({ definition, active, onSelect }: { definition: ThemeDefiniti
       onClick={onSelect}
       className={cn(
         'relative flex flex-col items-start gap-3 p-4 rounded-xl border-2 transition-all duration-200 text-left w-full',
-        active
-          ? 'border-primary bg-primary/10 shadow-sm'
-          : 'border-border hover:border-primary/30 hover:bg-background'
+        active ? 'border-primary bg-primary/10 shadow-sm' : 'border-border hover:border-primary/30 hover:bg-background',
       )}
     >
       {active && (
@@ -50,7 +56,11 @@ function ThemeCard({ definition, active, onSelect }: { definition: ThemeDefiniti
 
       <div className="flex gap-1.5">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="w-2 h-2 rounded-full" style={{ backgroundColor: i === 1 ? colors.primary : 'var(--neutral-300)' }} />
+          <div
+            key={i}
+            className="w-2 h-2 rounded-full"
+            style={{ backgroundColor: i === 1 ? colors.primary : 'var(--neutral-300)' }}
+          />
         ))}
       </div>
     </button>
@@ -76,22 +86,22 @@ export default function AppearancePage() {
               'flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200',
               mode === 'light'
                 ? 'border-primary bg-primary/10 shadow-sm'
-                : 'border-border hover:border-primary/30 hover:bg-background'
+                : 'border-border hover:border-primary/30 hover:bg-background',
             )}
           >
-            <div className={cn(
-              'w-10 h-10 rounded-lg flex items-center justify-center transition-colors',
-               mode === 'light' ? 'bg-primary text-white' : 'bg-surface text-muted'
-            )}>
+            <div
+              className={cn(
+                'w-10 h-10 rounded-lg flex items-center justify-center transition-colors',
+                mode === 'light' ? 'bg-primary text-white' : 'bg-surface text-muted',
+              )}
+            >
               <Sun size={20} />
             </div>
             <div className="text-left">
               <p className="font-medium text-sm text-foreground">Clair</p>
               <p className="text-xs text-muted">Fonds clairs, textes foncés</p>
             </div>
-            {mode === 'light' && (
-              <Check size={18} className="text-primary ml-auto flex-shrink-0" />
-            )}
+            {mode === 'light' && <Check size={18} className="text-primary ml-auto flex-shrink-0" />}
           </button>
 
           <button
@@ -100,22 +110,22 @@ export default function AppearancePage() {
               'flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200',
               mode === 'dark'
                 ? 'border-primary bg-primary/10 shadow-sm'
-                : 'border-border hover:border-primary/30 hover:bg-background'
+                : 'border-border hover:border-primary/30 hover:bg-background',
             )}
           >
-            <div className={cn(
-              'w-10 h-10 rounded-lg flex items-center justify-center transition-colors',
-               mode === 'dark' ? 'bg-primary text-white' : 'bg-surface text-muted'
-            )}>
+            <div
+              className={cn(
+                'w-10 h-10 rounded-lg flex items-center justify-center transition-colors',
+                mode === 'dark' ? 'bg-primary text-white' : 'bg-surface text-muted',
+              )}
+            >
               <Moon size={20} />
             </div>
             <div className="text-left">
               <p className="font-medium text-sm text-foreground">Sombre</p>
               <p className="text-xs text-muted">Fonds foncés, textes clairs</p>
             </div>
-            {mode === 'dark' && (
-              <Check size={18} className="text-primary ml-auto flex-shrink-0" />
-            )}
+            {mode === 'dark' && <Check size={18} className="text-primary ml-auto flex-shrink-0" />}
           </button>
         </div>
       </section>
@@ -124,12 +134,7 @@ export default function AppearancePage() {
         <h3 className="text-sm font-semibold text-foreground mb-3">Thème de couleurs</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {themeList.map((t) => (
-            <ThemeCard
-              key={t.id}
-              definition={t}
-              active={theme === t.id}
-              onSelect={() => setTheme(t.id)}
-            />
+            <ThemeCard key={t.id} definition={t} active={theme === t.id} onSelect={() => setTheme(t.id)} />
           ))}
         </div>
       </section>

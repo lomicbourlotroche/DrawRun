@@ -30,27 +30,30 @@ export function DrawButton({
   const [drawCount, setDrawCount] = useState(initialDrawCount);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleToggleDraw = useCallback(async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (isLoading) return;
+  const handleToggleDraw = useCallback(
+    async (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-    setIsLoading(true);
-    try {
-      const response = await api.toggleActivityDraw(activityId, ownerId);
-      
-      if (response.success) {
-        setHasDrawn(response.has_drawn);
-        setDrawCount(response.draw_count);
-        onDrawChange?.(response.has_drawn, response.draw_count);
+      if (isLoading) return;
+
+      setIsLoading(true);
+      try {
+        const response = await api.toggleActivityDraw(activityId, ownerId);
+
+        if (response.success) {
+          setHasDrawn(response.has_drawn);
+          setDrawCount(response.draw_count);
+          onDrawChange?.(response.has_drawn, response.draw_count);
+        }
+      } catch {
+        /* silencieux — draw toggle */
+      } finally {
+        setIsLoading(false);
       }
-    } catch {
-      /* silencieux — draw toggle */
-    } finally {
-      setIsLoading(false);
-    }
-  }, [activityId, ownerId, isLoading, onDrawChange]);
+    },
+    [activityId, ownerId, isLoading, onDrawChange],
+  );
 
   const sizeClasses = {
     sm: 'h-7 px-2 text-xs gap-1',
@@ -76,25 +79,15 @@ export function DrawButton({
         hasDrawn
           ? 'bg-primary text-primary-foreground shadow-md hover:bg-primary/90'
           : 'bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border',
-        className
+        className,
       )}
     >
       {isLoading ? (
         <Loader2 className={cn('animate-spin', iconSizes[size])} />
       ) : (
-        <Trophy 
-          className={cn(
-            iconSizes[size],
-            'transition-transform duration-200',
-            hasDrawn && 'fill-current'
-          )} 
-        />
+        <Trophy className={cn(iconSizes[size], 'transition-transform duration-200', hasDrawn && 'fill-current')} />
       )}
-      {showCount && (
-        <span className="tabular-nums">
-          {drawCount > 0 ? drawCount : 'Draw'}
-        </span>
-      )}
+      {showCount && <span className="tabular-nums">{drawCount > 0 ? drawCount : 'Draw'}</span>}
     </button>
   );
 }
@@ -144,7 +137,11 @@ export function ActivityDrawStats({ activityId, className }: ActivityDrawStatsPr
         {stats.count} draw{stats.count > 1 ? 's' : ''}
         {stats.recent_draws.length > 0 && (
           <span className="ml-1">
-            dont {stats.recent_draws.slice(0, 3).map(d => d.user_name).join(', ')}
+            dont{' '}
+            {stats.recent_draws
+              .slice(0, 3)
+              .map((d) => d.user_name)
+              .join(', ')}
             {stats.recent_draws.length > 3 && ` et ${stats.recent_draws.length - 3} autres`}
           </span>
         )}

@@ -15,7 +15,9 @@ interface CommentModalProps {
 }
 
 export default function CommentModal({ activityId, ownerId, onClose, onCommentCountChange }: CommentModalProps) {
-  const [comments, setComments] = useState<Array<{ id: number; content: string; user_name: string; created_at: string }>>([]);
+  const [comments, setComments] = useState<
+    Array<{ id: number; content: string; user_name: string; created_at: string }>
+  >([]);
   const [commentText, setCommentText] = useState('');
   const [isLoadingComments, setIsLoadingComments] = useState(true);
   const [isPostingComment, setIsPostingComment] = useState(false);
@@ -44,7 +46,7 @@ export default function CommentModal({ activityId, ownerId, onClose, onCommentCo
       setComments((data as Array<{ id: number; content: string; user_name: string; created_at: string }>) || []);
       onCommentCountChange(1);
     } catch {
-      toast.error('Erreur lors de l\'ajout du commentaire');
+      toast.error("Erreur lors de l'ajout du commentaire");
     } finally {
       setIsPostingComment(false);
     }
@@ -58,7 +60,10 @@ export default function CommentModal({ activityId, ownerId, onClose, onCommentCo
           <MessageCircle className="w-4 h-4 text-primary" />
           Commentaires
         </h3>
-        <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center">
+        <button
+          onClick={onClose}
+          className="p-1.5 rounded-lg hover:bg-muted transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
+        >
           <X className="w-4 h-4 text-muted" />
         </button>
       </div>
@@ -82,7 +87,14 @@ export default function CommentModal({ activityId, ownerId, onClose, onCommentCo
                 <p className="text-xs font-semibold text-foreground">{c.user_name}</p>
                 <p className="text-sm text-foreground mt-0.5">{c.content || '(Aucun contenu)'}</p>
                 <p className="text-xs text-muted mt-1">
-                  {c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
+                  {c.created_at
+                    ? new Date(c.created_at).toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
+                    : ''}
                 </p>
               </div>
             </div>

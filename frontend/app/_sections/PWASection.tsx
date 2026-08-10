@@ -2,37 +2,30 @@
 
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui';
-import { 
-  Smartphone, 
-  Bell, 
-  Share2, 
-  WifiOff, 
-  Monitor,
-  Zap
-} from '@/components/ui/icons';
+import { Smartphone, Bell, Share2, WifiOff, Monitor, Zap } from '@/components/ui/icons';
 
 const pwaFeatures = [
   {
     icon: Smartphone,
     title: 'Installable sur tous les appareils',
-    description: 'Ajoutez DrawRun à votre écran d\'accueil — iPhone, Android, tablette ou desktop.',
+    description: "Ajoutez DrawRun à votre écran d'accueil — iPhone, Android, tablette ou desktop.",
     color: 'primary',
   },
   {
     icon: WifiOff,
     title: 'Fonctionne hors ligne',
-    description: 'Consultez vos activités et votre plan d\'entraînement même sans connexion internet.',
+    description: "Consultez vos activités et votre plan d'entraînement même sans connexion internet.",
     color: 'success',
   },
   {
     icon: Bell,
     title: 'Notifications push',
-    description: 'Alertes en temps réel : nouvelles demandes d\'ami, draws et commentaires sur vos activités.',
+    description: "Alertes en temps réel : nouvelles demandes d'ami, draws et commentaires sur vos activités.",
     color: 'danger',
   },
   {
     icon: Share2,
-    title: 'Partage d\'activités',
+    title: "Partage d'activités",
     description: 'Générez une image résumée de votre sortie et partagez-la en un clic sur les réseaux.',
     color: 'warning',
   },
@@ -55,7 +48,7 @@ export default function PWASection() {
           setIsVisible(true);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     const section = document.getElementById('pwa');
@@ -70,7 +63,9 @@ export default function PWASection() {
     <section id="pwa" className="py-20 lg:py-32 bg-gradient-to-b from-background to-background overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div
+          className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+        >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-sm font-semibold text-primary mb-6">
             <Zap className="w-4 h-4" />
             Progressive Web App
@@ -83,8 +78,8 @@ export default function PWASection() {
             </span>
           </h2>
           <p className="text-lg text-muted max-w-2xl mx-auto">
-            Pas besoin de télécharger sur un store. DrawRun s&apos;installe directement depuis votre navigateur
-            et fonctionne comme une application native — sur téléphone, tablette et ordinateur.
+            Pas besoin de télécharger sur un store. DrawRun s&apos;installe directement depuis votre navigateur et
+            fonctionne comme une application native — sur téléphone, tablette et ordinateur.
           </p>
         </div>
 
@@ -101,11 +96,13 @@ export default function PWASection() {
                 style={{ transitionDelay: `${index * 100}ms` }}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`
+                  <div
+                    className={`
                     w-14 h-14 rounded-2xl flex items-center justify-center shrink-0
                     ${iconColors[feature.color]}
                     group-hover:scale-110 transition-transform duration-300
-                  `}>
+                  `}
+                  >
                     <Icon className="w-7 h-7" />
                   </div>
                   <div>
@@ -119,7 +116,9 @@ export default function PWASection() {
         </div>
 
         {/* Device Preview */}
-        <div className={`mb-12 transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div
+          className={`mb-12 transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+        >
           <div className="flex flex-col md:flex-row items-center justify-center gap-8">
             {/* Desktop */}
             <div className="text-center">
@@ -149,12 +148,22 @@ export default function PWASection() {
         </div>
 
         {/* Install steps */}
-        <div className={`max-w-2xl mx-auto transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div
+          className={`max-w-2xl mx-auto transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+        >
           <h3 className="text-center text-lg font-semibold text-foreground mb-6">Installation en 2 étapes</h3>
           <div className="space-y-4">
             {[
-              { step: '1', title: 'Cliquez sur "Installer l\'app"', desc: 'Le bouton apparaît dans la barre de navigation de votre navigateur.' },
-              { step: '2', title: 'Confirmez l\'installation', desc: 'DrawRun s\'ajoute à votre écran d\'accueil et fonctionne comme une app native.' },
+              {
+                step: '1',
+                title: 'Cliquez sur "Installer l\'app"',
+                desc: 'Le bouton apparaît dans la barre de navigation de votre navigateur.',
+              },
+              {
+                step: '2',
+                title: "Confirmez l'installation",
+                desc: "DrawRun s'ajoute à votre écran d'accueil et fonctionne comme une app native.",
+              },
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-4 p-4 bg-surface border border-surface rounded-xl">
                 <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold text-sm shrink-0">

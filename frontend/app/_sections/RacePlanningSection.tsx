@@ -2,14 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, Button } from '@/components/ui';
-import { 
-  Trophy, 
-  MapPin, 
-  Heart, 
-  Droplets, 
-  ArrowRight,
-  TrendingUp
-} from '@/components/ui/icons';
+import { Trophy, MapPin, Heart, Droplets, ArrowRight, TrendingUp } from '@/components/ui/icons';
 
 const raceFeatures = [
   {
@@ -21,7 +14,8 @@ const raceFeatures = [
   {
     icon: Heart,
     title: 'Zones FC adaptatives',
-    description: 'Départ conservateur, allure de croisière et finish push — votre FC cible évolue selon la phase de course.',
+    description:
+      'Départ conservateur, allure de croisière et finish push — votre FC cible évolue selon la phase de course.',
     color: 'danger',
   },
   {
@@ -33,7 +27,7 @@ const raceFeatures = [
   {
     icon: TrendingUp,
     title: 'Profil du terrain',
-    description: 'Ajustement de l\'allure selon le profil : plat, vallonné ou montagneux avec facteurs correctifs.',
+    description: "Ajustement de l'allure selon le profil : plat, vallonné ou montagneux avec facteurs correctifs.",
     color: 'warning',
   },
 ];
@@ -55,7 +49,7 @@ export default function RacePlanningSection() {
           setIsVisible(true);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     const section = document.getElementById('race-planning');
@@ -67,10 +61,15 @@ export default function RacePlanningSection() {
   }, []);
 
   return (
-    <section id="race-planning" className="py-20 lg:py-32 bg-gradient-to-b from-background to-background overflow-hidden">
+    <section
+      id="race-planning"
+      className="py-20 lg:py-32 bg-gradient-to-b from-background to-background overflow-hidden"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div
+          className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+        >
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-warning/10 border border-warning/20 rounded-full text-sm font-semibold text-warning mb-6">
             <Trophy className="w-4 h-4" />
             NOUVEAU — Race Planning
@@ -83,8 +82,8 @@ export default function RacePlanningSection() {
             </span>
           </h2>
           <p className="text-lg text-muted max-w-2xl mx-auto">
-            Du 5K au marathon, planifiez chaque kilomètre avec des splits détaillés,
-            des zones de fréquence cardiaque et une stratégie de nutrition personnalisée.
+            Du 5K au marathon, planifiez chaque kilomètre avec des splits détaillés, des zones de fréquence cardiaque et
+            une stratégie de nutrition personnalisée.
           </p>
         </div>
 
@@ -101,11 +100,13 @@ export default function RacePlanningSection() {
                 style={{ transitionDelay: `${index * 100}ms` }}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`
+                  <div
+                    className={`
                     w-14 h-14 rounded-2xl flex items-center justify-center shrink-0
                     ${iconColors[feature.color]}
                     group-hover:scale-110 transition-transform duration-300
-                  `}>
+                  `}
+                  >
                     <Icon className="w-7 h-7" />
                   </div>
                   <div>
@@ -119,7 +120,9 @@ export default function RacePlanningSection() {
         </div>
 
         {/* Preview */}
-        <div className={`mb-12 transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div
+          className={`mb-12 transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+        >
           <Card variant="elevated" className="max-w-3xl mx-auto overflow-hidden">
             <div className="bg-background text-white p-4">
               <div className="flex items-center gap-2 mb-1">
@@ -171,13 +174,11 @@ export default function RacePlanningSection() {
         </div>
 
         {/* CTA */}
-        <div className={`flex flex-col sm:flex-row items-center justify-center gap-4 transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div
+          className={`flex flex-col sm:flex-row items-center justify-center gap-4 transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+        >
           <a href="/app/race-planning">
-            <Button
-              size="lg"
-              glow
-              rightIcon={<ArrowRight className="w-5 h-5" />}
-            >
+            <Button size="lg" glow rightIcon={<ArrowRight className="w-5 h-5" />}>
               <Trophy className="w-5 h-5" />
               Planifier ma course
             </Button>

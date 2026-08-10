@@ -5,10 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
 import type { Recommendation, TrainingPlan } from '@/types';
-import {
-  Zap, TrendingUp,
-  Brain, Calendar, Gauge, Trophy, Flame, Target,
-} from '@/components/ui/icons';
+import { Zap, TrendingUp, Brain, Calendar, Gauge, Trophy, Flame, Target } from '@/components/ui/icons';
 import AdaptivePlanWizard from '@/components/features/coach/AdaptivePlanWizard';
 import { GanttChart } from '@/components/features/coach/GanttChart';
 import ProgressChart from '@/components/features/coach/ProgressChart';
@@ -20,13 +17,12 @@ function TodayTab() {
   const [profile, setProfile] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
-    Promise.all([
-      api.getRecommendations().catch(() => null),
-      api.getCoachProfile().catch(() => null),
-    ]).then(([recData, profileData]) => {
-      if (recData) setRec(recData);
-      if (profileData) setProfile(profileData as Record<string, unknown>);
-    }).finally(() => setIsLoading(false));
+    Promise.all([api.getRecommendations().catch(() => null), api.getCoachProfile().catch(() => null)])
+      .then(([recData, profileData]) => {
+        if (recData) setRec(recData);
+        if (profileData) setProfile(profileData as Record<string, unknown>);
+      })
+      .finally(() => setIsLoading(false));
   }, []);
 
   const intensityStyles: Record<string, { bg: string; border: string; icon: string }> = {
@@ -55,21 +51,17 @@ function TodayTab() {
                   <Zap className={`w-6 h-6 ${style.icon}`} />
                 </div>
                 <div className="flex-1">
-                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${style.bg} ${style.icon}`}>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${style.bg} ${style.icon}`}
+                  >
                     {rec.type}
                   </span>
                   <h2 className="text-xl font-bold mt-2">{rec.title}</h2>
-                  {rec.subtitle && (
-                    <p className="text-sm text-muted">{rec.subtitle}</p>
-                  )}
+                  {rec.subtitle && <p className="text-sm text-muted">{rec.subtitle}</p>}
                 </div>
               </div>
 
-              {rec.description && (
-                <p className="text-sm text-foreground/80 leading-relaxed mt-3">
-                  {rec.description}
-                </p>
-              )}
+              {rec.description && <p className="text-sm text-foreground/80 leading-relaxed mt-3">{rec.description}</p>}
 
               {rec.structure && rec.structure.length > 0 && (
                 <div className="space-y-2 pt-3">
@@ -206,12 +198,16 @@ export default function CoachContent() {
     setActiveTab('plan');
   }, [loadActivePlan]);
 
-  const tabs = useMemo(() => [
-    { id: 'today', label: "Aujourd'hui", icon: <Flame className="w-4 h-4" /> },
-    { id: 'plan', label: 'Plan', icon: <Calendar className="w-4 h-4" /> },
-    { id: 'progress', label: 'Progression', icon: <TrendingUp className="w-4 h-4" /> },
-    { id: 'achievements', label: 'Realisations', icon: <Trophy className="w-4 h-4" /> },
-  ] as const, []);
+  const tabs = useMemo(
+    () =>
+      [
+        { id: 'today', label: "Aujourd'hui", icon: <Flame className="w-4 h-4" /> },
+        { id: 'plan', label: 'Plan', icon: <Calendar className="w-4 h-4" /> },
+        { id: 'progress', label: 'Progression', icon: <TrendingUp className="w-4 h-4" /> },
+        { id: 'achievements', label: 'Realisations', icon: <Trophy className="w-4 h-4" /> },
+      ] as const,
+    [],
+  );
 
   return (
     <div className="space-y-6 animate-fade-in max-w-6xl mx-auto">
@@ -236,12 +232,12 @@ export default function CoachContent() {
               key={tab.id}
               role="tab"
               aria-selected={activeTab === tab.id}
-              onClick={() => setActiveTab(tab.id as typeof tabs[number]['id'])}
+              onClick={() => setActiveTab(tab.id as (typeof tabs)[number]['id'])}
               className={cn(
                 'flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200',
                 activeTab === tab.id
                   ? 'bg-primary text-white shadow-sm'
-                  : 'text-muted hover:text-foreground hover:bg-muted/20'
+                  : 'text-muted hover:text-foreground hover:bg-muted/20',
               )}
             >
               <span className="w-4 h-4">{tab.icon}</span>

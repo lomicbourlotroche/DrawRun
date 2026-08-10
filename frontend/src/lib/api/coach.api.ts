@@ -2,12 +2,12 @@
  * ============================================================
  * COACH API - Endpoints coaching et plans d'entraînement
  * ============================================================
- * 
+ *
  * Ce fichier contient tous les endpoints liés au coaching :
  * - Génération et gestion de plans
  * - Feedback et sessions
  * - Tests VMA/VDOT
- * 
+ *
  * @module lib/api/coach.api
  */
 
@@ -247,7 +247,9 @@ export const coachApi = {
   /**
    * Adapte le plan en fonction du feedback
    */
-  adaptPlanBasedOnFeedback(params: PlanFeedback): Promise<{ success: boolean; adaptation: { adjustedSessions: number; reason: string } }> {
+  adaptPlanBasedOnFeedback(
+    params: PlanFeedback,
+  ): Promise<{ success: boolean; adaptation: { adjustedSessions: number; reason: string } }> {
     return client.request('/api/coach/adapt-plan', {
       method: 'POST',
       body: JSON.stringify(params),

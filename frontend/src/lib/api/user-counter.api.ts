@@ -47,9 +47,7 @@ export const getUserCount = async (): Promise<UserCountResponse> => {
  * @param callback Fonction appelée à chaque mise à jour du compteur
  * @returns Fonction pour se désabonner
  */
-export const subscribeToUserCount = (
-  callback: (_count: number) => void
-): (() => void) => {
+export const subscribeToUserCount = (callback: (_count: number) => void): (() => void) => {
   // Ajouter le callback à la liste des abonnés
   subscribers.push(callback);
 
@@ -117,17 +115,17 @@ const connectWebSocket = (): void => {
  * @returns Promesse avec le compteur initial et fonction de désabonnement
  */
 export const getUserCountAndSubscribe = async (
-  callback: (_count: number) => void
+  callback: (_count: number) => void,
 ): Promise<{ count: number; unsubscribe: () => void }> => {
   // Récupérer le compteur initial
   const initialCount = await getUserCount();
-  
+
   // S'abonner aux mises à jour
   const unsubscribe = subscribeToUserCount(callback);
-  
+
   // Appeler le callback avec le compteur initial
   callback(initialCount.count);
-  
+
   return {
     count: initialCount.count,
     unsubscribe,

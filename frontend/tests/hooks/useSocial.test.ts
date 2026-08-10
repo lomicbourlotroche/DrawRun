@@ -3,12 +3,20 @@
  * USE SOCIAL HOOK TESTS
  * ============================================================
  * Tests unitaires pour le hook useSocial.ts
- * 
+ *
  * @module tests/hooks/useSocial
  */
 
 import { renderHook, act } from '@testing-library/react';
-import { useFriends, useGroups, useLeaderboard, useFeed, useChallenges, formatPace, getSportGradient } from '@/hooks/useSocial';
+import {
+  useFriends,
+  useGroups,
+  useLeaderboard,
+  useFeed,
+  useChallenges,
+  formatPace,
+  getSportGradient,
+} from '@/hooks/useSocial';
 import { SOCIAL_ERRORS } from '@/constants/social';
 
 // Mock de l'API
@@ -70,7 +78,7 @@ describe('useSocial hooks', () => {
 
       const { result } = renderHook(() => useFriends());
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       expect(result.current.isLoading).toBe(false);
       expect(result.current.friends).toEqual(mockFriends);
@@ -86,7 +94,7 @@ describe('useSocial hooks', () => {
       const { result } = renderHook(() => useFriends());
 
       // Wait for initial load
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Trigger search
       await act(async () => {
@@ -102,7 +110,7 @@ describe('useSocial hooks', () => {
 
       const { result } = renderHook(() => useFriends());
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Add initial search results
       act(() => {
@@ -110,7 +118,7 @@ describe('useSocial hooks', () => {
       });
 
       await act(async () => {
-        await new Promise(resolve => setTimeout(resolve, 350));
+        await new Promise((resolve) => setTimeout(resolve, 350));
       });
 
       const initialResults = result.current.searchResults;
@@ -121,7 +129,7 @@ describe('useSocial hooks', () => {
       });
 
       expect(mockApi.sendFriendRequest).toHaveBeenCalledWith(1);
-      expect(result.current.searchResults).toEqual(initialResults.filter(u => u.id !== 1));
+      expect(result.current.searchResults).toEqual(initialResults.filter((u) => u.id !== 1));
     });
 
     it('should handle accept friend request', async () => {
@@ -129,7 +137,7 @@ describe('useSocial hooks', () => {
 
       const { result } = renderHook(() => useFriends());
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       await act(async () => {
         await result.current.handleAccept(1);
@@ -144,7 +152,7 @@ describe('useSocial hooks', () => {
 
       const { result } = renderHook(() => useFriends());
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       await act(async () => {
         await result.current.handleRemove(1);
@@ -160,7 +168,7 @@ describe('useSocial hooks', () => {
 
       const { result } = renderHook(() => useFriends());
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       expect(result.current.error).toBe(SOCIAL_ERRORS.FETCH_FRIENDS);
       expect(result.current.friends).toEqual([]);
@@ -189,7 +197,7 @@ describe('useSocial hooks', () => {
 
       const { result } = renderHook(() => useGroups());
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       expect(result.current.isLoading).toBe(false);
       expect(result.current.groups).toEqual(mockGroups);
@@ -201,7 +209,7 @@ describe('useSocial hooks', () => {
 
       const { result } = renderHook(() => useGroups());
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       await act(async () => {
         await result.current.handleLeave(1);
@@ -217,7 +225,7 @@ describe('useSocial hooks', () => {
 
       const { result } = renderHook(() => useGroups());
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       await act(async () => {
         await result.current.handleSearch('test');
@@ -248,7 +256,7 @@ describe('useSocial hooks', () => {
 
       const { result } = renderHook(() => useLeaderboard());
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       expect(result.current.isLoading).toBe(false);
       expect(result.current.entries).toEqual(mockEntries);
@@ -264,13 +272,13 @@ describe('useSocial hooks', () => {
 
       const { result, waitForNextUpdate: _waitForNextUpdate, rerender: _rerender } = renderHook(() => useLeaderboard());
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       act(() => {
         result.current.setCategory('duration');
       });
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       expect(mockApi.getLeaderboard).toHaveBeenCalledWith({ category: 'duration', period: 'week' });
     });
@@ -282,13 +290,13 @@ describe('useSocial hooks', () => {
 
       const { result } = renderHook(() => useLeaderboard());
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       act(() => {
         result.current.setPeriod('month');
       });
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       expect(mockApi.getLeaderboard).toHaveBeenCalledWith({ category: 'distance', period: 'month' });
     });
@@ -314,21 +322,23 @@ describe('useSocial hooks', () => {
 
       const { result } = renderHook(() => useFeed());
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       expect(result.current.isLoading).toBe(false);
       expect(result.current.activities).toEqual(mockActivities);
     });
 
     it('should handle like activity', async () => {
-      const mockActivities = [{ id: 1, type: 'Running', name: 'Run', owner_name: 'User', like_count: 0, user_liked: false }];
+      const mockActivities = [
+        { id: 1, type: 'Running', name: 'Run', owner_name: 'User', like_count: 0, user_liked: false },
+      ];
 
       mockApi.getSocialFeed.mockResolvedValue(mockActivities);
       mockApi.likeActivity.mockResolvedValue({});
 
       const { result } = renderHook(() => useFeed());
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       await act(async () => {
         await result.current.handleLike(1, false);
@@ -340,14 +350,16 @@ describe('useSocial hooks', () => {
     });
 
     it('should handle unlike activity', async () => {
-      const mockActivities = [{ id: 1, type: 'Running', name: 'Run', owner_name: 'User', like_count: 1, user_liked: true }];
+      const mockActivities = [
+        { id: 1, type: 'Running', name: 'Run', owner_name: 'User', like_count: 1, user_liked: true },
+      ];
 
       mockApi.getSocialFeed.mockResolvedValue(mockActivities);
       mockApi.unlikeActivity.mockResolvedValue({});
 
       const { result } = renderHook(() => useFeed());
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       await act(async () => {
         await result.current.handleLike(1, true);
@@ -365,7 +377,7 @@ describe('useSocial hooks', () => {
 
       const { result } = renderHook(() => useFeed());
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       act(() => {
         result.current.loadFeed(true);
@@ -373,7 +385,7 @@ describe('useSocial hooks', () => {
 
       expect(result.current.isRefreshing).toBe(true);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       expect(result.current.isRefreshing).toBe(false);
       expect(mockApi.getSocialFeed).toHaveBeenCalledTimes(2);
@@ -401,7 +413,7 @@ describe('useSocial hooks', () => {
 
       const { result } = renderHook(() => useChallenges());
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       expect(result.current.isLoading).toBe(false);
       expect(result.current.publicChallenges).toEqual(mockPublicChallenges);
@@ -413,7 +425,7 @@ describe('useSocial hooks', () => {
 
       const { result } = renderHook(() => useChallenges());
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       await act(async () => {
         await result.current.handleJoin(1);
@@ -428,7 +440,7 @@ describe('useSocial hooks', () => {
 
       const { result } = renderHook(() => useChallenges());
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       await act(async () => {
         await result.current.handleJoin(1);
@@ -442,14 +454,12 @@ describe('useSocial hooks', () => {
 describe('Utility functions', () => {
   describe('formatPace', () => {
     it('should return "--" for invalid speed', () => {
-      
       expect(formatPace(0)).toBe('--');
       expect(formatPace(-1)).toBe('--');
       expect(formatPace(NaN)).toBe('--');
     });
 
     it('should format pace correctly', () => {
-      
       // 5 m/s = 3:20/km (1000/(5*60) = 3.333... min/km)
       expect(formatPace(5)).toBe('3:20');
       // 3.333 m/s = 5:00/km (1000/(3.333*60) = 5 min/km)
@@ -459,14 +469,12 @@ describe('Utility functions', () => {
 
   describe('getSportGradient', () => {
     it('should return gradient for known sports', () => {
-      
       expect(getSportGradient('Running')).toBe('from-orange-500 to-red-500');
       expect(getSportGradient('Cycling')).toBe('from-blue-500 to-cyan-500');
       expect(getSportGradient('Swimming')).toBe('from-cyan-500 to-blue-400');
     });
 
     it('should return default gradient for unknown sports', () => {
-      
       expect(getSportGradient('Unknown')).toBe('from-primary to-blue-500');
     });
   });

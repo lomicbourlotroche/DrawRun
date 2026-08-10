@@ -2,21 +2,18 @@
  * ============================================================
  * ALGO API - Endpoints algorithmes scientifiques
  * ============================================================
- * 
+ *
  * Ce fichier contient tous les endpoints d'algorithmes :
  * - Zones d'entraînement
  * - VDOT, PMC, TSS
  * - Recommandations
  * - Readiness
- * 
+ *
  * @module lib/api/algo.api
  */
 
 import { client } from './client';
-import type { 
-  Recommendation, 
-  HRZone,
-} from '@/types';
+import type { Recommendation, HRZone } from '@/types';
 import type {
   AlgoZonesParams,
   AlgoZonesResponse,
@@ -95,7 +92,9 @@ export const algoApi = {
   /**
    * Calcule la polarisation
    */
-  getPolarization(activities: Array<{ zonePercent?: { 1?: number; 2?: number; 3?: number; 4?: number; 5?: number } }>): Promise<{
+  getPolarization(
+    activities: Array<{ zonePercent?: { 1?: number; 2?: number; 3?: number; 4?: number; 5?: number } }>,
+  ): Promise<{
     index: number;
     distribution: { low: number; moderate: number; high: number };
     classification: { type: string; label: string; optimal: boolean };
@@ -132,7 +131,13 @@ export const algoApi = {
     style: string;
     currentLoad: number;
     daysToCompetition: number;
-    plan: Array<{ daysOut: number; loadPercent: number; targetLoad: number; intensity: number; isCompetition: boolean }>;
+    plan: Array<{
+      daysOut: number;
+      loadPercent: number;
+      targetLoad: number;
+      intensity: number;
+      isCompetition: boolean;
+    }>;
     summary: { startLoad: number; competitionLoad: number; reduction: string };
   }> {
     const query = new URLSearchParams();

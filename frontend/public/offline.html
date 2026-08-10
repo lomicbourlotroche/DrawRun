@@ -1,96 +1,112 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DrawRun — Hors ligne</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #000;
-      color: #fff;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 2rem;
-    }
-    .container { max-width: 400px; }
-    .logo {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 2rem;
-    }
-    .logo svg {
-      width: 100%;
-      height: 100%;
-    }
-    h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; }
-    p { color: #9ca3af; line-height: 1.6; margin-bottom: 1.5rem; }
-    button {
-      background: #3b82f6;
-      color: #fff;
-      border: none;
-      padding: 0.75rem 2rem;
-      border-radius: 0.75rem;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    button:hover { background: #2563eb; }
-    .status {
-      margin-top: 1.5rem;
-      font-size: 0.875rem;
-      color: #6b7280;
-    }
-    .dot {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      background: #ef4444;
-      border-radius: 50%;
-      margin-right: 0.5rem;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="logo">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-        <defs>
-          <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
-            <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
-          </linearGradient>
-        </defs>
-        <circle cx="100" cy="100" r="90" fill="white"/>
-        <path d="M 115 30 L 75 105 L 100 105 L 85 170 L 130 90 L 105 90 Z" fill="url(#boltGrad)"/>
-      </svg>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DrawRun — Hors ligne</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #000;
+        color: #fff;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2rem;
+      }
+      .container {
+        max-width: 400px;
+      }
+      .logo {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 2rem;
+      }
+      .logo svg {
+        width: 100%;
+        height: 100%;
+      }
+      h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+      }
+      p {
+        color: #9ca3af;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+      }
+      button {
+        background: #3b82f6;
+        color: #fff;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 0.75rem;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      button:hover {
+        background: #2563eb;
+      }
+      .status {
+        margin-top: 1.5rem;
+        font-size: 0.875rem;
+        color: #6b7280;
+      }
+      .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background: #ef4444;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+          <defs>
+            <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color: #3b82f6; stop-opacity: 1" />
+              <stop offset="100%" style="stop-color: #1d4ed8; stop-opacity: 1" />
+            </linearGradient>
+          </defs>
+          <circle cx="100" cy="100" r="90" fill="white" />
+          <path d="M 115 30 L 75 105 L 100 105 L 85 170 L 130 90 L 105 90 Z" fill="url(#boltGrad)" />
+        </svg>
+      </div>
+      <h1>Vous êtes hors ligne</h1>
+      <p>DrawRun nécessite une connexion internet pour charger vos données. Vérifiez votre connexion et réessayez.</p>
+      <button onclick="window.location.reload()">Réessayer</button>
+      <div class="status">
+        <span class="dot"></span>
+        Pas de connexion internet
+      </div>
     </div>
-    <h1>Vous êtes hors ligne</h1>
-    <p>
-      DrawRun nécessite une connexion internet pour charger vos données.
-      Vérifiez votre connexion et réessayez.
-    </p>
-    <button onclick="window.location.reload()">
-      Réessayer
-    </button>
-    <div class="status">
-      <span class="dot"></span>
-      Pas de connexion internet
-    </div>
-  </div>
-  <script>
-    // Recharger automatiquement quand la connexion revient
-    window.addEventListener('online', () => window.location.reload());
-  </script>
-</body>
+    <script>
+      // Recharger automatiquement quand la connexion revient
+      window.addEventListener('online', () => window.location.reload());
+    </script>
+  </body>
 </html>

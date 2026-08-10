@@ -10,13 +10,13 @@ import {
   GlassCardTitle,
   GlassCardDescription,
   GlassCardContent,
-  GlassCardFooter
+  GlassCardFooter,
 } from '@/components/ui';
 
 describe('GlassCard component', () => {
   it('renders with default props', () => {
     render(<GlassCard>Content</GlassCard>);
-    
+
     const card = screen.getByText('Content');
     expect(card).toBeInTheDocument();
     expect(card).toHaveClass('rounded-xl');
@@ -29,20 +29,24 @@ describe('GlassCard component', () => {
 
   it('renders children', () => {
     render(<GlassCard>Test Content</GlassCard>);
-    
+
     expect(screen.getByText('Test Content')).toBeInTheDocument();
   });
 
   it('applies custom className', () => {
     render(<GlassCard className="custom-class">Content</GlassCard>);
-    
+
     const card = screen.getByText('Content');
     expect(card).toHaveClass('custom-class');
   });
 
   it('has hover effect when hover prop is true with elevated variant', () => {
-    render(<GlassCard variant="elevated" hover>Content</GlassCard>);
-    
+    render(
+      <GlassCard variant="elevated" hover>
+        Content
+      </GlassCard>,
+    );
+
     const card = screen.getByText('Content');
     expect(card.className).toContain('hover:shadow-lg');
     expect(card.className).toContain('hover:border-primary/20');
@@ -51,7 +55,7 @@ describe('GlassCard component', () => {
 
   it('has hover effect by default', () => {
     render(<GlassCard>Content</GlassCard>);
-    
+
     const card = screen.getByText('Content');
     expect(card.className).toContain('hover:shadow');
     expect(card.className).toContain('hover:shadow-md');
@@ -59,7 +63,7 @@ describe('GlassCard component', () => {
 
   it('disables hover effect when hover prop is false', () => {
     render(<GlassCard hover={false}>Content</GlassCard>);
-    
+
     const card = screen.getByText('Content');
     expect(card.className).not.toContain('hover:shadow-md');
     expect(card.className).not.toContain('hover:border-primary-200/50');
@@ -68,12 +72,12 @@ describe('GlassCard component', () => {
 
   it('applies padding classes correctly', () => {
     const paddings = ['none', 'xs', 'sm', 'md', 'lg', 'xl'] as const;
-    
-    paddings.forEach(padding => {
+
+    paddings.forEach((padding) => {
       const { container, unmount } = render(<GlassCard padding={padding}>Content</GlassCard>);
-      
+
       const card = container.querySelector('div') as HTMLElement;
-      
+
       switch (padding) {
         case 'none':
           expect(card.className).not.toMatch(/p-[0-9]/);
@@ -103,12 +107,12 @@ describe('GlassCard component', () => {
 
   it('applies variant classes correctly', () => {
     const variants = ['default', 'elevated', 'subtle'] as const;
-    
-    variants.forEach(variant => {
+
+    variants.forEach((variant) => {
       const { container } = render(<GlassCard variant={variant}>Content</GlassCard>);
-      
+
       const card = container.firstChild as HTMLElement;
-      
+
       switch (variant) {
         case 'default':
           expect(card.className).toContain('bg-surface/90');
@@ -127,7 +131,7 @@ describe('GlassCard component', () => {
 
   it('has transition classes', () => {
     render(<GlassCard>Content</GlassCard>);
-    
+
     const card = screen.getByText('Content');
     expect(card.className).toContain('transition-all');
     expect(card.className).toContain('duration-300');
@@ -138,7 +142,7 @@ describe('GlassCard component', () => {
     // This test verifies that the component can accept a ref
     // In a real test environment with proper DOM, we would test ref assignment
     render(<GlassCard data-testid="glass-card">Content</GlassCard>);
-    
+
     const card = screen.getByTestId('glass-card');
     expect(card).toBeInTheDocument();
   });
@@ -151,13 +155,13 @@ describe('GlassCard component', () => {
 describe('GlassCardHeader component', () => {
   it('renders children', () => {
     render(<GlassCardHeader>Header Content</GlassCardHeader>);
-    
+
     expect(screen.getByText('Header Content')).toBeInTheDocument();
   });
 
   it('applies default styles', () => {
     render(<GlassCardHeader>Header</GlassCardHeader>);
-    
+
     const header = screen.getByText('Header');
     expect(header).toHaveClass('flex');
     expect(header).toHaveClass('flex-col');
@@ -169,7 +173,7 @@ describe('GlassCardHeader component', () => {
 
   it('applies custom className', () => {
     render(<GlassCardHeader className="custom-class">Header</GlassCardHeader>);
-    
+
     const header = screen.getByText('Header');
     expect(header).toHaveClass('custom-class');
   });
@@ -182,20 +186,20 @@ describe('GlassCardHeader component', () => {
 describe('GlassCardTitle component', () => {
   it('renders children', () => {
     render(<GlassCardTitle>Title Content</GlassCardTitle>);
-    
+
     expect(screen.getByText('Title Content')).toBeInTheDocument();
   });
 
   it('renders as h3 element', () => {
     render(<GlassCardTitle>Title</GlassCardTitle>);
-    
+
     const title = screen.getByText('Title');
     expect(title.tagName).toBe('H3');
   });
 
   it('applies default styles', () => {
     render(<GlassCardTitle>Title</GlassCardTitle>);
-    
+
     const title = screen.getByText('Title');
     expect(title).toHaveClass('text-lg');
     expect(title).toHaveClass('font-semibold');
@@ -205,7 +209,7 @@ describe('GlassCardTitle component', () => {
 
   it('applies custom className', () => {
     render(<GlassCardTitle className="custom-class">Title</GlassCardTitle>);
-    
+
     const title = screen.getByText('Title');
     expect(title).toHaveClass('custom-class');
   });
@@ -218,20 +222,20 @@ describe('GlassCardTitle component', () => {
 describe('GlassCardDescription component', () => {
   it('renders children', () => {
     render(<GlassCardDescription>Description Content</GlassCardDescription>);
-    
+
     expect(screen.getByText('Description Content')).toBeInTheDocument();
   });
 
   it('renders as p element', () => {
     render(<GlassCardDescription>Description</GlassCardDescription>);
-    
+
     const description = screen.getByText('Description');
     expect(description.tagName).toBe('P');
   });
 
   it('applies default styles', () => {
     render(<GlassCardDescription>Description</GlassCardDescription>);
-    
+
     const description = screen.getByText('Description');
     expect(description).toHaveClass('text-sm');
     expect(description).toHaveClass('text-muted');
@@ -240,7 +244,7 @@ describe('GlassCardDescription component', () => {
 
   it('applies custom className', () => {
     render(<GlassCardDescription className="custom-class">Description</GlassCardDescription>);
-    
+
     const description = screen.getByText('Description');
     expect(description).toHaveClass('custom-class');
   });
@@ -253,20 +257,20 @@ describe('GlassCardDescription component', () => {
 describe('GlassCardContent component', () => {
   it('renders children', () => {
     render(<GlassCardContent>Content</GlassCardContent>);
-    
+
     expect(screen.getByText('Content')).toBeInTheDocument();
   });
 
   it('applies default styles', () => {
     render(<GlassCardContent>Content</GlassCardContent>);
-    
+
     const content = screen.getByText('Content');
     expect(content).toHaveClass('pt-4');
   });
 
   it('applies custom className', () => {
     render(<GlassCardContent className="custom-class">Content</GlassCardContent>);
-    
+
     const content = screen.getByText('Content');
     expect(content).toHaveClass('custom-class');
   });
@@ -279,13 +283,13 @@ describe('GlassCardContent component', () => {
 describe('GlassCardFooter component', () => {
   it('renders children', () => {
     render(<GlassCardFooter>Footer Content</GlassCardFooter>);
-    
+
     expect(screen.getByText('Footer Content')).toBeInTheDocument();
   });
 
   it('applies default styles', () => {
     render(<GlassCardFooter>Footer</GlassCardFooter>);
-    
+
     const footer = screen.getByText('Footer');
     expect(footer).toHaveClass('flex');
     expect(footer).toHaveClass('items-center');
@@ -298,7 +302,7 @@ describe('GlassCardFooter component', () => {
 
   it('applies custom className', () => {
     render(<GlassCardFooter className="custom-class">Footer</GlassCardFooter>);
-    
+
     const footer = screen.getByText('Footer');
     expect(footer).toHaveClass('custom-class');
   });
@@ -311,7 +315,7 @@ describe('GlassCardFooter component', () => {
 describe('GlassCard accessibility', () => {
   it('GlassCardTitle has heading role', () => {
     render(<GlassCardTitle>Accessible Title</GlassCardTitle>);
-    
+
     const title = screen.getByRole('heading');
     expect(title).toBeInTheDocument();
     expect(title).toHaveTextContent('Accessible Title');
@@ -319,7 +323,7 @@ describe('GlassCard accessibility', () => {
 
   it('GlassCardDescription has paragraph role', () => {
     render(<GlassCardDescription>Accessible Description</GlassCardDescription>);
-    
+
     // In JSDOM, <p> elements don't have a role by default, but they are paragraphs
     const description = screen.getByText('Accessible Description');
     expect(description.tagName).toBe('P');
@@ -333,9 +337,9 @@ describe('GlassCard accessibility', () => {
         </GlassCardHeader>
         <GlassCardContent aria-label="Content">Content</GlassCardContent>
         <GlassCardFooter aria-label="Footer">Footer</GlassCardFooter>
-      </GlassCard>
+      </GlassCard>,
     );
-    
+
     expect(screen.getByLabelText('Glass card')).toBeInTheDocument();
     expect(screen.getByLabelText('Header')).toBeInTheDocument();
     expect(screen.getByLabelText('Title')).toBeInTheDocument();
@@ -358,9 +362,9 @@ describe('GlassCard integration', () => {
         <GlassCardFooter>
           <span>Footer Actions</span>
         </GlassCardFooter>
-      </GlassCard>
+      </GlassCard>,
     );
-    
+
     expect(screen.getByText('Card Title')).toBeInTheDocument();
     expect(screen.getByText('Card Description')).toBeInTheDocument();
     expect(screen.getByText('Card Content')).toBeInTheDocument();
@@ -374,9 +378,9 @@ describe('GlassCard integration', () => {
           <GlassCardTitle>Title</GlassCardTitle>
         </GlassCardHeader>
         <GlassCardContent>Content</GlassCardContent>
-      </GlassCard>
+      </GlassCard>,
     );
-    
+
     const card = screen.getByText('Title').parentElement?.parentElement;
     expect(card).toHaveClass('shadow-md');
     expect(card).toHaveClass('p-5');

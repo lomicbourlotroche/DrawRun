@@ -34,8 +34,8 @@ export default function RacePlanningGuide() {
             </span>
           </h2>
           <p className="text-lg text-muted max-w-2xl mx-auto">
-            Le Race Planning de DrawRun génère une stratégie de course complète : allure cible par kilomètre,
-            zones de fréquence cardiaque, ravitaillements et ajustements selon le profil du terrain.
+            Le Race Planning de DrawRun génère une stratégie de course complète : allure cible par kilomètre, zones de
+            fréquence cardiaque, ravitaillements et ajustements selon le profil du terrain.
           </p>
         </div>
 
@@ -46,8 +46,9 @@ export default function RacePlanningGuide() {
             Splits kilométriques
           </h3>
           <p className="text-muted mb-6 leading-relaxed">
-            Pour chaque kilomètre de votre course, l&apos;algorithme calcule l&apos;allure cible optimale en fonction de votre VDOT,
-            du profil du terrain et de la stratégie de course choisie (even pace, negative split, positive split).
+            Pour chaque kilomètre de votre course, l&apos;algorithme calcule l&apos;allure cible optimale en fonction de
+            votre VDOT, du profil du terrain et de la stratégie de course choisie (even pace, negative split, positive
+            split).
           </p>
           <div className="p-4 bg-amber-50 rounded-xl border border-amber-100">
             <p className="text-sm text-amber-800">
@@ -68,9 +69,13 @@ export default function RacePlanningGuide() {
           </p>
           <div className="space-y-3">
             {[
-              { phase: 'Départ (km 1-3)', zone: 'Zone 2-3 (70-80% FCM)', desc: 'Contenir l\'excitation du départ' },
+              { phase: 'Départ (km 1-3)', zone: 'Zone 2-3 (70-80% FCM)', desc: "Contenir l'excitation du départ" },
               { phase: 'Croisière (km 4-80%)', zone: 'Zone 3-4 (80-90% FCM)', desc: 'Allure cible, effort soutenu' },
-              { phase: 'Fin de course (derniers 20%)', zone: 'Zone 4-5 (90-100% FCM)', desc: 'Push final si la réserve le permet' },
+              {
+                phase: 'Fin de course (derniers 20%)',
+                zone: 'Zone 4-5 (90-100% FCM)',
+                desc: 'Push final si la réserve le permet',
+              },
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-4 p-3 bg-background rounded-xl">
                 <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
@@ -78,7 +83,9 @@ export default function RacePlanningGuide() {
                 </div>
                 <div>
                   <p className="font-semibold text-sm">{item.phase}</p>
-                  <p className="text-xs text-muted">{item.zone} — {item.desc}</p>
+                  <p className="text-xs text-muted">
+                    {item.zone} — {item.desc}
+                  </p>
                 </div>
               </div>
             ))}
@@ -97,11 +104,15 @@ export default function RacePlanningGuide() {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="p-4 bg-blue-50 rounded-xl">
               <h4 className="font-semibold text-blue-700 mb-2">Hydratation</h4>
-              <p className="text-sm text-primary">200-300ml d&apos;eau toutes les 20-30 minutes (5-7 km). Ajusté selon la température.</p>
+              <p className="text-sm text-primary">
+                200-300ml d&apos;eau toutes les 20-30 minutes (5-7 km). Ajusté selon la température.
+              </p>
             </div>
             <div className="p-4 bg-orange-50 rounded-xl">
               <h4 className="font-semibold text-orange-700 mb-2">Glucides</h4>
-              <p className="text-sm text-orange-600">1 gel toutes les 30-45 minutes pour les courses &gt; 1h. 30-60g de glucides/heure.</p>
+              <p className="text-sm text-orange-600">
+                1 gel toutes les 30-45 minutes pour les courses &gt; 1h. 30-60g de glucides/heure.
+              </p>
             </div>
           </div>
         </div>
@@ -116,7 +127,11 @@ export default function RacePlanningGuide() {
             {[
               { profile: 'Plat', factor: '×1.00', desc: 'Aucun ajustement, allure constante' },
               { profile: 'Vallonné', factor: '×1.05', desc: '+5% sur les montées, -5% sur les descentes' },
-              { profile: 'Montagneux', factor: '×1.15', desc: '+15% montées, attention aux descentes (impact musculaire)' },
+              {
+                profile: 'Montagneux',
+                factor: '×1.15',
+                desc: '+15% montées, attention aux descentes (impact musculaire)',
+              },
             ].map((item, i) => (
               <div key={i} className="flex items-center justify-between p-3 bg-background rounded-xl">
                 <div>
@@ -138,15 +153,21 @@ export default function RacePlanningGuide() {
           <ul className="space-y-2 text-sm text-muted">
             <li className="flex items-start gap-2">
               <span className="text-danger mt-1">•</span>
-              <span><strong>Fatigue élevée (TSB &lt; -30) :</strong> le plan recommande de réduire l&apos;objectif de temps</span>
+              <span>
+                <strong>Fatigue élevée (TSB &lt; -30) :</strong> le plan recommande de réduire l&apos;objectif de temps
+              </span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-amber-500 mt-1">•</span>
-              <span><strong>ACWR &gt; 1.5 :</strong> risque de blessure, stratégie conservatrice activée</span>
+              <span>
+                <strong>ACWR &gt; 1.5 :</strong> risque de blessure, stratégie conservatrice activée
+              </span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-primary mt-1">•</span>
-              <span><strong>Température &gt; 25°C :</strong> +3-5% sur l&apos;allure cible (dégradation thermique)</span>
+              <span>
+                <strong>Température &gt; 25°C :</strong> +3-5% sur l&apos;allure cible (dégradation thermique)
+              </span>
             </li>
           </ul>
         </div>
@@ -155,7 +176,9 @@ export default function RacePlanningGuide() {
         <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-3xl p-8 text-white text-center">
           <Trophy className="w-12 h-12 mx-auto mb-4" />
           <h3 className="text-2xl font-bold mb-3">Planifiez votre prochaine course</h3>
-          <p className="text-white/80 mb-6">Obtenez une stratégie personnalisée basée sur votre niveau et votre objectif.</p>
+          <p className="text-white/80 mb-6">
+            Obtenez une stratégie personnalisée basée sur votre niveau et votre objectif.
+          </p>
           <button
             onClick={() => router.push('/login?mode=register')}
             className="px-8 py-3 bg-surface text-amber-600 font-semibold rounded-xl hover:bg-surface transition-colors"

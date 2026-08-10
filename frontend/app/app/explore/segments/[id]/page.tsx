@@ -116,8 +116,8 @@ export default function SegmentDetailPage() {
     <div className="container mx-auto p-4 max-w-4xl">
       {/* Header */}
       <div className="mb-6">
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           className="mb-4"
           onClick={() => window.history.back()}
           aria-label="Retour à la page précédente"
@@ -132,16 +132,19 @@ export default function SegmentDetailPage() {
             <p className="text-muted-foreground">{segment.description}</p>
             <div className="flex items-center gap-2 mt-2">
               <Badge variant="secondary">{segment.activity_type}</Badge>
-              <span className="text-sm text-muted-foreground">
-                Créé par {segment.creator_name || 'Anonymous'}
-              </span>
+              <span className="text-sm text-muted-foreground">Créé par {segment.creator_name || 'Anonymous'}</span>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={() => {
-            const url = `${window.location.origin}/app/explore/segments/${segmentId}`;
-            navigator.clipboard.writeText(url);
-            toast.success('Lien copié');
-          }} aria-label="Partager ce segment">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const url = `${window.location.origin}/app/explore/segments/${segmentId}`;
+              navigator.clipboard.writeText(url);
+              toast.success('Lien copié');
+            }}
+            aria-label="Partager ce segment"
+          >
             <Share2 className="w-4 h-4 mr-2" aria-hidden="true" />
             Partager
           </Button>
@@ -207,9 +210,7 @@ export default function SegmentDetailPage() {
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{segment.kom.user_name}</p>
-              <p className="text-2xl font-bold text-warning-600">
-                {formatDuration(segment.kom.elapsed_time || 0)}
-              </p>
+              <p className="text-2xl font-bold text-warning-600">{formatDuration(segment.kom.elapsed_time || 0)}</p>
             </CardContent>
           </Card>
         )}
@@ -224,9 +225,7 @@ export default function SegmentDetailPage() {
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{segment.qom.user_name}</p>
-              <p className="text-2xl font-bold text-secondary-600">
-                {formatDuration(segment.qom.elapsed_time || 0)}
-              </p>
+              <p className="text-2xl font-bold text-secondary-600">{formatDuration(segment.qom.elapsed_time || 0)}</p>
             </CardContent>
           </Card>
         )}
@@ -244,24 +243,15 @@ export default function SegmentDetailPage() {
           <CardContent>
             <div className="space-y-2">
               {myEfforts.map((effort) => (
-                <div 
-                  key={effort.id} 
-                  className="flex items-center justify-between p-3 bg-muted rounded-lg"
-                >
+                <div key={effort.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                   <div>
                     <p className="font-medium">{effort.activity_name || 'Activité'}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(effort.start_date).toLocaleDateString()}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{new Date(effort.start_date).toLocaleDateString()}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-mono font-bold">
-                      {formatDuration(effort.elapsed_time)}
-                    </p>
+                    <p className="font-mono font-bold">{formatDuration(effort.elapsed_time)}</p>
                     {effort.avg_watts && (
-                      <p className="text-sm text-muted-foreground">
-                        {Math.round(effort.avg_watts)}W
-                      </p>
+                      <p className="text-sm text-muted-foreground">{Math.round(effort.avg_watts)}W</p>
                     )}
                   </div>
                 </div>

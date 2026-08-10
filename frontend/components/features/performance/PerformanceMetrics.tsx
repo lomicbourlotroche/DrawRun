@@ -61,22 +61,64 @@ export function PerformanceMetrics({ sport, metrics, readiness, isLoading }: Per
         return [
           { label: 'VMA', value: safeToFixed(metrics.vma), unit: 'km/h', icon: Zap, color: 'var(--primary)' },
           { label: 'VDOT', value: safeToFixed(metrics.vdot), unit: '', icon: Activity, color: 'var(--success)' },
-          { label: 'VO2 Max', value: safeToFixed(metrics.vo2max, 0), unit: 'ml/kg/min', icon: Heart, color: 'var(--danger)' },
-          { label: 'Endurance', value: safeToFixed(metrics.endurance, 0), unit: '%', icon: TrendingUp, color: 'var(--secondary)' },
+          {
+            label: 'VO2 Max',
+            value: safeToFixed(metrics.vo2max, 0),
+            unit: 'ml/kg/min',
+            icon: Heart,
+            color: 'var(--danger)',
+          },
+          {
+            label: 'Endurance',
+            value: safeToFixed(metrics.endurance, 0),
+            unit: '%',
+            icon: TrendingUp,
+            color: 'var(--secondary)',
+          },
         ];
       case 'bike':
         return [
           { label: 'FTP', value: metrics.ftp ? String(metrics.ftp) : '-', unit: 'W', icon: Zap, color: 'var(--peak)' },
           { label: 'W/Kg', value: safeToFixed(metrics.wkg), unit: 'W/kg', icon: Activity, color: 'var(--success)' },
-          { label: 'VO2 Max', value: safeToFixed(metrics.vo2max, 0), unit: 'ml/kg/min', icon: Heart, color: 'var(--danger)' },
-          { label: 'Endurance', value: safeToFixed(metrics.endurance, 0), unit: '%', icon: TrendingUp, color: 'var(--secondary)' },
+          {
+            label: 'VO2 Max',
+            value: safeToFixed(metrics.vo2max, 0),
+            unit: 'ml/kg/min',
+            icon: Heart,
+            color: 'var(--danger)',
+          },
+          {
+            label: 'Endurance',
+            value: safeToFixed(metrics.endurance, 0),
+            unit: '%',
+            icon: TrendingUp,
+            color: 'var(--secondary)',
+          },
         ];
       case 'swim':
         return [
-          { label: 'CSS', value: safeToFixed(metrics.css, 0), unit: 'min/km', icon: Activity, color: 'var(--secondary)' },
-          { label: 'VO2 Aqua', value: safeToFixed(metrics.vo2max, 0), unit: 'ml/kg/min', icon: Heart, color: 'var(--danger)' },
+          {
+            label: 'CSS',
+            value: safeToFixed(metrics.css, 0),
+            unit: 'min/km',
+            icon: Activity,
+            color: 'var(--secondary)',
+          },
+          {
+            label: 'VO2 Aqua',
+            value: safeToFixed(metrics.vo2max, 0),
+            unit: 'ml/kg/min',
+            icon: Heart,
+            color: 'var(--danger)',
+          },
           { label: 'SWOLF', value: '-', unit: '', icon: Activity, color: 'var(--success)' },
-          { label: 'Endurance', value: safeToFixed(metrics.endurance, 0), unit: '%', icon: TrendingUp, color: 'var(--primary)' },
+          {
+            label: 'Endurance',
+            value: safeToFixed(metrics.endurance, 0),
+            unit: '%',
+            icon: TrendingUp,
+            color: 'var(--primary)',
+          },
         ];
       default:
         return [];
@@ -103,10 +145,7 @@ export function PerformanceMetrics({ sport, metrics, readiness, isLoading }: Per
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {mainMetrics.map((metric) => (
-              <div
-                key={metric.label}
-                className="p-4 rounded-lg bg-background text-center"
-              >
+              <div key={metric.label} className="p-4 rounded-lg bg-background text-center">
                 <div
                   className="w-10 h-10 rounded-lg mx-auto mb-3 flex items-center justify-center"
                   style={{ backgroundColor: `${metric.color}20`, color: metric.color }}
@@ -153,7 +192,15 @@ export function PerformanceMetrics({ sport, metrics, readiness, isLoading }: Per
                 value={readiness?.score ?? 0}
                 size={160}
                 strokeWidth={12}
-                variant={readiness?.status === 'excellent' ? 'success' : readiness?.status === 'good' ? 'primary' : readiness?.status === 'moderate' ? 'warning' : 'danger'}
+                variant={
+                  readiness?.status === 'excellent'
+                    ? 'success'
+                    : readiness?.status === 'good'
+                      ? 'primary'
+                      : readiness?.status === 'moderate'
+                        ? 'warning'
+                        : 'danger'
+                }
                 color={calculateReadinessColor(readiness?.score ?? 0)}
               />
               <p className="mt-4 text-lg font-medium text-foreground">{readiness?.label ?? 'Non calculé'}</p>

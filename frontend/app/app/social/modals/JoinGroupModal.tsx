@@ -64,12 +64,7 @@ export default function JoinGroupModal({ initialCode = '', onClose, onJoined }: 
           />
         </div>
         <div className="px-5 py-4 border-t border-border flex gap-3">
-          <Button
-            variant="secondary"
-            onClick={onClose}
-            className="flex-1 rounded-xl"
-            aria-label="Annuler"
-          >
+          <Button variant="secondary" onClick={onClose} className="flex-1 rounded-xl" aria-label="Annuler">
             Annuler
           </Button>
           <Button

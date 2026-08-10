@@ -42,7 +42,12 @@ export default function Header() {
   const pageTitle = getPageTitle(pathname);
 
   const initials = user?.name
-    ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
+    ? user.name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
     : 'U';
 
   const handleSync = async () => {
@@ -69,9 +74,7 @@ export default function Header() {
       <div className="flex items-center justify-between h-14 px-4 lg:px-6">
         <div className="flex items-center gap-3 min-w-0">
           <div className="lg:hidden w-10 flex-shrink-0" />
-          <h1 className="text-base lg:text-lg font-semibold text-foreground tracking-tight truncate">
-            {pageTitle}
-          </h1>
+          <h1 className="text-base lg:text-lg font-semibold text-foreground tracking-tight truncate">{pageTitle}</h1>
         </div>
 
         <div className="flex items-center gap-1.5">
@@ -123,12 +126,15 @@ export default function Header() {
                           }}
                           className={cn(
                             'w-full px-4 py-3 text-left transition-colors hover:bg-primary-50/50',
-                            n.unread ? 'bg-primary-50/30' : ''
+                            n.unread ? 'bg-primary-50/30' : '',
                           )}
                         >
                           <p className={cn('text-sm', n.unread ? 'font-medium' : 'text-muted')}>{n.message}</p>
                           <p className="text-xs text-muted mt-1">
-                            {new Date(n.created_at || Date.now()).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                            {new Date(n.created_at || Date.now()).toLocaleDateString('fr-FR', {
+                              day: 'numeric',
+                              month: 'short',
+                            })}
                           </p>
                         </button>
                       ))}
@@ -150,7 +156,10 @@ export default function Header() {
               <div className="w-7 h-7 rounded-full bg-primary-100 border border-primary-200 flex items-center justify-center flex-shrink-0">
                 <span className="text-[10px] font-bold text-primary-700">{initials}</span>
               </div>
-              <ChevronDown size={14} className={cn('text-muted hidden sm:block transition-transform', isUserMenuOpen && 'rotate-180')} />
+              <ChevronDown
+                size={14}
+                className={cn('text-muted hidden sm:block transition-transform', isUserMenuOpen && 'rotate-180')}
+              />
             </button>
 
             {isUserMenuOpen && (

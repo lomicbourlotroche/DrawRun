@@ -12,10 +12,13 @@ function ProfilePageContent() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<string>(searchParams.get('tab') || 'profile');
 
-  const tabs = useMemo(() => [
-    { id: 'profile', label: 'Profil' },
-    { id: 'sync', label: 'Sync' },
-  ], []);
+  const tabs = useMemo(
+    () => [
+      { id: 'profile', label: 'Profil' },
+      { id: 'sync', label: 'Sync' },
+    ],
+    [],
+  );
 
   return (
     <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
@@ -45,7 +48,7 @@ function ProfilePageContent() {
                 'flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200',
                 activeTab === tab.id
                   ? 'bg-primary text-white shadow-sm'
-                  : 'text-muted hover:text-foreground hover:bg-muted/20'
+                  : 'text-muted hover:text-foreground hover:bg-muted/20',
               )}
             >
               {tab.label}

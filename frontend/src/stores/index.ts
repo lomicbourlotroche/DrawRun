@@ -3,17 +3,17 @@
  * ============================================================
  * STORES ZUSTAND - Gestion d'état de l'application
  * ============================================================
- * 
+ *
  * Ce fichier contient les stores Zustand qui gèrent
  * l'état global de l'application frontend.
- * 
+ *
  * === FONCTIONNEMENT ===
  * - Zustand est une bibliothèque de gestion d'état
  * - Les stores utilisent le pattern "persist" pour
  *   sauvegarder dans sessionStorage (token, utilisateur)
  * - Chaque store exporte des fonctions pour
  *   modifier l'état (login, logout, etc.)
- * 
+ *
  * === STORES DÉfinis ===
  * - useAuthStore    : Authentication (user, token, login, logout)
  * - useDashboardStore : Métriques du dashboard
@@ -22,7 +22,7 @@
  * - useSyncStore    : Synchronisation Garmin, Decathlon
  * - useNotificationsStore : Notifications push
  * - useUserConstantsStore : Constantes physiologiques (VDOT, VMA, FCM)
- * 
+ *
  * @module stores/index
  */
 
@@ -42,7 +42,7 @@ interface AuthState {
   has_garmin: boolean;
   has_decathlon: boolean;
   has_suunto: boolean;
-  
+
   login: (email: string, password: string, totpCode?: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => void;
@@ -78,8 +78,7 @@ export const useAuthStore = create<AuthState>()(
             api.setRefreshToken(response.refreshToken);
           }
 
-          const hasGarmin =
-            response.has_garmin !== undefined ? !!response.has_garmin : !!response.user?.has_garmin;
+          const hasGarmin = response.has_garmin !== undefined ? !!response.has_garmin : !!response.user?.has_garmin;
           const hasDecathlon =
             response.has_decathlon !== undefined ? !!response.has_decathlon : !!response.user?.has_decathlon;
 
@@ -153,7 +152,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       clearError: () => set({ error: null }),
-      
+
       updateUser: (data: Partial<User>) => {
         const currentUser = get().user;
         if (currentUser) {
@@ -168,7 +167,7 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'drawrun-auth',
       storage: createJSONStorage(() => sessionStorage),
-       partialize: (state) => ({
+      partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,
         user: state.user,
         token: state.token,
@@ -190,8 +189,8 @@ export const useAuthStore = create<AuthState>()(
           }
         }
       },
-    }
-  )
+    },
+  ),
 );
 
 interface DashboardState {
@@ -200,7 +199,7 @@ interface DashboardState {
   pmcData: PmcDataPoint[];
   recentActivities: Activity[];
   isLoading: boolean;
-  
+
   setReadiness: (readiness: Readiness) => void;
   setRecommendation: (rec: Recommendation) => void;
   setPmcData: (data: PmcDataPoint[]) => void;
@@ -240,7 +239,7 @@ interface ActivitiesState {
   filter: 'all' | 'run' | 'bike' | 'swim';
   sortBy: 'date' | 'distance' | 'duration';
   isLoading: boolean;
-  
+
   setActivities: (activities: Activity[]) => void;
   setFilteredActivities: (activities: Activity[]) => void;
   setSelectedActivity: (activity: Activity | null) => void;
@@ -264,7 +263,7 @@ export const useActivitiesStore = create<ActivitiesState>((set, get) => ({
     set({ activities });
     get().applyFilterAndSort();
   },
-  
+
   setFilteredActivities: (activities) => set({ filteredActivities: activities }),
   setSelectedActivity: (activity) => set({ selectedActivity: activity }),
   setSelectedStream: (stream) => set({ selectedStream: stream }),
@@ -277,15 +276,15 @@ export const useActivitiesStore = create<ActivitiesState>((set, get) => ({
     get().applyFilterAndSort();
   },
   setLoading: (loading) => set({ isLoading: loading }),
-  
+
   applyFilterAndSort: () => {
     const { activities, filter, sortBy } = get();
     let filtered = activities;
-    
+
     if (filter !== 'all') {
       filtered = activities.filter((a) => a.type === filter);
     }
-    
+
     filtered = [...filtered].sort((a, b) => {
       switch (sortBy) {
         case 'date':
@@ -298,7 +297,7 @@ export const useActivitiesStore = create<ActivitiesState>((set, get) => ({
           return 0;
       }
     });
-    
+
     set({ filteredActivities: filtered });
   },
 }));
@@ -307,7 +306,7 @@ interface PerformanceState {
   sport: 'run' | 'bike' | 'swim';
   zones: Zones | null;
   isLoading: boolean;
-  
+
   setSport: (sport: 'run' | 'bike' | 'swim') => void;
   setZones: (zones: Zones | null) => void;
   setLoading: (loading: boolean) => void;
@@ -344,11 +343,11 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     if (!api.isAuthenticated()) {
       return;
     }
-    
+
     try {
       const status = await api.getSyncStatus();
       set({ status });
-      
+
       const lastGarmin = status.garmin_last_sync ? new Date(status.garmin_last_sync).getTime() : 0;
       const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
       set({ needsSync: lastGarmin < oneDayAgo || status.garmin_status === 'error' });
@@ -361,17 +360,17 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     if (!api.isAuthenticated()) {
       return { success: false, message: 'Non connecté' };
     }
-    
+
     set({ isSyncing: true, lastError: null });
     try {
-      const result = await api.sync(
-        () => { set({ isSyncing: true }); }
-      );
-      
+      const result = await api.sync(() => {
+        set({ isSyncing: true });
+      });
+
       let message = 'Synchronisation terminée';
       let hasError = false;
       let syncedCount = 0;
-      
+
       if (result.garmin) {
         const garminCount = result.garmin.imported ?? result.garmin.updated ?? 0;
         if (garminCount > 0) {
@@ -384,11 +383,11 @@ export const useSyncStore = create<SyncState>((set, get) => ({
           set({ lastError: result.garmin.error });
         }
       }
-      
+
       if (!result.garmin) {
         message = 'Aucun service connecté. Connectez Garmin pour synchroniser.';
       }
-      
+
       await get().fetchStatus();
       set({ isSyncing: false, needsSync: syncedCount > 0 });
       return { success: !hasError, message };
@@ -406,7 +405,7 @@ interface NotificationsState {
   unreadCount: number;
   notifications: SocialNotification[];
   isLoading: boolean;
-  
+
   fetchNotifications: () => Promise<void>;
   markAsRead: (notificationId: number) => Promise<void>;
   markAllAsRead: () => Promise<void>;
@@ -423,19 +422,19 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
     if (!api.isAuthenticated()) {
       return;
     }
-    
+
     set({ isLoading: true });
     try {
       const data = await api.getNotifications({ limit: 50 });
       const notifications: SocialNotification[] = (data.notifications as SocialNotification[]) ?? [];
-      set({ 
+      set({
         notifications,
-        unreadCount: data.unread_count ?? notifications.filter(n => n.unread).length,
+        unreadCount: data.unread_count ?? notifications.filter((n) => n.unread).length,
         isLoading: false,
       });
     } catch (error) {
-      logger.error('Failed to fetch notifications', { 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      logger.error('Failed to fetch notifications', {
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
       set({ isLoading: false });
     }
@@ -444,20 +443,18 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
   markAsRead: async (notificationId: number) => {
     try {
       await api.markNotificationAsRead(notificationId);
-      
+
       const { notifications, unreadCount } = get();
-      const wasUnread = notifications.find(n => n.id === notificationId)?.unread;
-      const updatedNotifications = notifications.map(n => 
-        n.id === notificationId ? { ...n, unread: false } : n
-      );
-      set({ 
+      const wasUnread = notifications.find((n) => n.id === notificationId)?.unread;
+      const updatedNotifications = notifications.map((n) => (n.id === notificationId ? { ...n, unread: false } : n));
+      set({
         notifications: updatedNotifications,
         unreadCount: wasUnread ? Math.max(0, unreadCount - 1) : unreadCount,
       });
     } catch (error) {
-      logger.error('Error marking notification as read', { 
+      logger.error('Error marking notification as read', {
         notificationId,
-        error: error instanceof Error ? error.message : 'Unknown error' 
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   },
@@ -465,27 +462,29 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
   markAllAsRead: async () => {
     try {
       await api.markAllNotificationsAsRead();
-      
+
       const { notifications } = get();
-      const updatedNotifications = notifications.map(n => ({ ...n, unread: false }));
-      set({ 
+      const updatedNotifications = notifications.map((n) => ({ ...n, unread: false }));
+      set({
         notifications: updatedNotifications,
         unreadCount: 0,
       });
     } catch (error) {
-      logger.error('Error marking all notifications as read', { 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      logger.error('Error marking all notifications as read', {
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   },
 
-  incrementUnread: () => set((state) => ({ 
-    unreadCount: state.unreadCount + 1 
-  })),
+  incrementUnread: () =>
+    set((state) => ({
+      unreadCount: state.unreadCount + 1,
+    })),
 
-  decrementUnread: () => set((state) => ({ 
-    unreadCount: Math.max(0, state.unreadCount - 1) 
-  })),
+  decrementUnread: () =>
+    set((state) => ({
+      unreadCount: Math.max(0, state.unreadCount - 1),
+    })),
 }));
 
 // ============================================================================
@@ -498,10 +497,10 @@ interface UserConstantsState {
   data: UserConstantsResponse | null;
   isLoading: boolean;
   lastFetched: number | null;
-  
+
   fetchConstants: () => Promise<UserConstantsResponse | null>;
   invalidate: () => void;
-  
+
   // Convenience getters
   profile: UserProfile | null;
   zones: UserZones | null;
@@ -545,8 +544,8 @@ export const useUserConstantsStore = create<UserConstantsState>()((set, get) => 
       });
       return data;
     } catch (error) {
-      logger.error('Failed to fetch user constants', { 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      logger.error('Failed to fetch user constants', {
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
       set({ isLoading: false });
       return null;

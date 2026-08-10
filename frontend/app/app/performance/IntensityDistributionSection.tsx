@@ -11,7 +11,13 @@ interface PolarizationData {
   target: { low: number; moderate: number; high: number };
 }
 
-export function IntensityDistributionSection({ polarization, error }: { polarization: PolarizationData | null; error: string | null }) {
+export function IntensityDistributionSection({
+  polarization,
+  error,
+}: {
+  polarization: PolarizationData | null;
+  error: string | null;
+}) {
   if (error) {
     return (
       <Card variant="glass">
@@ -59,7 +65,13 @@ export function IntensityDistributionSection({ polarization, error }: { polariza
     bgColor: string;
   }> = [
     { key: 'low', label: 'Faible intensité (Z1–Z2)', targetKey: 'low', color: 'bg-success', bgColor: 'bg-success/10' },
-    { key: 'moderate', label: 'Intensité modérée (Z3)', targetKey: 'moderate', color: 'bg-warning', bgColor: 'bg-warning/10' },
+    {
+      key: 'moderate',
+      label: 'Intensité modérée (Z3)',
+      targetKey: 'moderate',
+      color: 'bg-warning',
+      bgColor: 'bg-warning/10',
+    },
     { key: 'high', label: 'Haute intensité (Z4–Z5)', targetKey: 'high', color: 'bg-danger', bgColor: 'bg-danger/10' },
   ];
 
@@ -74,9 +86,11 @@ export function IntensityDistributionSection({ polarization, error }: { polariza
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
-          isOptimal ? 'bg-success/15 text-success/80' : 'bg-warning/15 text-warning/80'
-        }`}>
+        <div
+          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
+            isOptimal ? 'bg-success/15 text-success/80' : 'bg-warning/15 text-warning/80'
+          }`}
+        >
           <span className={`w-2 h-2 rounded-full ${isOptimal ? 'bg-success/80' : 'bg-warning/80'}`} />
           {polarization.classification.label}
         </div>
@@ -95,8 +109,14 @@ export function IntensityDistributionSection({ polarization, error }: { polariza
                   </div>
                 </div>
                 <div className={`relative h-3 rounded-full ${bgColor} overflow-hidden`}>
-                  <div className={`h-full rounded-full transition-all duration-500 ${color}`} style={{ width: `${Math.min(actual, 100)}%` }} />
-                  <div className="absolute top-0 bottom-0 w-0.5 bg-surface/60" style={{ left: `${Math.min(target, 100)}%` }} />
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${color}`}
+                    style={{ width: `${Math.min(actual, 100)}%` }}
+                  />
+                  <div
+                    className="absolute top-0 bottom-0 w-0.5 bg-surface/60"
+                    style={{ left: `${Math.min(target, 100)}%` }}
+                  />
                 </div>
               </div>
             );

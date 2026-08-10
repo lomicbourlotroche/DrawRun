@@ -2,10 +2,10 @@
  * ============================================================
  * COACH API TYPES - Types pour l'API Coach de DrawRun
  * ============================================================
- * 
+ *
  * Ce fichier contient les types spécifiques au module Coach
  * (plans d'entraînement, sessions, tests, etc.)
- * 
+ *
  * @module lib/api/coach-types
  */
 
@@ -443,8 +443,15 @@ export interface ExternalEvent {
 export interface CoachProfile {
   user: { id: number; email: string; name: string };
   profile: {
-    vdot?: number; vma?: number; fcm?: number; resting_hr?: number;
-    age?: number; sex?: string; weight?: number; weeklyKm?: number | null; pace?: string | null;
+    vdot?: number;
+    vma?: number;
+    fcm?: number;
+    resting_hr?: number;
+    age?: number;
+    sex?: string;
+    weight?: number;
+    weeklyKm?: number | null;
+    pace?: string | null;
   };
   activePlan: { plan: Record<string, unknown>; sessions: Record<string, unknown>[]; planId: number } | null;
   hasActivePlan: boolean;
@@ -491,4 +498,3 @@ export interface WizardDefaults {
   };
   activitiesAnalyzed: number;
 }
-

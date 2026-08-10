@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui';
-import { 
-  CloudSun, 
-  Thermometer, 
-  Droplets, 
-  Wind, 
+import {
+  CloudSun,
+  Thermometer,
+  Droplets,
+  Wind,
   AlertTriangle,
   Sun,
   CloudRain,
   CloudLightning,
-  Snowflake
+  Snowflake,
 } from '@/components/ui/icons';
 
 export default function WeatherSection() {
@@ -24,7 +24,7 @@ export default function WeatherSection() {
           setIsVisible(true);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     const section = document.getElementById('weather');
@@ -40,12 +40,14 @@ export default function WeatherSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left Content */}
-          <div className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
+          <div
+            className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}
+          >
             <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 border border-primary/30 rounded-full text-sm font-semibold text-primary mb-6">
               <CloudSun className="w-4 h-4" />
               Météo intégrée
             </span>
-            
+
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6">
               Conditions météo
               <br />
@@ -53,18 +55,17 @@ export default function WeatherSection() {
                 de chaque activité
               </span>
             </h2>
-            
+
             <p className="text-lg text-foreground leading-relaxed mb-8 max-w-xl">
-              Visualisez la température, l&apos;humidité, le vent et les conditions météo
-              au moment de chaque sortie. L&apos;impact estimé sur votre allure vous aide
-              à contextualiser vos performances.
+              Visualisez la température, l&apos;humidité, le vent et les conditions météo au moment de chaque sortie.
+              L&apos;impact estimé sur votre allure vous aide à contextualiser vos performances.
             </p>
 
             {/* Features list */}
             <div className="space-y-4 mb-8">
               {[
                 { icon: Thermometer, text: 'Température et humidité au départ' },
-                { icon: Wind, text: 'Vitesse du vent avec impact sur l\'allure' },
+                { icon: Wind, text: "Vitesse du vent avec impact sur l'allure" },
                 { icon: AlertTriangle, text: 'Alerte si conditions dégradées (+10% allure)' },
                 { icon: CloudSun, text: 'Données Open-Meteo, mises en cache automatiquement' },
               ].map((item, i) => (
@@ -79,7 +80,9 @@ export default function WeatherSection() {
           </div>
 
           {/* Right Content - Weather Card Preview */}
-          <div className={`transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+          <div
+            className={`transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}
+          >
             <Card variant="glass" className="max-w-md mx-auto">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">

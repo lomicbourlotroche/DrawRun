@@ -32,7 +32,7 @@ const PrimaryButton = forwardRef<HTMLButtonElement, PrimaryButtonProps>(
       disabled,
       ...props
     },
-    ref
+    ref,
   ) => {
     const baseStyles = cn(
       'inline-flex items-center justify-center gap-2 font-semibold',
@@ -41,7 +41,7 @@ const PrimaryButton = forwardRef<HTMLButtonElement, PrimaryButtonProps>(
       // Hover lift effect
       'hover:-translate-y-0.5',
       // Disabled state
-      (disabled || loading) && 'opacity-60 cursor-not-allowed hover:translate-y-0'
+      (disabled || loading) && 'opacity-60 cursor-not-allowed hover:translate-y-0',
     );
 
     const variantStyles = {
@@ -50,35 +50,35 @@ const PrimaryButton = forwardRef<HTMLButtonElement, PrimaryButtonProps>(
         'text-primary-foreground shadow-button-primary',
         'hover:shadow-button-primary-hover',
         'focus:ring-primary-500',
-        'active:translate-y-0 active:shadow-none'
+        'active:translate-y-0 active:shadow-none',
       ),
       secondary: cn(
         'bg-surface border-2 border-border',
         'text-foreground',
         'hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700',
         'focus:ring-primary-500',
-        'active:bg-background'
+        'active:bg-background',
       ),
       outline: cn(
         'bg-transparent border-2 border-primary-500',
         'text-primary-600',
         'hover:bg-primary-50',
         'focus:ring-primary-500',
-        'active:bg-primary-100'
+        'active:bg-primary-100',
       ),
       ghost: cn(
         'bg-transparent',
         'text-muted',
         'hover:bg-background hover:text-foreground',
         'focus:ring-neutral-500',
-        'active:bg-surface'
+        'active:bg-surface',
       ),
       danger: cn(
         'bg-gradient-to-r from-danger-600 to-danger-500',
         'text-danger-foreground shadow-md',
         'hover:shadow-lg',
         'focus:ring-danger-500',
-        'active:translate-y-0 active:shadow-none'
+        'active:translate-y-0 active:shadow-none',
       ),
     };
 
@@ -97,13 +97,7 @@ const PrimaryButton = forwardRef<HTMLButtonElement, PrimaryButtonProps>(
     return (
       <button
         ref={ref}
-        className={cn(
-          baseStyles,
-          variantStyles[variant],
-          sizeStyles[size],
-          fullWidth && 'w-full',
-          className
-        )}
+        className={cn(baseStyles, variantStyles[variant], sizeStyles[size], fullWidth && 'w-full', className)}
         disabled={disabled || loading}
         {...props}
       >
@@ -114,14 +108,7 @@ const PrimaryButton = forwardRef<HTMLButtonElement, PrimaryButtonProps>(
             fill="none"
             viewBox="0 0 24 24"
           >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path
               className="opacity-75"
               fill="currentColor"
@@ -129,16 +116,12 @@ const PrimaryButton = forwardRef<HTMLButtonElement, PrimaryButtonProps>(
             />
           </svg>
         )}
-        {!loading && Icon && iconPosition === 'left' && (
-          <Icon className={cn('flex-shrink-0', iconSizes[size])} />
-        )}
+        {!loading && Icon && iconPosition === 'left' && <Icon className={cn('flex-shrink-0', iconSizes[size])} />}
         {children}
-        {!loading && Icon && iconPosition === 'right' && (
-          <Icon className={cn('flex-shrink-0', iconSizes[size])} />
-        )}
+        {!loading && Icon && iconPosition === 'right' && <Icon className={cn('flex-shrink-0', iconSizes[size])} />}
       </button>
     );
-  }
+  },
 );
 
 PrimaryButton.displayName = 'PrimaryButton';
@@ -161,7 +144,7 @@ const LinkButton = forwardRef<HTMLButtonElement, LinkButtonProps>(
           'text-primary-600 hover:text-primary-700',
           'transition-colors duration-200',
           'focus:outline-none focus:underline',
-          className
+          className,
         )}
         {...props}
       >
@@ -169,7 +152,7 @@ const LinkButton = forwardRef<HTMLButtonElement, LinkButtonProps>(
         {Icon && <Icon className="w-4 h-4" />}
       </button>
     );
-  }
+  },
 );
 
 LinkButton.displayName = 'LinkButton';

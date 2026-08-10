@@ -2,13 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { VDOTDemoCalculator } from '@/components/features/performance';
-import { 
-  Activity, 
-  TrendingUp, 
-  Target, 
-  Zap, 
-  Calculator
-} from '@/components/ui/icons';
+import { Activity, TrendingUp, Target, Zap, Calculator } from '@/components/ui/icons';
 
 const vdotFeatures = [
   {
@@ -19,17 +13,17 @@ const vdotFeatures = [
   {
     icon: Activity,
     title: 'Zones Personnalisées',
-    description: '5 zones d\'entraînement calculées sur votre VDOT unique.',
+    description: "5 zones d'entraînement calculées sur votre VDOT unique.",
   },
   {
     icon: Zap,
     title: 'TSS en Temps Réel',
-    description: 'Charge d\'entraînement calculée dynamiquement.',
+    description: "Charge d'entraînement calculée dynamiquement.",
   },
   {
     icon: TrendingUp,
     title: '15+ Métriques Avancées',
-    description: 'Age Grading, W\', RAI, Marathon Prediction et plus.',
+    description: "Age Grading, W', RAI, Marathon Prediction et plus.",
   },
 ];
 
@@ -43,7 +37,7 @@ export default function VDOTSection() {
           setIsVisible(true);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     const section = document.getElementById('vdot');
@@ -59,24 +53,24 @@ export default function VDOTSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left Content */}
-          <div className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
+          <div
+            className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}
+          >
             <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-sm font-semibold text-primary mb-6">
               <Calculator className="w-4 h-4" />
               Jack Daniels VDOT V6.4
             </span>
-            
+
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight mb-6">
               LA SCIENCE
               <br />
               DERRIÈRE LA{' '}
-              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                VITESSE
-              </span>
+              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">VITESSE</span>
             </h2>
-            
+
             <p className="text-lg text-muted leading-relaxed mb-8 max-w-xl">
-              Le VDOT n&apos;est pas qu&apos;un chiffre. C&apos;est l&apos;essence de votre efficacité running.
-              DrawRun analyse chaque foulée pour affiner votre profil physiologique.
+              Le VDOT n&apos;est pas qu&apos;un chiffre. C&apos;est l&apos;essence de votre efficacité running. DrawRun
+              analyse chaque foulée pour affiner votre profil physiologique.
             </p>
 
             {/* Features List */}
@@ -84,7 +78,7 @@ export default function VDOTSection() {
               {vdotFeatures.map((feature, index) => {
                 const Icon = feature.icon;
                 return (
-                  <div 
+                  <div
                     key={index}
                     className="flex items-start gap-4 p-4 bg-background border border-surface rounded-xl hover:bg-surface transition-colors"
                   >
@@ -102,7 +96,9 @@ export default function VDOTSection() {
           </div>
 
           {/* Right Content - Interactive VDOT Calculator */}
-          <div className={`transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+          <div
+            className={`transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}
+          >
             <VDOTDemoCalculator />
           </div>
         </div>

@@ -38,19 +38,13 @@ export interface GpxProfile {
  * @param lon2 Longitude of point 2 in degrees
  * @returns Distance in meters
  */
-export function calculateHaversineDistance(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-): number {
+export function calculateHaversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371000; // Earth radius in meters
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -97,9 +91,9 @@ export function parseGpx(gpxXml: string): GpxPoint[] | null {
 
     const latStr = extractXmlAttribute(attrs, 'lat');
     const lonStr = extractXmlAttribute(attrs, 'lon');
-    
+
     if (!latStr || !lonStr) continue;
-    
+
     const lat = parseFloat(latStr);
     const lon = parseFloat(lonStr);
     const ele = extractElevation(content);
@@ -136,7 +130,7 @@ export function parseGpx(gpxXml: string): GpxPoint[] | null {
  */
 export function parseGpxProfile(gpxXml: string): GpxProfile | null {
   const points = parseGpx(gpxXml);
-  
+
   if (!points || points.length < 2) {
     return null;
   }
@@ -152,13 +146,13 @@ export function parseGpxProfile(gpxXml: string): GpxProfile | null {
     const prev = points[i - 1];
     const curr = points[i];
     const diff = curr.ele - prev.ele;
-    
+
     if (diff > 0) {
       elevationGain += diff;
     } else if (diff < 0) {
       elevationLoss += Math.abs(diff);
     }
-    
+
     if (curr.ele < minElevation) minElevation = curr.ele;
     if (curr.ele > maxElevation) maxElevation = curr.ele;
     totalElevation += curr.ele;

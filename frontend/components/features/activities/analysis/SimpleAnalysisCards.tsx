@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { Heart, Gauge, Wind } from '@/components/ui/icons';
@@ -13,7 +13,12 @@ export function SimpleAnalysisCards({ analysis }: { analysis: SimpleAnalysis }) 
     <>
       {/* Basic metrics */}
       <Card>
-        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Gauge className="w-4 h-4 text-primary" />Métriques</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Gauge className="w-4 h-4 text-primary" />
+            Métriques
+          </CardTitle>
+        </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {analysis.tss && (
@@ -47,7 +52,12 @@ export function SimpleAnalysisCards({ analysis }: { analysis: SimpleAnalysis }) 
       {/* HR Analysis */}
       {analysis.hrZones && (
         <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Heart className="w-4 h-4 text-danger/80" />Analyse Cardiaque</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Heart className="w-4 h-4 text-danger/80" />
+              Analyse Cardiaque
+            </CardTitle>
+          </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               <div className="text-center p-3 rounded-lg bg-background border border-border">
