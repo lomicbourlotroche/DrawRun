@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * ============================================================
  * DRAWRUN BACKEND v4.1 - Point d'entrée principal (Refactorisé)

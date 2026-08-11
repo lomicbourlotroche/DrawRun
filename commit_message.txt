@@ -1,3 +1,0 @@
-feat: Add a11y label and state to password toggle
-
-Added `aria-label` and `aria-pressed` to the password visibility toggle in the `LoginForm` component to ensure accessibility for screen readers on the icon-only element.
