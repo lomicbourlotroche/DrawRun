@@ -1,0 +1,3 @@
+## 2023-10-27 - Input Accessibility Patterns
+**Learning:** Proper form field accessibility requires linking error and hint texts to their respective input fields via the `aria-describedby` attribute, and using `aria-invalid` to indicate validation state to screen readers. React's `useId()` is helpful to create fallback IDs when an implicit ID isn't provided, preventing hydration mismatches.
+**Action:** When creating or updating form components (like Input, Select, Textarea) in the design system, ensure they dynamically generate unique IDs for error/hint elements and correctly associate them using `aria-describedby` and `aria-invalid`.
