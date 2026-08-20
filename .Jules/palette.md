@@ -1,0 +1,3 @@
+## 2024-05-24 - Add ARIA Associations to Form Inputs
+**Learning:** Form inputs in the UI library often lacked explicit associations between the `<input>` element and dynamically rendered hint or error message elements (e.g., `<p>`), making it difficult for screen reader users to understand validation context.
+**Action:** Always utilize React's `useId()` hook when building UI components that couple inputs with descriptive text elements. Assign the unique ID to the description element, and bind `aria-describedby` (as well as `aria-invalid` for errors) on the input, ensuring robust accessibility without risking ID collision or hydration mismatches.
