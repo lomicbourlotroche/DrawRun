@@ -1,0 +1,3 @@
+## 2026-08-24 - Custom Inputs Form Accessibility
+**Learning:** When building custom internal UI component wrappers for inputs, missing inherent ARIA links (htmlFor/id mapping, aria-invalid, and aria-describedby) significantly limits accessibility. Passing down unique IDs via useId() ensures screen readers announce errors/hints and correctly map labels to controls while avoiding hydration issues.
+**Action:** Ensure that all custom form components map labels to inputs using htmlFor and dynamic IDs, mark errors clearly using aria-invalid, link error texts via aria-describedby, and supply aria-label/aria-pressed/focus-visible for embedded icon-only toggles.
