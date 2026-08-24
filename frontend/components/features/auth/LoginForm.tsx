@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import { useAuthStore } from '@/stores';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -19,20 +19,25 @@ function InputField({ label, type, value, onChange, placeholder, icon: Icon, err
   label: string; type: string; value: string; onChange: (_: string) => void;
   placeholder?: string; icon?: React.ElementType; error?: string;
 }) {
+  const id = useId();
+  const errorId = `${id}-error`;
   return (
     <div>
-      <label className="text-sm font-medium text-foreground mb-1.5 block">{label}</label>
+      <label htmlFor={id} className="text-sm font-medium text-foreground mb-1.5 block">{label}</label>
       <div className="relative">
         {Icon && <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />}
         <input
+          id={id}
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
+          aria-invalid={!!error}
+          aria-describedby={error ? errorId : undefined}
           className={`w-full px-3 py-2.5 ${Icon ? 'pl-10' : ''} rounded-xl border border-border bg-surface text-sm text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all ${error ? 'border-danger' : ''}`}
         />
       </div>
-      {error && <p className="text-xs text-danger mt-1">{error}</p>}
+      {error && <p id={errorId} className="text-xs text-danger mt-1">{error}</p>}
     </div>
   );
 }
@@ -41,18 +46,26 @@ function PasswordField({ label, value, onChange, placeholder }: {
   label: string; value: string; onChange: (_: string) => void; placeholder?: string;
 }) {
   const [show, setShow] = useState(false);
+  const id = useId();
   return (
     <div>
-      <label className="text-sm font-medium text-foreground mb-1.5 block">{label}</label>
+      <label htmlFor={id} className="text-sm font-medium text-foreground mb-1.5 block">{label}</label>
       <div className="relative">
         <input
+          id={id}
           type={show ? 'text' : 'password'}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           className="w-full px-3 py-2.5 pr-10 rounded-xl border border-border bg-surface text-sm text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
         />
-        <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground">
+        <button
+          type="button"
+          onClick={() => setShow(!show)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none rounded-md"
+          aria-label={show ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+          aria-pressed={show}
+        >
           {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
         </button>
       </div>
