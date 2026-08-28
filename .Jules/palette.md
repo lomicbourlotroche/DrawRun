@@ -1,0 +1,3 @@
+## 2024-05-24 - Form Input & Button Accessibility in LoginForm
+**Learning:** Found that custom form input wrappers (`InputField`, `PasswordField`) in `LoginForm.tsx` were missing standard label-input associations, error descriptions (`aria-describedby`), and `aria-label` for icon-only password toggle buttons, which makes the login flow inaccessible to screen reader users.
+**Action:** Use React `useId()` to robustly generate unique identifiers linking labels to inputs and inputs to error messages, preventing hydration mismatches. Always add context-aware `aria-label`s to icon-only buttons (like password visibility toggles).
