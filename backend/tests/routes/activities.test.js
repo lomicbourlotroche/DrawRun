@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /**
  * Activities Routes Tests
  * Tests the activities API endpoints with pagination

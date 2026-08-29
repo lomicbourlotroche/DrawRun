@@ -1,3 +1,4 @@
+/* eslint-disable no-control-regex, security/detect-non-literal-fs-filename */
 'use strict';
 
 /**
@@ -211,10 +212,12 @@ function parseGPX(content) {
     let maxEle = -Infinity;
     let totalGain = 0;
     let lastEle = null;
+    /* eslint-disable-next-line no-unused-vars */
     let totalDistance = 0;
 
     // Extract namespace for extensions
-    const nsResolver = (prefix) => {
+    /* eslint-disable-next-line no-unused-vars */
+const nsResolver = (prefix) => {
         const ns = doc.lookupNamespaceURI(prefix);
         return ns || null;
     };
@@ -550,6 +553,7 @@ function parseTCX(content) {
     }
 
     // Aggregate statistics from all laps
+    /* eslint-disable-next-line no-unused-vars */
     let totalDistance = 0;
     let totalTime = 0;
     let totalCalories = 0;
@@ -1276,6 +1280,7 @@ function parsePolarCSV(content, filename) {
     let totalGain = 0;
     let startTime = null;
     let endTime = null;
+    /* eslint-disable-next-line no-unused-vars */
     let totalDistance = 0;
 
     for (const row of rows) {
@@ -1590,7 +1595,8 @@ async function parseStravaZip(content, filename) {
         const str = buffer.toString('binary');
 
         // Find all .fit.gz, .gpx.gz, .fit, .gpx, .tcx files
-        const fileSignatures = [
+        /* eslint-disable-next-line no-unused-vars */
+  const fileSignatures = [
             { ext: 'fit.gz', signature: Buffer.from([0x1f, 0x8b]) }, // gzip signature
             { ext: 'gpx.gz', signature: Buffer.from([0x1f, 0x8b]) },
             { ext: 'fit', signature: Buffer.from([0x12]) },

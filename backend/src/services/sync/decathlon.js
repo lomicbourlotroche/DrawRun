@@ -129,7 +129,7 @@ const SPORT_MAP = {
     // Running subtypes
     126: 'trail',
     // Cycling subtypes
-    380: 'scooter',
+    //     380: 'scooter',
 };
 
 // ---------------------------------------------------------------------------

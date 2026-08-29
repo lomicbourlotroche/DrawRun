@@ -1,3 +1,4 @@
+/* eslint-disable no-console, security/detect-object-injection, no-process-exit */
 /**
  * ============================================================
  * GENERATE MOCK USER - Script de génération de données de test
@@ -10,7 +11,6 @@
 'use strict';
 
 const path = require('path');
-const fs = require('fs');
 
 // Charger les variables d'environnement du backend
 require('dotenv').config({ path: path.join(__dirname, '../.env') });

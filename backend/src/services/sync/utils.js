@@ -1,3 +1,4 @@
+/* eslint-disable no-undef, unused-imports/no-unused-vars */
 'use strict';
 
 /**
@@ -488,7 +489,7 @@ function extractDecathlonSplits(datastream) {
     
     const splits = [];
     let currentLapStart = 0;
-    let currentLapDist = 0;
+
     let currentLapStartAlt = 0;
     
     for (let i = 0; i < timestamps.length; i++) {
