@@ -1,0 +1,3 @@
+## 2025-01-08 - [Form Error/Hint ARIA Associations in Next.js/React]
+**Learning:** Hardcoded or derived IDs (like replacing spaces in labels) for linking `<input>` elements to their errors/hints via `aria-describedby` are prone to collisions when a component is reused multiple times on the same page, creating a poor screen reader experience and potential hydration mismatch issues.
+**Action:** Always use React's built-in `useId()` hook to generate guaranteed unique base IDs for interactive form components, and construct related `id`s (like `errorId` or `hintId`) from that base to maintain robust ARIA relationships across any number of instances.
