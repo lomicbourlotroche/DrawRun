@@ -1,0 +1,3 @@
+## 2024-09-03 - [Accessible Form Validation]
+**Learning:** Proper form validation requires true uniqueness for `aria-describedby` associations. Relying only on label-derived IDs can lead to collisions when multiple inputs of the same type exist (e.g. multiple "email" fields on a page), breaking screen reader associations. Next.js/React hydration also requires stable unique IDs.
+**Action:** Always use React's `useId()` hook to generate unique base IDs for input elements, and derive error/hint IDs from this unique base. Ensure `aria-invalid` is properly toggled and `aria-describedby` dynamically links to the generated error or hint IDs.
