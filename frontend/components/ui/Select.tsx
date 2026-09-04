@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useId } from 'react';
 import { cn } from '@/lib/utils';
 import { ChevronDown, Check } from '@/components/ui/icons';
 
@@ -32,6 +32,9 @@ export function Select({
   className,
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const generatedId = useId();
+  const errorId = `${generatedId}-error`;
+  const labelId = `${generatedId}-label`;
   const ref = useRef<HTMLDivElement>(null);
 
   const selectedOption = options.find((opt) => opt.value === value);
@@ -49,7 +52,7 @@ export function Select({
   return (
     <div className={cn('w-full', className)} ref={ref}>
       {label && (
-        <label className="block text-sm font-medium text-muted mb-1.5">
+        <label id={labelId} className="block text-sm font-medium text-muted mb-1.5">
           {label}
         </label>
       )}
@@ -63,8 +66,13 @@ export function Select({
             'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary',
             'transition-all duration-200',
             error ? 'border-danger' : 'border-border',
-            disabled && 'opacity-50 cursor-not-allowed'
+            disabled && 'opacity-50 cursor-not-allowed',
           )}
+          aria-invalid={!!error}
+          aria-describedby={error ? errorId : undefined}
+          aria-labelledby={label ? labelId : undefined}
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
         >
           <span className={cn(selectedOption ? 'text-foreground' : 'text-muted')}>
             {selectedOption ? (
@@ -76,16 +84,14 @@ export function Select({
               placeholder
             )}
           </span>
-          <ChevronDown
-            className={cn(
-              'w-4 h-4 text-muted transition-transform duration-200',
-              isOpen && 'rotate-180'
-            )}
-          />
+          <ChevronDown className={cn('w-4 h-4 text-muted transition-transform duration-200', isOpen && 'rotate-180')} />
         </button>
 
         {isOpen && (
-          <div className="absolute z-50 w-full mt-1 bg-surface border border-border rounded-lg shadow-lg animate-slide-down max-h-60 overflow-y-auto">
+          <div
+            className="absolute z-50 w-full mt-1 bg-surface border border-border rounded-lg shadow-lg animate-slide-down max-h-60 overflow-y-auto"
+            role="listbox"
+          >
             {options.map((option) => (
               <button
                 key={option.value}
@@ -96,8 +102,10 @@ export function Select({
                 }}
                 className={cn(
                   'w-full flex items-center gap-2 px-4 py-3 min-h-[44px] text-left hover:bg-background/50 transition-colors',
-                  option.value === value && 'bg-primary/10 text-primary'
+                  option.value === value && 'bg-primary/10 text-primary',
                 )}
+                role="option"
+                aria-selected={option.value === value}
               >
                 {option.icon}
                 <span className="flex-1">{option.label}</span>
@@ -107,7 +115,11 @@ export function Select({
           </div>
         )}
       </div>
-      {error && <p className="mt-1.5 text-sm text-danger">{error}</p>}
+      {error && (
+        <p id={errorId} className="mt-1.5 text-sm text-danger">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
