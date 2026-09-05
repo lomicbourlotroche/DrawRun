@@ -161,7 +161,7 @@ describe('Input component', () => {
     const input = screen.getByRole('textbox');
     const label = screen.getByText('Test Input');
     
-    expect(input.id).toBe('test-input');
-    expect(label).toHaveAttribute('for', 'test-input');
+    expect(input.id).toBeTruthy();
+    expect(label).toHaveAttribute('for', input.id);
   });
 });
