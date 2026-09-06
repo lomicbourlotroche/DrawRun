@@ -1,0 +1,3 @@
+## 2024-09-06 - [Input Accessibility Improvements]
+**Learning:** Hardcoded or label-derived IDs in reusable components (like `Input`) can cause hydration mismatches and ID collisions when multiple instances exist on a page. Screen readers rely on `aria-describedby` linking directly to an element's ID to announce error and hint messages.
+**Action:** Use React's `useId()` hook to generate unique fallback IDs for interactive elements. Ensure form inputs correctly apply `aria-invalid` when in an error state and link helper text via `aria-describedby` using the auto-generated IDs to provide proper context to assistive technologies.
