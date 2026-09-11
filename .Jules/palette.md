@@ -1,0 +1,3 @@
+## 2026-09-11 - Add proper ARIA associations to Input component
+**Learning:** Proper form validation requires programmatic association between the input field and its error/hint messages. Relying only on visual proximity is insufficient for screen readers. Using React's `useId()` ensures unique IDs are generated for these associations, preventing ID collisions even when multiple inputs of the same type exist on a page.
+**Action:** Always link form inputs to their corresponding error and hint text using `aria-describedby`, and indicate error states using `aria-invalid`. Prefer `useId()` over derived IDs for these ARIA associations to avoid mismatches or conflicts.
