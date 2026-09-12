@@ -148,3 +148,4 @@ snapshot-home.txt
 login-page.yml
 
 node_modules
+frontend/node_modules/

@@ -155,13 +155,31 @@ describe('Input component', () => {
     expect(label).toHaveAttribute('for', 'name-input');
   });
 
-  it('generates id from label when not provided', () => {
+  it('generates unique id when not provided', () => {
     render(<Input label="Test Input" />);
     
     const input = screen.getByRole('textbox');
     const label = screen.getByText('Test Input');
     
-    expect(input.id).toBe('test-input');
-    expect(label).toHaveAttribute('for', 'test-input');
+    expect(input.id).toBeTruthy();
+    expect(label).toHaveAttribute('for', input.id);
+  });
+
+  it('has correct aria attributes for error state', () => {
+    render(<Input error="Test Error" id="test-input" />);
+
+    const input = screen.getByRole('textbox');
+
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAttribute('aria-describedby', 'test-input-error');
+  });
+
+  it('has correct aria attributes for hint state', () => {
+    render(<Input hint="Test Hint" id="test-input" />);
+
+    const input = screen.getByRole('textbox');
+
+    expect(input).toHaveAttribute('aria-invalid', 'false');
+    expect(input).toHaveAttribute('aria-describedby', 'test-input-hint');
   });
 });
