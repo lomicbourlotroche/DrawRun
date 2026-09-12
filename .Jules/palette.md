@@ -1,0 +1,3 @@
+## 2024-10-18 - Input accessibility and ID generation
+**Learning:** Reusing `label` derived values (e.g. `label.toLowerCase().replace(/\s+/g, '-')`) for React input IDs risks duplicate IDs on pages with similarly-named inputs (like "Email"). Using non-unique IDs can cause layout/hydration mismatches and makes `aria-describedby` (for errors/hints) unpredictable.
+**Action:** Use React's native `useId()` hook to generate guaranteed unique, non-colliding IDs when explicit IDs are not passed. Bind `aria-invalid` to the error state, and correctly map `aria-describedby` to specific container IDs associated with the dynamically generated input ID (`<id>-error`, `<id>-hint`) to improve robust screen-reader support.
