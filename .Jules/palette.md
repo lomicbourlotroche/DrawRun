@@ -1,0 +1,3 @@
+## 2024-09-14 - Fix Input Component ARIA Linkages
+**Learning:** Hardcoded label-based ID generation (e.g. `label?.toLowerCase().replace(/\s+/g, '-')`) can lead to ID collisions and hydration mismatches. This causes accessibility issues where `aria-describedby` links to the wrong or duplicate IDs for error/hint messages. React's non-deterministic `useId()` should be used instead.
+**Action:** Always prioritize `useId()` for generating unique IDs in reusable UI components. When writing unit tests for components using `useId()`, avoid asserting exact IDs; instead, use regex matching (like `/:r[a-zA-Z0-9]+:/`) to verify the linkages correctly hook up (e.g., `expect(label).toHaveAttribute('for', input.id)`).
