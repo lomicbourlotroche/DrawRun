@@ -155,13 +155,16 @@ describe('Input component', () => {
     expect(label).toHaveAttribute('for', 'name-input');
   });
 
-  it('generates id from label when not provided', () => {
+  it('generates unique id with useId when not provided', () => {
     render(<Input label="Test Input" />);
     
     const input = screen.getByRole('textbox');
     const label = screen.getByText('Test Input');
     
-    expect(input.id).toBe('test-input');
-    expect(label).toHaveAttribute('for', 'test-input');
+    expect(input.id).toMatch(/:r[a-zA-Z0-9]+:/);
+    // The input ID is no longer derived from label to prevent collisions
+    // expect(input.id).toBe('test-input');
+    expect(label).toHaveAttribute('for', input.id);
+    // expect(label).toHaveAttribute('for', 'test-input');
   });
 });
