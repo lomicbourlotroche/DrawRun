@@ -1,0 +1,3 @@
+## 2024-05-15 - Robust ID Generation for Inputs
+**Learning:** Using label-derived IDs (e.g. `label.replace(/\s+/g, '-')`) for inputs can lead to ID collisions, especially in heavily reused UI components or forms with similar labels across languages. Additionally, simple IDs can break hydration in SSR/React environments like Next.js App Router if they aren't completely deterministic.
+**Action:** Always prefer React's built-in `useId()` hook to generate unique IDs for interactive form elements. It ensures collision-free uniqueness per component instance, supports robust `aria-describedby` mappings for hints and errors, and prevents hydration mismatches. Use dynamic regex matching in tests rather than expecting hardcoded string IDs.

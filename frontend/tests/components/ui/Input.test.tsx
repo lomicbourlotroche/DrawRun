@@ -146,22 +146,32 @@ describe('Input component', () => {
   });
 
   it('has correct accessibility attributes', () => {
-    render(<Input label="Name" id="name-input" />);
+    render(<Input label="Name" id="name-input" error="Invalid name" />);
     
     const input = screen.getByRole('textbox');
     const label = screen.getByText('Name');
     
     expect(input).toHaveAttribute('id', 'name-input');
     expect(label).toHaveAttribute('for', 'name-input');
+
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAttribute('aria-describedby', 'name-input-error');
   });
 
-  it('generates id from label when not provided', () => {
+  it('generates a unique id using useId when not provided', () => {
     render(<Input label="Test Input" />);
     
     const input = screen.getByRole('textbox');
     const label = screen.getByText('Test Input');
     
-    expect(input.id).toBe('test-input');
-    expect(label).toHaveAttribute('for', 'test-input');
+    expect(input.id).toBeTruthy();
+    expect(label).toHaveAttribute('for', input.id);
+  });
+
+  it('associates hint with aria-describedby', () => {
+    render(<Input hint="Some hint text" id="hint-input" />);
+
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveAttribute('aria-describedby', 'hint-input-hint');
   });
 });
