@@ -1,0 +1,3 @@
+## 2025-03-08 - Use `useId` instead of implicit deterministic IDs for Input components
+**Learning:** Generating implicit element IDs based on a formatted label text (e.g. `label?.toLowerCase().replace(/\s+/g, '-')`) can lead to duplicated IDs across an application if the same label text is used in different parts of a page, causing incorrect label scoping and accessibility mismatch.
+**Action:** Always prefer React's `useId()` built-in hook to generate fallback deterministic unique IDs. Additionally, properly pair error and hint components with input components using the generated ID to specify `aria-describedby` and `aria-invalid` to ensure robust accessibility.
