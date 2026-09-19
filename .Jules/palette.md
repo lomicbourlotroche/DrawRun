@@ -1,0 +1,3 @@
+## 2024-05-19 - Input accessibility ARIA hints and errors
+**Learning:** Inputs should always link errors and hints using aria-describedby for screen readers. In the Input component we should add unique IDs for error and hint strings, and reference them. Generating unique IDs for React components (e.g., to create unique error/hint IDs for ARIA associations like `aria-describedby`), prioritize using React's built-in `useId()` hook over label-derived IDs to prevent ID collisions and hydration mismatches.
+**Action:** Let's update frontend/components/ui/Input.tsx to use `useId()` for both the input and the potential error/hint.
