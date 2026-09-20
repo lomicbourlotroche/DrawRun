@@ -1,0 +1,3 @@
+## 2024-05-20 - Adding ARIA attributes to custom Select component
+**Learning:** Custom UI components like a custom `Select` build with `button` and `div` need specific ARIA roles to be accessible to screen readers, especially roles like `combobox`, `listbox`, and `option`. Without `aria-expanded`, `aria-controls`, and `aria-selected`, screen reader users have no context about the dropdown's state or contents. Error associations using `aria-invalid` and `aria-describedby` must also be manually implemented.
+**Action:** Always implement the combobox pattern (`role="combobox"`, `role="listbox"`, `role="option"`) with `aria-expanded` and unique IDs (using `useId`) when creating custom dropdown selects, instead of just using standard `button` elements.
