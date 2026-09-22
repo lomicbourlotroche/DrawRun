@@ -1,0 +1,4 @@
+
+## 2024-05-24 - Accessible Input Component Associations
+**Learning:** When generating unique IDs for React components (e.g., to create unique error/hint IDs for ARIA associations like `aria-describedby` and `aria-invalid`), using React's built-in `useId()` hook is far more robust than relying on prop-derived (e.g. label) fallbacks to prevent ID collisions and hydration mismatches. Because `useId()` output is non-deterministic (e.g., `:r1:`), UI tests should verify associations using regex or matchers (e.g., `expect.stringMatching(/.*-error/)`) rather than expecting hardcoded string values.
+**Action:** Default to using `useId()` for establishing a11y associations (like `aria-describedby` linking inputs to helper/error text) in reusable UI components, and update test assertions to use matchers instead of static IDs to account for React's dynamic ID generation.
