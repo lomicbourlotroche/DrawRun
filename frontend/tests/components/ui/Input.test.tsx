@@ -146,22 +146,42 @@ describe('Input component', () => {
   });
 
   it('has correct accessibility attributes', () => {
-    render(<Input label="Name" id="name-input" />);
+    render(<Input label="Name" id="name-input" error="Invalid name" />);
     
     const input = screen.getByRole('textbox');
     const label = screen.getByText('Name');
+    const error = screen.getByText('Invalid name');
     
     expect(input).toHaveAttribute('id', 'name-input');
     expect(label).toHaveAttribute('for', 'name-input');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAttribute('aria-describedby', 'name-input-error');
+    expect(error).toHaveAttribute('id', 'name-input-error');
   });
 
   it('generates id from label when not provided', () => {
-    render(<Input label="Test Input" />);
+    render(<Input label="Test Input" hint="Helpful text" />);
     
     const input = screen.getByRole('textbox');
     const label = screen.getByText('Test Input');
+    const hint = screen.getByText('Helpful text');
     
     expect(input.id).toBe('test-input');
     expect(label).toHaveAttribute('for', 'test-input');
+    expect(input).toHaveAttribute('aria-invalid', 'false');
+    expect(input).toHaveAttribute('aria-describedby', 'test-input-hint');
+    expect(hint).toHaveAttribute('id', 'test-input-hint');
+  });
+
+  it('uses react id for aria associations when no label or id is provided', () => {
+    render(<Input error="Some error" />);
+
+    const input = screen.getByRole('textbox');
+    const error = screen.getByText('Some error');
+
+    expect(input.id).toBeTruthy();
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAttribute('aria-describedby', expect.stringMatching(/.*-error/));
+    expect(error).toHaveAttribute('id', expect.stringMatching(/.*-error/));
   });
 });
