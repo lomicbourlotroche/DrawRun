@@ -162,6 +162,42 @@ describe('Input component', () => {
     const label = screen.getByText('Test Input');
     
     expect(input.id).toBe('test-input');
-    expect(label).toHaveAttribute('for', 'test-input');
+    expect(label).toHaveAttribute('for', input.id);
+  });
+
+  it('sets aria-invalid to true when error is present', () => {
+    render(<Input error="Invalid input" />);
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('sets aria-invalid to false when no error', () => {
+    render(<Input />);
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveAttribute('aria-invalid', 'false');
+  });
+
+  it('links input to error message via aria-describedby', () => {
+    render(<Input error="Invalid input" />);
+    const input = screen.getByRole('textbox');
+    const errorId = input.getAttribute('aria-describedby');
+    expect(errorId).toBeTruthy();
+
+    // eslint-disable-next-line testing-library/no-node-access
+    const errorEl = document.getElementById(errorId!);
+    expect(errorEl).toBeInTheDocument();
+    expect(errorEl).toHaveTextContent('Invalid input');
+  });
+
+  it('links input to hint message via aria-describedby', () => {
+    render(<Input hint="Some hint" />);
+    const input = screen.getByRole('textbox');
+    const hintId = input.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+
+    // eslint-disable-next-line testing-library/no-node-access
+    const hintEl = document.getElementById(hintId!);
+    expect(hintEl).toBeInTheDocument();
+    expect(hintEl).toHaveTextContent('Some hint');
   });
 });
