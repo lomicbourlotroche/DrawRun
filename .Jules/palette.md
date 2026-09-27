@@ -1,0 +1,3 @@
+## 2024-05-24 - Accessibility Enhancement for Select Component
+**Learning:** Adding standard accessibility roles and linking labels (e.g., using W3C combobox pattern attributes) is critical when constructing custom select components rather than standard `select` tags. It ensures screen reader compatibility for dropdown menus, resolving issues where users with disabilities cannot navigate custom inputs effectively. Using the `useId()` hook solves potential conflicts with repetitive component IDs in React apps.
+**Action:** When creating custom dropdown elements, ensure ARIA standards for comboboxes (role, expanded, controls, labelledby, and options roles) are mapped correctly and ID generation utilizes non-colliding approaches (like `useId()`).
