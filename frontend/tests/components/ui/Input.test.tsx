@@ -153,15 +153,38 @@ describe('Input component', () => {
     
     expect(input).toHaveAttribute('id', 'name-input');
     expect(label).toHaveAttribute('for', 'name-input');
+    expect(input).toHaveAttribute('aria-invalid', 'false');
   });
 
-  it('generates id from label when not provided', () => {
+  it('generates unique id when not provided', () => {
     render(<Input label="Test Input" />);
     
     const input = screen.getByRole('textbox');
     const label = screen.getByText('Test Input');
     
-    expect(input.id).toBe('test-input');
-    expect(label).toHaveAttribute('for', 'test-input');
+    expect(input.id).toMatch(/^input-.*$/);
+    expect(label).toHaveAttribute('for', input.id);
+  });
+
+  it('links error message with aria-describedby and sets aria-invalid', () => {
+    render(<Input error="Test error" />);
+
+    const input = screen.getByRole('textbox');
+    const errorMessage = screen.getByText('Test error').closest('p');
+
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAttribute('aria-describedby', errorMessage?.id);
+    expect(errorMessage?.id).toMatch(/^input-.*-error$/);
+  });
+
+  it('links hint message with aria-describedby', () => {
+    render(<Input hint="Test hint" />);
+
+    const input = screen.getByRole('textbox');
+    const hintMessage = screen.getByText('Test hint');
+
+    expect(input).toHaveAttribute('aria-invalid', 'false');
+    expect(input).toHaveAttribute('aria-describedby', hintMessage.id);
+    expect(hintMessage.id).toMatch(/^input-.*-hint$/);
   });
 });
