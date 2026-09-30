@@ -1,0 +1,3 @@
+## 2024-05-14 - Accessible Input Error/Hint Associations
+**Learning:** Using `useId()` in React is crucial for form accessibility to prevent ID collisions (which breaks `aria-describedby` when multiple inputs have the same derived label ID). Also, `aria-invalid` combined with dynamically linked IDs for errors/hints ensures screen readers announce contextual validation messages properly without hydration mismatches.
+**Action:** Always prefer `useId()` over derived string IDs (like `label.toLowerCase()`) when building core UI components that require ARIA linkages (like inputs, comboboxes, and modal dialogs).
