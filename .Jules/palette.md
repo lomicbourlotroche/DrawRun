@@ -1,0 +1,3 @@
+## 2024-05-18 - Input Accessibility Form Controls
+**Learning:** Found that custom `Input` form components were generating deterministic IDs based on labels (e.g. `label?.toLowerCase().replace(/\s+/g, '-')`) which can easily cause ID collisions on pages with multiple similar forms. Additionally, errors and hints were missing proper `aria-describedby` associations, making them invisible to screen reader users navigating forms.
+**Action:** Always use React's built-in `useId()` hook to generate guaranteed unique IDs for inputs. Always link input error and hint texts to their respective inputs using `aria-invalid` and `aria-describedby` with dynamically matched IDs.
