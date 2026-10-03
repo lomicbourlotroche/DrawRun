@@ -1,0 +1,3 @@
+## 2024-10-03 - Custom Select Component Combobox Pattern
+**Learning:** Custom UI select components built with `button` and `div` elements require specific W3C combobox pattern implementation (`role="combobox"`, `role="listbox"`, `role="option"`, `aria-expanded`, `aria-controls`, `aria-selected`) to be properly read and interacted with by screen readers. Generating unique IDs with `useId()` is crucial for proper `aria-controls` and `aria-labelledby` linkages.
+**Action:** Always implement the full ARIA combobox pattern when creating custom dropdown selects to ensure semantic structure and state representation for accessibility.
