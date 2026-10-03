@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useId } from 'react';
 import { cn } from '@/lib/utils';
 import { ChevronDown, Check } from '@/components/ui/icons';
 
@@ -33,6 +33,8 @@ export function Select({
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const listboxId = useId();
+  const buttonId = useId();
 
   const selectedOption = options.find((opt) => opt.value === value);
 
@@ -49,13 +51,19 @@ export function Select({
   return (
     <div className={cn('w-full', className)} ref={ref}>
       {label && (
-        <label className="block text-sm font-medium text-muted mb-1.5">
+        <label id={`${buttonId}-label`} className="block text-sm font-medium text-muted mb-1.5">
           {label}
         </label>
       )}
       <div className="relative">
         <button
+          id={buttonId}
           type="button"
+          role="combobox"
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
+          aria-controls={listboxId}
+          aria-labelledby={label ? `${buttonId}-label` : undefined}
           disabled={disabled}
           onClick={() => !disabled && setIsOpen(!isOpen)}
           className={cn(
@@ -63,7 +71,7 @@ export function Select({
             'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary',
             'transition-all duration-200',
             error ? 'border-danger' : 'border-border',
-            disabled && 'opacity-50 cursor-not-allowed'
+            disabled && 'opacity-50 cursor-not-allowed',
           )}
         >
           <span className={cn(selectedOption ? 'text-foreground' : 'text-muted')}>
@@ -76,27 +84,29 @@ export function Select({
               placeholder
             )}
           </span>
-          <ChevronDown
-            className={cn(
-              'w-4 h-4 text-muted transition-transform duration-200',
-              isOpen && 'rotate-180'
-            )}
-          />
+          <ChevronDown className={cn('w-4 h-4 text-muted transition-transform duration-200', isOpen && 'rotate-180')} />
         </button>
 
         {isOpen && (
-          <div className="absolute z-50 w-full mt-1 bg-surface border border-border rounded-lg shadow-lg animate-slide-down max-h-60 overflow-y-auto">
+          <div
+            id={listboxId}
+            role="listbox"
+            aria-labelledby={label ? `${buttonId}-label` : undefined}
+            className="absolute z-50 w-full mt-1 bg-surface border border-border rounded-lg shadow-lg animate-slide-down max-h-60 overflow-y-auto"
+          >
             {options.map((option) => (
               <button
                 key={option.value}
                 type="button"
+                role="option"
+                aria-selected={option.value === value}
                 onClick={() => {
                   onChange(option.value);
                   setIsOpen(false);
                 }}
                 className={cn(
                   'w-full flex items-center gap-2 px-4 py-3 min-h-[44px] text-left hover:bg-background/50 transition-colors',
-                  option.value === value && 'bg-primary/10 text-primary'
+                  option.value === value && 'bg-primary/10 text-primary',
                 )}
               >
                 {option.icon}
