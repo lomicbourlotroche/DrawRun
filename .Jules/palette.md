@@ -1,0 +1,3 @@
+## 2024-10-04 - Improve Input ARIA attributes and avoid Hydration Mismatch
+**Learning:** Using `label?.toLowerCase().replace(/\s+/g, '-')` as a fallback ID for input components can cause Hydration Mismatches in React if the initial render happens without proper context or if spaces differ. It also leads to fragile test code where we hardcode strings. Using React's built-in `useId()` is more robust for creating unique identifiers for ARIA associations (like `aria-describedby`) and resolving hydration issues.
+**Action:** Default to `useId()` for generating fallback IDs for form elements to link descriptive/error elements robustly and prevent hydration mismatches. Write tests checking attributes dynamically (`expect(label).toHaveAttribute('for', input.id)`).
