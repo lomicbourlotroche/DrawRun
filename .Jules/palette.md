@@ -1,0 +1,3 @@
+## 2024-05-18 - Input Error/Hint ARIA Associations
+**Learning:** Found that generic inputs previously generated IDs from their labels (or had none), lacking strict ARIA associations (`aria-invalid`, `aria-describedby`) for error and hint messages. Label-derived ID generation can cause collisions and hydration mismatches.
+**Action:** Always prefer using React's `useId()` for non-deterministic IDs over label string derivations. Implement standard `aria-invalid` to announce form errors to screen readers, and link hints/errors to the input using `aria-describedby` targeting the `id` of the descriptive elements.
