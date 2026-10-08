@@ -1,0 +1,3 @@
+## 2023-10-24 - W3C Combobox Pattern for Custom Select Components
+**Learning:** Custom UI dropdowns built with generic elements (like `div` and `button`) are inaccessible to screen readers without specific ARIA attributes. A common oversight is missing the complex relationship attributes that define a combobox.
+**Action:** When creating custom select or dropdown components, always implement the full W3C combobox pattern. This requires `role="combobox"` on the trigger, `role="listbox"` on the dropdown container, `role="option"` on each item, and relationship states like `aria-expanded`, `aria-haspopup`, `aria-controls`, and `aria-selected` to provide proper context and state information to assistive technologies. Using `useId()` ensures robust associations.
