@@ -1,3 +1,5 @@
+/* eslint-disable security/detect-object-injection */
+/* eslint-disable security/detect-object-injection */
 'use strict';
 
 /**

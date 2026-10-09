@@ -1,0 +1,3 @@
+## 2024-10-09 - Accessible Form Validation Feedback
+**Learning:** Hardcoded label-derived IDs (e.g. `label?.toLowerCase().replace(...)`) can lead to ID collisions, especially in heavily reused form components like `Input`. Adding proper ARIA error and hint associations (`aria-invalid`, `aria-describedby`) is essential but must rely on robust ID generation like React's `useId()` to prevent hydration mismatches and collision bugs.
+**Action:** When creating or updating form components, always use `useId()` to generate deterministic, unique IDs for input fields, error messages, and hint descriptions to guarantee screen reader compatibility without risking regressions from label-derived fallbacks.
