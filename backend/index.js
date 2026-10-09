@@ -1,3 +1,4 @@
+/* eslint-disable no-console, security/detect-non-literal-fs-filename */
 /**
  * ============================================================
  * DRAWRUN BACKEND v4.1 - Point d'entrée principal (Refactorisé)
