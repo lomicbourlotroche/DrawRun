@@ -1,0 +1,3 @@
+## 2024-10-10 - Replace Form ID Generation
+**Learning:** Using label text (like `label?.toLowerCase().replace(/\s+/g, '-')`) for ID generation in React causes issues with duplicate IDs on the same page and hydration mismatches. Forms must also programmatically link errors and hints to the respective input elements using `aria-invalid` and `aria-describedby`.
+**Action:** Use React's `useId()` hook to generate unique IDs and guarantee ID uniqueness. Use standard boolean `aria-invalid={!!error}` for inputs, and correctly associate errors and hints with input fields using unique IDs matching `aria-describedby`.
