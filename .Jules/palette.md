@@ -1,0 +1,3 @@
+## 2024-10-11 - Input Error/Hint Accessibility Association
+**Learning:** Hardcoded, deterministic ID generation from labels (e.g. `label.replace(/\s+/g, '-')`) can lead to unintended ID collisions across a large application and potential hydration mismatches when server and client IDs differ. Furthermore, simply displaying error text visually is insufficient for screen readers; inputs must be explicitly linked to their respective error/hint nodes.
+**Action:** Always prefer using React's `useId()` hook for auto-generating stable, non-colliding IDs when explicit IDs aren't provided. Link those IDs to auxiliary helper/error text using `aria-describedby`, and clearly indicate error states using `aria-invalid={!!error}`.
