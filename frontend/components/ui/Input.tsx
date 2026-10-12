@@ -76,15 +76,19 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 
           <input
             type={type}
+
             id={inputId}
+
             ref={ref}
+
             value={value}
+
             onChange={(e) => {
               setValue(e.target.value);
+
               props.onChange?.(e);
             }}
-            aria-invalid={!!error}
-            aria-describedby={error ? errorId : hint ? hintId : undefined}
+
             className={cn(
               'w-full bg-surface border rounded-lg px-4 py-2.5 text-foreground',
               'placeholder:text-muted',
@@ -116,8 +120,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           {clearable && value && (
             <button
               type="button"
+
               onClick={handleClear}
+
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors"
+
               aria-label="Clear"
             >
               <X className="w-4 h-4" />
