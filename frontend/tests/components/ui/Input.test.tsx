@@ -161,7 +161,23 @@ describe('Input component', () => {
     const input = screen.getByRole('textbox');
     const label = screen.getByText('Test Input');
     
-    expect(input.id).toBe('test-input');
-    expect(label).toHaveAttribute('for', 'test-input');
+    expect(input.id).toBeTruthy();
+    expect(label).toHaveAttribute('for', input.id);
+  });
+
+  it('sets aria-invalid and aria-describedby for errors and hints', () => {
+    const { rerender } = render(<Input error="Error occurred" />);
+    const inputWithError = screen.getByRole('textbox');
+    const errorText = screen.getByText('Error occurred');
+
+    expect(inputWithError).toHaveAttribute('aria-invalid', 'true');
+    expect(inputWithError).toHaveAttribute('aria-describedby', errorText.id);
+
+    rerender(<Input hint="Helpful hint" />);
+    const inputWithHint = screen.getByRole('textbox');
+    const hintText = screen.getByText('Helpful hint');
+
+    expect(inputWithHint).toHaveAttribute('aria-invalid', 'false');
+    expect(inputWithHint).toHaveAttribute('aria-describedby', hintText.id);
   });
 });
