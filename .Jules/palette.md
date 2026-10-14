@@ -1,0 +1,4 @@
+
+## 2024-05-18 - Form Input Accessibility and Robust ID Generation
+**Learning:** Using `label?.toLowerCase().replace(/\s+/g, '-')` to generate `id` values for form inputs is highly prone to collisions, especially on complex pages with multiple identical labels (e.g., "Email" or "Password"), leading to hydration mismatches and broken accessibility associations (like `htmlFor`). Additionally, inputs often miss proper error and hint semantic links.
+**Action:** Always use React's built-in `useId()` hook to generate unique, deterministic IDs for inputs when an explicit `id` is not provided. Furthermore, enforce the UX/Accessibility standard by explicitly linking inputs to their corresponding helper texts using `aria-invalid` (for errors) and `aria-describedby` matching the generated IDs of the hint or error messages.
