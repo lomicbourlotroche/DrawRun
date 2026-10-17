@@ -1,0 +1,3 @@
+## 2024-10-24 - Improve Input ARIA associations and ID generation
+**Learning:** When using React's `useId()` for robust ID generation in reusable form components (to prevent collisions and hydration mismatches), ensure that custom label-derived fallback IDs are fully removed from the component logic. Boolean ARIA attributes (like `aria-invalid`) need explicit Boolean coercion (e.g. `!!error`) and associative attributes (like `aria-describedby`) should conditionally link to related hint or error element IDs for screen readers to properly interpret component states.
+**Action:** When creating or modifying reusable form inputs, prioritize `useId()` for deterministic unique element connections and enforce explicit `aria-describedby` mappings for both error and hint states.
