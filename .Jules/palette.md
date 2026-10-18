@@ -1,0 +1,3 @@
+## 2025-03-01 - Proper Accessible Error Associations for Forms
+**Learning:** Found that custom `Input` component was lacking `aria-invalid` to announce error states and failed to programmatically link the hint or error messages to the input fields via `aria-describedby` despite them rendering visually below the inputs.
+**Action:** When creating form inputs, always generate unique IDs (preferably with `useId()`) for the error/hint elements and link them to the input via `aria-describedby` to ensure screen reader users are notified when an input has errors or instructions. Added `aria-invalid` to convey error state semantically.
