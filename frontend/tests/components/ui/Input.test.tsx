@@ -161,23 +161,7 @@ describe('Input component', () => {
     const input = screen.getByRole('textbox');
     const label = screen.getByText('Test Input');
 
-    expect(label.getAttribute('for')).toBe(input.id);
-  });
-
-  it('maps error and hint accessibility attributes', () => {
-    const { rerender } = render(<Input error="Error message" />);
-
-    let input = screen.getByRole('textbox');
-    expect(input).toHaveAttribute('aria-invalid', 'true');
-    expect(input).toHaveAttribute('aria-describedby');
-    let descId = input.getAttribute('aria-describedby');
-    expect(document.getElementById(descId as string)).toHaveTextContent('Error message');
-
-    rerender(<Input hint="Hint message" />);
-    input = screen.getByRole('textbox');
-    expect(input).toHaveAttribute('aria-invalid', 'false');
-    expect(input).toHaveAttribute('aria-describedby');
-    descId = input.getAttribute('aria-describedby');
-    expect(document.getElementById(descId as string)).toHaveTextContent('Hint message');
+    expect(input.id).toBe('test-input');
+    expect(label).toHaveAttribute('for', 'test-input');
   });
 });

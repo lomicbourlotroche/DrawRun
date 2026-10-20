@@ -38,4 +38,3 @@ coverage/
 
 # Vercel
 .vercel
-node_modules/
