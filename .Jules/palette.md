@@ -1,0 +1,3 @@
+## 2023-10-25 - Combobox Pattern for Custom Select Components
+**Learning:** When building custom dropdown selects with generic HTML elements (`div`, `button`), it's crucial to implement the W3C combobox pattern (`role="combobox"`, `role="listbox"`, `role="option"`, `aria-expanded`, `aria-controls`, `aria-selected`, `aria-labelledby`, `aria-haspopup`) using React's `useId()`. Without these, screen readers struggle to understand the relationship between the trigger, the options, and the current selection state.
+**Action:** Always verify custom select components fully satisfy the W3C combobox pattern rather than just relying on focus management or visually hiding/showing dropdown lists.
