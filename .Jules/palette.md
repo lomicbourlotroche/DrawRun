@@ -1,0 +1,3 @@
+## 2024-10-24 - Form Input ARIA Associations
+**Learning:** Using predictable label-derived fallback IDs (`id || label.toLowerCase()`) can lead to hydration mismatches and ID collisions in dynamic forms, causing screen reader associations to point to the wrong elements. Additionally, simply rendering boolean attributes like `aria-invalid={!!error}` results in standard compliant state markers rather than removing them entirely when false, which provides better state announcements.
+**Action:** Always use React's `useId()` hook to generate unique fallback IDs for form elements, and properly establish `aria-describedby` links for errors and hints to ensure form validity context is tightly bound to the input control.

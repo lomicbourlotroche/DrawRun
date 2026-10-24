@@ -155,13 +155,45 @@ describe('Input component', () => {
     expect(label).toHaveAttribute('for', 'name-input');
   });
 
-  it('generates id from label when not provided', () => {
+  it('generates a unique id when not provided and links label', () => {
     render(<Input label="Test Input" />);
     
     const input = screen.getByRole('textbox');
     const label = screen.getByText('Test Input');
     
-    expect(input.id).toBe('test-input');
-    expect(label).toHaveAttribute('for', 'test-input');
+    expect(input.id).toBeTruthy();
+    expect(label).toHaveAttribute('for', input.id);
+  });
+
+  it('sets aria-invalid and links error message with aria-describedby', () => {
+    render(<Input error="This field is required" />);
+
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAttribute('aria-describedby');
+
+    const describedBy = input.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const errorElement = document.getElementById(describedBy!);
+    expect(errorElement).toBeInTheDocument();
+    expect(errorElement).toHaveTextContent('This field is required');
+  });
+
+  it('links hint message with aria-describedby', () => {
+    render(<Input hint="Enter your full name" />);
+
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveAttribute('aria-invalid', 'false');
+    expect(input).toHaveAttribute('aria-describedby');
+
+    const describedBy = input.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const hintElement = document.getElementById(describedBy!);
+    expect(hintElement).toBeInTheDocument();
+    expect(hintElement).toHaveTextContent('Enter your full name');
   });
 });
