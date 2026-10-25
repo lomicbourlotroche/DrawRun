@@ -1,0 +1,3 @@
+## 2024-05-18 - Input ARIA association with useId()
+**Learning:** Hardcoding or deriving HTML element IDs from labels for ARIA relationships (like `aria-describedby`) can lead to hydration mismatches or ID collisions when a component is used multiple times on a page. `useId()` generates a non-deterministic, collision-free ID that perfectly maps input states like `aria-invalid` and `aria-describedby` to their respective error or hint `<p>` tags.
+**Action:** Always prefer React's `useId()` when generating dynamic IDs for accessible UI components, and verify ARIA properties programmatically without relying on hardcoded strings in UI tests.

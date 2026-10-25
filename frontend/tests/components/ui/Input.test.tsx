@@ -155,13 +155,38 @@ describe('Input component', () => {
     expect(label).toHaveAttribute('for', 'name-input');
   });
 
-  it('generates id from label when not provided', () => {
+  it('generates id when not provided', () => {
     render(<Input label="Test Input" />);
     
     const input = screen.getByRole('textbox');
     const label = screen.getByText('Test Input');
     
-    expect(input.id).toBe('test-input');
-    expect(label).toHaveAttribute('for', 'test-input');
+    expect(input.id).toBeTruthy();
+    expect(label).toHaveAttribute('for', input.id);
+  });
+
+  it('sets aria-invalid correctly', () => {
+    const { rerender } = render(<Input />);
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveAttribute('aria-invalid', 'false');
+
+    rerender(<Input error="Error message" />);
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('sets aria-describedby correctly for error and hint', () => {
+    const { rerender } = render(<Input />);
+    const input = screen.getByRole('textbox');
+    expect(input).not.toHaveAttribute('aria-describedby');
+
+    rerender(<Input error="Error message" />);
+    const errorDesc = input.getAttribute('aria-describedby');
+    expect(errorDesc).toBeTruthy();
+    expect(screen.getByText('Error message')).toHaveAttribute('id', errorDesc);
+
+    rerender(<Input hint="Hint message" />);
+    const hintDesc = input.getAttribute('aria-describedby');
+    expect(hintDesc).toBeTruthy();
+    expect(screen.getByText('Hint message')).toHaveAttribute('id', hintDesc);
   });
 });
