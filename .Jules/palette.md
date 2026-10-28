@@ -1,0 +1,3 @@
+## 2024-10-28 - ARIA Descriptions in Input Components
+**Learning:** Hardcoded, label-derived IDs (e.g. `label.toLowerCase().replace(/\s+/g, '-')`) cause ID collisions and React hydration mismatches, making ARIA associations (`aria-describedby`) unreliable across the app. We also need to map error and hint states to inputs via `aria-invalid` and `aria-describedby`.
+**Action:** Always prioritize React's `useId()` for generating unique, robust element IDs, especially for associating error and hint messages with inputs for screen readers. Test associations via element properties (e.g., `input.id`) rather than hardcoded string values.
