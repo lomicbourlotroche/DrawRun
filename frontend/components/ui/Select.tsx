@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useId } from 'react';
 import { cn } from '@/lib/utils';
 import { ChevronDown, Check } from '@/components/ui/icons';
 
@@ -35,6 +35,7 @@ export function Select({
   const ref = useRef<HTMLDivElement>(null);
 
   const selectedOption = options.find((opt) => opt.value === value);
+  const listboxId = useId();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -56,6 +57,10 @@ export function Select({
       <div className="relative">
         <button
           type="button"
+          role="combobox"
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
+          aria-controls={isOpen ? listboxId : undefined}
           disabled={disabled}
           onClick={() => !disabled && setIsOpen(!isOpen)}
           className={cn(
@@ -85,11 +90,17 @@ export function Select({
         </button>
 
         {isOpen && (
-          <div className="absolute z-50 w-full mt-1 bg-surface border border-border rounded-lg shadow-lg animate-slide-down max-h-60 overflow-y-auto">
+          <div
+            id={listboxId}
+            role="listbox"
+            className="absolute z-50 w-full mt-1 bg-surface border border-border rounded-lg shadow-lg animate-slide-down max-h-60 overflow-y-auto"
+          >
             {options.map((option) => (
               <button
                 key={option.value}
                 type="button"
+                role="option"
+                aria-selected={option.value === value}
                 onClick={() => {
                   onChange(option.value);
                   setIsOpen(false);
