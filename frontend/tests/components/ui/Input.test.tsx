@@ -31,16 +31,24 @@ describe('Input component', () => {
     render(<Input error="Error message" />);
     
     const error = screen.getByText('Error message');
+    const input = screen.getByRole('textbox');
+
     expect(error).toBeInTheDocument();
     expect(error).toHaveClass('text-danger');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input).toHaveAttribute('aria-describedby', error.id);
   });
 
   it('renders with hint message', () => {
     render(<Input hint="Hint message" />);
     
     const hint = screen.getByText('Hint message');
+    const input = screen.getByRole('textbox');
+
     expect(hint).toBeInTheDocument();
     expect(hint).toHaveClass('text-muted');
+    expect(input).toHaveAttribute('aria-invalid', 'false');
+    expect(input).toHaveAttribute('aria-describedby', hint.id);
   });
 
   it('does not render hint when error is present', () => {
@@ -155,13 +163,13 @@ describe('Input component', () => {
     expect(label).toHaveAttribute('for', 'name-input');
   });
 
-  it('generates id from label when not provided', () => {
+  it('generates unique id when not provided', () => {
     render(<Input label="Test Input" />);
     
     const input = screen.getByRole('textbox');
     const label = screen.getByText('Test Input');
     
-    expect(input.id).toBe('test-input');
-    expect(label).toHaveAttribute('for', 'test-input');
+    expect(input.id).toBeTruthy();
+    expect(label).toHaveAttribute('for', input.id);
   });
 });
